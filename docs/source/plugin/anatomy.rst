@@ -124,6 +124,18 @@ Example::
 A rule with rate-limiting can return :const:`sopel.plugin.NOLIMIT` to let the
 user try again after a failed command, e.g. if a required argument is missing.
 
+.. seealso::
+
+   There are three other decorators to use:
+
+   * :func:`sopel.plugin.rate_user`
+   * :func:`sopel.plugin.rate_channel`
+   * :func:`sopel.plugin.rate_global`
+
+   These decorators can be used independently and will always override the
+   value set by ``rate()``. They also accept a dedicated message. See their
+   respective documentation for more information.
+
 Bypassing restrictions
 ----------------------
 

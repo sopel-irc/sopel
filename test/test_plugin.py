@@ -286,6 +286,83 @@ def test_ctcp_direct():
     assert mock.ctcp == ['ACTION']
 
 
+def test_rate_user():
+    @plugin.rate_user(10)
+    def mock(bot, trigger):
+        return True
+    assert mock.user_rate == 10
+    assert mock.user_rate_message is None
+    assert not hasattr(mock, 'channel_rate')
+    assert not hasattr(mock, 'global_rate')
+    assert not hasattr(mock, 'default_rate_message')
+
+    @plugin.rate_user(20, 'User rate message.')
+    def mock(bot, trigger):
+        return True
+    assert mock.user_rate == 20
+    assert mock.user_rate_message == 'User rate message.'
+    assert not hasattr(mock, 'channel_rate')
+    assert not hasattr(mock, 'global_rate')
+    assert not hasattr(mock, 'default_rate_message')
+
+
+def test_rate_channel():
+    @plugin.rate_channel(10)
+    def mock(bot, trigger):
+        return True
+    assert mock.channel_rate == 10
+    assert mock.channel_rate_message is None
+    assert not hasattr(mock, 'user_rate')
+    assert not hasattr(mock, 'global_rate')
+    assert not hasattr(mock, 'default_rate_message')
+
+    @plugin.rate_channel(20, 'Channel rate message.')
+    def mock(bot, trigger):
+        return True
+    assert mock.channel_rate == 20
+    assert mock.channel_rate_message == 'Channel rate message.'
+    assert not hasattr(mock, 'user_rate')
+    assert not hasattr(mock, 'global_rate')
+    assert not hasattr(mock, 'default_rate_message')
+
+
+def test_rate_global():
+    @plugin.rate_global(10)
+    def mock(bot, trigger):
+        return True
+    assert mock.global_rate == 10
+    assert mock.global_rate_message is None
+    assert not hasattr(mock, 'user_rate')
+    assert not hasattr(mock, 'channel_rate')
+    assert not hasattr(mock, 'default_rate_message')
+
+    @plugin.rate_global(20, 'Server rate message.')
+    def mock(bot, trigger):
+        return True
+    assert mock.global_rate == 20
+    assert mock.global_rate_message == 'Server rate message.'
+    assert not hasattr(mock, 'user_rate')
+    assert not hasattr(mock, 'channel_rate')
+    assert not hasattr(mock, 'default_rate_message')
+
+
+def test_rate_combine_rate_decorators():
+    @plugin.rate(400, 500, 600, message='Last default rate message')
+    @plugin.rate_global(2, 'Server rate message')
+    @plugin.rate_channel(5, 'Channel rate message')
+    @plugin.rate_user(10, 'User rate message')
+    @plugin.rate(40, 50, 60, message='Initial default rate message')
+    def mock(bot, trigger):
+        return True
+    assert mock.user_rate == 10
+    assert mock.user_rate_message == 'User rate message'
+    assert mock.channel_rate == 5
+    assert mock.channel_rate_message == 'Channel rate message'
+    assert mock.global_rate == 2
+    assert mock.global_rate_message == 'Server rate message'
+    assert mock.default_rate_message == 'Last default rate message'
+
+
 BAN_MESSAGE = ':Foo!foo@example.com PRIVMSG #chan :.ban ExiClone'
 BAN_PRIVATE_MESSAGE = ':Foo!foo@example.com PRIVMSG Sopel :.ban #chan ExiClone'
 

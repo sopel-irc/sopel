@@ -587,18 +587,34 @@ class Sopel(irc.AbstractBot):
         sopel: 'SopelWrapper',
         trigger: Trigger,
     ) -> None:
+        nick = trigger.nick
+        context = trigger.sender
+        is_channel = context and not context.is_nick()
+
         # rate limiting
         if not trigger.admin and not rule.is_unblockable():
-            if rule.is_rate_limited(trigger.nick):
+            if rule.is_user_rate_limited(nick):
+                message = rule.get_user_rate_message(nick)
+                if message:
+                    sopel.notice(message, destination=nick)
                 return
-            if not trigger.is_privmsg and rule.is_channel_rate_limited(trigger.sender):
+
+            if is_channel and rule.is_channel_rate_limited(context):
+                message = rule.get_channel_rate_message(nick, context)
+                if message:
+                    sopel.notice(message, destination=nick)
                 return
+
             if rule.is_global_rate_limited():
+                message = rule.get_global_rate_message(nick)
+                if message:
+                    sopel.notice(message, destination=nick)
                 return
 
         # channel config
-        if trigger.sender in self.config:
-            channel_config = self.config[trigger.sender]
+        if is_channel and context in self.config:
+            channel_config = self.config[context]
+            plugin_name = rule.get_plugin_name()
 
             # disable listed plugins completely on provided channel
             if 'disable_plugins' in channel_config:
@@ -606,13 +622,13 @@ class Sopel(irc.AbstractBot):
 
                 if '*' in disabled_plugins:
                     return
-                elif rule.get_plugin_name() in disabled_plugins:
+                elif plugin_name in disabled_plugins:
                     return
 
             # disable chosen methods from plugins
             if 'disable_commands' in channel_config:
                 disabled_commands = literal_eval(channel_config.disable_commands)
-                disabled_commands = disabled_commands.get(rule.get_plugin_name(), [])
+                disabled_commands = disabled_commands.get(plugin_name, [])
                 if rule.get_rule_label() in disabled_commands:
                     return
 
@@ -650,11 +666,11 @@ class Sopel(irc.AbstractBot):
         if not trigger.admin and not func.unblockable:
             if func in self._times[nick]:
                 usertimediff = current_time - self._times[nick][func]
-                if func.rate > 0 and usertimediff < func.rate:
+                if func.user_rate > 0 and usertimediff < func.user_rate:
                     LOGGER.info(
                         "%s prevented from using %s in %s due to user limit: %d < %d",
                         trigger.nick, func.__name__, trigger.sender, usertimediff,
-                        func.rate
+                        func.user_rate
                     )
                     return
             if func in self._times[self.nick]:

@@ -343,7 +343,19 @@ def test_rate():
     @module.rate(5)
     def mock(bot, trigger, match):
         return True
-    assert mock.rate == 5
+    assert mock.user_rate == 5
+    assert mock.channel_rate == 0, 'Default channel_rate should be 0'
+    assert mock.global_rate == 0, 'Default global_rate should be 0'
+
+
+def test_rate_only_once():
+    @module.rate(10)
+    @module.rate(5)
+    def mock(bot, trigger, match):
+        return True
+    assert mock.user_rate == 5, 'Only the first decorator has effect.'
+    assert mock.channel_rate == 0, 'Only the first decorator has effect.'
+    assert mock.global_rate == 0, 'Only the first decorator has effect.'
 
 
 def test_require_privmsg(bot, trigger, trigger_pm):

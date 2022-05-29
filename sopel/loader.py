@@ -48,9 +48,13 @@ def clean_callable(func, config):
     if is_limitable(func):
         # These attributes are a waste of memory on callables that don't pass
         # through Sopel's rate-limiting machinery
-        func.rate = getattr(func, 'rate', 0)
+        func.user_rate = getattr(func, 'user_rate', 0)
         func.channel_rate = getattr(func, 'channel_rate', 0)
         func.global_rate = getattr(func, 'global_rate', 0)
+        func.user_rate_message = getattr(func, 'user_rate_message', None)
+        func.channel_rate_message = getattr(func, 'channel_rate_message', None)
+        func.global_rate_message = getattr(func, 'global_rate_message', None)
+        func.default_rate_message = getattr(func, 'default_rate_message', None)
         func.unblockable = getattr(func, 'unblockable', False)
 
     if not is_triggerable(func) and not is_url_callback(func):
