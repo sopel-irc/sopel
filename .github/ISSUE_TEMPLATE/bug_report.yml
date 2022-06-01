@@ -1,0 +1,118 @@
+name: Submit a bug report
+description: Report a problem to help us improve Sopel
+labels:
+  - "Bug"
+  - "Needs Triage"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for helping us improve Sopel!
+
+        Please be sure to check the [discussions](../discussions) and search both open *and closed* [issues](../issues) to see if we're already working on this problem.
+
+        If you can, please try to reproduce the problem on an unmodified copy of the `master` branch first, as sometimes bugs are found and fixed without opening an issue or discussion.
+
+        If the problem hasn't been reported and persists in `master`, you can help us fix it quickly by filling out as much of this information as you can. Thanks!
+
+        ----------
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "A clear and concise description of the problem."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: "Reproduction steps"
+      description: >-
+        What is the easiest way for the developers to reproduce the problem?
+      placeholder: |
+        1. Set this config option...
+        2. Connect to server, join a channel, ...?
+        3. Run this command: `.foo bar`
+        4. Now the bot has taken over my microwave
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected behavior"
+      description: "What did you expect to happen instead?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Relevant logs"
+      description: >-
+        If applicable, add logs to help us figure out what's happening. Raw
+        logs are super helpful! Logs are usually found in `~/.sopel/logs/`,
+        depending on your configuration.
+      render: shell
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Notes"
+      description: "Is there anything else we should know?"
+
+  - type: input
+    id: sopel_version
+    attributes:
+      label: "Sopel version"
+      description: >-
+        What version of Sopel are you using? If the `version` plugin is enabled
+        you can use the `.version` command. For git, use `git rev-parse HEAD`.
+      placeholder: "e.g. 7.1.2 or d416e19"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sopel_install_method
+    attributes:
+      label: "Installation method"
+      description: "How did you install Sopel?"
+      options:
+        - "`pip install`"
+        - "`./setup.py install`"
+        - My distro's package manager (apt, etc)
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: "Python version"
+      placeholder: "e.g. 3.10.4"
+
+  - type: input
+    id: os
+    attributes:
+      label: "Operating system"
+      description: "What operating system and release are you using?"
+      placeholder: "e.g. Debian 10, Windows 11"
+
+  - type: input
+    id: ircd
+    attributes:
+      label: "IRCd"
+      description: >-
+        What IRC daemon and version is the problem happening on? You can check
+        this by running `/version`. Providing the connection info to the server
+        can also make testing easier!
+      placeholder: "InspIRCd 3.13.0, irc.example.com:6697"
+
+  - type: input
+    id: plugins
+    attributes:
+      label: "Relevant plugins"
+      description: "What plugins are you using that might affect this bug?"
+      placeholder: "adminchannel, weather, custom_thing.py, ?"

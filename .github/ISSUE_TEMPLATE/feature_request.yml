@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest a feature for Sopel
+labels:
+  - "Feature"
+  - "Needs Triage"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please be sure to check the [discussions](../discussions) and search both open *and closed* [issues](../issues) to see if this feature has already been discussed, or even implemented but not released yet.
+
+  - type: textarea
+    id: feature
+    attributes:
+      label: "Requested Feature"
+      description: >-
+        A clear and concise description of what Sopel can do to help you.
+        How much of Sopel's userbase will this help?
+      placeholder: >-
+        Sopel should be able to make me coffee! Everyone likes coffee!
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problems Solved"
+      description: >-
+        Why is this feature or functionality necessary, or a benefit?
+      placeholder: >-
+        Moderation is hard, and being caffeinated would help.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives"
+      description: >-
+        Are there any other options you considered, or that might work? Why did
+        you decide against them?
+      placeholder: >-
+        My coffee machine has a timer, but I don't know how to set it.
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Notes"
+      description: "Any other comments?"
