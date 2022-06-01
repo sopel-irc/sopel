@@ -48,6 +48,10 @@ class PreTrigger:
 
         These are split on spaces, per the IRC protocol.
 
+    .. py:attribute:: ctcp
+
+        The CTCP command name, if present (``None`` otherwise)
+
     .. py:attribute:: event
 
         The IRC command name or numeric value.
@@ -116,7 +120,7 @@ class PreTrigger:
 
     """
     component_regex = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
-    intent_regex = re.compile('\x01(\\S+) ?(.*)\x01')
+    ctcp_regex = re.compile('\x01(\\S+) ?(.*)\x01')
 
     def __init__(
         self,
@@ -127,9 +131,10 @@ class PreTrigger:
     ):
         self.make_identifier = identifier_factory
         line = line.strip('\r\n')
-        self.line = line
+        self.line: str = line
         self.urls: Tuple[str, ...] = tuple()
-        self.plain = ''
+        self.plain: str = ''
+        self.ctcp: Optional[str] = None
 
         # Break off IRCv3 message tags, if present
         self.tags: Dict[str, Optional[str]] = {}
@@ -207,12 +212,12 @@ class PreTrigger:
 
         self.sender = target
 
-        # Parse CTCP into a form consistent with IRCv3 intents
+        # Parse CTCP
         if self.event == 'PRIVMSG' or self.event == 'NOTICE':
-            intent_match = PreTrigger.intent_regex.match(self.args[-1])
-            if intent_match:
-                intent, message = intent_match.groups()
-                self.tags['intent'] = intent
+            ctcp_match = PreTrigger.ctcp_regex.match(self.args[-1])
+            if ctcp_match is not None:
+                ctcp, message = ctcp_match.groups()
+                self.ctcp = ctcp
                 self.args[-1] = message or ''
 
             # Search URLs after CTCP parsing
@@ -251,8 +256,14 @@ class Trigger(str):
 
     Note that CTCP messages (``PRIVMSG``\\es and ``NOTICE``\\es which start
     and end with ``'\\x01'``) will have the ``'\\x01'`` bytes stripped, and
-    the command (e.g. ``ACTION``) placed mapped to the ``'intent'`` key in
-    :attr:`Trigger.tags`.
+    :attr:`trigger.ctcp <ctcp>` will contain the command (e.g. ``ACTION``).
+
+    .. note::
+
+        CTCP used to be stored as the ``intent`` tag. Since message intents
+        never made it past the IRCv3 draft stage, Sopel dropped support for
+        them in Sopel 8.
+
     """
     sender = property(lambda self: self._pretrigger.sender)
     """Where the message arrived from.
@@ -323,7 +334,7 @@ class Trigger(str):
     ``PRIVMSG``. Other event types like ``NOTICE``, ``NICK``, ``TOPIC``,
     ``KICK``, etc. must be requested using :func:`.plugin.event`.
     """
-    ctcp = property(lambda self: self.tags.get('intent', None))
+    ctcp = property(lambda self: self._pretrigger.ctcp)
     """The CTCP command (if any).
 
     :type: str
@@ -336,8 +347,9 @@ class Trigger(str):
     .. important::
 
         Use this attribute instead of the ``intent`` tag in :attr:`tags`.
-        Message intents never made it past the IRCv3 draft stage, and Sopel will
-        drop support for them in a future release.
+        Message intents never made it past the IRCv3 draft stage, and Sopel
+        dropped support for them in Sopel 8.
+
     """
     match = property(lambda self: self._match)
     """The :ref:`Match object <match-objects>` for the triggering line.

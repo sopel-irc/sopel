@@ -317,7 +317,7 @@ def test_clean_callable_default(tmpconfig, func):
     assert not hasattr(func, 'commands')
     assert not hasattr(func, 'nickname_commands')
     assert not hasattr(func, 'action_commands')
-    assert not hasattr(func, 'intents')
+    assert not hasattr(func, 'ctcp')
 
 
 def test_clean_callable_command(tmpconfig, func):
@@ -861,15 +861,15 @@ def test_clean_callable_example_nickname_custom_prefix(tmpconfig, func):
     assert docs[1] == ['TestBot: hello']
 
 
-def test_clean_callable_intents(tmpconfig, func):
-    setattr(func, 'intents', [r'abc'])
+def test_clean_callable_ctcp(tmpconfig, func):
+    setattr(func, 'ctcp', [r'abc'])
     loader.clean_callable(func, tmpconfig)
 
-    assert hasattr(func, 'intents')
-    assert len(func.intents) == 1
+    assert hasattr(func, 'ctcp')
+    assert len(func.ctcp) == 1
 
     # Test the regex is compiled properly
-    regex = func.intents[0]
+    regex = func.ctcp[0]
     assert regex.match('abc')
     assert regex.match('abcd')
     assert regex.match('ABC')
@@ -898,8 +898,8 @@ def test_clean_callable_intents(tmpconfig, func):
 
     # idempotency
     loader.clean_callable(func, tmpconfig)
-    assert len(func.intents) == 1
-    assert regex in func.intents
+    assert len(func.ctcp) == 1
+    assert regex in func.ctcp
 
     assert func.unblockable is False
     assert func.priority == 'medium'

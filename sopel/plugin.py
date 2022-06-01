@@ -784,6 +784,16 @@ def ctcp(
 
     :param str command_list: one or more CTCP command(s) on which to trigger
 
+    There are various CTCP commands to handle with this decorator, such as
+    ``ACTION``, ``VERSION``, and ``TIME``::
+
+        from sopel import plugin
+
+        @plugin.ctcp('TIME')
+        @plugin.rule('.*')
+        def ctcp_time(bot, trigger):
+            bot.say('Sorry, not a clock.')
+
     .. versionadded:: 7.1
 
         This is now ``ctcp`` instead of ``intent``, and it can be called
@@ -811,11 +821,11 @@ def ctcp(
 
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "intents"):
-            function.intents = []
+        if not hasattr(function, "ctcp"):
+            function.ctcp = []
         for name in ctcp_commands:
-            if name not in function.intents:
-                function.intents.append(name)
+            if name not in function.ctcp:
+                function.ctcp.append(name)
         return function
     return add_attribute
 

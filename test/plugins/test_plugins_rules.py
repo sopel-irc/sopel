@@ -643,14 +643,14 @@ def test_rule_match_privmsg_action(mockbot):
     match = matches[0]
     assert match.group(0) == 'Hello, world'
 
-    rule = rules.Rule([regex], intents=[re.compile(r'ACTION')])
+    rule = rules.Rule([regex], ctcp=[re.compile(r'ACTION')])
     matches = list(rule.match(mockbot, pretrigger))
     assert len(matches) == 1, 'Exactly one match must be found'
 
     match = matches[0]
     assert match.group(0) == 'Hello, world'
 
-    rule = rules.Rule([regex], intents=[re.compile(r'VERSION')])
+    rule = rules.Rule([regex], ctcp=[re.compile(r'VERSION')])
     assert not list(rule.match(mockbot, pretrigger))
 
 
@@ -748,19 +748,19 @@ def test_rule_match_event():
     assert rule.match_event('JOIN')
 
 
-def test_rule_match_intent():
+def test_rule_match_ctcp():
     regex = re.compile('.*')
 
     rule = rules.Rule([regex])
-    assert rule.match_intent(None)
+    assert rule.match_ctcp(None)
 
-    intents = [
+    ctcp = [
         re.compile('VERSION'),
     ]
-    rule = rules.Rule([regex], intents=intents)
-    assert not rule.match_intent(None)
-    assert rule.match_intent('VERSION')
-    assert not rule.match_intent('PING')
+    rule = rules.Rule([regex], ctcp=ctcp)
+    assert not rule.match_ctcp(None)
+    assert rule.match_ctcp('VERSION')
+    assert not rule.match_ctcp('PING')
 
 
 def test_rule_echo_message():
@@ -1078,7 +1078,7 @@ def test_kwargs_from_callable(mockbot):
     assert 'label' in kwargs
     assert 'priority' in kwargs
     assert 'events' in kwargs
-    assert 'intents' in kwargs
+    assert 'ctcp' in kwargs
     assert 'allow_echo' in kwargs
     assert 'threaded' in kwargs
     assert 'output_prefix' in kwargs
@@ -1091,7 +1091,7 @@ def test_kwargs_from_callable(mockbot):
     assert kwargs['label'] is None
     assert kwargs['priority'] == rules.PRIORITY_MEDIUM
     assert kwargs['events'] == ['PRIVMSG']
-    assert kwargs['intents'] == []
+    assert kwargs['ctcp'] == []
     assert kwargs['allow_echo'] is False
     assert kwargs['threaded'] is True
     assert kwargs['output_prefix'] == ''
@@ -1157,8 +1157,8 @@ def test_kwargs_from_callable_ctcp_intent(mockbot):
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
-    assert 'intents' in kwargs
-    assert kwargs['intents'] == [re.compile(r'ACTION', re.IGNORECASE)]
+    assert 'ctcp' in kwargs
+    assert kwargs['ctcp'] == [re.compile(r'ACTION', re.IGNORECASE)]
 
 
 def test_kwargs_from_callable_allow_echo(mockbot):
@@ -2320,19 +2320,19 @@ def test_action_command_has_alias(mockbot):
     assert not rule.has_alias('unknown')
 
 
-def test_action_command_match_intent(mockbot):
+def test_action_command_match_ctcp(mockbot):
     rule = rules.ActionCommand('hello')
-    assert rule.match_intent('ACTION')
-    assert not rule.match_intent('VERSION')
-    assert not rule.match_intent('PING')
+    assert rule.match_ctcp('ACTION')
+    assert not rule.match_ctcp('VERSION')
+    assert not rule.match_ctcp('PING')
 
-    intents = (re.compile(r'VERSION'), re.compile(r'SOURCE'))
-    rule = rules.ActionCommand('hello', intents=intents)
-    assert rule.match_intent('ACTION'), 'ActionCommand always match ACTION'
-    assert not rule.match_intent('VERSION'), (
-        'ActionCommand never match other intents')
-    assert not rule.match_intent('PING'), (
-        'ActionCommand never match other intents')
+    ctcp = (re.compile(r'VERSION'), re.compile(r'SOURCE'))
+    rule = rules.ActionCommand('hello', ctcp=ctcp)
+    assert rule.match_ctcp('ACTION'), 'ActionCommand always match ACTION'
+    assert not rule.match_ctcp('VERSION'), (
+        'ActionCommand never match other CTCP commands')
+    assert not rule.match_ctcp('PING'), (
+        'ActionCommand never match other CTCP commands')
 
 
 def test_action_command_from_callable_invalid(mockbot):
@@ -2729,7 +2729,7 @@ def test_url_callback_match_filter_intent(mockbot):
     assert match.group(0) == 'https://example.com/test'
     assert match.group(1) == 'test'
 
-    rule = rules.URLCallback([regex], intents=[re.compile(r'ACTION')])
+    rule = rules.URLCallback([regex], ctcp=[re.compile(r'ACTION')])
     matches = list(rule.match(mockbot, pretrigger))
     assert len(matches) == 1, 'Exactly one match must be found'
 
@@ -2737,7 +2737,7 @@ def test_url_callback_match_filter_intent(mockbot):
     assert match.group(0) == 'https://example.com/test'
     assert match.group(1) == 'test'
 
-    rule = rules.URLCallback([regex], intents=[re.compile(r'VERSION')])
+    rule = rules.URLCallback([regex], ctcp=[re.compile(r'VERSION')])
     assert not list(rule.match(mockbot, pretrigger))
 
 

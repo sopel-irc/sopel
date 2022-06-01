@@ -248,7 +248,7 @@ def test_action_commands():
     def mock(bot, trigger, match):
         return True
     assert mock.action_commands == ['sopel']
-    assert not hasattr(mock, 'intents')
+    assert not hasattr(mock, 'ctcp')
     assert not hasattr(mock, 'rule')
 
 
@@ -257,7 +257,7 @@ def test_action_commands_args():
     def mock(bot, trigger, match):
         return True
     assert mock.action_commands == ['sopel', 'bot']
-    assert not hasattr(mock, 'intents')
+    assert not hasattr(mock, 'ctcp')
     assert not hasattr(mock, 'rule')
 
 
@@ -268,7 +268,7 @@ def test_action_commands_multiple():
     def mock(bot, trigger, match):
         return True
     assert mock.action_commands == ['robot', 'bot', 'sopel']
-    assert not hasattr(mock, 'intents')
+    assert not hasattr(mock, 'ctcp')
     assert not hasattr(mock, 'rule')
 
 
@@ -282,7 +282,7 @@ def test_all_commands():
     assert mock.commands == ['sopel']
     assert mock.action_commands == ['me_sopel']
     assert mock.nickname_commands == ['name_sopel']
-    assert not hasattr(mock, 'intents')
+    assert not hasattr(mock, 'ctcp')
     assert not hasattr(mock, 'rule')
 
 
@@ -320,14 +320,14 @@ def test_intent():
     @module.intent('ACTION')
     def mock(bot, trigger, match):
         return True
-    assert mock.intents == ['ACTION']
+    assert mock.ctcp == ['ACTION']
 
 
 def test_intent_args():
     @module.intent('ACTION', 'OTHER')
     def mock(bot, trigger, match):
         return True
-    assert mock.intents == ['ACTION', 'OTHER']
+    assert mock.ctcp == ['ACTION', 'OTHER']
 
 
 def test_intent_multiple():
@@ -336,7 +336,7 @@ def test_intent_multiple():
     @module.intent('PING',)
     def mock(bot, trigger, match):
         return True
-    assert mock.intents == ['PING', 'OTHER', 'ACTION']
+    assert mock.ctcp == ['PING', 'OTHER', 'ACTION']
 
 
 def test_rate():
