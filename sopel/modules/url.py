@@ -10,9 +10,10 @@ https://sopel.chat
 """
 from __future__ import annotations
 
-import ipaddress
+from ipaddress import ip_address
 import logging
 import re
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import dns.resolver
@@ -23,6 +24,12 @@ from sopel import plugin, tools
 from sopel.config import types
 from sopel.tools import web
 
+if TYPE_CHECKING:
+    from typing import Generator, List, Optional, Tuple
+
+    from sopel.bot import Sopel, SopelWrapper
+    from sopel.config import Config
+    from sopel.trigger import Trigger
 
 LOGGER = logging.getLogger(__name__)
 USER_AGENT = (
@@ -39,8 +46,6 @@ DEFAULT_HEADERS = {
 # world's best way to do this, but it'll do for now.
 TITLE_TAG_DATA = re.compile('<(/?)title( [^>]+)?>', re.IGNORECASE)
 QUOTED_TITLE = re.compile('[\'"]<title>[\'"]', re.IGNORECASE)
-# This is another regex that presumably does something important.
-RE_DCC = re.compile(r'(?i)dcc\ssend')
 # This sets the maximum number of bytes that should be read in order to find
 # the title. We don't want it too high, or a link to a big file/stream will
 # just keep downloading until there's no more memory. 640k ought to be enough
@@ -62,13 +67,10 @@ class UrlSection(types.StaticSection):
     """If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters."""
     enable_private_resolution = types.BooleanAttribute(
         'enable_private_resolution', default=False)
-    """Enable URL lookups for RFC1918 addresses"""
-    enable_dns_resolution = types.BooleanAttribute(
-        'enable_dns_resolution', default=False)
-    """Enable DNS resolution for all domains to validate if there are RFC1918 resolutions"""
+    """Enable requests to private and local network IP addresses"""
 
 
-def configure(config):
+def configure(config: Config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
@@ -76,8 +78,7 @@ def configure(config):
     | exclude | https?://git\\\\.io/.* | A list of regular expressions for URLs for which the title should not be shown. |
     | exclusion\\_char | ! | A character (or string) which, when immediately preceding a URL, will stop the URL's title from being shown. |
     | shorten\\_url\\_length | 72 | If greater than 0, the title fetcher will include a TinyURL version of links longer than this many characters. |
-    | enable\\_private\\_resolution | False | Enable URL lookups for RFC1918 addresses. |
-    | enable\\_dns\\_resolution | False | Enable DNS resolution for all domains to validate if there are RFC1918 resolutions. |
+    | enable\\_private\\_resolution | False | Enable requests to private and local network IP addresses. |
     """
     config.define_section('url', UrlSection)
     config.url.configure_setting(
@@ -100,15 +101,11 @@ def configure(config):
     )
     config.url.configure_setting(
         'enable_private_resolution',
-        'Enable URL lookups for RFC1918 addresses?'
-    )
-    config.url.configure_setting(
-        'enable_dns_resolution',
-        'Enable DNS resolution for all domains to validate if there are RFC1918 resolutions?'
+        'Enable requests to private and local network IP addresses?'
     )
 
 
-def setup(bot):
+def setup(bot: Sopel):
     bot.config.define_section('url', UrlSection)
 
     if bot.config.url.exclude:
@@ -139,7 +136,7 @@ def setup(bot):
         bot.memory['shortened_urls'] = tools.SopelMemory()
 
 
-def shutdown(bot):
+def shutdown(bot: Sopel):
     # Unset `url_exclude` and `last_seen_url`, but not `shortened_urls`;
     # clearing `shortened_urls` will increase API calls. Leaving it in memory
     # should not lead to unexpected behavior.
@@ -154,7 +151,7 @@ def shutdown(bot):
 @plugin.example('.urlpexclude example\\.com/\\w+', user_help=True)
 @plugin.example('.urlexclude example.com/path', user_help=True)
 @plugin.output_prefix('[url] ')
-def url_ban(bot, trigger):
+def url_ban(bot: SopelWrapper, trigger: Trigger):
     """Exclude a URL from auto title.
 
     Use ``urlpexclude`` to exclude a pattern instead of a URL.
@@ -199,7 +196,7 @@ def url_ban(bot, trigger):
 @plugin.example('.urlpallow example\\.com/\\w+', user_help=True)
 @plugin.example('.urlallow example.com/path', user_help=True)
 @plugin.output_prefix('[url] ')
-def url_unban(bot, trigger):
+def url_unban(bot: SopelWrapper, trigger: Trigger):
     """Allow a URL for auto title.
 
     Use ``urlpallow`` to allow a pattern instead of a URL.
@@ -246,31 +243,28 @@ def url_unban(bot, trigger):
     'Google | www.google.com',
     online=True, vcr=True)
 @plugin.output_prefix('[url] ')
-def title_command(bot, trigger):
+def title_command(bot: SopelWrapper, trigger: Trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
     in this channel.
     """
+    result_count = 0
+
     if not trigger.group(2):
         if trigger.sender not in bot.memory['last_seen_url']:
             return
-        matched = check_callbacks(
-            bot, bot.memory['last_seen_url'][trigger.sender])
-        if matched:
-            return
-        else:
-            urls = [bot.memory['last_seen_url'][trigger.sender]]
+        urls = [bot.memory["last_seen_url"][trigger.sender]]
     else:
-        urls = list(  # needs to be a list so len() can be checked later
-            web.search_urls(
-                trigger,
-                exclusion_char=bot.config.url.exclusion_char
-            )
-        )
+        # needs to be a list so len() can be checked later
+        urls = list(web.search_urls(trigger))
 
-    result_count = 0
-    for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
-        message = '%s | %s' % (title, domain)
+    for url, title, domain, tinyurl, dispatched in process_urls(
+        bot, trigger, urls, requested=True
+    ):
+        if dispatched:
+            result_count += 1
+            continue
+        message = "%s | %s" % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         bot.reply(message)
@@ -289,7 +283,7 @@ def title_command(bot, trigger):
 
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.output_prefix('[url] ')
-def title_auto(bot, trigger):
+def title_auto(bot: SopelWrapper, trigger: Trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
     where the URL redirects to and show the title for that (or call a function
@@ -311,55 +305,68 @@ def title_auto(bot, trigger):
     urls = web.search_urls(
         trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
 
-    for url, title, domain, tinyurl in process_urls(bot, trigger, urls):
-        message = '%s | %s' % (title, domain)
-        if tinyurl:
-            message += ' ( %s )' % tinyurl
-        # Guard against responding to other instances of this bot.
-        if message != trigger:
-            bot.say(message)
-            bot.memory['last_seen_url'][trigger.sender] = url
+    for url, title, domain, tinyurl, dispatched in process_urls(bot, trigger, urls):
+        if not dispatched:
+            message = '%s | %s' % (title, domain)
+            if tinyurl:
+                message += ' ( %s )' % tinyurl
+            # Guard against responding to other instances of this bot.
+            if message != trigger:
+                bot.say(message)
+        bot.memory["last_seen_url"][trigger.sender] = url
 
 
-def process_urls(bot, trigger, urls):
+def process_urls(
+    bot: SopelWrapper, trigger: Trigger, urls: List[str], requested: bool = False
+) -> Generator[Tuple[str, str, Optional[str], Optional[str], bool], None, None]:
     """
-    For each URL in the list, ensure that it isn't handled by another plugin.
-    If not, find where it redirects to, if anywhere. If that redirected URL
-    should be handled by another plugin, dispatch the callback for it.
-    Return a list of (title, hostname) tuples for each URL which is not handled
-    by another plugin.
+    For each URL in the list, ensure it should be titled, and do so.
+
+    :param bot: Sopel instance
+    :param trigger: The trigger object for this event
+    :param urls: The URLs detected in the triggering message
+    :param requested: Whether the title was explicitly requested (vs automatic)
+
+    See if it's handled by another plugin. If not, find where it redirects to,
+    if anywhere. If that redirected URL should be handled by another plugin,
+    dispatch the callback for it. Return a list of
+    (url, title, hostname, tinyurl, dispatched) tuples for each URL.
+
+    If a callback was dispatched, only the url and dispatched=True will be set.
+
+    For titles explicitly requested by the user, exclusion_char and excludes
+    are skipped.
     """
     shorten_url_length = bot.config.url.shorten_url_length
     for url in urls:
         # Exclude URLs that start with the exclusion char
-        if url.startswith(bot.config.url.exclusion_char):
+        if not requested and url.startswith(bot.config.url.exclusion_char):
             continue
+
+        parsed_url = urlparse(url)
 
         # Check the URL does not match an existing URL callback
-        if check_callbacks(bot, url):
-            continue
+        if check_callbacks(bot, url, use_excludes=not requested):
+            yield (url, None, None, None, True)
+            return
 
         # Prevent private addresses from being queried if enable_private_resolution is False
+        # FIXME: This does nothing when an attacker knows how to host a 302
+        # FIXME: This whole concept has a TOCTOU issue
         if not bot.config.url.enable_private_resolution:
-            parsed = urlparse(url)
-            # Check if it's an address like http://192.168.1.1
             try:
-                if ipaddress.ip_address(parsed.hostname).is_private or ipaddress.ip_address(parsed.hostname).is_loopback:
-                    LOGGER.debug('Ignoring private URL: %s', url)
-                    continue
+                ips = [ip_address(parsed_url.hostname)]
             except ValueError:
-                pass
+                ips = [ip_address(ip) for ip in dns.resolver.query(parsed_url.hostname)]
 
-            # Check if domains are RFC1918 addresses if enable_dns_resolutions is set
-            if bot.config.url.enable_dns_resolution:
-                private = False
-                for result in dns.resolver.query(parsed.hostname):
-                    if ipaddress.ip_address(result).is_private or ipaddress.ip_address(parsed.hostname).is_loopback:
-                        private = True
-                        break
-                if private:
-                    LOGGER.debug('Ignoring private URL: %s', url)
-                    continue
+            private = False
+            for ip in ips:
+                if ip.is_private or ip.is_loopback:
+                    private = True
+                    break
+            if private:
+                LOGGER.debug("Ignoring private URL: %s", url)
+                continue
 
         # Call the URL to get a title, if possible
         title = find_title(url)
@@ -373,14 +380,15 @@ def process_urls(bot, trigger, urls):
         if (shorten_url_length > 0) and (len(url) > shorten_url_length):
             tinyurl = get_or_create_shorturl(bot, url)
 
-        yield (url, title, get_hostname(url), tinyurl)
+        yield (url, title, parsed_url.hostname, tinyurl, False)
 
 
-def check_callbacks(bot, url):
+def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> bool:
     """Check if ``url`` is excluded or matches any URL callback patterns.
 
     :param bot: Sopel instance
-    :param str url: URL to check
+    :param url: URL to check
+    :param use_excludes: Use or ignore the configured exclusion lists
     :return: True if ``url`` is excluded or matches any URL callback pattern
 
     This function looks at the ``bot.memory`` for ``url_exclude`` patterns and
@@ -400,16 +408,21 @@ def check_callbacks(bot, url):
 
     """
     # Check if it matches the exclusion list first
-    matched = any(regex.search(url) for regex in bot.memory['url_exclude'])
+    excluded = use_excludes and any(
+        regex.search(url) for regex in bot.memory["url_exclude"]
+    )
     return (
-        matched or
+        excluded or
         any(bot.search_url_callbacks(url)) or
         bot.rules.check_url_callback(bot, url)
     )
 
 
-def find_title(url, verify=True):
-    """Return the title for the given URL."""
+def find_title(url: str, verify: bool = True) -> Optional[str]:
+    """Return the title for the given URL.
+
+    :param verify: Whether to require a valid certificate when using https
+    """
     try:
         response = requests.get(url, stream=True, verify=verify,
                                 headers=DEFAULT_HEADERS)
@@ -447,32 +460,15 @@ def find_title(url, verify=True):
 
     title = ' '.join(title.split())  # cleanly remove multiple spaces
 
-    # More cryptic regex substitutions. This one looks to be myano's invention.
-    title = RE_DCC.sub('', title)
-
     return title or None
 
 
-def get_hostname(url):
-    idx = 7
-    if url.startswith('https://'):
-        idx = 8
-    elif url.startswith('ftp://'):
-        idx = 6
-    hostname = url[idx:]
-    slash = hostname.find('/')
-    if slash != -1:
-        hostname = hostname[:slash]
-    return hostname
-
-
-def get_or_create_shorturl(bot, url):
+def get_or_create_shorturl(bot: SopelWrapper, url: str) -> str:
     """Get or create a short URL for ``url``
 
     :param bot: Sopel instance
-    :param str url: URL to get or create a short URL for
+    :param url: URL to get or create a short URL for
     :return: A short URL
-    :rtype: str
 
     It gets the short URL for ``url`` from the bot's memory if it exists.
     Otherwise, it creates a short URL (see :func:`get_tinyurl`), stores it
@@ -488,7 +484,7 @@ def get_or_create_shorturl(bot, url):
     return tinyurl
 
 
-def get_tinyurl(url):
+def get_tinyurl(url: str) -> Optional[str]:
     """Returns a shortened tinyURL link of the URL"""
     base_url = "https://tinyurl.com/api-create.php"
     tinyurl = "%s?%s" % (base_url, web.urlencode({'url': url}))
