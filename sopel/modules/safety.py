@@ -92,10 +92,10 @@ def setup(bot: Sopel):
 
     if bot.settings.safety.default_mode is None:
         bot.settings.safety.default_mode = "on"
-    # migrate from enabled_by_default to default_mode. remove in v8.1 or v9
+    # migrate from enabled_by_default to default_mode. TODO: remove in v8.1 or v9
     if not bot.settings.safety.enabled_by_default:
         bot.settings.safety.default_mode = "off"
-        LOGGER.info(
+        LOGGER.warning(
             "config: enabled_by_default is deprecated, please use default_mode=off",
         )
 
@@ -106,7 +106,7 @@ def setup(bot: Sopel):
     for item in bot.settings.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
-    # clean up old files
+    # clean up old files. TODO: remove in v8.1 or 9
     old_file = os.path.join(bot.settings.homedir, "malwaredomains.txt")
     if os.path.exists(old_file) and os.path.isfile(old_file):
         LOGGER.info('Removing old malwaredomains file from %s', old_file)
@@ -143,7 +143,7 @@ def download_domain_list(bot: Sopel, path: str) -> bool:
     if old_etag:
         r = requests.head(url)
         if r.headers["ETag"] == old_etag and os.path.isfile(path):
-            LOGGER.debug("Unsafe domain list unchanged, skipping")
+            LOGGER.info("Unsafe domain list unchanged, skipping")
             return False
 
     r = requests.get(url, stream=True)
@@ -154,7 +154,7 @@ def download_domain_list(bot: Sopel, path: str) -> bool:
                 f.write(data)
     except Exception:
         # don't bother handling, we'll try again tomorrow
-        LOGGER.warning("Unsafe domain list download failed, using cache")
+        LOGGER.warning("Unsafe domain list download failed; using cache")
         return False
     # .new+move so we don't clobber it if the download fails in the middle
     os.rename(path + ".new", path)
@@ -457,7 +457,7 @@ def _clean_cache(bot: Sopel):
     update_local_cache(bot)
 
     if bot.memory['safety_cache_lock'].acquire(False):
-        LOGGER.info('Starting safety cache cleanup...')
+        LOGGER.debug('Starting safety cache cleanup...')
         cutoff = datetime.now(timezone.utc) - timedelta(days=7)
         try:
             # clean up by age first
@@ -481,7 +481,7 @@ def _clean_cache(bot: Sopel):
             # No matter what errors happen (or not), release the lock
             bot.memory['safety_cache_lock'].release()
 
-        LOGGER.info('Safety cache cleanup finished.')
+        LOGGER.debug('Safety cache cleanup finished.')
     else:
         LOGGER.info(
             'Skipping safety cache cleanup: Cache is locked, '
