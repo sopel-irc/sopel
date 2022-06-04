@@ -211,7 +211,7 @@ def shutdown(bot: Sopel):
 @plugin.priority('high')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def url_handler(bot: SopelWrapper, trigger: Trigger):
-    """Checks for malicious URLs"""
+    """Checks for malicious URLs."""
     mode = bot.db.get_channel_value(
         trigger.sender,
         "safety",
@@ -279,7 +279,7 @@ def virustotal_lookup(
 
     :param url: The URL to look up
     :param local_only: If set, only check cache, do not make a new request
-    :param max_cache_age: If set, don't use cache older than this value.
+    :param max_cache_age: If set, don't use cache older than this value
     :returns: A dict containing information about findings, or None if not found
     """
     if url.startswith("hxxp"):
@@ -365,7 +365,7 @@ def virustotal_lookup(
 @plugin.example(".virustotal hxxps://malware.wicar.org/")
 @plugin.output_prefix("[safety][VirusTotal] ")
 def vt_command(bot: SopelWrapper, trigger: Trigger):
-    """Look up VT results on demand"""
+    """Look up VT results on demand."""
     if not bot.settings.safety.vt_api_key:
         bot.reply("Sorry, I don't have a VirusTotal API key configured.")
         return
@@ -421,7 +421,7 @@ def vt_command(bot: SopelWrapper, trigger: Trigger):
 @plugin.example(".safety on")
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def toggle_safety(bot: SopelWrapper, trigger: Trigger):
-    """Set safety setting for channel"""
+    """Set safety setting for channel."""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
         return
