@@ -319,7 +319,7 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
             # Guard against responding to other instances of this bot.
             if message != trigger:
                 bot.say(message)
-        bot.memory['last_seen_url'][trigger.sender] = url
+        bot.memory["last_seen_url"][trigger.sender] = url
 
 
 def process_urls(
