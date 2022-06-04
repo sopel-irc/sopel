@@ -301,13 +301,13 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
         trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
 
     urls = []
+    safety_cache = bot.memory.get("safety_cache", {})
+    safety_cache_local = bot.memory.get("safety_cache_local", {})
     for url in unchecked_urls:
         # Avoid fetching known malicious links
-        if url in bot.memory.get("safety_cache", {}):
-            if bot.memory["safety_cache"][url]["positives"] > 0:
-                continue
-        hostname = urlparse(url).hostname.lower()
-        if hostname in bot.memory.get("safety_cache_local", {}):
+        if url in safety_cache and safety_cache[url]["positives"] > 0:
+            continue
+        if urlparse(url).hostname.lower() in safety_cache_local:
             continue
         urls.append(url)
 

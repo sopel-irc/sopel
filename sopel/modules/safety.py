@@ -34,6 +34,9 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[safety] '
 
+SAFETY_CACHE_KEY = "safety_cache"
+SAFETY_CACHE_LOCK_KEY = SAFETY_CACHE_KEY + "_lock"
+SAFETY_CACHE_LOCAL_KEY = SAFETY_CACHE_KEY + "_local"
 SAFETY_MODES = ["off", "local", "local strict", "on", "strict"]
 VT_API_URL = "https://www.virustotal.com/api/v3/urls"
 CACHE_LIMIT = 512
@@ -99,10 +102,10 @@ def setup(bot: Sopel):
             "config: enabled_by_default is deprecated, please use default_mode=off",
         )
 
-    if 'safety_cache' not in bot.memory:
-        bot.memory['safety_cache'] = tools.SopelMemory()
-    if 'safety_cache_lock' not in bot.memory:
-        bot.memory['safety_cache_lock'] = threading.Lock()
+    if SAFETY_CACHE_KEY not in bot.memory:
+        bot.memory[SAFETY_CACHE_KEY] = tools.SopelMemory()
+    if SAFETY_CACHE_LOCK_KEY not in bot.memory:
+        bot.memory[SAFETY_CACHE_LOCK_KEY] = threading.Lock()
     for item in bot.settings.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
@@ -195,13 +198,13 @@ def update_local_cache(bot: Sopel, init: bool = False):
             if '.' in domain:
                 # only publicly routable domains matter; skip loopback/link-local stuff
                 unsafe_domains.add(domain)
-    bot.memory["safety_cache_local"] = unsafe_domains
+    bot.memory[SAFETY_CACHE_LOCAL_KEY] = unsafe_domains
 
 
 def shutdown(bot: Sopel):
-    bot.memory.pop('safety_cache', None)
-    bot.memory.pop('safety_cache_local', None)
-    bot.memory.pop('safety_cache_lock', None)
+    bot.memory.pop(SAFETY_CACHE_KEY, None)
+    bot.memory.pop(SAFETY_CACHE_LOCAL_KEY, None)
+    bot.memory.pop(SAFETY_CACHE_LOCK_KEY, None)
 
 
 @plugin.rule(r'(?u).*(https?://\S+).*')
@@ -233,7 +236,7 @@ def url_handler(bot: SopelWrapper, trigger: Trigger):
             if any(regex.search(hostname) for regex in known_good):
                 continue  # explicitly trusted
 
-            if hostname in bot.memory["safety_cache_local"]:
+            if hostname in bot.memory[SAFETY_CACHE_LOCAL_KEY]:
                 LOGGER.debug("[local] domain in blocklist: %r", hostname)
                 positives += 1
                 total += 1
@@ -291,10 +294,10 @@ def virustotal_lookup(
     oldest_cache = datetime(1970, 1, 1, 0, 0, tzinfo=timezone.utc)
     if max_cache_age is not None:
         oldest_cache = datetime.now(timezone.utc) - max_cache_age
-    cache = bot.memory["safety_cache"]
+    cache = bot.memory[SAFETY_CACHE_KEY]
     if url in cache and cache[url]["fetched"] > oldest_cache:
         LOGGER.debug("[VirusTotal] Using cached data for %r", safe_url)
-        return bot.memory["safety_cache"].get(url)
+        return bot.memory[SAFETY_CACHE_KEY].get(url)
     if local_only:
         return None
 
@@ -351,8 +354,8 @@ def virustotal_lookup(
         "fetched": fetched,
         "virustotal_data": vt_data["data"]["attributes"],
     }
-    bot.memory["safety_cache"][url] = result
-    if len(bot.memory["safety_cache"]) >= (2 * CACHE_LIMIT):
+    bot.memory[SAFETY_CACHE_KEY][url] = result
+    if len(bot.memory[SAFETY_CACHE_KEY]) >= (2 * CACHE_LIMIT):
         _clean_cache(bot)
     return result
 
@@ -456,30 +459,30 @@ def _clean_cache(bot: Sopel):
 
     update_local_cache(bot)
 
-    if bot.memory['safety_cache_lock'].acquire(False):
+    if bot.memory[SAFETY_CACHE_LOCK_KEY].acquire(False):
         LOGGER.debug('Starting safety cache cleanup...')
         cutoff = datetime.now(timezone.utc) - timedelta(days=7)
         try:
             # clean up by age first
             old_keys = []
-            for key, data in bot.memory['safety_cache'].items():
+            for key, data in bot.memory[SAFETY_CACHE_KEY].items():
                 if data['fetched'] <= cutoff:
                     old_keys.append(key)
             for key in old_keys:
-                bot.memory['safety_cache'].pop(key, None)
+                bot.memory[SAFETY_CACHE_KEY].pop(key, None)
 
             # clean up more values if the cache is still too big
-            overage = len(bot.memory["safety_cache"]) - CACHE_LIMIT
+            overage = len(bot.memory[SAFETY_CACHE_KEY]) - CACHE_LIMIT
             if overage > 0:
                 extra_keys = sorted(
                     (data.fetched, key)
                     for (key, data)
-                    in bot.memory['safety_cache'].items())[:overage]
+                    in bot.memory[SAFETY_CACHE_KEY].items())[:overage]
                 for (_, key) in extra_keys:
-                    bot.memory['safety_cache'].pop(key, None)
+                    bot.memory[SAFETY_CACHE_KEY].pop(key, None)
         finally:
             # No matter what errors happen (or not), release the lock
-            bot.memory['safety_cache_lock'].release()
+            bot.memory[SAFETY_CACHE_LOCK_KEY].release()
 
         LOGGER.debug('Safety cache cleanup finished.')
     else:
