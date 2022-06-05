@@ -1,6 +1,7 @@
 """Tests for the ``sopel.plugins.rules`` module."""
 from __future__ import annotations
 
+import datetime
 import re
 
 import pytest
@@ -462,6 +463,31 @@ def test_manager_has_action_command_aliases():
     assert not manager.has_action_command('hi', follow_alias=False)
     assert not manager.has_action_command('unknown')
 
+
+# -----------------------------------------------------------------------------
+# tests for :class:`Manager`
+
+def test_rulemetrics():
+    now = datetime.datetime.utcnow()
+    time_window = datetime.timedelta(seconds=3600)
+    metrics = rules.RuleMetrics()
+
+    # never executed, so not limited
+    assert not metrics.is_limited(now)
+
+    # test limit while running
+    with metrics:
+        assert metrics.is_limited(now - time_window)
+        assert not metrics.is_limited(now + time_window)
+
+    # test limit after
+    assert metrics.is_limited(now - time_window)
+    assert not metrics.is_limited(now + time_window)
+
+    # test with NO LIMIT on the return value
+    metrics.set_return_value(rules.IGNORE_RATE_LIMIT)
+    assert not metrics.is_limited(now - time_window)
+    assert not metrics.is_limited(now + time_window)
 
 # -----------------------------------------------------------------------------
 # tests for :class:`Rule`
@@ -1488,6 +1514,7 @@ def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
         rate_limit=20,
         global_rate_limit=20,
         channel_rate_limit=20,
+        threaded=False,  # make sure there is no race-condition here
     )
     assert rule.is_rate_limited(mocktrigger.nick) is False
     assert rule.is_channel_rate_limited(mocktrigger.sender) is False
