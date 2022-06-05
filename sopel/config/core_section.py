@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ssl import TLSVersion
+
 from sopel.config.types import (
     BooleanAttribute,
     ChoiceAttribute,
@@ -19,6 +21,20 @@ COMMAND_DEFAULT_HELP_PREFIX = '.'
 """Default help prefix used in commands' usage messages."""
 URL_DEFAULT_SCHEMES = ['http', 'https', 'ftp']
 """Default URL schemes allowed for URLs."""
+
+
+def _parse_ssl_version(var: str) -> TLSVersion:
+    """Parse an ssl_version config variable.
+
+    :param var: The input string, e.g. "TLSv1_3".
+    :return: The TLSVersion object for that version.
+    """
+    try:
+        return TLSVersion[var]
+    except KeyError:
+        raise ValueError(
+            "'{}' is not a valid TLSVersion. Try e.g. TLSv1_3'".format(var)
+        )
 
 
 def configure(config):
@@ -1184,6 +1200,75 @@ class CoreSection(StaticSection):
 
         So for a timeout of 120s it's a PING every 54s. For a timeout of 250s
         it's a PING every 112.5s.
+
+    """
+
+    ssl_ciphers = ListAttribute(
+        'ssl_ciphers',
+        default=[
+            "ECDHE-ECDSA-AES128-GCM-SHA256",
+            "ECDHE-RSA-AES128-GCM-SHA256",
+            "ECDHE-ECDSA-AES256-GCM-SHA384",
+            "ECDHE-RSA-AES256-GCM-SHA384",
+            "ECDHE-ECDSA-CHACHA20-POLY1305",
+            "ECDHE-RSA-CHACHA20-POLY1305",
+            "DHE-RSA-AES128-GCM-SHA256",
+            "DHE-RSA-AES256-GCM-SHA384",
+        ],
+    )
+    """The cipher suites enabled for SSL/TLS connections.
+
+    :default: ``ECDHE-ECDSA-AES128-GCM-SHA256
+                ECDHE-RSA-AES128-GCM-SHA256
+                ECDHE-ECDSA-AES256-GCM-SHA384
+                ECDHE-RSA-AES256-GCM-SHA384
+                ECDHE-ECDSA-CHACHA20-POLY1305
+                ECDHE-RSA-CHACHA20-POLY1305
+                DHE-RSA-AES128-GCM-SHA256
+                DHE-RSA-AES256-GCM-SHA384``
+
+    The default is the `Mozilla Intermediate configuration`__ as of February
+    2022. This parameter is in OpenSSL format; see the `ciphers manual page`__
+    for your version. This setting cannot be used to configure TLS 1.3.
+
+    .. __: https://wiki.mozilla.org/Security/Server_Side_TLS
+    .. __: https://www.openssl.org/docs/manmaster/man1/ciphers.html
+
+    .. code-block:: ini
+
+        ssl_ciphers =
+            ECDSA+AES256
+            !SHA1
+
+    .. note::
+
+        Cipher selection is also subject to the available SSL/TLS versions;
+        see :attr:`ssl_minimum_version`.
+
+    """
+
+    ssl_minimum_version = ValidatedAttribute(
+        'ssl_minimum_version',
+        default=TLSVersion.TLSv1_2,
+        parse=_parse_ssl_version,
+        serialize=lambda ver: ver.name,
+    )
+    """The minimum version allowed for SSL/TLS connections.
+
+    :default: ``TLSv1_2``
+
+    You should not set this lower than the default unless the server does not
+    support modern versions. Set this to a :class:`~ssl.TLSVersion` value,
+    e.g. ``TLSv1`` or ``TLSv1_3``.
+
+    .. code-block:: ini
+
+        ssl_minimum_version = TLSv1_3
+
+    .. note::
+
+        To use insecure SSL/TLS versions, you may also need to enable
+        insecure cipher suites. See :attr:`ssl_ciphers`.
 
     """
 

@@ -231,6 +231,8 @@ class AbstractBot(abc.ABC):
             keyfile=self.settings.core.client_cert_file,
             verify_ssl=self.settings.core.verify_ssl,
             ca_certs=self.settings.core.ca_certs,
+            ssl_ciphers=self.settings.core.ssl_ciphers,
+            ssl_minimum_version=self.settings.core.ssl_minimum_version,
         )
 
     def run(self, host: str, port: int = 6667) -> None:
