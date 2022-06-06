@@ -24,13 +24,19 @@ import itertools
 import logging
 import re
 import threading
-from typing import Generator, Iterable, Optional, Type, TypeVar
+import typing
 from urllib.parse import urlparse
 
 
 from sopel import tools
 from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
+
+
+if typing.TYPE_CHECKING:
+    from typing import Any, Dict, Generator, Iterable, Optional, Type
+
+    from sopel.tools.identifiers import Identifier
 
 
 __all__ = [
@@ -44,7 +50,7 @@ __all__ = [
     'URLCallback',
 ]
 
-TypedRule = TypeVar('TypedRule', bound='AbstractRule')
+TypedRule = typing.TypeVar('TypedRule', bound='AbstractRule')
 
 LOGGER = logging.getLogger(__name__)
 
@@ -443,6 +449,57 @@ class Manager:
             for plugin_rules in self._url_callbacks.values()
             for rule in plugin_rules
         )
+
+
+class RuleMetrics:
+    """Tracker of a rule's usage."""
+    def __init__(self) -> None:
+        self.started_at: Optional[datetime.datetime] = None
+        self.ended_at: Optional[datetime.datetime] = None
+        self.last_return_value: Any = None
+
+    def start(self) -> None:
+        """Record a starting time (before execution)."""
+        self.started_at = datetime.datetime.utcnow()
+
+    def end(self) -> None:
+        """Record a ending time (after execution)."""
+        self.ended_at = datetime.datetime.utcnow()
+
+    def set_return_value(self, value: Any) -> None:
+        """Set the last return value of a rule."""
+        self.last_return_value = value
+
+    def is_limited(
+        self,
+        time_limit: datetime.datetime,
+    ) -> bool:
+        """Determine if the rule hits the time limit."""
+        if not self.started_at and not self.ended_at:
+            # not even started, so not limited
+            return False
+
+        # detect if we just started something or if it ended
+        last_time = self.started_at
+        if self.ended_at and self.started_at < self.ended_at:
+            last_time = self.ended_at
+            # since it ended, check the return value
+            if self.last_return_value == IGNORE_RATE_LIMIT:
+                return False
+
+        return last_time > time_limit
+
+    def __enter__(self) -> RuleMetrics:
+        self.start()
+        return self
+
+    def __exit__(
+        self,
+        type: Optional[Any] = None,
+        value: Optional[Any] = None,
+        traceback: Optional[Any] = None,
+    ) -> None:
+        self.end()
 
 
 class AbstractRule(abc.ABC):
@@ -900,9 +957,9 @@ class Rule(AbstractRule):
         self._global_rate_limit = global_rate_limit
 
         # metrics
-        self._metrics_nick = {}
-        self._metrics_sender = {}
-        self._metrics_global = None
+        self._metrics_nick: Dict[Identifier, RuleMetrics] = {}
+        self._metrics_sender: Dict[Identifier, RuleMetrics] = {}
+        self._metrics_global = RuleMetrics()
 
         # docs & tests
         self._usages = usages or tuple()
@@ -1030,56 +1087,37 @@ class Rule(AbstractRule):
         return self._unblockable
 
     def is_rate_limited(self, nick):
-        metrics = self._metrics_nick.get(nick)
-        if metrics is None:
-            return False
-        last_usage_at, exit_code = metrics
-
-        if exit_code == IGNORE_RATE_LIMIT:
-            return False
-
+        metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
         now = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._rate_limit)
-        return (now - last_usage_at) <= rate_limit
+        return metrics.is_limited(now - rate_limit)
 
     def is_channel_rate_limited(self, channel):
-        metrics = self._metrics_sender.get(channel)
-        if metrics is None:
-            return False
-        last_usage_at, exit_code = metrics
-
-        if exit_code == IGNORE_RATE_LIMIT:
-            return False
-
+        metrics: RuleMetrics = self._metrics_sender.get(channel, RuleMetrics())
         now = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._channel_rate_limit)
-        return (now - last_usage_at) <= rate_limit
+        return metrics.is_limited(now - rate_limit)
 
     def is_global_rate_limited(self):
-        metrics = self._metrics_global
-        if metrics is None:
-            return False
-        last_usage_at, exit_code = metrics
-
-        if exit_code == IGNORE_RATE_LIMIT:
-            return False
-
         now = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
-        return (now - last_usage_at) <= rate_limit
+        return self._metrics_global.is_limited(now - rate_limit)
 
     def execute(self, bot, trigger):
         if not self._handler:
             raise RuntimeError('Improperly configured rule: no handler')
 
-        # execute the handler
-        exit_code = self._handler(bot, trigger)
+        user_metrics: RuleMetrics = self._metrics_nick.setdefault(
+            trigger.nick, RuleMetrics())
+        sender_metrics: RuleMetrics = self._metrics_sender.setdefault(
+            trigger.sender, RuleMetrics())
 
-        # register metrics
-        now = datetime.datetime.utcnow()
-        self._metrics_nick[trigger.nick] = (now, exit_code)
-        self._metrics_sender[trigger.sender] = (now, exit_code)
-        self._metrics_global = (now, exit_code)
+        # execute the handler
+        with user_metrics, sender_metrics, self._metrics_global:
+            exit_code = self._handler(bot, trigger)
+            user_metrics.set_return_value(exit_code)
+            sender_metrics.set_return_value(exit_code)
+            self._metrics_global.set_return_value(exit_code)
 
         # return exit code
         return exit_code

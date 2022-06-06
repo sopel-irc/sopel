@@ -654,7 +654,9 @@ def test_call_rule_rate_limited_user(mockbot):
         plugin='testplugin',
         label='testrule',
         handler=testrule,
-        rate_limit=100)
+        rate_limit=100,
+        threaded=False,
+    )
 
     # trigger
     line = ':Test!test@example.com PRIVMSG #channel :hello'
