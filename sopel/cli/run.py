@@ -26,16 +26,6 @@ if sys.version_info < (3, 7):
     tools.stderr('Error: Sopel requires Python 3.7+.')
     sys.exit(1)
 
-# Py3.7 EOL: https://www.python.org/dev/peps/pep-0537/#and-beyond-schedule
-if sys.version_info < (3, 8):
-    # TODO check this warning before releasing Sopel 8.0
-    print(
-        'Warning: Python 3.7 will reach end of life by June 2022 '
-        'and will receive no further updates. '
-        'Sopel 9.0 will drop support for it.',
-        file=sys.stderr,
-    )
-
 LOGGER = logging.getLogger(__name__)
 
 ERR_CODE = 1
