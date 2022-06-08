@@ -3,6 +3,7 @@ flake8
 flake8-coding
 flake8-future-import
 flake8-import-order
+flake8-type-checking; python_version >= '3.8'
 furo==2022.4.7  # Sphinx theme
 pytest~=6.2.5
 pytest-vcr~=1.0.2

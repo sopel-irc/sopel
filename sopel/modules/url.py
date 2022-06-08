@@ -13,7 +13,7 @@ from __future__ import annotations
 from ipaddress import ip_address
 import logging
 import re
-from typing import TYPE_CHECKING
+from typing import Generator, List, Optional, Tuple, TYPE_CHECKING
 from urllib.parse import urlparse
 
 import dns.resolver
@@ -25,11 +25,10 @@ from sopel.config import types
 from sopel.tools import web
 
 if TYPE_CHECKING:
-    from typing import Generator, List, Optional, Tuple
-
     from sopel.bot import Sopel, SopelWrapper
     from sopel.config import Config
     from sopel.trigger import Trigger
+
 
 LOGGER = logging.getLogger(__name__)
 USER_AGENT = (
