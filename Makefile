@@ -3,7 +3,7 @@ qa: quality test coverages
 
 .PHONY: quality mypy
 quality:
-	./checkstyle.sh
+	flake8
 
 mypy:
 	mypy sopel
