@@ -7,75 +7,110 @@ This plugin uses virustotal.com
 """
 from __future__ import annotations
 
+from base64 import urlsafe_b64encode
+from datetime import datetime, timedelta, timezone
 import json
 import logging
 import os.path
 import re
 import threading
-import time
-from urllib.parse import urlparse
-from urllib.request import urlretrieve
-
+from time import sleep
+from typing import TYPE_CHECKING
+from urllib.parse import urlparse, urlunparse
 
 import requests
 
-from sopel import formatting, plugin, tools
+from sopel import plugin, tools
 from sopel.config import types
+from sopel.formatting import bold, color, colors
 
+if TYPE_CHECKING:
+    from typing import Dict, Optional
+
+    from sopel.bot import Sopel, SopelWrapper
+    from sopel.config import Config
+    from sopel.trigger import Trigger
 
 LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[safety] '
 
-vt_base_api_url = 'https://www.virustotal.com/vtapi/v2/url/'
-malware_domains = set()
+SAFETY_CACHE_KEY = "safety_cache"
+SAFETY_CACHE_LOCK_KEY = SAFETY_CACHE_KEY + "_lock"
+SAFETY_CACHE_LOCAL_KEY = SAFETY_CACHE_KEY + "_local"
+SAFETY_MODES = ["off", "local", "local strict", "on", "strict"]
+VT_API_URL = "https://www.virustotal.com/api/v3/urls"
+CACHE_LIMIT = 512
 known_good = []
-cache_limit = 512
 
 
 class SafetySection(types.StaticSection):
-    enabled_by_default = types.BooleanAttribute('enabled_by_default', default=True)
-    """Whether to enable URL safety in all channels where it isn't explicitly disabled."""
+    enabled_by_default = types.BooleanAttribute("enabled_by_default", default=True)
+    """Deprecated: Sets default_mode to "off" or "on"."""
+    default_mode = types.ValidatedAttribute("default_mode")
+    """Which mode to use in channels without a mode set."""
     known_good = types.ListAttribute('known_good')
-    """List of "known good" domains to ignore."""
+    """List of "known good" domains or regexes to consider trusted."""
     vt_api_key = types.ValidatedAttribute('vt_api_key')
     """Optional VirusTotal API key (improves malicious URL detection)."""
+    domain_blocklist_url = types.ValidatedAttribute("domain_blocklist_url")
+    """Optional hosts-file formatted domain blocklist to use instead of StevenBlack's."""
 
 
-def configure(config):
+def configure(settings: Config):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | enabled\\_by\\_default | True | Enable URL safety in all channels where it isn't explicitly disabled. |
-    | known\\_good | sopel.chat,dftba.net | List of "known good" domains to ignore. |
+    | default\\_mode | on | Which mode to use in channels without a mode set. |
+    | known\\_good | sopel.chat,dftba.net | List of "known good" domains or regexes to consider trusted. This can save VT API calls. |
     | vt\\_api\\_key | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef | Optional VirusTotal API key to improve malicious URL detection |
+    | domain\\_blocklist\\_url | https://example.com/bad-hosts.txt | Optional hosts-file formatted domain blocklist to use instead of StevenBlack's. |
     """
-    config.define_section('safety', SafetySection)
-    config.safety.configure_setting(
-        'enabled_by_default',
-        "Enable URL safety in channels that don't specifically disable it?",
+    settings.define_section("safety", SafetySection)
+    settings.safety.configure_setting(
+        "default_mode",
+        (
+            "Which mode should be used in channels that haven't specifically set one?"
+            "\n({})".format("/".join(SAFETY_MODES))
+        ),
+        default="on",
     )
-    config.safety.configure_setting(
+    settings.safety.configure_setting(
         'known_good',
-        'Enter any domains to whitelist',
+        "Enter any domains or regexes to consider trusted",
     )
-    config.safety.configure_setting(
+    settings.safety.configure_setting(
         'vt_api_key',
         "Optionally, enter a VirusTotal API key to improve malicious URL "
-        "protection.\nOtherwise, only the StevenBlack list will be used."
+        "protection.\nOtherwise, only the configured hosts list will be used.",
+    )
+    settings.safety.configure_setting(
+        "domain_blocklist_url",
+        "Optionally, provide the URL for a hosts-file formatted domain "
+        "blocklist to use instead of StevenBlack's.",
     )
 
 
-def setup(bot):
-    bot.config.define_section('safety', SafetySection)
+def setup(bot: Sopel):
+    bot.settings.define_section("safety", SafetySection)
 
-    if 'safety_cache' not in bot.memory:
-        bot.memory['safety_cache'] = tools.SopelMemory()
-    if 'safety_cache_lock' not in bot.memory:
-        bot.memory['safety_cache_lock'] = threading.Lock()
-    for item in bot.config.safety.known_good:
+    if bot.settings.safety.default_mode is None:
+        bot.settings.safety.default_mode = "on"
+    # migrate from enabled_by_default to default_mode. TODO: remove in v8.1 or v9
+    if not bot.settings.safety.enabled_by_default:
+        bot.settings.safety.default_mode = "off"
+        LOGGER.warning(
+            "config: enabled_by_default is deprecated, please use default_mode=off",
+        )
+
+    if SAFETY_CACHE_KEY not in bot.memory:
+        bot.memory[SAFETY_CACHE_KEY] = tools.SopelMemory()
+    if SAFETY_CACHE_LOCK_KEY not in bot.memory:
+        bot.memory[SAFETY_CACHE_LOCK_KEY] = threading.Lock()
+    for item in bot.settings.safety.known_good:
         known_good.append(re.compile(item, re.I))
 
-    old_file = os.path.join(bot.config.homedir, 'malwaredomains.txt')
+    # clean up old files. TODO: remove in v8.1 or 9
+    old_file = os.path.join(bot.settings.homedir, "malwaredomains.txt")
     if os.path.exists(old_file) and os.path.isfile(old_file):
         LOGGER.info('Removing old malwaredomains file from %s', old_file)
         try:
@@ -85,14 +120,68 @@ def setup(bot):
             # Python on Windows throws an exception if the file is in use
             LOGGER.info('Could not delete %s: %s', old_file, str(err))
 
-    loc = os.path.join(bot.config.homedir, 'unsafedomains.txt')
-    if os.path.isfile(loc):
-        if os.path.getmtime(loc) < time.time() - 24 * 60 * 60:
-            # File exists but older than one day — update it
-            _download_domain_list(loc)
-    else:
-        _download_domain_list(loc)
-    with open(loc, 'r') as f:
+    update_local_cache(bot, init=True)
+
+
+def safeify_url(url: str) -> str:
+    """Replace bits of a URL to make it hard to browse to."""
+    parts = urlparse(url)
+    scheme = "hxx" + parts.scheme[3:]  # hxxp
+    netloc = parts.netloc.replace(".", "[.]")  # google[.]com and IPv4
+    netloc = netloc.replace(":", "[:]")  # IPv6 addresses (bad lazy method)
+    return urlunparse((scheme, netloc) + parts[2:])
+
+
+def download_domain_list(bot: Sopel, path: str) -> bool:
+    """Download the current unsafe domain list.
+
+    :param path: Where to save the unsafe domain list
+    :returns: True if the list was updated
+    """
+    url = bot.settings.safety.domain_blocklist_url
+    if url is None or not url.startswith("http"):
+        url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+    LOGGER.info("Downloading unsafe domain list from %s", url)
+    old_etag = bot.db.get_plugin_value("safety", "unsafe_domain_list_etag")
+    if old_etag:
+        r = requests.head(url)
+        if r.headers["ETag"] == old_etag and os.path.isfile(path):
+            LOGGER.info("Unsafe domain list unchanged, skipping")
+            return False
+
+    r = requests.get(url, stream=True)
+    try:
+        r.raise_for_status()
+        with open(path + ".new", "wb") as f:
+            for data in r.iter_content(None):
+                f.write(data)
+    except Exception:
+        # don't bother handling, we'll try again tomorrow
+        LOGGER.warning("Unsafe domain list download failed; using cache")
+        return False
+    # .new+move so we don't clobber it if the download fails in the middle
+    os.rename(path + ".new", path)
+    bot.db.set_plugin_value("safety", "unsafe_domain_list_etag", r.headers.get("etag"))
+    return True
+
+
+def update_local_cache(bot: Sopel, init: bool = False):
+    """Download the current malware domain list and load it into memory.
+
+    :param init: Load the file even if it's unchanged
+    """
+    path = os.path.join(bot.settings.homedir, "unsafedomains.txt")
+    updated = download_domain_list(bot, path)
+    if not os.path.isfile(path):
+        LOGGER.warning("Could not load unsafe domain list")
+        return
+
+    if not updated and not init:
+        return
+
+    LOGGER.debug("Loading new unsafe domain list")
+    unsafe_domains = set()
+    with open(path, "r") as f:
         for line in f:
             clean_line = str(line).strip().lower()
             if not clean_line or clean_line[0] == '#':
@@ -108,157 +197,294 @@ def setup(bot):
 
             if '.' in domain:
                 # only publicly routable domains matter; skip loopback/link-local stuff
-                malware_domains.add(domain)
+                unsafe_domains.add(domain)
+    bot.memory[SAFETY_CACHE_LOCAL_KEY] = unsafe_domains
 
 
-def shutdown(bot):
-    bot.memory.pop('safety_cache', None)
-    bot.memory.pop('safety_cache_lock', None)
-
-
-def _download_domain_list(path):
-    url = 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts'
-    LOGGER.info('Downloading malicious domain list from %s', url)
-    urlretrieve(url, path)
+def shutdown(bot: Sopel):
+    bot.memory.pop(SAFETY_CACHE_KEY, None)
+    bot.memory.pop(SAFETY_CACHE_LOCAL_KEY, None)
+    bot.memory.pop(SAFETY_CACHE_LOCK_KEY, None)
 
 
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.priority('high')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def url_handler(bot, trigger):
-    """Checks for malicious URLs"""
-    check = True    # Enable URL checking
-    strict = False  # Strict mode: kick on malicious URL
-    positives = 0   # Number of engines saying it's malicious
-    total = 0       # Number of total engines
-    use_vt = True   # Use VirusTotal
-    check = bot.config.safety.enabled_by_default
-    if check is None:
-        # If not set, assume default
-        check = True
-    # DB overrides config:
-    setting = bot.db.get_channel_value(trigger.sender, 'safety')
-    if setting is not None:
-        if setting == 'off':
-            return  # Not checking
-        elif setting in ['on', 'strict', 'local', 'local strict']:
-            check = True
-        if setting == 'strict' or setting == 'local strict':
-            strict = True
-        if setting == 'local' or setting == 'local strict':
-            use_vt = False
+def url_handler(bot: SopelWrapper, trigger: Trigger):
+    """Checks for malicious URLs."""
+    mode = bot.db.get_channel_value(
+        trigger.sender,
+        "safety",
+        bot.settings.safety.default_mode,
+    )
+    if mode == "off":
+        return
+    local_only = "local" in mode or bot.settings.safety.vt_api_key is None
+    strict = "strict" in mode
 
-    if not check:
-        return  # Not overridden by DB, configured default off
+    for url in tools.web.search_urls(trigger):
+        safe_url = safeify_url(url)
 
-    try:
-        netloc = urlparse(trigger.group(1)).netloc
-    except ValueError:
-        return  # Invalid IPv6 URL
+        positives = 0  # Number of engines saying it's malicious
+        total = 0  # Number of total engines
 
-    if any(regex.search(netloc) for regex in known_good):
-        return  # Whitelisted
+        try:
+            hostname = urlparse(url).hostname.lower()
+        except ValueError:
+            pass  # Invalid address
+        else:
+            if any(regex.search(hostname) for regex in known_good):
+                continue  # explicitly trusted
 
-    apikey = bot.config.safety.vt_api_key
-    try:
-        if apikey is not None and use_vt:
-            payload = {'resource': str(trigger),
-                       'apikey': apikey,
-                       'scan': '1'}
+            if hostname in bot.memory[SAFETY_CACHE_LOCAL_KEY]:
+                LOGGER.debug("[local] domain in blocklist: %r", hostname)
+                positives += 1
+                total += 1
 
-            if trigger not in bot.memory['safety_cache']:
-                r = requests.post(vt_base_api_url + 'report', data=payload)
-                r.raise_for_status()
-                result = r.json()
-                fetched = time.time()
-                if all(k in result for k in ['positives', 'total']):
-                    # cache result only if it contains a scan report
-                    # TODO: handle checking back for results from queued scans
-                    data = {'positives': result['positives'],
-                            'total': result['total'],
-                            'fetched': fetched}
-                    bot.memory['safety_cache'][trigger] = data
-                    if len(bot.memory['safety_cache']) >= (2 * cache_limit):
-                        _clean_cache(bot)
-            else:
-                LOGGER.debug('using cache')
-                result = bot.memory['safety_cache'][trigger]
-            positives = result.get('positives', 0)
-            total = result.get('total', 0)
-    except requests.exceptions.RequestException:
-        # Ignoring exceptions with VT so domain list will always work
-        LOGGER.debug('[VirusTotal] Error obtaining response.', exc_info=True)
-    except json.JSONDecodeError:
-        # Ignoring exceptions with VT so domain list will always work
-        LOGGER.debug('[VirusTotal] Malformed response (invalid JSON).', exc_info=True)
+        result = virustotal_lookup(bot, url, local_only=local_only)
+        if result:
+            positives += result["positives"]
+            total += result["total"]
 
-    if str(netloc).lower() in malware_domains:
-        positives += 1
-        total += 1
+        if positives >= 1:
+            # Possibly malicious URL detected!
+            LOGGER.info(
+                "Possibly malicious link (%s/%s) posted in %s by %s: %r",
+                positives,
+                total,
+                trigger.sender,
+                trigger.nick,
+                safe_url,
+            )
+            bot.say(
+                "{} {} of {} engine{} flagged a link {} posted as malicious".format(
+                    bold(color("WARNING:", colors.RED)),
+                    positives,
+                    total,
+                    "" if total == 1 else "s",
+                    bold(trigger.nick),
+                )
+            )
+            if strict:
+                bot.kick(trigger.nick, trigger.sender, "Posted a malicious link")
 
-    if positives >= 1:
-        # Possibly malicious URL detected!
-        confidence = '{}%'.format(round((positives / total) * 100))
-        msg = (
-            'link posted by %s is possibly malicious '
-            % formatting.bold(trigger.nick)
+
+def virustotal_lookup(
+    bot: SopelWrapper,
+    url: str,
+    local_only: bool = False,
+    max_cache_age: Optional[timedelta] = None,
+) -> Optional[Dict]:
+    """Check VirusTotal for flags on a URL as malicious.
+
+    :param url: The URL to look up
+    :param local_only: If set, only check cache, do not make a new request
+    :param max_cache_age: If set, don't use cache older than this value
+    :returns: A dict containing information about findings, or None if not found
+    """
+    if url.startswith("hxxp"):
+        url = "htt" + url[3:]
+    elif not url.startswith("http"):
+        # VT only does http/https URLs
+        return None
+
+    safe_url = safeify_url(url)
+
+    # default: use any cache available
+    oldest_cache = datetime(1970, 1, 1, 0, 0, tzinfo=timezone.utc)
+    if max_cache_age is not None:
+        oldest_cache = datetime.now(timezone.utc) - max_cache_age
+    cache = bot.memory[SAFETY_CACHE_KEY]
+    if url in cache and cache[url]["fetched"] > oldest_cache:
+        LOGGER.debug("[VirusTotal] Using cached data for %r", safe_url)
+        return bot.memory[SAFETY_CACHE_KEY].get(url)
+    if local_only:
+        return None
+
+    LOGGER.debug("[VirusTotal] Looking up %r", safe_url)
+    url_id = urlsafe_b64encode(url.encode("utf-8")).rstrip(b"=").decode("ascii")
+    attempts = 5
+    requested = False
+    while attempts > 0:
+        attempts -= 1
+        try:
+            r = requests.get(
+                VT_API_URL + "/" + url_id,
+                headers={"x-apikey": bot.settings.safety.vt_api_key},
+            )
+            if r.status_code == 200:
+                vt_data = r.json()
+                last_analysis = vt_data["data"]["attributes"]["last_analysis_stats"]
+                # VT returns 200s for recent submissions before scan results are in...
+                if not requested or sum(last_analysis.values()) > 0:
+                    break
+            elif not requested and r.status_code == 404:
+                # Not analyzed - submit new
+                LOGGER.debug("[VirusTotal] No scan for %r, requesting", safe_url)
+                requests.post(
+                    VT_API_URL,
+                    data={"url": url},
+                    headers={"x-apikey": bot.settings.safety.vt_api_key},
+                )
+                requested = True
+                sleep(2)  # Scans seem to take ~5s minimum, so add 2s
+        except requests.exceptions.RequestException:
+            # Ignoring exceptions with VT so domain list will always work
+            LOGGER.debug(
+                "[VirusTotal] Error obtaining response for %r", safe_url, exc_info=True
+            )
+            return None
+        except json.JSONDecodeError:
+            # Ignoring exceptions with VT so domain list will always work
+            LOGGER.debug(
+                "[VirusTotal] Malformed response (invalid JSON) for %r",
+                safe_url,
+                exc_info=True,
+            )
+            return None
+        sleep(3)
+    else:  # Still no results
+        LOGGER.debug("[VirusTotal] Scan failed or unfinished for %r", safe_url)
+        return None
+    fetched = datetime.now(timezone.utc)
+    # Only count strong opinions (ignore suspicious/timeout/undetected)
+    result = {
+        "positives": last_analysis["malicious"],
+        "total": last_analysis["malicious"] + last_analysis["harmless"],
+        "fetched": fetched,
+        "virustotal_data": vt_data["data"]["attributes"],
+    }
+    bot.memory[SAFETY_CACHE_KEY][url] = result
+    if len(bot.memory[SAFETY_CACHE_KEY]) >= (2 * CACHE_LIMIT):
+        _clean_cache(bot)
+    return result
+
+
+@plugin.command("virustotal")
+@plugin.example(".virustotal https://malware.wicar.org/")
+@plugin.example(".virustotal hxxps://malware.wicar.org/")
+@plugin.output_prefix("[safety][VirusTotal] ")
+def vt_command(bot: SopelWrapper, trigger: Trigger):
+    """Look up VT results on demand."""
+    if not bot.settings.safety.vt_api_key:
+        bot.reply("Sorry, I don't have a VirusTotal API key configured.")
+        return
+
+    url = trigger.group(2)
+    safe_url = safeify_url(url)
+
+    result = virustotal_lookup(bot, url, max_cache_age=timedelta(minutes=1))
+    if not result:
+        bot.reply("Sorry, an error occurred while looking that up.")
+        return
+
+    analysis = result["virustotal_data"]["last_analysis_stats"]
+
+    result_types = {
+        "malicious": colors.RED,
+        "suspicious": colors.YELLOW,
+        "harmless": colors.GREEN,
+        "undetected": colors.GREY,
+    }
+    result_strs = []
+    for result_type, result_color in result_types.items():
+        if analysis[result_type] == 0:
+            result_strs.append("0 " + result_type)
+        else:
+            result_strs.append(
+                bold(
+                    color(str(analysis[result_type]) + " " + result_type, result_color)
+                )
+            )
+    results_str = ", ".join(result_strs)
+
+    vt_scan_time = datetime.fromtimestamp(
+        result["virustotal_data"]["last_analysis_date"],
+        timezone.utc,
+    )
+    bot.reply(
+        "Results: {} at {} for {}".format(
+            results_str,
+            tools.time.format_time(
+                bot.db,
+                bot.config,
+                nick=trigger.nick,
+                channel=trigger.sender,
+                time=vt_scan_time,
+            ),
+            safe_url,
         )
-        msg += '(confidence %s - %s/%s)' % (confidence, positives, total)
-        warning = formatting.bold(formatting.color('WARNING:', 'red'))
-        bot.say(warning + ' ' + msg)
-        if strict:
-            bot.kick(trigger.nick, trigger.sender, 'Posted a malicious link')
+    )
 
 
 @plugin.command('safety')
+@plugin.example(".safety on")
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def toggle_safety(bot, trigger):
-    """Set safety setting for channel"""
+def toggle_safety(bot: SopelWrapper, trigger: Trigger):
+    """Set safety setting for channel."""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
         return
-    allowed_states = ['strict', 'on', 'off', 'local', 'local strict']
-    if not trigger.group(2) or trigger.group(2).lower() not in allowed_states:
-        options = ' / '.join(allowed_states)
-        bot.reply('Available options: %s' % options)
+
+    new_mode = None
+    if trigger.group(2):
+        new_mode = trigger.group(2).lower()
+
+    if not new_mode or (new_mode != "default" and new_mode not in SAFETY_MODES):
+        bot.reply(
+            "Current mode: {}. Available modes: {}, or default ({})".format(
+                bot.db.get_channel_value(
+                    trigger.sender,
+                    "safety",
+                    "default",
+                ),
+                ", ".join(SAFETY_MODES),
+                bot.settings.safety.default_mode,
+            )
+        )
         return
 
-    channel = trigger.sender.lower()
-    bot.db.set_channel_value(channel, 'safety', trigger.group(2).lower())
-    bot.say('Safety is now set to "%s" on this channel' % trigger.group(2))
+    if new_mode == "default":
+        bot.db.delete_channel_value(trigger.sender, "safety")
+    else:
+        bot.db.set_channel_value(trigger.sender, "safety", new_mode)
+    bot.say('Safety is now set to "%s" for this channel' % new_mode)
 
 
 # Clean the cache every day
 # Code above also calls this if there are too many cache entries
 @plugin.interval(24 * 60 * 60)
-def _clean_cache(bot):
+def _clean_cache(bot: Sopel):
     """Cleans up old entries in URL safety cache."""
-    if bot.memory['safety_cache_lock'].acquire(False):
-        LOGGER.info('Starting safety cache cleanup...')
+
+    update_local_cache(bot)
+
+    if bot.memory[SAFETY_CACHE_LOCK_KEY].acquire(False):
+        LOGGER.debug('Starting safety cache cleanup...')
+        cutoff = datetime.now(timezone.utc) - timedelta(days=7)
         try:
             # clean up by age first
-            cutoff = time.time() - (7 * 24 * 60 * 60)  # 7 days ago
             old_keys = []
-            for key, data in bot.memory['safety_cache'].items():
+            for key, data in bot.memory[SAFETY_CACHE_KEY].items():
                 if data['fetched'] <= cutoff:
                     old_keys.append(key)
             for key in old_keys:
-                bot.memory['safety_cache'].pop(key, None)
+                bot.memory[SAFETY_CACHE_KEY].pop(key, None)
 
             # clean up more values if the cache is still too big
-            overage = len(bot.memory['safety_cache']) - cache_limit
+            overage = len(bot.memory[SAFETY_CACHE_KEY]) - CACHE_LIMIT
             if overage > 0:
                 extra_keys = sorted(
                     (data.fetched, key)
                     for (key, data)
-                    in bot.memory['safety_cache'].items())[:overage]
+                    in bot.memory[SAFETY_CACHE_KEY].items())[:overage]
                 for (_, key) in extra_keys:
-                    bot.memory['safety_cache'].pop(key, None)
+                    bot.memory[SAFETY_CACHE_KEY].pop(key, None)
         finally:
             # No matter what errors happen (or not), release the lock
-            bot.memory['safety_cache_lock'].release()
+            bot.memory[SAFETY_CACHE_LOCK_KEY].release()
 
-        LOGGER.info('Safety cache cleanup finished.')
+        LOGGER.debug('Safety cache cleanup finished.')
     else:
         LOGGER.info(
             'Skipping safety cache cleanup: Cache is locked, '
