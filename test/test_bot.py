@@ -1,8 +1,9 @@
 """Tests for core ``sopel.bot`` module"""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import re
+import typing
 
 import pytest
 
@@ -10,6 +11,12 @@ from sopel import bot, loader, plugin, plugins, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 from sopel.tools import Identifier, SopelMemory, target
+
+
+if typing.TYPE_CHECKING:
+    from sopel.config import Config
+    from sopel.tests.factories import BotFactory, IRCFactory, UserFactory
+    from sopel.tests.mocks import MockIRCServer
 
 
 TMP_CONFIG = """
@@ -1174,6 +1181,9 @@ def test_manual_url_callback_not_found(tmpconfig):
     assert not results, "Manually registered callback must not be found"
 
 
+# -----------------------------------------------------------------------------
+# Test various message handling
+
 def test_ignore_replay_servertime(mockbot):
     """Test ignoring messages sent before bot joined a channel."""
     @plugin.rule("$nickname!")
@@ -1201,3 +1211,30 @@ def test_ignore_replay_servertime(mockbot):
         "@time=2021-06-01T12:00:00.020Z :user2!user2@user PRIVMSG #test :TestBot!"
     )
     assert mockbot.backend.message_sent == rawlist("PRIVMSG #test :user2!")
+
+
+def test_user_quit(
+    tmpconfig: Config,
+    botfactory: BotFactory,
+    ircfactory: IRCFactory,
+    userfactory: UserFactory,
+):
+    """Test the behavior of a QUIT message from another user."""
+    mockbot: bot.Sopel = botfactory.preloaded(tmpconfig)
+    server: MockIRCServer = ircfactory(mockbot, True)
+    server.channel_joined('#test', ['MrPraline'])
+    mockbot.backend.clear_message_sent()
+
+    mockuser = userfactory('MrPraline', 'praline', 'example.com')
+
+    assert 'MrPraline' in mockbot.channels['#test'].users
+
+    servertime = datetime.utcnow() + timedelta(seconds=10)
+    mockbot.on_message(
+        "@time={servertime} :{user} QUIT :Ping timeout: 246 seconds".format(
+            servertime=servertime.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            user=mockuser.prefix,
+        )
+    )
+
+    assert 'MrPraline' not in mockbot.channels['#test'].users
