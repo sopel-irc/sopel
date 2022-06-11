@@ -308,6 +308,17 @@ class AsyncioBackend(AbstractIRCBackend):
             )
         except ssl.SSLError:
             LOGGER.exception('Unable to connect due to SSL error.')
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+        except Exception:
+            LOGGER.exception('Unable to connect.')
+            # until there is a way to prevent an infinite loop of connection
+            # error and reconnect, we have to tell the bot to quit here
+            # TODO: prevent infinite connection failure loop
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
             return
 
         self._connected = True
