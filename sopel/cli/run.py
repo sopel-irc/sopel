@@ -53,10 +53,6 @@ def run(settings, pid_file, daemon=False):
     # Also show the location of the config file used to load settings
     print("\nLoaded config file: {}".format(settings.filename))
 
-    if not settings.core.ca_certs:
-        tools.stderr(
-            'Could not open CA certificates file. SSL will not work properly!')
-
     # Define empty variable `p` for bot
     p = None
     while True:
