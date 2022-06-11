@@ -71,7 +71,7 @@ class AsyncioBackend(AbstractIRCBackend):
         verify_ssl: bool = True,
         ca_certs: Optional[str] = None,
         ssl_ciphers: Optional[List[str]] = None,
-        ssl_minimum_version: Optional[ssl.TLSVersion] = None,
+        ssl_minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_2,
         **kwargs,
     ):
         super().__init__(bot)
@@ -84,7 +84,7 @@ class AsyncioBackend(AbstractIRCBackend):
         self._keyfile: Optional[str] = keyfile
         self._verify_ssl: bool = verify_ssl
         self._ca_certs: Optional[str] = ca_certs
-        self._ssl_ciphers: str = ":".join(ssl_ciphers)
+        self._ssl_ciphers: str = ":".join(ssl_ciphers or [])
         self._ssl_minimum_version: ssl.TLSVersion = ssl_minimum_version
 
         # timeout configuration
