@@ -23,7 +23,9 @@ exclude_lines =
     if 0:
     if False:
     if __name__ == .__main__.:
-    
+    if typing.TYPE_CHECKING:
+    if TYPE_CHECKING:
+
 show_missing = True
 
 [html]
