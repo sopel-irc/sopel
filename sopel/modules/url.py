@@ -323,8 +323,15 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
 
 
 def process_urls(
-    bot: SopelWrapper, trigger: Trigger, urls: List[str], requested: bool = False
-) -> Generator[Tuple[str, str, Optional[str], Optional[str], bool], None, None]:
+    bot: SopelWrapper,
+    trigger: Trigger,
+    urls: List[str],
+    requested: bool = False,
+) -> Generator[
+    Tuple[str, Optional[str], Optional[str], Optional[str], bool],
+    None,
+    None,
+]:
     """
     For each URL in the list, ensure it should be titled, and do so.
 
@@ -360,6 +367,11 @@ def process_urls(
         # FIXME: This does nothing when an attacker knows how to host a 302
         # FIXME: This whole concept has a TOCTOU issue
         if not bot.config.url.enable_private_resolution:
+            if not parsed_url.hostname:
+                # URL like file:///path is a valid local path (i.e. private)
+                LOGGER.debug("Ignoring private URL: %s", url)
+                continue
+
             try:
                 ips = [ip_address(parsed_url.hostname)]
             except ValueError:
@@ -432,12 +444,12 @@ def find_title(url: str, verify: bool = True) -> Optional[str]:
     try:
         response = requests.get(url, stream=True, verify=verify,
                                 headers=DEFAULT_HEADERS)
-        content = b''
+        raw_content = b''
         for byte in response.iter_content(chunk_size=512):
-            content += byte
-            if b'</title>' in content or len(content) > MAX_BYTES:
+            raw_content += byte
+            if b'</title>' in raw_content or len(raw_content) > MAX_BYTES:
                 break
-        content = content.decode('utf-8', errors='ignore')
+        content = raw_content.decode('utf-8', errors='ignore')
         # Need to close the connection because we have not read all
         # the data
         response.close()
@@ -460,7 +472,8 @@ def find_title(url: str, verify: bool = True) -> Optional[str]:
     start = content.rfind('<title>')
     end = content.rfind('</title>')
     if start == -1 or end == -1:
-        return
+        return None
+
     title = web.decode(content[start + 7:end])
     title = title.strip()[:200]
 
@@ -469,7 +482,7 @@ def find_title(url: str, verify: bool = True) -> Optional[str]:
     return title or None
 
 
-def get_or_create_shorturl(bot: SopelWrapper, url: str) -> str:
+def get_or_create_shorturl(bot: SopelWrapper, url: str) -> Optional[str]:
     """Get or create a short URL for ``url``
 
     :param bot: Sopel instance
