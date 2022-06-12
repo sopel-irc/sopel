@@ -71,7 +71,7 @@ class AsyncioBackend(AbstractIRCBackend):
         verify_ssl: bool = True,
         ca_certs: Optional[str] = None,
         ssl_ciphers: Optional[List[str]] = None,
-        ssl_minimum_version: Optional[ssl.TLSVersion] = None,
+        ssl_minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_2,
         **kwargs,
     ):
         super().__init__(bot)
@@ -84,7 +84,7 @@ class AsyncioBackend(AbstractIRCBackend):
         self._keyfile: Optional[str] = keyfile
         self._verify_ssl: bool = verify_ssl
         self._ca_certs: Optional[str] = ca_certs
-        self._ssl_ciphers: str = ":".join(ssl_ciphers)
+        self._ssl_ciphers: str = ":".join(ssl_ciphers or [])
         self._ssl_minimum_version: ssl.TLSVersion = ssl_minimum_version
 
         # timeout configuration
@@ -308,6 +308,17 @@ class AsyncioBackend(AbstractIRCBackend):
             )
         except ssl.SSLError:
             LOGGER.exception('Unable to connect due to SSL error.')
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+        except Exception:
+            LOGGER.exception('Unable to connect.')
+            # until there is a way to prevent an infinite loop of connection
+            # error and reconnect, we have to tell the bot to quit here
+            # TODO: prevent infinite connection failure loop
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
             return
 
         self._connected = True

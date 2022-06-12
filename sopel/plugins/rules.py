@@ -475,7 +475,7 @@ class RuleMetrics:
         time_limit: datetime.datetime,
     ) -> bool:
         """Determine if the rule hits the time limit."""
-        if not self.started_at and not self.ended_at:
+        if not self.started_at:
             # not even started, so not limited
             return False
 

@@ -8,12 +8,14 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
-from typing import Callable
+import typing
 
 from .identifiers import Identifier
 
+if typing.TYPE_CHECKING:
+    from typing import Callable, Optional
 
-IdentifierFactory = Callable[[str], Identifier]
+    IdentifierFactory = Callable[[str], Identifier]
 
 
 class SopelMemory(dict):
@@ -157,11 +159,16 @@ class SopelIdentifierMemory(SopelMemory):
         self.make_identifier = identifier_factory
         """A factory to transform keys into identifiers."""
 
-    def __getitem__(self, key):
-        return super().__getitem__(self.make_identifier(key))
+    def _make_key(self, key: Optional[str]) -> Optional[Identifier]:
+        if key is not None:
+            return self.make_identifier(key)
+        return None
+
+    def __getitem__(self, key: Optional[str]):
+        return super().__getitem__(self._make_key(key))
 
     def __contains__(self, key):
-        return super().__contains__(self.make_identifier(key))
+        return super().__contains__(self._make_key(key))
 
-    def __setitem__(self, key, value):
-        super().__setitem__(self.make_identifier(key), value)
+    def __setitem__(self, key: Optional[str], value):
+        super().__setitem__(self._make_key(key), value)
