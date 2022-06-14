@@ -712,7 +712,7 @@ def track_nicks(bot, trigger):
     if old in bot.users:
         bot.users[new] = bot.users.pop(old)
 
-    LOGGER.info("User named %r is now known as %r.", old, str(new))
+    LOGGER.info("User named %r is now known as %r.", str(old), str(new))
 
 
 @plugin.rule('(.*)')
@@ -1348,7 +1348,7 @@ def recv_chghost(bot, trigger):
     bot.users[trigger.nick].host = new_host
     LOGGER.info(
         "Update user@host for nick %r: %s@%s",
-        trigger.nick, new_user, new_host)
+        str(trigger.nick), new_user, new_host)
 
 
 @plugin.event('ACCOUNT')
@@ -1364,7 +1364,7 @@ def account_notify(bot, trigger):
     if account == '*':
         account = None
     bot.users[trigger.nick].account = account
-    LOGGER.info("Update account for nick %r: %s", trigger.nick, account)
+    LOGGER.info("Update account for nick %r: %s", str(trigger.nick), account)
 
 
 @plugin.event(events.RPL_WHOSPCRPL)
