@@ -101,6 +101,62 @@ def test_get_sendable_message_two_bytes():
     assert excess == 'α α'
 
 
+def test_get_sendable_message_three_bytes():
+    text, excess = tools.get_sendable_message('अअअअ', 6)
+    assert text == 'अअ'
+    assert excess == 'अअ'
+
+    text, excess = tools.get_sendable_message('अअअअ', 7)
+    assert text == 'अअ'
+    assert excess == 'अअ'
+
+    text, excess = tools.get_sendable_message('अअअअ', 8)
+    assert text == 'अअ'
+    assert excess == 'अअ'
+
+    text, excess = tools.get_sendable_message('अ अअअ', 6)
+    assert text == 'अ'
+    assert excess == 'अअअ'
+
+    text, excess = tools.get_sendable_message('अअ अअ', 6)
+    assert text == 'अअ'
+    assert excess == 'अअ'
+
+    text, excess = tools.get_sendable_message('अअअ अ', 6)
+    assert text == 'अअ'
+    assert excess == 'अ अ'
+
+
+def test_get_sendable_message_four_bytes():
+    text, excess = tools.get_sendable_message('𡃤𡃤𡃤𡃤', 8)
+    assert text == '𡃤𡃤'
+    assert excess == '𡃤𡃤'
+
+    text, excess = tools.get_sendable_message('𡃤𡃤𡃤𡃤', 9)
+    assert text == '𡃤𡃤'
+    assert excess == '𡃤𡃤'
+
+    text, excess = tools.get_sendable_message('𡃤𡃤𡃤𡃤', 10)
+    assert text == '𡃤𡃤'
+    assert excess == '𡃤𡃤'
+
+    text, excess = tools.get_sendable_message('𡃤𡃤𡃤𡃤', 11)
+    assert text == '𡃤𡃤'
+    assert excess == '𡃤𡃤'
+
+    text, excess = tools.get_sendable_message('𡃤 𡃤𡃤𡃤', 8)
+    assert text == '𡃤'
+    assert excess == '𡃤𡃤𡃤'
+
+    text, excess = tools.get_sendable_message('𡃤𡃤 𡃤𡃤', 8)
+    assert text == '𡃤𡃤'
+    assert excess == '𡃤𡃤'
+
+    text, excess = tools.get_sendable_message('𡃤𡃤𡃤 𡃤', 8)
+    assert text == '𡃤𡃤'
+    assert excess == '𡃤 𡃤'
+
+
 def test_chain_loaders(configfactory):
     re_numeric = re.compile(r'\d+')
     re_text = re.compile(r'\w+')
