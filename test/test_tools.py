@@ -157,6 +157,36 @@ def test_get_sendable_message_four_bytes():
     assert excess == '𡃤 𡃤'
 
 
+def test_get_sendable_message_bigger_multibyte_whitespace():
+    """Tests that the logic doesn't break for multi-word strings with emoji.
+
+    Testing multibyte characters without whitespace is fine, but there's an
+    alternate code path to exercise.
+    """
+    text = (
+        'Egg 🍳 and bacon; 🐷 egg, 🍳 sausage 🌭 and bacon; 🥓 egg 🐣 and spam; '
+        'egg, 🍳 bacon 🥓 and spam, egg, 🍳 bacon, 🥓 sausage 🌭 and spam; spam, '
+        'bacon, 🐖 sausage 🌭 and spam; spam, egg, 🍳 spam, spam, bacon 🐖 and '
+        'spam; spam, spam, spam, egg 🥚🍳 and spam; spam, spam, spam, spam, spam, '
+        'spam, baked beans, 🍛 spam, spam, spam and spam; lobster 🦞 thermidor aux '
+        'crevettes with a mornay sauce garnished with truffle paté, 👨😏 brandy'
+        'and a fried 🍤 egg 🥚🍳 on 🔛 top 🎩 and spam')
+
+    first, second = tools.get_sendable_message(text)
+    expected_first = (
+        'Egg 🍳 and bacon; 🐷 egg, 🍳 sausage 🌭 and bacon; 🥓 egg 🐣 and spam; '
+        'egg, 🍳 bacon 🥓 and spam, egg, 🍳 bacon, 🥓 sausage 🌭 and spam; spam, '
+        'bacon, 🐖 sausage 🌭 and spam; spam, egg, 🍳 spam, spam, bacon 🐖 and '
+        'spam; spam, spam, spam, egg 🥚🍳 and spam; spam, spam, spam, spam, spam, '
+        'spam, baked beans, 🍛 spam, spam, spam and spam; lobster 🦞 thermidor aux')
+    expected_second = (
+        'crevettes with a mornay sauce garnished with truffle paté, 👨😏 brandy'
+        'and a fried 🍤 egg 🥚🍳 on 🔛 top 🎩 and spam')
+
+    assert first == expected_first
+    assert second == expected_second
+
+
 def test_chain_loaders(configfactory):
     re_numeric = re.compile(r'\d+')
     re_text = re.compile(r'\w+')

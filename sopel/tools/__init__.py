@@ -111,7 +111,7 @@ def get_sendable_message(text, max_length=400):
             unicode_max_length = unicode_max_length - 1
         else:
             # Split at the last best space found
-            excess = text[last_space:]
+            excess = text[last_space:] + excess
             text = text[:last_space]
 
     return text, excess.lstrip()
