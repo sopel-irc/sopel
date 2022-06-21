@@ -88,12 +88,12 @@ def get_sendable_message(text, max_length=400):
     :return: a tuple of two values, the sendable text and its excess text
     :rtype: (str, str)
 
-    We're arbitrarily saying that the max is 400 bytes of text when
-    messages will be split. Otherwise, we'd have to account for the bot's
-    hostmask, which is hard.
+    We're arbitrarily saying that the (default) max is 400 bytes of text
+    when messages will be split, but callers can specify a different value
+    (e.g. to account precisely for the bot's hostmask).
 
     The ``max_length`` is the max length of text in **bytes**, but we take
-    care of Unicode 2-byte characters by working on the Unicode string,
+    care of multibyte UTF-8 characters by working on the Unicode string,
     then making sure the bytes version is smaller than the max length.
 
     .. versionadded:: 6.6.2
@@ -111,7 +111,7 @@ def get_sendable_message(text, max_length=400):
             unicode_max_length = unicode_max_length - 1
         else:
             # Split at the last best space found
-            excess = text[last_space:]
+            excess = text[last_space:] + excess
             text = text[:last_space]
 
     return text, excess.lstrip()
