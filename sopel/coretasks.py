@@ -520,11 +520,17 @@ def handle_names(bot, trigger):
 
     names = trigger.split()
     for name in names:
+        username = hostname = None
+
         if uhnames or userhost_in_names:
-            name, mask = name.rsplit('!', 1)
-            username, hostname = mask.split('@', 1)
-        else:
-            username = hostname = None
+            try:
+                name, mask = name.rsplit('!', 1)
+                username, hostname = mask.split('@', 1)
+            except ValueError:
+                # server advertised either UHNAMES or userhost-in-names, but
+                # isn't sending the hostmask with all listed nicks
+                # It's probably ZNC. https://github.com/znc/znc/issues/1224
+                pass
 
         priv = 0
         for prefix, value in mapping.items():
