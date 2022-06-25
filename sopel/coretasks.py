@@ -530,7 +530,10 @@ def handle_names(bot, trigger):
                 # server advertised either UHNAMES or userhost-in-names, but
                 # isn't sending the hostmask with all listed nicks
                 # It's probably ZNC. https://github.com/znc/znc/issues/1224
-                pass
+                LOGGER.debug(
+                    '%s is enabled, but still got RPL_NAMREPLY item without a hostmask. '
+                    'IRC server/bouncer is not spec compliant.',
+                    'UHNAMES' if uhnames else 'userhost-in-names')
 
         priv = 0
         for prefix, value in mapping.items():
