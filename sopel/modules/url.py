@@ -375,7 +375,7 @@ def process_urls(
             try:
                 ips = [ip_address(parsed_url.hostname)]
             except ValueError:
-                ips = [ip_address(ip) for ip in dns.resolver.query(parsed_url.hostname)]
+                ips = [ip_address(ip) for ip in dns.resolver.resolve(parsed_url.hostname)]
 
             private = False
             for ip in ips:
