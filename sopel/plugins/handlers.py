@@ -594,7 +594,11 @@ class EntryPointPlugin(PyModulePlugin):
         version: Optional[str] = None
 
         if hasattr(self._module, "__package__"):
-            version = importlib_metadata.version(self._module.__package__)
+            try:
+                version = importlib_metadata.version(self._module.__package__)
+            except ValueError:
+                # package name is probably empty-string; just give up
+                pass
 
         return version
 
