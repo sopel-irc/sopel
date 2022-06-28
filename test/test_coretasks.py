@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import logging
 
 import pytest
 
@@ -558,3 +559,18 @@ def test_join_time(mockbot):
     assert mockbot.channels["#test"].join_time == datetime(
         2021, 1, 1, 12, 0, 0, 15000, tzinfo=timezone.utc
     )
+
+
+def test_handle_rpl_namreply_with_malformed_uhnames(mockbot, caplog):
+    """Make sure Sopel can cope with expected but missing hostmask in 353"""
+    caplog.set_level(logging.DEBUG)
+    mockbot.on_message(
+        ':somenet.behind.znc 005 Sopel '
+        'UHNAMES '
+        ':are supported by this server')
+    mockbot.on_message(
+        ':somenet.behind.znc 353 Sopel = #sopel '
+        ':correct!~right@alwa.ys incorrect')
+
+    assert len(caplog.messages) == 1
+    assert 'RPL_NAMREPLY item without a hostmask' in caplog.messages[0]
