@@ -10,6 +10,7 @@ from __future__ import generator_stop
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from datetime import date
 import sys, os
 parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.sys.path.insert(0,parentdir)
@@ -66,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Sopel'
-copyright = '2012-2021, Sopel contributors'
+copyright = '2012-{}, Sopel contributors'.format(date.today().year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
