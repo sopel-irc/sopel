@@ -591,9 +591,9 @@ class EntryPointPlugin(PyModulePlugin):
         :return: the plugin's version string
         :rtype: Optional[str]
         """
-        version: Optional[str] = None
+        version: Optional[str] = super().get_version()
 
-        if hasattr(self._module, "__package__"):
+        if version is None and hasattr(self._module, "__package__"):
             try:
                 version = importlib_metadata.version(self._module.__package__)
             except ValueError:
