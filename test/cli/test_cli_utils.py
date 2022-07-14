@@ -41,7 +41,7 @@ def cd(newdir):
 @pytest.fixture
 def config_dir(tmpdir):
     """Pytest fixture used to generate a temporary configuration directory"""
-    test_dir = tmpdir.mkdir("config")
+    test_dir = tmpdir.mkdir('config')
     test_dir.join('config.cfg').write('')
     test_dir.join('extra.ini').write('')
     test_dir.join('module.cfg').write('')
@@ -53,14 +53,14 @@ def config_dir(tmpdir):
 @pytest.fixture(autouse=True)
 def default_empty_config_env(monkeypatch):
     """Pytest fixture used to ensure dev ENV does not bleed into tests"""
-    monkeypatch.delenv("SOPEL_CONFIG", raising=False)
-    monkeypatch.delenv("SOPEL_CONFIG_DIR", raising=False)
+    monkeypatch.delenv('SOPEL_CONFIG', raising=False)
+    monkeypatch.delenv('SOPEL_CONFIG_DIR', raising=False)
 
 
 @pytest.fixture
 def env_dir(tmpdir):
     """Pytest fixture used to generate an extra (external) config directory"""
-    test_dir = tmpdir.mkdir("fromenv")
+    test_dir = tmpdir.mkdir('fromenv')
     test_dir.join('fromenv.cfg').write('')
 
     return test_dir
@@ -110,7 +110,7 @@ def test_enumerate_configs_extension(config_dir):
 
 def test_find_config_local(tmpdir, config_dir):
     """Assert function retrieves configuration file from working dir first"""
-    working_dir = tmpdir.mkdir("working")
+    working_dir = tmpdir.mkdir('working')
     working_dir.join('local.cfg').write('')
 
     with cd(working_dir.strpath):
@@ -123,7 +123,7 @@ def test_find_config_local(tmpdir, config_dir):
 
 def test_find_config_default(tmpdir, config_dir):
     """Assert function retrieves configuration file from given config dir"""
-    working_dir = tmpdir.mkdir("working")
+    working_dir = tmpdir.mkdir('working')
     working_dir.join('local.cfg').write('')
 
     with cd(working_dir.strpath):
@@ -136,7 +136,7 @@ def test_find_config_default(tmpdir, config_dir):
 
 def test_find_config_extension(tmpdir, config_dir):
     """Assert function retrieves configuration file with the given extension"""
-    working_dir = tmpdir.mkdir("working")
+    working_dir = tmpdir.mkdir('working')
     working_dir.join('local.cfg').write('')
 
     with cd(working_dir.strpath):

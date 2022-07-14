@@ -214,7 +214,7 @@ def test_nick_match_tellee_wildcards():
 def test_get_reminders():
     today = datetime.datetime.now().date().strftime('%Y-%m-%d')
     reminders = [
-        ('dgw', 'tell', '2019-09-25 - 14:34:08UTC', 'Let\'s fix all the things!'),
+        ('dgw', 'tell', '2019-09-25 - 14:34:08UTC', "Let's fix all the things!"),
         ('HumorBaby', 'tell', '%s - 14:35:55UTC' % today, 'Thanks for the review.'),
     ]
 
@@ -226,7 +226,7 @@ def test_get_reminders():
     assert lines[0] == (
         'Exirel: '
         '2019-09-25 - 14:34:08UTC '
-        '<dgw> tell Exirel Let\'s fix all the things!')
+        "<dgw> tell Exirel Let's fix all the things!")
     assert lines[1] == (
         'Exirel: '
         '%s - 14:35:55UTC '

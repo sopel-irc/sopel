@@ -62,7 +62,7 @@ def test_connect(db: SopelDB):
 
     try:
         cursor_obj = connection.cursor()
-        cursor_obj.execute("SELECT nick_id, canonical, slug FROM nicknames")
+        cursor_obj.execute('SELECT nick_id, canonical, slug FROM nicknames')
         results = cursor_obj.fetchall()
         cursor_obj.close()
         assert results == [(nick_id, 'MrEricPraline', 'mrericpraline')]
@@ -294,8 +294,8 @@ def test_get_nick_value(db: SopelDB, value):
 
 
 def test_get_nick_value_default(db: SopelDB):
-    assert db.get_nick_value("TerryGilliam", "nokey") is None
-    assert db.get_nick_value("TerryGilliam", "nokey", "default") == "default"
+    assert db.get_nick_value('TerryGilliam', 'nokey') is None
+    assert db.get_nick_value('TerryGilliam', 'nokey', 'default') == 'default'
 
 
 def test_unalias_nick(db: SopelDB):
@@ -485,8 +485,8 @@ def test_get_channel_value(db: SopelDB):
 
 
 def test_get_channel_value_default(db: SopelDB):
-    assert db.get_channel_value("#channel", "nokey") is None
-    assert db.get_channel_value("#channel", "nokey", "value") == "value"
+    assert db.get_channel_value('#channel', 'nokey') is None
+    assert db.get_channel_value('#channel', 'nokey', 'value') == 'value'
 
 
 def test_forget_channel(db: SopelDB):
@@ -552,8 +552,8 @@ def test_get_plugin_value(db: SopelDB):
 
 
 def test_get_plugin_value_default(db: SopelDB):
-    assert db.get_plugin_value("TestPlugin", "DoesntExist") is None
-    assert db.get_plugin_value("TestPlugin", "DoesntExist", "MyDefault") == "MyDefault"
+    assert db.get_plugin_value('TestPlugin', 'DoesntExist') is None
+    assert db.get_plugin_value('TestPlugin', 'DoesntExist', 'MyDefault') == 'MyDefault'
 
 
 def test_forget_plugin(db: SopelDB):
@@ -598,8 +598,8 @@ def test_get_nick_or_channel_value_identifier(db: SopelDB):
 
 
 def test_get_nick_or_channel_value_default(db: SopelDB):
-    assert db.get_nick_or_channel_value("Test", "DoesntExist") is None
-    assert db.get_nick_or_channel_value("Test", "DoesntExist", "MyDefault") == "MyDefault"
+    assert db.get_nick_or_channel_value('Test', 'DoesntExist') is None
+    assert db.get_nick_or_channel_value('Test', 'DoesntExist', 'MyDefault') == 'MyDefault'
 
 
 def test_get_preferred_value(db: SopelDB):

@@ -14,12 +14,12 @@ MOCK_MODULE_CONTENT = """from __future__ import annotations
 from sopel import plugin
 
 
-@plugin.commands("first")
+@plugin.commands('first')
 def first_command(bot, trigger):
     pass
 
 
-@plugin.commands("second")
+@plugin.commands('second')
 def second_command(bot, trigger):
     pass
 

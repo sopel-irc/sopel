@@ -155,7 +155,7 @@ def test_search_urls_defined_schemes(scheme):
     assert expected in urls
 
 
-TRAILING_CHARS = list('.,?!\'":;')
+TRAILING_CHARS = list(""".,?!'":;""")
 ENCLOSING_PAIRS = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
 
 

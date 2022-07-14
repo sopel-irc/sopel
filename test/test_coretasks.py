@@ -46,12 +46,12 @@ def test_bot_mixed_modes(mockbot, ircfactory):
     irc.mode_set('#test', '+qvhao', [
         'Uowner', 'Uvoice', 'Uhalfop', 'Uadmin', 'Uop'])
 
-    assert mockbot.channels["#test"].privileges[Identifier("Uowner")] == OWNER
-    assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
-    assert mockbot.channels["#test"].privileges[Identifier("Uhalfop")] == HALFOP
-    assert mockbot.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
-    assert mockbot.channels["#test"].privileges[Identifier("Uop")] == OP
-    assert mockbot.channels["#test"].privileges[Identifier("Unothing")] == 0
+    assert mockbot.channels['#test'].privileges[Identifier('Uowner')] == OWNER
+    assert mockbot.channels['#test'].privileges[Identifier('Uvoice')] == VOICE
+    assert mockbot.channels['#test'].privileges[Identifier('Uhalfop')] == HALFOP
+    assert mockbot.channels['#test'].privileges[Identifier('Uadmin')] == ADMIN
+    assert mockbot.channels['#test'].privileges[Identifier('Uop')] == OP
+    assert mockbot.channels['#test'].privileges[Identifier('Unothing')] == 0
 
 
 def test_bot_mixed_mode_removal(mockbot, ircfactory):
@@ -64,20 +64,20 @@ def test_bot_mixed_mode_removal(mockbot, ircfactory):
         GitHub issue #1575 (https://github.com/sopel-irc/sopel/pull/1575).
     """
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "", "", "m", tuple()))
+    irc.bot._isupport = isupport.ISupport(chanmodes=('b', '', '', 'm', tuple()))
     irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined('#test', ['Uvoice', 'Uop'])
 
     irc.mode_set('#test', '+qao', ['Uvoice', 'Uvoice', 'Uvoice'])
-    assert mockbot.channels["#test"].privileges[Identifier("Uop")] == 0
-    assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == (
+    assert mockbot.channels['#test'].privileges[Identifier('Uop')] == 0
+    assert mockbot.channels['#test'].privileges[Identifier('Uvoice')] == (
         ADMIN + OWNER + OP), 'Uvoice got +q, +a, and +o modes'
 
     irc.mode_set('#test', '-o+o-qa+v', [
         'Uvoice', 'Uop', 'Uvoice', 'Uvoice', 'Uvoice'])
-    assert mockbot.channels["#test"].privileges[Identifier("Uop")] == OP, (
+    assert mockbot.channels['#test'].privileges[Identifier('Uop')] == OP, (
         'Uop got +o only')
-    assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE, (
+    assert mockbot.channels['#test'].privileges[Identifier('Uvoice')] == VOICE, (
         'Uvoice got -o, -q, -a, then +v')
 
 
@@ -91,107 +91,107 @@ def test_bot_mixed_mode_types(mockbot, ircfactory):
         GitHub issue #1575 (https://github.com/sopel-irc/sopel/pull/1575).
     """
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(chanmodes=("be", "", "", "mn", tuple()))
+    irc.bot._isupport = isupport.ISupport(chanmodes=('be', '', '', 'mn', tuple()))
     irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
     irc.channel_joined('#test', [
         'Uvoice', 'Uop', 'Uadmin', 'Uvoice2', 'Uop2', 'Uadmin2'])
     irc.mode_set('#test', '+amovn', ['Uadmin', 'Uop', 'Uvoice'])
 
-    assert mockbot.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
-    assert mockbot.channels["#test"].modes["m"]
-    assert mockbot.channels["#test"].privileges[Identifier("Uop")] == OP
-    assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
-    assert mockbot.channels["#test"].modes["n"]
+    assert mockbot.channels['#test'].privileges[Identifier('Uadmin')] == ADMIN
+    assert mockbot.channels['#test'].modes['m']
+    assert mockbot.channels['#test'].privileges[Identifier('Uop')] == OP
+    assert mockbot.channels['#test'].privileges[Identifier('Uvoice')] == VOICE
+    assert mockbot.channels['#test'].modes['n']
 
     irc.mode_set('#test', '+above', ['Uadmin2', 'x!y@z', 'Uop2', 'Uvoice2', 'a!b@c'])
 
-    assert mockbot.channels["#test"].privileges[Identifier("Uadmin2")] == ADMIN
-    assert "x!y@z" in mockbot.channels["#test"].modes["b"]
-    assert mockbot.channels["#test"].privileges[Identifier("Uop2")] == OP
-    assert mockbot.channels["#test"].privileges[Identifier("Uvoice2")] == VOICE
-    assert "a!b@c" in mockbot.channels["#test"].modes["e"]
+    assert mockbot.channels['#test'].privileges[Identifier('Uadmin2')] == ADMIN
+    assert 'x!y@z' in mockbot.channels['#test'].modes['b']
+    assert mockbot.channels['#test'].privileges[Identifier('Uop2')] == OP
+    assert mockbot.channels['#test'].privileges[Identifier('Uvoice2')] == VOICE
+    assert 'a!b@c' in mockbot.channels['#test'].modes['e']
 
 
 def test_bot_unknown_mode(mockbot, ircfactory):
     """Ensure modes not in PREFIX or CHANMODES trigger a WHO."""
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "", "", "mnt", tuple()))
+    irc.bot._isupport = isupport.ISupport(chanmodes=('b', '', '', 'mnt', tuple()))
     irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
-    irc.mode_set("#test", "+te", ["Alex"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
+    irc.mode_set('#test', '+te', ['Alex'])
 
-    assert mockbot.channels["#test"].privileges[Identifier("Alex")] == 0
+    assert mockbot.channels['#test'].privileges[Identifier('Alex')] == 0
     assert mockbot.backend.message_sent == rawlist(
-        "WHO #test"
-    ), "Upon finding an unknown mode, the bot must send a WHO request."
+        'WHO #test'
+    ), 'Upon finding an unknown mode, the bot must send a WHO request.'
 
 
 def test_bot_unknown_priv_mode(mockbot, ircfactory):
     """Ensure modes in `mapping` but not PREFIX are treated as unknown."""
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(prefix={"o": "@", "v": "+"})
+    irc.bot._isupport = isupport.ISupport(prefix={'o': '@', 'v': '+'})
     irc.bot.modeparser.privileges = set(irc.bot.isupport.PREFIX.keys())
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
-    irc.mode_set("#test", "+oh", ["Alex", "Bob"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
+    irc.mode_set('#test', '+oh', ['Alex', 'Bob'])
 
-    assert mockbot.channels["#test"].privileges[Identifier("Bob")] == 0
+    assert mockbot.channels['#test'].privileges[Identifier('Bob')] == 0
     assert mockbot.backend.message_sent == rawlist(
-        "WHO #test"
-    ), "The bot must treat mapped but non-PREFIX modes as unknown."
+        'WHO #test'
+    ), 'The bot must treat mapped but non-PREFIX modes as unknown.'
 
 
 def test_bot_extra_mode_args(mockbot, ircfactory, caplog):
     """Test warning on extraneous MODE args."""
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.bot._isupport = isupport.ISupport(chanmodes=('b', 'k', 'l', 'mnt', tuple()))
     irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
 
-    mode_msg = ":Sopel!bot@bot MODE #test +m nonsense"
+    mode_msg = ':Sopel!bot@bot MODE #test +m nonsense'
     mockbot.on_message(mode_msg)
 
-    assert mockbot.channels["#test"].modes["m"]
-    assert "Too many arguments received for MODE" in caplog.text
+    assert mockbot.channels['#test'].modes['m']
+    assert 'Too many arguments received for MODE' in caplog.text
 
 
 def test_handle_rpl_channelmodeis(mockbot, ircfactory):
     """Test handling RPL_CHANNELMODEIS events, response to MODE query."""
-    rpl_channelmodeis = " ".join([
-        ":niven.freenode.net",
-        "324",
-        "TestName",
-        "#test",
-        "+knlt",
-        "hunter2",
-        ":1",
+    rpl_channelmodeis = ' '.join([
+        ':niven.freenode.net',
+        '324',
+        'TestName',
+        '#test',
+        '+knlt',
+        'hunter2',
+        ':1',
     ])
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.bot._isupport = isupport.ISupport(chanmodes=('b', 'k', 'l', 'mnt', tuple()))
     irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
     mockbot.on_message(rpl_channelmodeis)
 
-    assert mockbot.channels["#test"].modes["k"] == "hunter2"
-    assert mockbot.channels["#test"].modes["n"]
-    assert mockbot.channels["#test"].modes["l"] == "1"
-    assert mockbot.channels["#test"].modes["t"]
+    assert mockbot.channels['#test'].modes['k'] == 'hunter2'
+    assert mockbot.channels['#test'].modes['n']
+    assert mockbot.channels['#test'].modes['l'] == '1'
+    assert mockbot.channels['#test'].modes['t']
 
 
 def test_handle_rpl_channelmodeis_clear(mockbot, ircfactory):
     """Test RPL_CHANNELMODEIS events clearing previous modes"""
     irc = ircfactory(mockbot)
-    irc.bot._isupport = isupport.ISupport(chanmodes=("b", "k", "l", "mnt", tuple()))
+    irc.bot._isupport = isupport.ISupport(chanmodes=('b', 'k', 'l', 'mnt', tuple()))
     irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
 
-    rpl_base = ":mercury.libera.chat 324 TestName #test {modes}"
-    mockbot.on_message(rpl_base.format(modes="+knlt hunter2 :1"))
-    mockbot.on_message(rpl_base.format(modes="+kl hunter2 :1"))
+    rpl_base = ':mercury.libera.chat 324 TestName #test {modes}'
+    mockbot.on_message(rpl_base.format(modes='+knlt hunter2 :1'))
+    mockbot.on_message(rpl_base.format(modes='+kl hunter2 :1'))
 
-    assert mockbot.channels["#test"].modes["k"] == "hunter2"
-    assert "n" not in mockbot.channels["#test"].modes
-    assert mockbot.channels["#test"].modes["l"] == "1"
-    assert "t" not in mockbot.channels["#test"].modes
+    assert mockbot.channels['#test'].modes['k'] == 'hunter2'
+    assert 'n' not in mockbot.channels['#test'].modes
+    assert mockbot.channels['#test'].modes['l'] == '1'
+    assert 't' not in mockbot.channels['#test'].modes
 
 
 def test_mode_colon(mockbot, ircfactory):
@@ -200,8 +200,8 @@ def test_mode_colon(mockbot, ircfactory):
     irc.channel_joined('#test', ['Uadmin', 'Uvoice'])
     irc.mode_set('#test', '+av', ['Uadmin', ':Uvoice'])
 
-    assert mockbot.channels["#test"].privileges[Identifier("Uvoice")] == VOICE
-    assert mockbot.channels["#test"].privileges[Identifier("Uadmin")] == ADMIN
+    assert mockbot.channels['#test'].privileges[Identifier('Uvoice')] == VOICE
+    assert mockbot.channels['#test'].privileges[Identifier('Uadmin')] == ADMIN
 
 
 def test_execute_perform_raise_not_connected(mockbot):
@@ -508,9 +508,9 @@ def test_sasl_plain_token_generation():
 def test_recv_chghost(mockbot, ircfactory):
     """Ensure that CHGHOST messages are correctly handled."""
     irc = ircfactory(mockbot)
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
 
-    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex identd.confirmed")
+    mockbot.on_message(':Alex!~alex@test.local CHGHOST alex identd.confirmed')
 
     assert mockbot.users[Identifier('Alex')].user == 'alex'
     assert mockbot.users[Identifier('Alex')].host == 'identd.confirmed'
@@ -519,7 +519,7 @@ def test_recv_chghost(mockbot, ircfactory):
 def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
     """Ensure that malformed CHGHOST messages are ignored and logged."""
     irc = ircfactory(mockbot)
-    irc.channel_joined("#test", ["Alex", "Bob", "Cheryl"])
+    irc.channel_joined('#test', ['Alex', 'Bob', 'Cheryl'])
     alex = Identifier('Alex')
     bob = Identifier('Bob')
     cheryl = Identifier('Cheryl')
@@ -532,9 +532,9 @@ def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
     assert mockbot.users[cheryl].user is None
     assert mockbot.users[cheryl].host is None
 
-    mockbot.on_message(":Alex!~alex@test.local CHGHOST alex is a boss")
-    mockbot.on_message(":Bob!bob@grills.burgers CHGHOST rarely")
-    mockbot.on_message(":Cheryl!~carol@danger.zone CHGHOST")
+    mockbot.on_message(':Alex!~alex@test.local CHGHOST alex is a boss')
+    mockbot.on_message(':Bob!bob@grills.burgers CHGHOST rarely')
+    mockbot.on_message(':Cheryl!~carol@danger.zone CHGHOST')
 
     # These should be unchanged
     assert mockbot.users[alex].user is None
@@ -554,9 +554,9 @@ def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
 def test_join_time(mockbot):
     """Make sure channel.join_time is set from JOIN echo time tag"""
     mockbot.on_message(
-        "@time=2021-01-01T12:00:00.015Z :TestBot!bot@bot JOIN #test * :bot"
+        '@time=2021-01-01T12:00:00.015Z :TestBot!bot@bot JOIN #test * :bot'
     )
-    assert mockbot.channels["#test"].join_time == datetime(
+    assert mockbot.channels['#test'].join_time == datetime(
         2021, 1, 1, 12, 0, 0, 15000, tzinfo=timezone.utc
     )
 

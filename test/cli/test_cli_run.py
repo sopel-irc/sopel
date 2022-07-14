@@ -37,7 +37,7 @@ def cd(newdir):
 @pytest.fixture
 def config_dir(tmpdir):
     """Pytest fixture used to generate a temporary configuration directory"""
-    test_dir = tmpdir.mkdir("config")
+    test_dir = tmpdir.mkdir('config')
     test_dir.join('config.cfg').write('')
     test_dir.join('extra.ini').write('')
     test_dir.join('module.cfg').write('')
@@ -49,8 +49,8 @@ def config_dir(tmpdir):
 @pytest.fixture(autouse=True)
 def default_empty_config_env(monkeypatch):
     """Pytest fixture used to ensure dev ENV does not bleed into tests"""
-    monkeypatch.delenv("SOPEL_CONFIG", raising=False)
-    monkeypatch.delenv("SOPEL_CONFIG_DIR", raising=False)
+    monkeypatch.delenv('SOPEL_CONFIG', raising=False)
+    monkeypatch.delenv('SOPEL_CONFIG_DIR', raising=False)
 
 
 def test_build_parser_start():
@@ -235,7 +235,7 @@ def test_build_parser_configure_modules():
 
 def test_get_configuration(tmpdir):
     """Assert function returns a Sopel ``Config`` object"""
-    working_dir = tmpdir.mkdir("working")
+    working_dir = tmpdir.mkdir('working')
     working_dir.join('default.cfg').write('\n'.join([
         '[core]',
         'owner = TestName'

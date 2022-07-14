@@ -179,8 +179,8 @@ def test_isupport_chanmodes():
 def test_isupport_chanmodes_undefined():
     instance = isupport.ISupport()
 
-    assert set(instance.CHANMODES.keys()) == set("ABCD")
-    assert set(instance.CHANMODES.values()) == {""}
+    assert set(instance.CHANMODES.keys()) == set('ABCD')
+    assert set(instance.CHANMODES.values()) == {''}
 
 
 def test_isupport_maxlist():

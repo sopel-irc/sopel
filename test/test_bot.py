@@ -30,17 +30,17 @@ MOCK_MODULE_CONTENT = """from __future__ import annotations
 from sopel import plugin
 
 
-@plugin.commands("do")
+@plugin.commands('do')
 def command_do(bot, trigger):
     pass
 
 
-@plugin.nickname_commands("info")
+@plugin.nickname_commands('info')
 def nick_command_info(bot, trigger):
     pass
 
 
-@plugin.action_commands("tell")
+@plugin.action_commands('tell')
 def action_command_tell(bot, trigger):
     pass
 
@@ -600,7 +600,7 @@ def test_call_rule(mockbot):
     def testrule(bot, trigger):
         bot.say('hi')
         items.append(1)
-        return "Return Value"
+        return 'Return Value'
 
     rule_hello = rules.Rule(
         [re.compile(r'(hi|hello|hey|sup)')],
@@ -654,7 +654,7 @@ def test_call_rule_rate_limited_user(mockbot):
     def testrule(bot, trigger):
         bot.say('hi')
         items.append(1)
-        return "Return Value"
+        return 'Return Value'
 
     rule_hello = rules.Rule(
         [re.compile(r'(hi|hello|hey|sup)')],
@@ -709,7 +709,7 @@ def test_call_rule_rate_limited_channel(mockbot):
     def testrule(bot, trigger):
         bot.say('hi')
         items.append(1)
-        return "Return Value"
+        return 'Return Value'
 
     rule_hello = rules.Rule(
         [re.compile(r'(hi|hello|hey|sup)')],
@@ -756,7 +756,7 @@ def test_call_rule_rate_limited_global(mockbot):
     def testrule(bot, trigger):
         bot.say('hi')
         items.append(1)
-        return "Return Value"
+        return 'Return Value'
 
     rule_hello = rules.Rule(
         [re.compile(r'(hi|hello|hey|sup)')],
@@ -1177,8 +1177,8 @@ def test_manual_url_callback_not_found(tmpconfig):
 
     # register a callback manually
     sopel.memory['url_callbacks'][re.compile(test_pattern)] = url_handler
-    results = list(sopel.search_url_callbacks("https://www.example.com"))
-    assert not results, "Manually registered callback must not be found"
+    results = list(sopel.search_url_callbacks('https://www.example.com'))
+    assert not results, 'Manually registered callback must not be found'
 
 
 # -----------------------------------------------------------------------------
@@ -1186,15 +1186,15 @@ def test_manual_url_callback_not_found(tmpconfig):
 
 def test_ignore_replay_servertime(mockbot):
     """Test ignoring messages sent before bot joined a channel."""
-    @plugin.rule("$nickname!")
+    @plugin.rule('$nickname!')
     @plugin.thread(False)
     def ping(bot, trigger):
-        bot.say(trigger.nick + "!")
+        bot.say(trigger.nick + '!')
 
-    ping.plugin_name = "testplugin"
+    ping.plugin_name = 'testplugin'
     mockbot.register_callables([ping])
 
-    test_channel = Identifier("#test")
+    test_channel = Identifier('#test')
     mockbot.channels[test_channel] = target.Channel(test_channel)
     mockbot.channels[test_channel].join_time = datetime(
         2021, 6, 1, 12, 0, 0, 15000, tzinfo=timezone.utc
@@ -1202,15 +1202,17 @@ def test_ignore_replay_servertime(mockbot):
 
     # replay
     mockbot.on_message(
-        "@time=2021-06-01T12:00:00.010Z :user!user@user PRIVMSG #test :TestBot!"
+        '@time=2021-06-01T12:00:00.010Z '
+        ':user!user@user PRIVMSG #test :TestBot!'
     )
     assert mockbot.backend.message_sent == []
 
     # new message
     mockbot.on_message(
-        "@time=2021-06-01T12:00:00.020Z :user2!user2@user PRIVMSG #test :TestBot!"
+        '@time=2021-06-01T12:00:00.020Z '
+        ':user2!user2@user PRIVMSG #test :TestBot!'
     )
-    assert mockbot.backend.message_sent == rawlist("PRIVMSG #test :user2!")
+    assert mockbot.backend.message_sent == rawlist('PRIVMSG #test :user2!')
 
 
 def test_user_quit(
@@ -1231,7 +1233,7 @@ def test_user_quit(
 
     servertime = datetime.utcnow() + timedelta(seconds=10)
     mockbot.on_message(
-        "@time={servertime} :{user} QUIT :Ping timeout: 246 seconds".format(
+        '@time={servertime} :{user} QUIT :Ping timeout: 246 seconds'.format(
             servertime=servertime.strftime('%Y-%m-%dT%H:%M:%SZ'),
             user=mockuser.prefix,
         )

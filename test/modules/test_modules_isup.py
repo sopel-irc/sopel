@@ -114,7 +114,7 @@ def test_isup_command_unparseable(irc, bot, user, requests_mock):
     """Test URL that can't be parsed."""
     requests_mock.head(
         'http://.foo',
-        exc=ValueError("Invalid URL"),
+        exc=ValueError('Invalid URL'),
     )
 
     irc.pm(user, '.isup .foo')

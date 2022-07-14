@@ -18,9 +18,9 @@ enable = coretasks
 
 
 INVALID_URLS = (
-    "http://.example.com/",  # empty label
-    "http://example..com/",  # empty label
-    "http://?",  # no host
+    'http://.example.com/',  # empty label
+    'http://example..com/',  # empty label
+    'http://?',  # no host
 )
 
 
@@ -70,7 +70,7 @@ def mockbot(configfactory):
     return sopel
 
 
-@pytest.mark.parametrize("site", INVALID_URLS)
+@pytest.mark.parametrize('site', INVALID_URLS)
 def test_find_title_invalid(site):
     # All local for invalid ones
     assert url.find_title(site) is None
