@@ -333,8 +333,8 @@ policy.
 
 .. versionadded:: 7.0
 
-    Additional configuration options: ``flood_burst_lines``, ``flood_empty_wait``,
-    and ``flood_refill_rate``.
+    Additional configuration options: ``flood_burst_lines``,
+    ``flood_empty_wait``, and ``flood_refill_rate``.
 
 .. versionadded:: 7.1
 
@@ -349,6 +349,79 @@ policy.
     ``@dgw`` said once about Sopel's flood protection logic:
 
         *"It's some arcane magic from AT LEAST a decade ago."*
+
+Loop prevention
+---------------
+
+In order to prevent the bot from entering a loop (for example when there is
+another bot in the same channel, or if a user spams a command), it'll try to
+see if the next message to send is repeating too often in a short time period.
+If that happens, the bot will send ``...`` a few times before remaining silent::
+
+    <bot> I repeat myself!
+    <bot> I repeat myself!
+    <bot> I repeat myself!
+    <bot> I repeat myself!
+    <bot> I repeat myself!
+    # wanted to say: "I repeat myself"
+    <bot> ...
+    # wanted to say: "I repeat myself"
+    <bot> ...
+    # wanted to say: "I repeat myself"
+    <bot> ...
+    # silence, wanted to say: "..." instead of "I repeat myself"
+
+This doesn't affect non-repeating messages, and if enough time has passed
+between now and the last message sent, the loop prevention won't be triggered.
+
+This behavior can be configured with:
+
+* :attr:`~CoreSection.antiloop_threshold`: the number of repeating messages
+  before triggering the loop prevention.
+* :attr:`~CoreSection.antiloop_silent_after`: how many times the bot will send
+  the repeat text until it remains silent.
+* :attr:`~CoreSection.antiloop_window`: how much time (in seconds) since the
+  last message must pass before ignoring the loop prevention.
+* :attr:`~CoreSection.antiloop_repeat_text`: the text used to replace repeating
+  messages (default to ``...``).
+
+For example this configuration::
+
+    [core]
+    antiloop_threshold = 2
+    antiloop_silent_after = 1
+    antiloop_window = 60
+    antiloop_repeat_text = Ditto.
+
+will activate the loop prevention feature if there are at least 2 messages
+in the last 60 seconds, **and** exactly 2 of those messages are the same.
+After sending ``...`` *once* (a third message), the bot will remain silent.
+
+This doesn't affect other messages, i.e. messages that don't repeat::
+
+    <bot> I repeat myself!
+    <bot> No I don't!
+    <bot> I can talk.
+    <bot> I repeat myself!
+    <bot> No I don't!
+    # wanted to say: "I repeat myself"
+    <bot> Ditto.
+    # silence, wanted to say: "Ditto." instead of "No I don't!"
+    <bot> This message is unique.
+
+You can **deactivate** the loop prevention by setting
+:attr:`~CoreSection.antiloop_threshold` to 0.
+
+.. versionadded:: 8.0
+
+    The loop prevention feature wasn't configurable before Sopel 8.0. The
+    new configuration options are: ``antiloop_threshold``,
+    ``antiloop_silent_after``, and ``antiloop_window``.
+
+.. note::
+
+    Since Sopel remembers only the last ten messages, it will use the minimum
+    value between ``antiloop_threshold`` and ten.
 
 Perform commands on connect
 ---------------------------

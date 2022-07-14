@@ -133,6 +133,92 @@ class CoreSection(StaticSection):
     :func:`~sopel.plugin.nickname_command`.
     """
 
+    antiloop_repeat_text = ValidatedAttribute(
+        'antiloop_repeat_text', default='...')
+    """The replacement text sent when detecting a repeated message.
+
+    :default: ``...``
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        antiloop_repeat_text = ...
+
+    .. seealso::
+
+        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
+        setting does.
+
+    .. versionadded:: 8.0
+    """
+
+    antiloop_silent_after = ValidatedAttribute(
+        'antiloop_silent_after', int, default=3)
+    """How many times the anti-looping message will be sent before stopping.
+
+    :default: ``3``
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        antiloop_silent_after = 3
+
+    .. seealso::
+
+        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
+        setting does.
+
+    .. versionadded:: 8.0
+    """
+
+    antiloop_threshold = ValidatedAttribute(
+        'antiloop_threshold', int, default=5)
+    """How many times a message can be repeated without anti-looping action.
+
+    :default: ``5``
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        antiloop_threshold = 5
+
+    You can deactivate the anti-looping feature (not recommended) by setting
+    this to ``0``:
+
+    .. code-block:: ini
+
+        antiloop_threshold = 0
+
+    .. seealso::
+
+        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
+        setting does.
+
+    .. versionadded:: 8.0
+    """
+
+    antiloop_window = ValidatedAttribute('antiloop_window', int, default=120)
+    """The time period (in seconds) checked when detecting repeated messages.
+
+    :default: ``120``
+
+    This is equivalent to the default value:
+
+    .. code-block:: ini
+
+        antiloop_window = 120
+
+    .. seealso::
+
+        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
+        setting does.
+
+    .. versionadded:: 8.0
+    """
+
     auth_method = ChoiceAttribute('auth_method', choices=[
         'nickserv', 'authserv', 'Q', 'sasl', 'server', 'userserv'])
     """Simple method to authenticate with the server.

@@ -790,6 +790,11 @@ class AbstractBot(abc.ABC):
         flood_text_length = self.settings.core.flood_text_length
         flood_penalty_ratio = self.settings.core.flood_penalty_ratio
 
+        antiloop_threshold = min(10, self.settings.core.antiloop_threshold)
+        antiloop_window = self.settings.core.antiloop_window
+        antiloop_repeat_text = self.settings.core.antiloop_repeat_text
+        antiloop_silent_after = self.settings.core.antiloop_silent_after
+
         with self.sending:
             recipient_id = self.make_identifier(recipient)
             recipient_stack = self.stack.setdefault(recipient_id, {
@@ -840,18 +845,22 @@ class AbstractBot(abc.ABC):
                     time.sleep(sleep_time)
 
             # Loop detection
-            messages = [m[1] for m in recipient_stack['messages'][-8:]]
+            if antiloop_threshold > 0 and elapsed < antiloop_window:
+                messages = [m[1] for m in recipient_stack['messages'][-10:]]
 
-            # If what we're about to send repeated at least 5 times in the last
-            # two minutes, replace it with '...'
-            if messages.count(text) >= 5 and elapsed < 120:
-                text = '...'
-                if messages.count('...') >= 3:
-                    # If we've already said '...' 3 times, discard message
-                    return
+                # If what we're about to send repeated at least N times
+                # in the anti-looping window, replace it
+                if messages.count(text) >= antiloop_threshold:
+                    text = antiloop_repeat_text
+                    if messages.count(text) >= antiloop_silent_after:
+                        # If we've already said that N times, discard message
+                        return
 
             self.backend.send_privmsg(recipient, text)
-            recipient_stack['flood_left'] = max(0, recipient_stack['flood_left'] - 1)
+
+            # update recipient meta-data
+            flood_left = recipient_stack['flood_left'] - 1
+            recipient_stack['flood_left'] = max(0, flood_left)
             recipient_stack['messages'].append((time.time(), safe(text)))
             recipient_stack['messages'] = recipient_stack['messages'][-10:]
 
