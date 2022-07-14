@@ -19,7 +19,7 @@ def seen(bot, trigger):
     """Reports when and where the user was last seen."""
     if not trigger.group(2):
         bot.reply(
-            "Use `%sseen <nick>` to know when <nick> was last seen."
+            'Use `%sseen <nick>` to know when <nick> was last seen.'
             % bot.settings.core.help_prefix)
         return
 
@@ -40,19 +40,19 @@ def seen(bot, trigger):
     # as of Sopel 8, trigger.time is an aware datetime
     delta = seconds_to_human(trigger.time.timestamp() - saw)
 
-    msg = "I last saw " + nick
+    msg = 'I last saw ' + nick
     if bot.make_identifier(channel) == trigger.sender:
         if action:
-            msg += " in here {since}, doing: {nick} {action}".format(
+            msg += ' in here {since}, doing: {nick} {action}'.format(
                 since=delta,
                 nick=nick,
                 action=message)
         else:
-            msg += " in here {since}, saying: {message}".format(
+            msg += ' in here {since}, saying: {message}'.format(
                 since=delta,
                 message=message)
     else:
-        msg += " in another channel {since}.".format(since=delta)
+        msg += ' in another channel {since}.'.format(since=delta)
     bot.say(msg)
 
 

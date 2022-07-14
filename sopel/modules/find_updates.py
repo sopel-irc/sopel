@@ -78,12 +78,12 @@ def check_version(bot):
         # too many failures to ignore; notify owner
         bot.say(
             "[update] I haven't been able to check for updates in a while. "
-            "Please verify that {} is working and I can reach it."
+            'Please verify that {} is working and I can reach it.'
             .format(version_url), bot.config.core.owner)
         bot.say(
-            "[update] If this issue persists, please alert the Sopel dev team "
-            "in #sopel on Libera Chat, or open a GitHub issue: "
-            "https://github.com/sopel-irc/sopel/issues",
+            '[update] If this issue persists, please alert the Sopel dev team '
+            'in #sopel on Libera Chat, or open a GitHub issue: '
+            'https://github.com/sopel-irc/sopel/issues',
             bot.config.core.owner)
         return
 

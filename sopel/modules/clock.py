@@ -29,7 +29,7 @@ ERROR_INVALID_TIMEZONE = (
     'Try one from https://sopel.chat/tz')
 ERROR_INVALID_FORMAT = (
     "That format doesn't work. Try using "
-    "http://strftime.net to make one.")
+    'http://strftime.net to make one.')
 
 
 @plugin.command('t', 'time')
@@ -184,7 +184,7 @@ def get_user_tz(bot, trigger):
     zone = get_nick_timezone(bot.db, nick)
 
     if zone:
-        bot.say('%s\'s time zone is %s.' % (nick, zone))
+        bot.say("%s's time zone is %s." % (nick, zone))
     else:
         bot.say('%s has not set their time zone' % nick)
 
@@ -312,7 +312,7 @@ def get_channel_tz(bot, trigger):
     zone = get_channel_timezone(bot.db, channel)
 
     if zone:
-        bot.say('%s\'s timezone: %s' % (channel, zone))
+        bot.say("%s's timezone: %s" % (channel, zone))
     else:
         bot.say('%s has no preferred timezone' % channel)
 
@@ -353,10 +353,10 @@ def update_channel_format(bot, trigger):
     help_prefix = bot.settings.core.help_prefix
     set_command = '%ssettz' % help_prefix
     channel_command = '%schanneltz' % help_prefix
-    bot.say("Times in this channel will now appear as %s "
-            "unless a user has their own format set. (If the timezone"
-            " is wrong, you might try the %s and %s "
-            "commands)" % (timef, set_command, channel_command))
+    bot.say('Times in this channel will now appear as %s '
+            'unless a user has their own format set. (If the timezone'
+            ' is wrong, you might try the %s and %s '
+            'commands)' % (timef, set_command, channel_command))
 
 
 @plugin.command('unsetchanneltimeformat', 'unsetctf')
@@ -387,6 +387,6 @@ def get_channel_format(bot, trigger):
 
     tformat = bot.db.get_channel_value(channel, 'time_format')
     if tformat:
-        bot.say('%s\'s time format: %s' % (channel, tformat))
+        bot.say("%s's time format: %s" % (channel, tformat))
     else:
         bot.say('%s has no preferred time format' % channel)

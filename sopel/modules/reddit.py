@@ -88,9 +88,9 @@ def get_is_cakeday(entrytime):
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def image_info(bot, trigger, match):
     url = match.group(0)
-    preview = match.group("subdomain") == "preview"
+    preview = match.group('subdomain') == 'preview'
     if preview:
-        url = "https://i.redd.it/{}".format(match.group("image"))
+        url = 'https://i.redd.it/{}'.format(match.group('image'))
     results = list(
         bot.memory['reddit_praw']
         .subreddit('all')
@@ -127,11 +127,11 @@ def post_or_comment_info(bot, trigger, match):
     match = match or trigger
     groups = match.groupdict()
 
-    if groups.get("comment"):
-        say_comment_info(bot, trigger, groups["comment"])
+    if groups.get('comment'):
+        say_comment_info(bot, trigger, groups['comment'])
         return
 
-    say_post_info(bot, trigger, groups["submission"])
+    say_post_info(bot, trigger, groups['submission'])
 
 
 @plugin.url(gallery_url)
@@ -258,14 +258,14 @@ def subreddit_info(bot, trigger, match, commanded=False):
     if match_lower in ['all', 'popular']:
         message = '{link}{nsfw} | {public_description}'
         nsfw = ' ' + bold(color('[Possible NSFW]', colors.ORANGE))
-        link = "https://reddit.com/r/" + match_lower
+        link = 'https://reddit.com/r/' + match_lower
         public_description = ''
         if match_lower == 'all':
-            public_description = ('Today\'s top content from hundreds of '
+            public_description = ("Today's top content from hundreds of "
                                   'thousands of Reddit communities.')
         elif match_lower == 'popular':
             public_description = ('The top trending content from some of '
-                                  'Reddit\'s most popular communities')
+                                  "Reddit\'s most popular communities")
         message = message.format(
             link=link, nsfw=nsfw, public_description=public_description)
         bot.say(message)
@@ -284,13 +284,13 @@ def subreddit_info(bot, trigger, match, commanded=False):
         s = r.subreddit(match)
         s.subreddit_type
     except prawcore.exceptions.Forbidden:
-        bot.reply("r/" + match + " appears to be a private subreddit!")
+        bot.reply('r/' + match + ' appears to be a private subreddit!')
         return plugin.NOLIMIT
     except prawcore.exceptions.NotFound:
-        bot.reply("r/" + match + " appears to be a banned subreddit!")
+        bot.reply('r/' + match + ' appears to be a banned subreddit!')
         return plugin.NOLIMIT
 
-    link = "https://reddit.com/r/" + s.display_name
+    link = 'https://reddit.com/r/' + s.display_name
 
     created = get_time_created(bot, trigger, s.created_utc)
 
@@ -457,9 +457,9 @@ def get_channel_spoiler_free(bot, trigger):
 def reddit_slash_info(bot, trigger):
     searchtype = trigger.group('prefix').lower()
     match = trigger.group('id')
-    if searchtype == "r":
+    if searchtype == 'r':
         return subreddit_info(bot, trigger, match, commanded=False)
-    elif searchtype == "u":
+    elif searchtype == 'u':
         return redditor_info(bot, trigger, match, commanded=False)
 
 

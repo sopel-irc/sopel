@@ -27,7 +27,7 @@ def _format_safe(text):
     and makes sure any formatting codes are closed if necessary.
     """
     if not isinstance(text, str):
-        raise TypeError("A string is required.")
+        raise TypeError('A string is required.')
     elif not text:
         # unnecessary optimization
         return ''
@@ -70,18 +70,18 @@ def _format_safe(text):
 
 
 @plugin.command('choose', 'choice', 'ch')
-@plugin.priority("medium")
-@plugin.example(".choose a, b, c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@plugin.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@plugin.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@plugin.example(".choose a|b|c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@plugin.example(".choose a b c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
-@plugin.example(".choose a, b | just a",
+@plugin.priority('medium')
+@plugin.example('.choose a, b, c', r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example('.choose a | b | c', r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example('.choose a,b,c', r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example('.choose a|b|c', r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example('.choose a b c', r'Your options: a, b, c. My choice: (a|b|c)', re=True)
+@plugin.example('.choose a, b | just a',
                 r'Your options: "a, b", just a. My choice: ((a, b)|(just a))',
                 re=True)
-@plugin.example(".choose a", 'Your options: a. My choice: a')
-@plugin.example(".choose a | b | c", user_help=True)
-@plugin.example(".choose a, b, c", user_help=True)
+@plugin.example('.choose a', 'Your options: a. My choice: a')
+@plugin.example('.choose a | b | c', user_help=True)
+@plugin.example('.choose a, b, c', user_help=True)
 def choose(bot, trigger):
     """Makes a difficult choice easy."""
     if not trigger.group(2):

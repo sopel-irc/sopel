@@ -29,8 +29,8 @@ def _load(bot, plugin):
         raise
 
 
-@plugin.nickname_command("reload")
-@plugin.priority("low")
+@plugin.nickname_command('reload')
+@plugin.priority('low')
 @plugin.thread(False)
 @plugin.require_admin
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
@@ -69,8 +69,8 @@ def f_update(bot, trigger):
     f_reload(bot, trigger)
 
 
-@plugin.nickname_command("load")
-@plugin.priority("low")
+@plugin.nickname_command('load')
+@plugin.priority('low')
 @plugin.thread(False)
 @plugin.require_admin
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
@@ -109,8 +109,8 @@ def f_load(bot, trigger):
 
 
 # Catch private messages
-@plugin.command("reload")
-@plugin.priority("low")
+@plugin.command('reload')
+@plugin.priority('low')
 @plugin.thread(False)
 @plugin.require_privmsg
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
@@ -127,8 +127,8 @@ def pm_f_update(bot, trigger):
     f_update(bot, trigger)
 
 
-@plugin.command("load")
-@plugin.priority("low")
+@plugin.command('load')
+@plugin.priority('low')
 @plugin.thread(False)
 @plugin.require_privmsg
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)

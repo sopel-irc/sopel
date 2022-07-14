@@ -142,7 +142,7 @@ def pronouns(bot, trigger):
             say_pronouns(bot, trigger.nick, pronouns)
         else:
             bot.reply("I don't know your pronouns! You can set them with "
-                      "{}setpronouns".format(bot.config.core.help_prefix))
+                      '{}setpronouns'.format(bot.config.core.help_prefix))
     else:
         pronouns = bot.db.get_nick_value(trigger.group(3), 'pronouns')
         if pronouns:
@@ -151,12 +151,12 @@ def pronouns(bot, trigger):
             # You can stuff an entry into the database manually for your bot's
             # gender, but like… it's a bot.
             bot.say(
-                "I am a bot. Beep boop. My pronouns are it/it/its/its/itself. "
-                "See https://pronoun.is/it for examples."
+                'I am a bot. Beep boop. My pronouns are it/it/its/its/itself. '
+                'See https://pronoun.is/it for examples.'
             )
         else:
             bot.reply("I don't know {}'s pronouns. They can set them with "
-                      "{}setpronouns".format(trigger.group(3),
+                      '{}setpronouns'.format(trigger.group(3),
                                              bot.config.core.help_prefix))
 
 
@@ -167,7 +167,7 @@ def say_pronouns(bot, nick, pronouns):
         short = pronouns
 
     bot.say("{}'s pronouns are {}. See https://pronoun.is/{} for "
-            "examples.".format(nick, pronouns, short))
+            'examples.'.format(nick, pronouns, short))
 
 
 @plugin.command('setpronouns')
@@ -182,17 +182,17 @@ def set_pronouns(bot, trigger):
         return
 
     disambig = ''
-    requested_pronouns_split = requested_pronouns.split("/")
+    requested_pronouns_split = requested_pronouns.split('/')
     if len(requested_pronouns_split) < 5:
         matching = []
         for known_pronoun_set in bot.memory['pronoun_sets'].values():
-            known_split_set = known_pronoun_set.split("/")
-            if known_pronoun_set.startswith(requested_pronouns + "/") or (
+            known_split_set = known_pronoun_set.split('/')
+            if known_pronoun_set.startswith(requested_pronouns + '/') or (
                 len(requested_pronouns_split) == 3
                 and (
                     (
                         # "they/.../themself"
-                        requested_pronouns_split[1] == "..."
+                        requested_pronouns_split[1] == '...'
                         and requested_pronouns_split[0] == known_split_set[0]
                         and requested_pronouns_split[2] == known_split_set[4]
                     )
@@ -209,15 +209,15 @@ def set_pronouns(bot, trigger):
             bot.reply(
                 "I'm sorry, I don't know those pronouns. "
                 "You can give me a set I don't know by formatting it "
-                "subject/object/possessive-determiner/possessive-pronoun/"
-                "reflexive, as in: they/them/their/theirs/themselves"
+                'subject/object/possessive-determiner/possessive-pronoun/'
+                'reflexive, as in: they/them/their/theirs/themselves'
             )
             return
 
         requested_pronouns = matching.pop(0)
         if matching:
-            disambig = " Or, if you meant one of these, please tell me: {}".format(
-                ", ".join(matching)
+            disambig = ' Or, if you meant one of these, please tell me: {}'.format(
+                ', '.join(matching)
             )
 
     bot.db.set_nick_value(trigger.nick, 'pronouns', requested_pronouns)

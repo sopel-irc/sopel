@@ -155,15 +155,15 @@ class WikipediaTLDListParser(HTMLParser):
             self.current_cell += data
 
     def get_processed_data(self):
-        LOGGER.debug("Processed TLD data requested.")
+        LOGGER.debug('Processed TLD data requested.')
         if self.finished:
-            LOGGER.debug("Returning stored previously-processed data.")
+            LOGGER.debug('Returning stored previously-processed data.')
             return self.tables
 
-        LOGGER.debug("Ensuring all buffered data has been parsed.")
+        LOGGER.debug('Ensuring all buffered data has been parsed.')
         self.close()
 
-        LOGGER.debug("Processing tables.")
+        LOGGER.debug('Processing tables.')
         tld_list = {}
         for table in self.tables:
             headings = table[0]
@@ -179,7 +179,7 @@ class WikipediaTLDListParser(HTMLParser):
                         idn_key = idn.group(1).lower()
                 if not any([key, idn_key]):
                     LOGGER.warning(
-                        "Skipping row %s; could not find string to use as lookup key.",
+                        'Skipping row %s; could not find string to use as lookup key.',
                         str(row),
                     )
                     continue
@@ -201,7 +201,7 @@ class WikipediaTLDListParser(HTMLParser):
                 if idn_key:
                     tld_list[idn_key] = zipped
 
-        LOGGER.debug("Finished processing TLD data; returning it.")
+        LOGGER.debug('Finished processing TLD data; returning it.')
         self.tables = tld_list
         self.finished = True
         return self.tables
@@ -220,7 +220,7 @@ def _update_tld_data(bot, which, force=False):
     since = now - then
     if not force and since.days < 7:
         LOGGER.debug(
-            "Skipping TLD %s cache update; the cache is only %s old.",
+            'Skipping TLD %s cache update; the cache is only %s old.',
             which,
             '1 day' if since.days == 1 else ('%d days' % since.days),
         )
@@ -232,7 +232,7 @@ def _update_tld_data(bot, which, force=False):
         except requests.exceptions.RequestException:
             # Probably a transient error; log it and continue life
             LOGGER.warning(
-                "Error fetching IANA TLD list; will try again later.",
+                'Error fetching IANA TLD list; will try again later.',
                 exc_info=True)
             return
 
@@ -250,17 +250,17 @@ def _update_tld_data(bot, which, force=False):
             try:
                 # https://www.mediawiki.org/wiki/Special:MyLanguage/API:Get_the_contents_of_a_page
                 tld_response = requests.get(
-                    "https://en.wikipedia.org/w/api.php",
+                    'https://en.wikipedia.org/w/api.php',
                     params={
-                        "action": "parse",
-                        "format": "json",
-                        "prop": "text",
-                        "utf8": 1,
-                        "formatversion": 2,
-                        "page": title,
+                        'action': 'parse',
+                        'format': 'json',
+                        'prop': 'text',
+                        'utf8': 1,
+                        'formatversion': 2,
+                        'page': title,
                     },
                 ).json()
-                data_pages.append(tld_response["parse"]["text"])
+                data_pages.append(tld_response['parse']['text'])
             # py <3.5 needs ValueError instead of more specific json.decoder.JSONDecodeError
             except (requests.exceptions.RequestException, ValueError, KeyError):
                 # Log error and continue life; it'll be fine
@@ -278,7 +278,7 @@ def _update_tld_data(bot, which, force=False):
         bot.memory['tld_data_cache'] = tld_data
         bot.memory['tld_data_cache_updated'] = now
 
-    LOGGER.debug("Updated TLD %s cache.", which)
+    LOGGER.debug('Updated TLD %s cache.', which)
 
 
 @plugin.interval(60 * 60)
@@ -294,7 +294,7 @@ def gettld(bot, trigger):
     """Show information about the given Top Level Domain."""
     tld = trigger.group(2)
     if not tld:
-        bot.reply("You must provide a top-level domain to search.")
+        bot.reply('You must provide a top-level domain to search.')
         return  # Stop if no tld argument is provided
     tld = tld.strip('.').lower()
 
@@ -320,7 +320,7 @@ def gettld(bot, trigger):
     if not record:
         bot.say(
             "The top-level domain '{}' exists, "
-            "but no details about it could be found."
+            'but no details about it could be found.'
             .format(tld)
         )
         return
@@ -366,13 +366,13 @@ def tld_cache_command(bot, trigger):
             )
 
         bot.reply(
-            "IANA list updated at {}; Wikipedia data last fetched at {}."
+            'IANA list updated at {}; Wikipedia data last fetched at {}.'
             .format(times['list'], times['data']))
         return
 
     subcommand = subcommand.lower()
     if subcommand == 'update':
-        bot.reply("Requesting updated IANA list and Wikipedia data.")
+        bot.reply('Requesting updated IANA list and Wikipedia data.')
         update_caches(bot, force=True)
     elif subcommand == 'clear':
         bot.db.delete_plugin_value('tld', 'tld_data_cache')
@@ -384,7 +384,7 @@ def tld_cache_command(bot, trigger):
         bot.db.delete_plugin_value('tld', 'tld_list_cache_updated')
         bot.memory['tld_list_cache_updated'] = DEFAULT_CACHE_DATETIME
 
-        bot.reply("Cleared all cached TLD data.")
+        bot.reply('Cleared all cached TLD data.')
     else:
         bot.reply(
             "Unknown subcommand '{}'; recognized values are 'update' and 'clear'."

@@ -137,13 +137,13 @@ def setup(bot):
         try:
             os.rename(old, bot.rfn)
         except OSError:
-            LOGGER.error("Migration failed!")
-            LOGGER.error("Old filename: {}".format(old))
-            LOGGER.error("New filename: {}".format(bot.rfn))
+            LOGGER.error('Migration failed!')
+            LOGGER.error('Old filename: {}'.format(old))
+            LOGGER.error('New filename: {}'.format(bot.rfn))
             LOGGER.error(
-                "See https://sopel.chat/usage/installing/upgrading-to-sopel-7/#reminder-db-migration")
+                'See https://sopel.chat/usage/installing/upgrading-to-sopel-7/#reminder-db-migration')
         else:
-            LOGGER.info("Migration finished!")
+            LOGGER.info('Migration finished!')
     # End migration logic
 
     bot.rdb = load_database(bot.rfn)
@@ -221,10 +221,10 @@ PERIODS = '|'.join(SCALING.keys())
 def remind_in(bot, trigger):
     """Gives you a reminder in the given amount of time."""
     if not trigger.group(2):
-        bot.reply("Missing arguments for reminder command.")
+        bot.reply('Missing arguments for reminder command.')
         return plugin.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
-        bot.reply("No message given for reminder.")
+        bot.reply('No message given for reminder.')
         return plugin.NOLIMIT
     duration = 0
     message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + PERIODS + ')) ?',
@@ -461,10 +461,10 @@ def remind_at(bot, trigger):
     dd-mm-YY, or dd-mm. The separator can be ``.``, ``-``, or ``/``.
     """
     if not trigger.group(2):
-        bot.reply("No arguments given for reminder command.")
+        bot.reply('No arguments given for reminder command.')
         return plugin.NOLIMIT
     if trigger.group(3) and not trigger.group(4):
-        bot.reply("No message given for reminder.")
+        bot.reply('No message given for reminder.')
         return plugin.NOLIMIT
 
     match = REGEX_AT.match(trigger.group(2))

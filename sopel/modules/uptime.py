@@ -13,8 +13,8 @@ from sopel import plugin
 
 
 def setup(bot):
-    if "start_time" not in bot.memory:
-        bot.memory["start_time"] = datetime.datetime.utcnow()
+    if 'start_time' not in bot.memory:
+        bot.memory['start_time'] = datetime.datetime.utcnow()
 
 
 @plugin.command('uptime')
@@ -23,6 +23,6 @@ def setup(bot):
 def uptime(bot, trigger):
     """Return the uptime of Sopel."""
     delta = datetime.timedelta(seconds=round((datetime.datetime.utcnow() -
-                                              bot.memory["start_time"])
+                                              bot.memory['start_time'])
                                              .total_seconds()))
     bot.say("I've been sitting here for {} and I keep going!".format(delta))

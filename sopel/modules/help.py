@@ -78,7 +78,7 @@ def post_to_clbin(msg):
         # though it will probably send us an HTTPS link without any tricks.
         return result.replace('http://', 'https://', 1)
     else:
-        LOGGER.error("Invalid result %s", result)
+        LOGGER.error('Invalid result %s', result)
         raise PostingException('clbin result did not contain expected URL base.')
 
 
@@ -107,13 +107,13 @@ def post_to_hastebin(msg):
     try:
         result = result.json()
     except ValueError:
-        LOGGER.error("Invalid Hastebin response %s", result)
+        LOGGER.error('Invalid Hastebin response %s', result)
         raise PostingException('Could not parse response from Hastebin!')
 
     if 'key' not in result:
-        LOGGER.error("Invalid result %s", result)
+        LOGGER.error('Invalid result %s', result)
         raise PostingException('Hastebin result did not contain expected URL base.')
-    return "https://hastebin.com/" + result['key']
+    return 'https://hastebin.com/' + result['key']
 
 
 def post_to_termbin(msg):
@@ -123,10 +123,10 @@ def post_to_termbin(msg):
         sock.connect(('termbin.com', 9999))
         sock.sendall(msg)
         sock.shutdown(socket.SHUT_WR)
-        response = ""
+        response = ''
         while 1:
             data = sock.recv(1024)
-            if data == "":
+            if data == '':
                 break
             response += data
         sock.close()
@@ -150,7 +150,7 @@ def post_to_ubuntu(msg):
         'https://pastebin.ubuntu.com/', data=data)
 
     if not re.match(r'https://pastebin\.ubuntu\.com/p/[^/]+/', result.url):
-        LOGGER.error("Invalid Ubuntu pastebin response url %s", result.url)
+        LOGGER.error('Invalid Ubuntu pastebin response url %s', result.url)
         raise PostingException(
             'Invalid response from Ubuntu pastebin: %s' % result.url)
 
@@ -207,7 +207,7 @@ def configure(config):
     )
     config.help.configure_setting(
         'show_server_host',
-        'Should the help command show the IRC server\'s hostname/IP in the listing?'
+        "Should the help command show the IRC server's hostname/IP in the listing?"
     )
 
 
@@ -271,7 +271,7 @@ def help(bot, trigger):
             if len(bot.doc[name][0]) + int(bool(bot.doc[name][1])) > threshold:
                 if trigger.nick != trigger.sender:  # don't say that if asked in private
                     bot.reply('The documentation for this command is too long; '
-                              'I\'m sending it to you in a private message.')
+                              "I'm sending it to you in a private message.")
 
                 def msgfun(message):
                     bot.say(message, trigger.nick)
@@ -315,8 +315,8 @@ def help(bot, trigger):
             bot.memory['command-list'] = (len(bot.command_groups), url)
             update_cache(bot)
         respond("I've posted a list of my commands at {0} - You can see "
-                "more info about any of these commands by doing {1}help "
-                "<command> (e.g. {1}help time)"
+                'more info about any of these commands by doing {1}help '
+                '<command> (e.g. {1}help time)'
                 .format(url, bot.config.core.help_prefix))
 
 
@@ -333,8 +333,8 @@ def create_list(bot, msg):
     try:
         result = PASTEBIN_PROVIDERS[bot.config.help.output](msg)
     except PostingException:
-        bot.say("Sorry! Something went wrong.")
-        LOGGER.exception("Error posting commands")
+        bot.say('Sorry! Something went wrong.')
+        LOGGER.exception('Error posting commands')
         return
     return result
 
@@ -344,7 +344,7 @@ def create_list(bot, msg):
 def help2(bot, trigger):
     response = (
         "Hi, I'm a bot. Say {1}commands to me in private for a list "
-        "of my commands, or see https://sopel.chat for more "
-        "general details. My owner is {0}."
+        'of my commands, or see https://sopel.chat for more '
+        'general details. My owner is {0}.'
         .format(bot.config.core.owner, bot.config.core.help_prefix))
     bot.reply(response)

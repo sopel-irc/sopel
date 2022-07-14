@@ -50,13 +50,13 @@ def translate(text, in_lang='auto', out_lang='en'):
     }
 
     query = {
-        "client": "gtx",
-        "sl": in_lang,
-        "tl": out_lang,
-        "dt": "t",
-        "q": text,
+        'client': 'gtx',
+        'sl': in_lang,
+        'tl': out_lang,
+        'dt': 't',
+        'q': text,
     }
-    url = "https://translate.googleapis.com/translate_a/single"
+    url = 'https://translate.googleapis.com/translate_a/single'
     result = requests.get(url, params=query, timeout=40, headers=headers).text
 
     if result == '[,,""]':
@@ -70,7 +70,7 @@ def translate(text, in_lang='auto', out_lang='en'):
         data = json.loads(result)
     except ValueError:
         LOGGER.error(
-            'Error parsing JSON response from translate API (%s to %s: "%s")',
+            "Error parsing JSON response from translate API (%s to %s: '%s')",
             in_lang, out_lang, text)
         return None, None
 
@@ -111,20 +111,20 @@ def tr(bot, trigger):
     try:
         msg, in_lang = translate(phrase, in_lang, out_lang)
     except requests.Timeout:
-        bot.reply("Translation service unavailable (timeout).")
+        bot.reply('Translation service unavailable (timeout).')
         LOGGER.error(
             'Translate API error (%s to %s: "%s"): timeout.',
             in_lang, out_lang, phrase)
         return
     except requests.RequestException as http_error:
-        bot.reply("Translation request failed.")
+        bot.reply('Translation request failed.')
         LOGGER.exception(
             'Translate API error (%s to %s: "%s"): %s.',
             in_lang, out_lang, phrase, http_error)
         return
 
     if not in_lang:
-        bot.reply("Translation failed, probably because of a rate-limit.")
+        bot.reply('Translation failed, probably because of a rate-limit.')
         return
 
     if not msg:
@@ -198,20 +198,20 @@ def tr2(bot, trigger):
     try:
         msg, src = translate(phrase, src, dest)
     except requests.Timeout:
-        bot.reply("Translation service unavailable (timeout).")
+        bot.reply('Translation service unavailable (timeout).')
         LOGGER.error(
             'Translate API error (%s to %s: "%s"): timeout.',
             src, dest, phrase)
         return
     except requests.RequestException as http_error:
-        bot.reply("Translation request failed.")
+        bot.reply('Translation request failed.')
         LOGGER.exception(
             'Translate API error (%s to %s: "%s"): %s.',
             src, dest, phrase, http_error)
         return
 
     if not src:
-        return bot.say("Translation failed, probably because of a rate-limit.")
+        return bot.say('Translation failed, probably because of a rate-limit.')
 
     if not msg:
         bot.reply(
@@ -251,13 +251,13 @@ def mangle(bot, trigger):
         try:
             phrase = (bot.memory['mangle_lines'][trigger.sender], '')
         except KeyError:
-            bot.reply("What do you want me to mangle?")
+            bot.reply('What do you want me to mangle?')
             return
     else:
         phrase = (trigger.group(2).strip(), '')
 
     if phrase[0] == '':
-        bot.reply("What do you want me to mangle?")
+        bot.reply('What do you want me to mangle?')
         return
 
     for lang in lang_list:
@@ -283,7 +283,7 @@ def mangle(bot, trigger):
     if phrase[0] is None:
         # translate() returns (None, None) if an error happens,
         # usually because the bot has exceeded a rate limit
-        bot.reply("Translation rate limit reached. Try again later.")
+        bot.reply('Translation rate limit reached. Try again later.')
         return
 
     bot.say(phrase[0])

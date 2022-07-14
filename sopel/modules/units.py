@@ -62,10 +62,10 @@ def temperature(bot, trigger):
     fahrenheit = c_to_f(celsius)
 
     if kelvin <= 0:
-        bot.reply("Physically impossible temperature.")
+        bot.reply('Physically impossible temperature.')
         return
 
-    bot.say("{:.2f}°C = {:.2f}°F = {:.2f}K".format(
+    bot.say('{:.2f}°C = {:.2f}°F = {:.2f}K'.format(
         celsius,
         fahrenheit,
         kelvin,
@@ -94,27 +94,27 @@ def distance(bot, trigger):
     unit = source[1].lower()
     numeric = float(source[0])
     meter = 0
-    if unit in ("meters", "meter", "m"):
+    if unit in ('meters', 'meter', 'm'):
         meter = numeric
-    elif unit in ("millimeters", "millimeter", "mm"):
+    elif unit in ('millimeters', 'millimeter', 'mm'):
         meter = numeric / 1000
-    elif unit in ("kilometers", "kilometer", "km"):
+    elif unit in ('kilometers', 'kilometer', 'km'):
         meter = numeric * 1000
-    elif unit in ("miles", "mile", "mi"):
+    elif unit in ('miles', 'mile', 'mi'):
         meter = numeric / 0.00062137
-    elif unit in ("inch", "in"):
+    elif unit in ('inch', 'in'):
         meter = numeric / 39.370
-    elif unit in ("centimeters", "centimeter", "cm"):
+    elif unit in ('centimeters', 'centimeter', 'cm'):
         meter = numeric / 100
-    elif unit in ("feet", "foot", "ft"):
+    elif unit in ('feet', 'foot', 'ft'):
         meter = numeric / 3.2808
-    elif unit in ("yards", "yard", "yd"):
+    elif unit in ('yards', 'yard', 'yd'):
         meter = numeric / (3.2808 / 3)
-    elif unit in ("light-year", "light-years", "ly"):
+    elif unit in ('light-year', 'light-years', 'ly'):
         meter = numeric * 9460730472580800
-    elif unit in ("astronomical unit", "astronomical units", "au"):
+    elif unit in ('astronomical unit', 'astronomical units', 'au'):
         meter = numeric * 149597870700
-    elif unit in ("parsec", "parsecs", "pc"):
+    elif unit in ('parsec', 'parsecs', 'pc'):
         meter = numeric * 30856776376340068
 
     if meter >= 1000:
@@ -165,13 +165,13 @@ def mass(bot, trigger):
     unit = source[1].lower()
     numeric = float(source[0])
     metric = 0
-    if unit in ("gram", "grams", "gramme", "grammes", "g"):
+    if unit in ('gram', 'grams', 'gramme', 'grammes', 'g'):
         metric = numeric
-    elif unit in ("kilogram", "kilograms", "kilogramme", "kilogrammes", "kg"):
+    elif unit in ('kilogram', 'kilograms', 'kilogramme', 'kilogrammes', 'kg'):
         metric = numeric * 1000
-    elif unit in ("lb", "lbm", "pound", "pounds"):
+    elif unit in ('lb', 'lbm', 'pound', 'pounds'):
         metric = numeric * 453.59237
-    elif unit in ("oz", "ounce"):
+    elif unit in ('oz', 'ounce'):
         metric = numeric * 28.35
 
     if metric >= 1000:

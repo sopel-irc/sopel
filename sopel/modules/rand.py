@@ -36,10 +36,10 @@ def rand(bot, trigger):
             low = 0
             high = sys.maxsize
     except (ValueError, TypeError):
-        return bot.reply("Arguments must be integers.")
+        return bot.reply('Arguments must be integers.')
 
     if low > high:
         low, high = high, low
 
     number = random.randint(low, high)
-    bot.say("random(%d, %d): %d" % (low, high, number))
+    bot.say('random(%d, %d): %d' % (low, high, number))

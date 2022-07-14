@@ -54,8 +54,8 @@ def web_search(query):
 
 
 @plugin.command('xkcd')
-@plugin.example(".xkcd 1782", user_help=True)
-@plugin.example(".xkcd", user_help=True)
+@plugin.example('.xkcd 1782', user_help=True)
+@plugin.example('.xkcd', user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def xkcd(bot, trigger):
     """Finds an xkcd comic strip.
@@ -79,15 +79,15 @@ def xkcd(bot, trigger):
     else:
         query = trigger.group(2).strip()
 
-        numbered = re.match(r"^(#|\+|-)?(\d+)$", query)
+        numbered = re.match(r'^(#|\+|-)?(\d+)$', query)
         if numbered:
             query = int(numbered.group(2))
-            if numbered.group(1) == "-":
+            if numbered.group(1) == '-':
                 query = -query
             return numbered_result(bot, query, latest)
         else:
             # Non-number: search the web.
-            if (query.lower() == "latest" or query.lower() == "newest"):
+            if (query.lower() == 'latest' or query.lower() == 'newest'):
                 requested = latest
             else:
                 number = web_search(query)
@@ -103,16 +103,16 @@ def numbered_result(bot, query, latest, commanded=True):
     max_int = latest['num']
     if query > max_int:
         bot.reply(("Sorry, comic #{} hasn't been posted yet. "
-                   "The last comic was #{}").format(query, max_int))
+                   'The last comic was #{}').format(query, max_int))
         return
     elif query <= -max_int:
-        bot.reply(("Sorry, but there were only {} comics "
-                   "released yet so far").format(max_int))
+        bot.reply(('Sorry, but there were only {} comics '
+                   'released yet so far').format(max_int))
         return
     elif abs(query) == 0:
         requested = latest
     elif query == 404 or max_int + query == 404:
-        bot.say("404 - Not Found")  # don't error on that one
+        bot.say('404 - Not Found')  # don't error on that one
         return
     elif query > 0:
         requested = get_info(query)

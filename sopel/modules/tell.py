@@ -100,13 +100,13 @@ def setup(bot):
         try:
             os.rename(old, bot.tell_filename)
         except OSError:
-            LOGGER.error("Migration failed!")
-            LOGGER.error("Old filename: {}".format(old))
-            LOGGER.error("New filename: {}".format(bot.tell_filename))
+            LOGGER.error('Migration failed!')
+            LOGGER.error('Old filename: {}'.format(old))
+            LOGGER.error('New filename: {}'.format(bot.tell_filename))
             LOGGER.error(
-                "See https://sopel.chat/usage/installing/upgrading-to-sopel-7/#reminder-db-migration")
+                'See https://sopel.chat/usage/installing/upgrading-to-sopel-7/#reminder-db-migration')
         else:
-            LOGGER.info("Migration finished!")
+            LOGGER.info('Migration finished!')
     # End migration logic
 
     if not os.path.exists(bot.tell_filename):
@@ -141,7 +141,7 @@ def _format_safe_lstrip(text):
     function by the person who wrote it.
     """
     if not isinstance(text, str):
-        raise TypeError("A string is required.")
+        raise TypeError('A string is required.')
     elif not text:
         # unnecessary optimization
         return ''
@@ -178,7 +178,7 @@ def f_remind(bot, trigger):
     verb = trigger.group(1)
 
     if not trigger.group(3):
-        bot.reply("%s whom?" % verb)
+        bot.reply('%s whom?' % verb)
         return
 
     tellee = trigger.group(3).rstrip('.,:;')
@@ -186,13 +186,13 @@ def f_remind(bot, trigger):
     # all we care about is having at least one non-whitespace
     # character after the name
     if not trigger.group(4):
-        bot.reply("%s %s what?" % (verb, tellee))
+        bot.reply('%s %s what?' % (verb, tellee))
         return
 
     msg = _format_safe_lstrip(trigger.group(2).split(' ', 1)[1])
 
     if not msg:
-        bot.reply("%s %s what?" % (verb, tellee))
+        bot.reply('%s %s what?' % (verb, tellee))
         return
 
     tellee = bot.make_identifier(tellee)
@@ -232,7 +232,7 @@ def f_remind(bot, trigger):
 
 def get_nick_reminders(reminders, nick):
     lines = []
-    template = "%s: %s <%s> %s %s %s"
+    template = '%s: %s <%s> %s %s %s'
     today = time.strftime('%d %b', time.gmtime())
 
     for (teller, verb, datetime, msg) in reminders:

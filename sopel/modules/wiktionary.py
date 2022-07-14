@@ -131,7 +131,7 @@ def wiktionary(bot, trigger):
 
 
 @plugin.command('ety')
-@plugin.example('.ety bailiwick', "bailiwick: From bailie (“bailiff”) and wick (“dwelling”), from Old English wīc.")
+@plugin.example('.ety bailiwick', 'bailiwick: From bailie (“bailiff”) and wick (“dwelling”), from Old English wīc.')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def wiktionary_ety(bot, trigger):
     """Look up a word's etymology on Wiktionary."""
@@ -145,6 +145,6 @@ def wiktionary_ety(bot, trigger):
         bot.reply("Couldn't get the etymology for %s." % word)
         return
 
-    result = "{}: {}".format(word, etymology)
+    result = '{}: {}'.format(word, etymology)
 
     bot.say(result, truncation=' […]')

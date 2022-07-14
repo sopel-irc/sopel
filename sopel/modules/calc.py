@@ -29,7 +29,7 @@ def c(bot, trigger):
     eqn = trigger.group(2).replace(',', '.')
     try:
         result = eval_equation(eqn)
-        result = "{:.10g}".format(result)
+        result = '{:.10g}'.format(result)
     except ZeroDivisionError:
         bot.reply('Division by zero is not supported in this universe.')
         return

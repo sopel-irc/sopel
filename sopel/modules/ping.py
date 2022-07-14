@@ -20,7 +20,10 @@ def hello(bot, trigger):
 
 @plugin.rule(r'(?i)(Fuck|Screw) you,? $nickname[ \t]*$')
 def rude(bot, trigger):
-    bot.say('Watch your mouth, ' + trigger.nick + ', or I\'ll tell your mother!')
+    message = "Watch your mouth, {nick} or I'll tell your mother!".format(
+        nick=trigger.nick,
+    )
+    bot.say(message)
 
 
 @plugin.rule('$nickname!')

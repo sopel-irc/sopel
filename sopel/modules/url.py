@@ -253,7 +253,7 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
     if not trigger.group(2):
         if trigger.sender not in bot.memory['last_seen_url']:
             return
-        urls = [bot.memory["last_seen_url"][trigger.sender]]
+        urls = [bot.memory['last_seen_url'][trigger.sender]]
     else:
         # needs to be a list so len() can be checked later
         urls = list(web.search_urls(trigger))
@@ -264,7 +264,7 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
         if dispatched:
             result_count += 1
             continue
-        message = "%s | %s" % (title, domain)
+        message = '%s | %s' % (title, domain)
         if tinyurl:
             message += ' ( %s )' % tinyurl
         bot.reply(message)
@@ -274,7 +274,7 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
     expected_count = len(urls)
     if result_count < expected_count:
         if expected_count == 1:
-            bot.reply("Sorry, fetching that title failed. Make sure the site is working.")
+            bot.reply('Sorry, fetching that title failed. Make sure the site is working.')
         elif result_count == 0:
             bot.reply("Sorry, I couldn't fetch titles for any of those.")
         else:
@@ -301,11 +301,11 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
         trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
 
     urls = []
-    safety_cache = bot.memory.get("safety_cache", {})
-    safety_cache_local = bot.memory.get("safety_cache_local", {})
+    safety_cache = bot.memory.get('safety_cache', {})
+    safety_cache_local = bot.memory.get('safety_cache_local', {})
     for url in unchecked_urls:
         # Avoid fetching known malicious links
-        if url in safety_cache and safety_cache[url]["positives"] > 0:
+        if url in safety_cache and safety_cache[url]['positives'] > 0:
             continue
         if urlparse(url).hostname.lower() in safety_cache_local:
             continue
@@ -319,7 +319,7 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
             # Guard against responding to other instances of this bot.
             if message != trigger:
                 bot.say(message)
-        bot.memory["last_seen_url"][trigger.sender] = url
+        bot.memory['last_seen_url'][trigger.sender] = url
 
 
 def process_urls(
@@ -369,7 +369,7 @@ def process_urls(
         if not bot.config.url.enable_private_resolution:
             if not parsed_url.hostname:
                 # URL like file:///path is a valid local path (i.e. private)
-                LOGGER.debug("Ignoring private URL: %s", url)
+                LOGGER.debug('Ignoring private URL: %s', url)
                 continue
 
             try:
@@ -383,7 +383,7 @@ def process_urls(
                     private = True
                     break
             if private:
-                LOGGER.debug("Ignoring private URL: %s", url)
+                LOGGER.debug('Ignoring private URL: %s', url)
                 continue
 
         # Call the URL to get a title, if possible
@@ -427,7 +427,7 @@ def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> b
     """
     # Check if it matches the exclusion list first
     excluded = use_excludes and any(
-        regex.search(url) for regex in bot.memory["url_exclude"]
+        regex.search(url) for regex in bot.memory['url_exclude']
     )
     return (
         excluded or
@@ -454,7 +454,7 @@ def find_title(url: str, verify: bool = True) -> Optional[str]:
         # the data
         response.close()
     except requests.exceptions.ConnectionError as e:
-        LOGGER.debug("Unable to reach URL: %r: %s", url, e)
+        LOGGER.debug('Unable to reach URL: %r: %s', url, e)
         return None
     except (
         requests.exceptions.InvalidURL,  # e.g. http:///
@@ -505,8 +505,8 @@ def get_or_create_shorturl(bot: SopelWrapper, url: str) -> Optional[str]:
 
 def get_tinyurl(url: str) -> Optional[str]:
     """Returns a shortened tinyURL link of the URL"""
-    base_url = "https://tinyurl.com/api-create.php"
-    tinyurl = "%s?%s" % (base_url, web.urlencode({'url': url}))
+    base_url = 'https://tinyurl.com/api-create.php'
+    tinyurl = '%s?%s' % (base_url, web.urlencode({'url': url}))
     try:
         res = requests.get(tinyurl)
         res.raise_for_status()
@@ -514,4 +514,4 @@ def get_tinyurl(url: str) -> Optional[str]:
         return None
     # Replace text output with https instead of http to make the
     # result an HTTPS link.
-    return res.text.replace("http://", "https://")
+    return res.text.replace('http://', 'https://')

@@ -26,12 +26,12 @@ FIAT_PROVIDERS = {
     'fixer.io': '//data.fixer.io/api/latest?base=EUR&access_key={}',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
-EXCHANGE_REGEX = re.compile(r'''
+EXCHANGE_REGEX = re.compile(r"""
     ^(\d+(?:\.\d+)?)                                            # Decimal number
     \s*([a-zA-Z]{3})                                            # 3-letter currency code
     \s+(?:in|as|of|to)\s+                                       # preposition
     (([a-zA-Z]{3}$)|([a-zA-Z]{3})\s)+$                          # one or more 3-letter currency code
-''', re.VERBOSE)
+""", re.VERBOSE)
 LOGGER = logging.getLogger(__name__)
 UNSUPPORTED_CURRENCY = "Sorry, {} isn't currently supported."
 UNRECOGNIZED_INPUT = "Sorry, I didn't understand the input."
@@ -87,7 +87,7 @@ def setup(bot):
 class FixerError(Exception):
     """A Fixer.io API Error Exception"""
     def __init__(self, status):
-        super().__init__("FixerError: {}".format(status))
+        super().__init__('FixerError: {}'.format(status))
 
 
 class UnsupportedCurrencyError(Exception):
@@ -123,12 +123,12 @@ def exchange(bot, match):
     try:
         update_rates(bot)  # Try and update rates. Rate-limiting is done in update_rates()
     except requests.exceptions.RequestException as err:
-        bot.reply("Something went wrong while I was getting the exchange rate.")
-        LOGGER.error("Error in GET request: {}".format(err))
+        bot.reply('Something went wrong while I was getting the exchange rate.')
+        LOGGER.error('Error in GET request: {}'.format(err))
         return
     except (KeyError, ValueError) as err:
-        bot.reply("Error: Could not update exchange rates. Try again later.")
-        LOGGER.error("{} on update_rates".format(
+        bot.reply('Error: Could not update exchange rates. Try again later.')
+        LOGGER.error('{} on update_rates'.format(
             'Invalid JSON' if type(err).__name__ == 'ValueError' else 'Missing JSON value',
         ))
         return
@@ -153,7 +153,7 @@ def exchange(bot, match):
         bot.reply(UNRECOGNIZED_INPUT)
         return
     except OverflowError:
-        bot.reply("Sorry, input amount was out of range.")
+        bot.reply('Sorry, input amount was out of range.')
         return
 
     if not amount:
@@ -170,8 +170,8 @@ def exchange(bot, match):
             LOGGER.error("Raw rate wasn't a float")
             return
         except KeyError as err:
-            bot.reply("Error: Invalid rates")
-            LOGGER.error("No key: {} in json".format(err))
+            bot.reply('Error: Invalid rates')
+            LOGGER.error('No key: {} in json'.format(err))
             return
         except UnsupportedCurrencyError as cur:
             unsupported_currencies.append(cur)
@@ -267,7 +267,7 @@ def update_rates(bot):
 def exchange_cmd(bot, trigger):
     """Show the exchange rate between two currencies."""
     if not trigger.group(2):
-        bot.reply("No search term. Usage: {}cur 100 usd in btc cad eur"
+        bot.reply('No search term. Usage: {}cur 100 usd in btc cad eur'
                   .format(bot.config.core.help_prefix))
         return
 

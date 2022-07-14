@@ -44,7 +44,7 @@ def configure(config):
     """
     config.define_section('admin', AdminSection)
     config.admin.configure_setting('hold_ground',
-                                   "Automatically re-join after being kicked?")
+                                   'Automatically re-join after being kicked?')
     config.admin.configure_setting('auto_accept_invite',
                                    'Automatically join channels when invited?')
 
@@ -61,7 +61,10 @@ class InvalidSection(Exception):
 
 class InvalidSectionOption(Exception):
     def __init__(self, section, option):
-        super().__init__(self, 'Section [{}] does not have option \'{}\'.'.format(section, option))
+        super().__init__(
+            self,
+            "Section [{}] does not have option '{}'.".format(section, option),
+        )
         self.section = section
         self.option = option
 
@@ -358,7 +361,7 @@ def parse_section_option_value(config, trigger):
     # Get section and option from first argument.
     arg1 = match.split('.')
     if len(arg1) == 1:
-        section_name, option = "core", arg1[0]
+        section_name, option = 'core', arg1[0]
     elif len(arg1) == 2:
         section_name, option = arg1
     else:
@@ -387,8 +390,8 @@ def parse_section_option_value(config, trigger):
     return (section, section_name, static_sec, option, value)
 
 
-@plugin.require_privmsg("This command only works as a private message.")
-@plugin.require_admin("This command requires admin privileges.")
+@plugin.require_privmsg('This command only works as a private message.')
+@plugin.require_admin('This command requires admin privileges.')
 @plugin.command('set')
 @plugin.example('.set core.owner MyNick')
 def set_config(bot, trigger):
@@ -420,13 +423,13 @@ def set_config(bot, trigger):
         if descriptor is not None:
             if getattr(descriptor, 'is_secret', False):
                 # Keep secret option as secret
-                value = "(secret value censored)"
-        elif option.endswith("password") or option.endswith("pass"):
+                value = '(secret value censored)'
+        elif option.endswith('password') or option.endswith('pass'):
             # Fallback to guessing if secret, for backward compatiblity
             # TODO: consider a deprecation warning when loading settings
-            value = "(password censored)"
+            value = '(password censored)'
 
-        bot.say("%s.%s = %s (%s)" % (section_name, option, value, type(value).__name__))
+        bot.say('%s.%s = %s (%s)' % (section_name, option, value, type(value).__name__))
         return
 
     # Owner-related settings cannot be modified interactively. Any changes to these
@@ -448,8 +451,8 @@ def set_config(bot, trigger):
     bot.say("OK. Set '{}.{}' successfully.".format(section_name, option))
 
 
-@plugin.require_privmsg("This command only works as a private message.")
-@plugin.require_admin("This command requires admin privileges.")
+@plugin.require_privmsg('This command only works as a private message.')
+@plugin.require_admin('This command requires admin privileges.')
 @plugin.command('unset')
 @plugin.example('.unset core.owner')
 def unset_config(bot, trigger):

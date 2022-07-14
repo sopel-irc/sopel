@@ -54,7 +54,7 @@ def _decompress(source, target, delete_after_decompression=True):
     # https://stackoverflow.com/a/16452962
     tar = tarfile.open(source)
     for member in tar.getmembers():
-        if ".mmdb" in member.name:
+        if '.mmdb' in member.name:
             member.name = os.path.basename(member.name)
             tar.extract(member, target)
     if delete_after_decompression:
@@ -97,7 +97,7 @@ def _find_geoip_db(bot):
 
         for url in geolite_urls:
             LOGGER.debug('GeoIP Source URL: %s', url)
-            full_path = os.path.join(config.core.homedir, url.split("/")[-1])
+            full_path = os.path.join(config.core.homedir, url.split('/')[-1])
             urlretrieve(url, full_path)
             _decompress(full_path, config.core.homedir)
         return bot.config.core.homedir
@@ -117,7 +117,7 @@ def ip(bot, trigger):
     """IP Lookup tool"""
     # Check if there is input at all
     if not trigger.group(2):
-        bot.reply("No search term.")
+        bot.reply('No search term.')
         return
 
     parts = []
@@ -143,15 +143,16 @@ def ip(bot, trigger):
 
     db_path = _find_geoip_db(bot)
     if db_path is False:
-        LOGGER.error('Can\'t find (or download) usable GeoIP database.')
-        bot.reply('Sorry, I don\'t have a GeoIP database to use for this lookup.')
+        LOGGER.error("Can't find (or download) usable GeoIP database.")
+        bot.reply(
+            "Sorry, I don't have a GeoIP database to use for this lookup.")
         return
 
     if ':' in query:
         try:
             socket.inet_pton(socket.AF_INET6, query)
         except (OSError, socket.error):  # Python 2/3 compatibility
-            bot.reply("Unable to resolve IP/Hostname")
+            bot.reply('Unable to resolve IP/Hostname')
             return
     elif '.' in query:
         try:
@@ -160,10 +161,10 @@ def ip(bot, trigger):
             try:
                 query = socket.getaddrinfo(query, None)[0][4][0]
             except socket.gaierror:
-                bot.reply("Unable to resolve IP/Hostname")
+                bot.reply('Unable to resolve IP/Hostname')
                 return
     else:
-        bot.reply("Unable to resolve IP/Hostname")
+        bot.reply('Unable to resolve IP/Hostname')
         return
 
     city = geoip2.database.Reader(os.path.join(db_path, 'GeoLite2-City.mmdb'))
@@ -173,25 +174,25 @@ def ip(bot, trigger):
         city_response = city.city(query)
         asn_response = asn.asn(query)
     except geoip2.errors.AddressNotFoundError:
-        bot.reply("The address is not in the database.")
+        bot.reply('The address is not in the database.')
         return
 
-    parts.append("Hostname: %s" % host)
+    parts.append('Hostname: %s' % host)
     try:
-        parts.append("Location: %s" % city_response.country.name)
+        parts.append('Location: %s' % city_response.country.name)
     except AttributeError:
         parts.append('Location: Unknown')
 
     region = city_response.subdivisions.most_specific.name
     if region:
-        parts.append("Region: %s" % region)
+        parts.append('Region: %s' % region)
 
     city = city_response.city.name
     if city:
-        parts.append("City: %s" % city)
+        parts.append('City: %s' % city)
 
-    isp = "ISP: AS" + str(asn_response.autonomous_system_number) + \
-          " " + asn_response.autonomous_system_organization
+    isp = 'ISP: AS' + str(asn_response.autonomous_system_number) + \
+          ' ' + asn_response.autonomous_system_organization
     parts.append(isp)
 
     bot.say(' | '.join(parts))

@@ -196,7 +196,7 @@ def findandreplace(bot, trigger):
     # where the replacement works
     new_phrase = None
     for line in history:
-        if line.startswith("\x01ACTION"):
+        if line.startswith('\x01ACTION'):
             me = True  # /me command
             line = line[8:]
         else:

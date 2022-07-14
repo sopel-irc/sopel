@@ -35,7 +35,7 @@ def _chunks(items, size):
 
 @plugin.command('announce')
 @plugin.example('.announce Some important message here')
-@plugin.require_admin('Sorry, I can\'t let you do that', reply=True)
+@plugin.require_admin("Sorry, I can't let you do that", reply=True)
 @plugin.output_prefix('[ANNOUNCEMENT] ')
 def announce(bot, trigger):
     """Send an announcement to all channels the bot is in."""

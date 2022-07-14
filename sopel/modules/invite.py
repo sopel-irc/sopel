@@ -22,11 +22,11 @@ def invite_handler(bot, sender, user, channel):
 
     # Sanity checks, in case someone reuses this function from outside the plugin
     if not sender.is_nick():
-        raise ValueError("Invite sender must be a nick, not a channel.")
+        raise ValueError('Invite sender must be a nick, not a channel.')
     if not user.is_nick():
-        raise ValueError("User to invite must be a nick, not a channel.")
+        raise ValueError('User to invite must be a nick, not a channel.')
     if channel.is_nick():
-        raise ValueError("Target channel name must not be a nick.")
+        raise ValueError('Target channel name must not be a nick.')
 
     # Sopel must be in the target channel
     if channel not in bot.channels or bot.nick not in bot.channels[channel].privileges:
@@ -64,7 +64,7 @@ def invite(bot, trigger):
     second argument) another channel that Sopel is in.
     """
     if not trigger.group(3):
-        return bot.reply("Whom should I invite?")
+        return bot.reply('Whom should I invite?')
     user = trigger.group(3)
 
     if trigger.group(4):
@@ -72,7 +72,7 @@ def invite(bot, trigger):
     else:
         if trigger.is_privmsg:
             return bot.say(
-                "Channel is required ({}invite user #channel) when inviting from queries."
+                'Channel is required ({}invite user #channel) when inviting from queries.'
                 .format(bot.config.core.help_prefix))
         channel = trigger.sender
 

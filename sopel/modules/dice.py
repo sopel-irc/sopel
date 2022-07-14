@@ -72,38 +72,38 @@ class DicePouch:
     def get_simple_string(self):
         """Return the values of the dice like (2+2+2[+1+1])+1."""
         dice = self.dice.items()
-        faces = ("+".join([str(face)] * times) for face, times in dice)
-        dice_str = "+".join(faces)
+        faces = ('+'.join([str(face)] * times) for face, times in dice)
+        dice_str = '+'.join(faces)
 
-        dropped_str = ""
+        dropped_str = ''
         if self.dropped:
             dropped = self.dropped.items()
-            dfaces = ("+".join([str(face)] * times) for face, times in dropped)
-            dropped_str = "[+%s]" % ("+".join(dfaces),)
+            dfaces = ('+'.join([str(face)] * times) for face, times in dropped)
+            dropped_str = '[+%s]' % ('+'.join(dfaces),)
 
-        plus_str = ""
+        plus_str = ''
         if self.addition:
-            plus_str = "{:+d}".format(self.addition)
+            plus_str = '{:+d}'.format(self.addition)
 
-        return "(%s%s)%s" % (dice_str, dropped_str, plus_str)
+        return '(%s%s)%s' % (dice_str, dropped_str, plus_str)
 
     def get_compressed_string(self):
         """Return the values of the dice like (3x2[+2x1])+1."""
         dice = self.dice.items()
-        faces = ("%dx%d" % (times, face) for face, times in dice)
-        dice_str = "+".join(faces)
+        faces = ('%dx%d' % (times, face) for face, times in dice)
+        dice_str = '+'.join(faces)
 
-        dropped_str = ""
+        dropped_str = ''
         if self.dropped:
             dropped = self.dropped.items()
-            dfaces = ("%dx%d" % (times, face) for face, times in dropped)
-            dropped_str = "[+%s]" % ("+".join(dfaces),)
+            dfaces = ('%dx%d' % (times, face) for face, times in dropped)
+            dropped_str = '[+%s]' % ('+'.join(dfaces),)
 
-        plus_str = ""
+        plus_str = ''
         if self.addition:
-            plus_str = "{:+d}".format(self.addition)
+            plus_str = '{:+d}'.format(self.addition)
 
-        return "(%s%s)%s" % (dice_str, dropped_str, plus_str)
+        return '(%s%s)%s' % (dice_str, dropped_str, plus_str)
 
     def get_sum(self):
         """Get the sum of non-dropped dice and the addition."""
@@ -165,18 +165,18 @@ def _roll_dice(bot, dice_expression):
 
 
 @plugin.command('roll', 'dice', 'd')
-@plugin.priority("medium")
-@plugin.example(".roll 3d1+1", '3d1+1: (1+1+1)+1 = 4')
-@plugin.example(".roll 3d1v2+1", '3d1v2+1: (1[+1+1])+1 = 2')
-@plugin.example(".roll 2d4", r'2d4: \(\d\+\d\) = \d', re=True)
-@plugin.example(".roll 100d1", r'[^:]*: \(100x1\) = 100', re=True)
-@plugin.example(".roll 1001d1", 'I only have 1000 dice. =(')
-@plugin.example(".roll 1d1 + 1d1", '1d1 + 1d1: (1) + (1) = 2')
-@plugin.example(".roll 1d1+1d1", '1d1+1d1: (1)+(1) = 2')
-@plugin.example(".roll 1d6 # initiative", r'1d6: \(\d\) = \d', re=True)
-@plugin.example(".roll 2d20v1+2 # roll with advantage", user_help=True)
-@plugin.example(".roll 2d10+3", user_help=True)
-@plugin.example(".roll 1d6", user_help=True)
+@plugin.priority('medium')
+@plugin.example('.roll 3d1+1', '3d1+1: (1+1+1)+1 = 4')
+@plugin.example('.roll 3d1v2+1', '3d1v2+1: (1[+1+1])+1 = 2')
+@plugin.example('.roll 2d4', r'2d4: \(\d\+\d\) = \d', re=True)
+@plugin.example('.roll 100d1', r'[^:]*: \(100x1\) = 100', re=True)
+@plugin.example('.roll 1001d1', 'I only have 1000 dice. =(')
+@plugin.example('.roll 1d1 + 1d1', '1d1 + 1d1: (1) + (1) = 2')
+@plugin.example('.roll 1d1+1d1', '1d1+1d1: (1)+(1) = 2')
+@plugin.example('.roll 1d6 # initiative', r'1d6: \(\d\) = \d', re=True)
+@plugin.example('.roll 2d20v1+2 # roll with advantage', user_help=True)
+@plugin.example('.roll 2d10+3', user_help=True)
+@plugin.example('.roll 1d6', user_help=True)
 @plugin.output_prefix('[dice] ')
 def roll(bot, trigger):
     """Rolls dice and reports the result.
@@ -189,18 +189,18 @@ def roll(bot, trigger):
     """
     # This regexp is only allowed to have one capture group, because having
     # more would alter the output of re.findall.
-    dice_regexp = r"-?\d*[dD]-?\d+(?:[vV]-?\d+)?"
+    dice_regexp = r'-?\d*[dD]-?\d+(?:[vV]-?\d+)?'
 
     # Get a list of all dice expressions, evaluate them and then replace the
     # expressions in the original string with the results. Replacing is done
     # using string formatting, so %-characters must be escaped.
     if not trigger.group(2):
-        bot.reply("No dice to roll.")
+        bot.reply('No dice to roll.')
         return
-    arg_str_raw = trigger.group(2).split("#", 1)[0].strip()
+    arg_str_raw = trigger.group(2).split('#', 1)[0].strip()
     dice_expressions = re.findall(dice_regexp, arg_str_raw)
-    arg_str = arg_str_raw.replace("%", "%%")
-    arg_str = re.sub(dice_regexp, "%s", arg_str)
+    arg_str = arg_str_raw.replace('%', '%%')
+    arg_str = re.sub(dice_regexp, '%s', arg_str)
 
     dice = [_roll_dice(bot, dice_expr) for dice_expr in dice_expressions]
 
@@ -209,7 +209,7 @@ def roll(bot, trigger):
         return
 
     def _get_eval_str(dice):
-        return "(%d)" % (dice.get_sum(),)
+        return '(%d)' % (dice.get_sum(),)
 
     def _get_pretty_str(dice):
         if dice.num <= 10:
@@ -217,7 +217,7 @@ def roll(bot, trigger):
         elif dice.get_number_of_faces() <= 10:
             return dice.get_compressed_string()
         else:
-            return "(...)"
+            return '(...)'
 
     eval_str = arg_str % (tuple(map(_get_eval_str, dice)))
     pretty_str = arg_str % (tuple(map(_get_pretty_str, dice)))
@@ -226,20 +226,20 @@ def roll(bot, trigger):
         result = eval_equation(eval_str)
     except TypeError:
         bot.reply(
-            "The type of this equation is, apparently, not a string. "
-            "How did you do that, anyway?"
+            'The type of this equation is, apparently, not a string. '
+            'How did you do that, anyway?'
         )
     except ValueError:
         # As it seems that ValueError is raised if the resulting equation would
         # be too big, give a semi-serious answer to reflect on this.
-        bot.reply("You roll %s: %s = very big" % (
+        bot.reply('You roll %s: %s = very big' % (
             arg_str_raw, pretty_str))
         return
     except (SyntaxError, eval_equation.Error):
         bot.reply(
             "I don't know how to process that. "
-            "Are the dice as well as the algorithms correct?"
+            'Are the dice as well as the algorithms correct?'
         )
         return
 
-    bot.say("%s: %s = %d" % (arg_str_raw, pretty_str, result))
+    bot.say('%s: %s = %d' % (arg_str_raw, pretty_str, result))

@@ -138,7 +138,7 @@ def configure(config):
     config.define_section('wikipedia', WikipediaSection)
     config.wikipedia.configure_setting(
         'default_lang',
-        "Enter the default language to find articles from."
+        'Enter the default language to find articles from.'
     )
 
 
@@ -186,10 +186,10 @@ def say_snippet(bot, trigger, server, query, show_url=True):
         snippet = mw_snippet(server, query)
         # Coalesce repeated whitespace to avoid problems with <math> on MediaWiki
         # see https://github.com/sopel-irc/sopel/issues/2259
-        snippet = re.sub(r"\s+", " ", snippet)
+        snippet = re.sub(r'\s+', ' ', snippet)
     except KeyError:
         if show_url:
-            bot.reply("Error fetching snippet for \"{}\".".format(page_name))
+            bot.reply('Error fetching snippet for "{}".'.format(page_name))
         return
 
     msg = '{} | "{}'.format(page_name, snippet)
@@ -223,7 +223,7 @@ def say_section(bot, trigger, server, query, section):
 
     snippet = mw_section(server, query, section)
     if not snippet:
-        bot.reply("Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
+        bot.reply('Error fetching section "{}" for page "{}".'.format(section, page_name))
         return
 
     msg = '{} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
@@ -289,7 +289,7 @@ def mw_info(bot, trigger, match=None):
 def wikipedia(bot, trigger):
     """Search Wikipedia."""
     if trigger.group(2) is None:
-        bot.reply("What do you want me to look up?")
+        bot.reply('What do you want me to look up?')
         return plugin.NOLIMIT
 
     lang = choose_lang(bot, trigger)
@@ -317,7 +317,7 @@ def wikipedia(bot, trigger):
 def wplang(bot, trigger):
     if not trigger.group(3):
         bot.reply(
-            "Your current Wikipedia language is: {}"
+            'Your current Wikipedia language is: {}'
             .format(
                 bot.db.get_nick_value(
                     trigger.nick, 'wikipedia_lang',
@@ -328,7 +328,7 @@ def wplang(bot, trigger):
 
     bot.db.set_nick_value(trigger.nick, 'wikipedia_lang', trigger.group(3))
     bot.reply(
-        "Set your Wikipedia language to: {}"
+        'Set your Wikipedia language to: {}'
         .format(trigger.group(3))
     )
 

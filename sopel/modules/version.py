@@ -42,22 +42,22 @@ def version(bot, trigger):
     Includes the commit hash if Sopel is installed from source.
     """
     plugin = trigger.group(3)
-    if plugin and plugin.lower() != "sopel":
+    if plugin and plugin.lower() != 'sopel':
         # Plugin version
         if not bot.has_plugin(plugin):
             bot.say("I don't have a plugin named %r loaded." % plugin)
             return
 
         meta = bot.get_plugin_meta(plugin)
-        if meta["version"] is None:
-            version = "(unknown)"
+        if meta['version'] is None:
+            version = '(unknown)'
         else:
-            version = "v" + str(meta["version"])
+            version = 'v' + str(meta['version'])
 
-        if meta["source"].startswith("sopel."):
-            version += " (built in)"
+        if meta['source'].startswith('sopel.'):
+            version += ' (built in)'
 
-        bot.say(plugin + " " + version)
+        bot.say(plugin + ' ' + version)
         return
 
     # Sopel version
@@ -90,8 +90,8 @@ def ctcp_source(bot, trigger):
 @plugin.rate(10)
 def ctcp_ping(bot, trigger):
     text = trigger.group()
-    text = text.replace("PING ", "")
-    text = text.replace("\x01", "")
+    text = text.replace('PING ', '')
+    text = text.replace('\x01', '')
     bot.write(('NOTICE', trigger.nick),
               '\x01PING {0}\x01'.format(text))
 
@@ -100,6 +100,6 @@ def ctcp_ping(bot, trigger):
 @plugin.rate(20)
 def ctcp_time(bot, trigger):
     dt = datetime.datetime.now()
-    current_time = dt.strftime("%A, %d. %B %Y %I:%M%p")
+    current_time = dt.strftime('%A, %d. %B %Y %I:%M%p')
     bot.write(('NOTICE', trigger.nick),
               '\x01TIME {0}\x01'.format(current_time))

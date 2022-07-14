@@ -14,7 +14,7 @@ from sopel import formatting, plugin
 
 
 ERROR_MESSAGE_NOT_OP = "I'm not a channel operator!"
-ERROR_MESSAGE_NO_PRIV = "You are not a channel operator."
+ERROR_MESSAGE_NO_PRIV = 'You are not a channel operator.'
 
 
 def default_mask(trigger):
@@ -39,7 +39,7 @@ def op(bot, trigger):
     channel = trigger.sender
     if not nick:
         nick = trigger.nick
-    bot.write(['MODE', channel, "+o", nick])
+    bot.write(['MODE', channel, '+o', nick])
 
 
 @plugin.require_chanmsg
@@ -55,7 +55,7 @@ def deop(bot, trigger):
     channel = trigger.sender
     if not nick:
         nick = trigger.nick
-    bot.write(['MODE', channel, "-o", nick])
+    bot.write(['MODE', channel, '-o', nick])
 
 
 @plugin.require_chanmsg
@@ -71,7 +71,7 @@ def voice(bot, trigger):
     channel = trigger.sender
     if not nick:
         nick = trigger.nick
-    bot.write(['MODE', channel, "+v", nick])
+    bot.write(['MODE', channel, '+v', nick])
 
 
 @plugin.require_chanmsg
@@ -87,7 +87,7 @@ def devoice(bot, trigger):
     channel = trigger.sender
     if not nick:
         nick = trigger.nick
-    bot.write(['MODE', channel, "-v", nick])
+    bot.write(['MODE', channel, '-v', nick])
 
 
 @plugin.require_chanmsg
@@ -320,7 +320,7 @@ def topic(bot, trigger):
 
     The bot must be a channel operator for this command to work in +t channels.
     """
-    mode_t = bot.channels[trigger.sender].modes.get("t", False)
+    mode_t = bot.channels[trigger.sender].modes.get('t', False)
     if mode_t and not bot.has_channel_privilege(trigger.sender, plugin.HALFOP):
         bot.reply(ERROR_MESSAGE_NOT_OP)
         return
@@ -343,7 +343,7 @@ def topic(bot, trigger):
         args = top.split('~', narg)
 
     if len(args) != narg:
-        message = "Not enough arguments. You gave {}; it requires {}.".format(
+        message = 'Not enough arguments. You gave {}; it requires {}.'.format(
             len(args), narg)
         bot.reply(message)
         return
@@ -354,8 +354,8 @@ def topic(bot, trigger):
         my_len = len(topic.encode('utf-8'))
         if my_len > topiclen:
             bot.reply(
-                "Formatted topic is too long ({} bytes); "
-                "the server limit is {} bytes."
+                'Formatted topic is too long ({} bytes); '
+                'the server limit is {} bytes.'
                 .format(my_len, topiclen))
             return
 
