@@ -273,12 +273,12 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
         their amount is 0 (which is their default value).
 
     """
-    years_text = "year{}".format("s" if years != 1 else "")
-    months_text = "month{}".format("s" if months != 1 else "")
-    days_text = "day{}".format("s" if days != 1 else "")
-    hours_text = "hour{}".format("s" if hours != 1 else "")
-    minutes_text = "minute{}".format("s" if minutes != 1 else "")
-    seconds_text = "second{}".format("s" if seconds != 1 else "")
+    years_text = 'year{}'.format('s' if years != 1 else '')
+    months_text = 'month{}'.format('s' if months != 1 else '')
+    days_text = 'day{}'.format('s' if days != 1 else '')
+    hours_text = 'hour{}'.format('s' if hours != 1 else '')
+    minutes_text = 'minute{}'.format('s' if minutes != 1 else '')
+    seconds_text = 'second{}'.format('s' if seconds != 1 else '')
 
     return (
         (years, years_text),
@@ -339,16 +339,16 @@ def seconds_to_human(secs, granularity=2):
 
     if secs == 0:
         # zero is a special case that the algorithm below won't handle correctly (#1841)
-        result = "0 seconds"
+        result = '0 seconds'
     else:
-        result = ", ".join([
-            "%s %s" % (value, unit)
+        result = ', '.join([
+            '%s %s' % (value, unit)
             for value, unit in get_time_unit(*seconds_to_split(secs))
             if value
         ][:granularity])
 
     if future is False:
-        result += " ago"
+        result += ' ago'
     else:
-        result = "in " + result
+        result = 'in ' + result
     return result

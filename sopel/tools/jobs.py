@@ -362,7 +362,7 @@ class Job:
         if plugin_name:
             label = '%s.%s' % (plugin_name, label)
 
-        return "<Job %s [%s]>" % (
+        return '<Job %s [%s]>' % (
             label,
             ', '.join('%ss' % i for i in sorted(self.intervals)),
         )

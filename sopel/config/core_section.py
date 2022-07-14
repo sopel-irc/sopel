@@ -60,7 +60,8 @@ def configure(config):
     )
     config.core.configure_setting(
         'commands_on_connect',
-        'Enter commands to perform on successful connection to server (one per \'?\' prompt).'
+        'Enter commands to perform on successful connection to server '
+        "(one per '?' prompt)."
     )
 
 
@@ -1206,14 +1207,14 @@ class CoreSection(StaticSection):
     ssl_ciphers = ListAttribute(
         'ssl_ciphers',
         default=[
-            "ECDHE-ECDSA-AES128-GCM-SHA256",
-            "ECDHE-RSA-AES128-GCM-SHA256",
-            "ECDHE-ECDSA-AES256-GCM-SHA384",
-            "ECDHE-RSA-AES256-GCM-SHA384",
-            "ECDHE-ECDSA-CHACHA20-POLY1305",
-            "ECDHE-RSA-CHACHA20-POLY1305",
-            "DHE-RSA-AES128-GCM-SHA256",
-            "DHE-RSA-AES256-GCM-SHA384",
+            'ECDHE-ECDSA-AES128-GCM-SHA256',
+            'ECDHE-RSA-AES128-GCM-SHA256',
+            'ECDHE-ECDSA-AES256-GCM-SHA384',
+            'ECDHE-RSA-AES256-GCM-SHA384',
+            'ECDHE-ECDSA-CHACHA20-POLY1305',
+            'ECDHE-RSA-CHACHA20-POLY1305',
+            'DHE-RSA-AES128-GCM-SHA256',
+            'DHE-RSA-AES256-GCM-SHA384',
         ],
     )
     """The cipher suites enabled for SSL/TLS connections.

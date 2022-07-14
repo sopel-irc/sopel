@@ -173,7 +173,7 @@ def deprecated(
             trace_frame = traceback.format_list(trace[:-1])[stack_frame][:-1]
 
             # Warn the user
-            logger.warning(text + "\n" + trace_frame)
+            logger.warning(text + '\n' + trace_frame)
 
         return func(*args, **kwargs)
 

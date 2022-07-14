@@ -31,7 +31,7 @@ def safe(string):
     if string is None:
         raise TypeError('safe function requires a string, not NoneType')
     if isinstance(string, bytes):
-        string = string.decode("utf8")
+        string = string.decode('utf8')
     string = string.replace('\n', '')
     string = string.replace('\r', '')
     return string

@@ -1040,11 +1040,11 @@ class Rule(AbstractRule):
         nick = pretrigger.nick
         is_bot_message = (
             'bot' in pretrigger.tags and
-            event in ["PRIVMSG", "NOTICE"]
+            event in ['PRIVMSG', 'NOTICE']
         )
         is_echo_message = (
             nick.lower() == bot.nick.lower() and
-            event in ["PRIVMSG", "NOTICE"]
+            event in ['PRIVMSG', 'NOTICE']
         )
 
         return (
@@ -1324,7 +1324,7 @@ class Command(AbstractNamedRule):
         # Escape all whitespace with a single backslash.
         # This ensures that regexp in the prefix is treated as it was before
         # the actual regexp was changed to use the verbose syntax.
-        prefix = re.sub(r"(\s)", r"\\\1", self._prefix)
+        prefix = re.sub(r'(\s)', r'\\\1', self._prefix)
         pattern = self.PATTERN_TEMPLATE.format(prefix=prefix, command=pattern)
         return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 

@@ -47,5 +47,5 @@ requires = read_reqs('requirements.txt')
 dev_requires = requires + read_reqs('dev-requirements.txt')
 
 setup(
-    install_requires=requires, extras_require={"dev": dev_requires},
+    install_requires=requires, extras_require={'dev': dev_requires},
 )

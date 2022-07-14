@@ -303,7 +303,7 @@ class AbstractBot(abc.ABC):
         if pretrigger.event == 'PING':
             self.backend.send_pong(pretrigger.args[-1])
         elif pretrigger.event == 'ERROR':
-            LOGGER.error("ERROR received from server: %s", pretrigger.args[-1])
+            LOGGER.error('ERROR received from server: %s', pretrigger.args[-1])
             self.backend.on_irc_error(pretrigger)
 
         self.dispatch(pretrigger)
@@ -339,7 +339,7 @@ class AbstractBot(abc.ABC):
 
             pretrigger = trigger.PreTrigger(
                 self.nick,
-                ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw),
+                ':{0}!{1}@{2} {3}'.format(self.nick, self.user, host, raw),
                 url_schemes=self.settings.core.auto_url_schemes,
                 identifier_factory=self.make_identifier,
             )
@@ -366,7 +366,7 @@ class AbstractBot(abc.ABC):
                 dt_seconds = dt.total_seconds()
 
             if dt_seconds < 5:
-                LOGGER.error('Too many errors, can\'t continue')
+                LOGGER.error("Too many errors, can't continue")
                 os._exit(1)
             # remove 1 error per full 5s that passed since last error
             self.error_count = int(max(0, self.error_count - dt_seconds // 5))
@@ -430,7 +430,7 @@ class AbstractBot(abc.ABC):
         if not self.settings.core.log_raw:
             return
         logger = logging.getLogger('sopel.raw')
-        logger.info("%s\t%r", prefix, line)
+        logger.info('%s\t%r', prefix, line)
 
     def cap_req(
         self,

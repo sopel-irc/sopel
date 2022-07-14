@@ -71,7 +71,7 @@ def clean_callable(func, config):
     if any(hasattr(func, attr) for attr in ['commands', 'nickname_commands', 'action_commands']):
         if hasattr(func, 'example'):
             # If no examples are flagged as user-facing, just show the first one like Sopel<7.0 did
-            examples = [rec["example"] for rec in func.example if rec["help"]] or [func.example[0]["example"]]
+            examples = [rec['example'] for rec in func.example if rec['help']] or [func.example[0]['example']]
             for i, example in enumerate(examples):
                 example = example.replace('$nickname', nick)
                 if example[0] != help_prefix and not example.startswith(nick):

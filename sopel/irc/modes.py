@@ -131,13 +131,13 @@ class ModeMessage(NamedTuple):
 class ModeParser:
     """ModeMessage parser for IRC's ``MODE`` messages for channel modes."""
     PRIVILEGES: Set[str] = {
-        "v",  # VOICE
-        "h",  # HALFOP
-        "o",  # OP
-        "a",  # ADMIN
-        "q",  # OWNER
-        "y",  # OPER
-        "Y",  # OPER
+        'v',  # VOICE
+        'h',  # HALFOP
+        'o',  # OP
+        'a',  # ADMIN
+        'q',  # OWNER
+        'y',  # OPER
+        'Y',  # OPER
     }
     """Set of user privileges used by default."""
 

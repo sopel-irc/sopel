@@ -51,7 +51,7 @@ def run(settings, pid_file, daemon=False):
     # Acts as a welcome message, showing the program and platform version at start
     print_version()
     # Also show the location of the config file used to load settings
-    print("\nLoaded config file: {}".format(settings.filename))
+    print('\nLoaded config file: {}'.format(settings.filename))
 
     # Define empty variable `p` for bot
     p = None
@@ -107,7 +107,7 @@ def build_parser():
 
     subparsers = parser.add_subparsers(
         title='subcommands',
-        description='List of Sopel\'s subcommands',
+        description="List of Sopel's subcommands",
         dest='action',
         metavar='{start,configure,stop,restart}')
 
@@ -129,9 +129,9 @@ def build_parser():
              'To stop it, use ``sopel stop`` (with the same configuration).')
     parser_start.add_argument(
         '--quiet',
-        action="store_true",
-        dest="quiet",
-        help="Suppress all output")
+        action='store_true',
+        dest='quiet',
+        help='Suppress all output')
     utils.add_common_arguments(parser_start)
 
     # manage `configure` subcommand
@@ -139,7 +139,7 @@ def build_parser():
         'configure',
         description='Run the configuration wizard. It can be used to create '
                     'a new configuration file or to update an existing one.',
-        help='Sopel\'s Wizard tool')
+        help="Sopel's Wizard tool")
     parser_configure.add_argument(
         '--plugins',
         action='store_true',
@@ -168,9 +168,9 @@ def build_parser():
         help='Kill Sopel without a graceful quit')
     parser_stop.add_argument(
         '--quiet',
-        action="store_true",
-        dest="quiet",
-        help="Suppress all output")
+        action='store_true',
+        dest='quiet',
+        help='Suppress all output')
     utils.add_common_arguments(parser_stop)
 
     # manage `restart` subcommand
@@ -180,9 +180,9 @@ def build_parser():
         help='Restart a running Sopel instance')
     parser_restart.add_argument(
         '--quiet',
-        action="store_true",
-        dest="quiet",
-        help="Suppress all output")
+        action='store_true',
+        dest='quiet',
+        help='Suppress all output')
     utils.add_common_arguments(parser_restart)
 
     return parser
@@ -195,19 +195,19 @@ def check_not_root():
     if it is the ``Administrator`` account on Windows.
     """
     opersystem = platform.system()
-    if opersystem in ["Linux", "Darwin"]:
+    if opersystem in ['Linux', 'Darwin']:
         # Linux/Mac
         if os.getuid() == 0 or os.geteuid() == 0:
             raise RuntimeError('Error: Do not run Sopel with root privileges.')
-    elif opersystem in ["Windows"]:
+    elif opersystem in ['Windows']:
         # Windows
-        if os.environ.get("USERNAME") == "Administrator":
+        if os.environ.get('USERNAME') == 'Administrator':
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
     else:
         tools.stderr(
-            "Warning: %s is an uncommon operating system platform. "
+            'Warning: %s is an uncommon operating system platform. '
             "Sopel should still work, but please contact Sopel's developers "
-            "if you experience issues."
+            'if you experience issues.'
             % opersystem)
 
 
@@ -242,7 +242,7 @@ def get_configuration(options):
         settings = utils.load_settings(options)
     except config.ConfigurationNotFound as error:
         print(
-            "Welcome to Sopel!\n"
+            'Welcome to Sopel!\n'
             "I can't seem to find the configuration file, "
             "so let's generate it!\n")
         settings = utils.wizard(error.filename)
@@ -309,7 +309,7 @@ def command_start(opts):
         return ERR_CODE_NO_RESTART
 
     if settings.core.not_configured:
-        tools.stderr('Bot is not configured, can\'t start')
+        tools.stderr("Bot is not configured, can't start")
         return ERR_CODE_NO_RESTART
 
     # Step Two: Handle process-lifecycle options and manage the PID file
@@ -318,7 +318,7 @@ def command_start(opts):
     pid = get_running_pid(pid_file_path)
 
     if pid is not None and tools.check_pid(pid):
-        tools.stderr('There\'s already a Sopel instance running '
+        tools.stderr("There's already a Sopel instance running "
                      'with this config file.')
         tools.stderr('Try using either the `sopel stop` '
                      'or the `sopel restart` command.')
@@ -374,7 +374,7 @@ def command_stop(opts):
         return ERR_CODE
 
     if settings.core.not_configured:
-        tools.stderr('Sopel is not configured, can\'t stop')
+        tools.stderr("Sopel is not configured, can't stop")
         return ERR_CODE
 
     # Configure logging
@@ -417,7 +417,7 @@ def command_restart(opts):
         return ERR_CODE
 
     if settings.core.not_configured:
-        tools.stderr('Sopel is not configured, can\'t stop')
+        tools.stderr("Sopel is not configured, can't stop")
         return ERR_CODE
 
     # Configure logging
@@ -485,7 +485,7 @@ def main(argv=None):
         parser.print_usage()
         return ERR_CODE
     except KeyboardInterrupt:
-        print("\n\nInterrupted")
+        print('\n\nInterrupted')
         return ERR_CODE
     except RuntimeError as err:
         tools.stderr(str(err))

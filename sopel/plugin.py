@@ -116,13 +116,13 @@ def interval(*intervals: typing.Union[int, float]) -> typing.Callable:
 
         @plugin.interval(5)
         def spam_every_5s(bot):
-            if "#here" in bot.channels:
-                bot.say("It has been five seconds!", "#here")
+            if '#here' in bot.channels:
+                bot.say('It has been five seconds!', '#here')
 
     """
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "interval"):
+        if not hasattr(function, 'interval'):
             function.interval = []
         for arg in intervals:
             if arg not in function.interval:
@@ -177,7 +177,7 @@ def rule(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     """
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "rule"):
+        if not hasattr(function, 'rule'):
             function.rule = []
         for value in patterns:
             if value not in function.rule:
@@ -280,7 +280,7 @@ def find(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     """
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "find_rules"):
+        if not hasattr(function, 'find_rules'):
             function.find_rules = []
         for value in patterns:
             if value not in function.find_rules:
@@ -386,7 +386,7 @@ def search(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     """
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "search_rules"):
+        if not hasattr(function, 'search_rules'):
             function.search_rules = []
         for value in patterns:
             if value not in function.search_rules:
@@ -523,7 +523,7 @@ def command(*command_list: str) -> typing.Callable:
 
     Example::
 
-        @command("hello")
+        @command('hello')
             # If the command prefix is "\\.", this would trigger on lines
             # starting with ".hello".
 
@@ -595,7 +595,7 @@ def command(*command_list: str) -> typing.Callable:
     """
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "commands"):
+        if not hasattr(function, 'commands'):
             function.commands = []
         for command in command_list:
             if command not in function.commands:
@@ -620,7 +620,7 @@ def nickname_command(*command_list: str) -> typing.Callable:
 
     Example::
 
-        @nickname_command("hello!")
+        @nickname_command('hello!')
             # Would trigger on "$nickname: hello!", "$nickname,   hello!",
             # "$nickname hello!", "$nickname hello! parameter1" and
             # "$nickname hello! p1 p2 p3 p4 p5 p6 p7 p8 p9".
@@ -670,7 +670,7 @@ def action_command(*command_list: str) -> typing.Callable:
 
     Example::
 
-        @action_command("hello!")
+        @action_command('hello!')
             # Would trigger on "/me hello!"
 
     .. versionadded:: 7.0
@@ -767,7 +767,7 @@ def event(*event_list: str) -> typing.Callable:
     """
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "event"):
+        if not hasattr(function, 'event'):
             function.event = []
         for name in event_list:
             if name not in function.event:
@@ -821,7 +821,7 @@ def ctcp(
 
     def add_attribute(function):
         function._sopel_callable = True
-        if not hasattr(function, "ctcp"):
+        if not hasattr(function, 'ctcp'):
             function.ctcp = []
         for name in ctcp_commands:
             if name not in function.ctcp:
@@ -1360,7 +1360,7 @@ class example:
         self.user_help = user_help
 
     def __call__(self, func):
-        if not hasattr(func, "example"):
+        if not hasattr(func, 'example'):
             func.example = []
 
         import sys
@@ -1396,19 +1396,19 @@ class example:
             )
 
         record = {
-            "example": self.msg,
-            "result": self.result,
+            'example': self.msg,
+            'result': self.result,
             # flags
-            "is_private_message": self.privmsg,
-            "is_help": self.user_help,
-            "is_pattern": self.use_re,
-            "is_admin": self.admin,
-            "is_owner": self.owner,
+            'is_private_message': self.privmsg,
+            'is_help': self.user_help,
+            'is_pattern': self.use_re,
+            'is_admin': self.admin,
+            'is_owner': self.owner,
             # old-style flags
             # TODO: to be removed in Sopel 8.0
-            "privmsg": self.privmsg,
-            "admin": self.admin,
-            "help": self.user_help,
+            'privmsg': self.privmsg,
+            'admin': self.admin,
+            'help': self.user_help,
         }
         func.example.append(record)
         return func

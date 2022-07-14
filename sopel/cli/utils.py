@@ -103,8 +103,8 @@ def wizard(filename):
 
     settings = config.Config(filename, validate=False)
 
-    print("Please answer the following questions "
-          "to create your configuration file (%s):\n" % filename)
+    print('Please answer the following questions '
+          'to create your configuration file (%s):\n' % filename)
     config.core_section.configure(settings)
     if settings.option(
         'Would you like to see if there are any plugins '
@@ -115,11 +115,11 @@ def wizard(filename):
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
+        tools.stderr('Encountered an error while writing the config file. '
                      "This shouldn't happen. Check permissions.")
         raise
 
-    print("Config file written successfully!")
+    print('Config file written successfully!')
     return settings
 
 
@@ -141,7 +141,7 @@ def plugins_wizard(filename):
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
+        tools.stderr('Encountered an error while writing the config file. '
                      "This shouldn't happen. Check permissions.")
         raise
 
@@ -164,7 +164,7 @@ def _plugins_wizard(settings):
 
 def _plugin_wizard(settings, plugin):
     plugin.load()
-    prompt = "Configure {}".format(plugin.get_label())
+    prompt = 'Configure {}'.format(plugin.get_label())
     if plugin.has_configure() and settings.option(prompt):
         plugin.configure(settings)
 

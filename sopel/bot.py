@@ -60,7 +60,7 @@ class Sopel(irc.AbstractBot):
         """A dict mapping supported IRCv3 capabilities to their options.
 
         For example, if the server specifies the capability ``sasl=EXTERNAL``,
-        it will be here as ``{"sasl": "EXTERNAL"}``. Capabilities specified
+        it will be here as ``{'sasl': 'EXTERNAL'}``. Capabilities specified
         without any options will have ``None`` as the value.
 
         For servers that do not support IRCv3, this will be an empty set.
@@ -261,7 +261,7 @@ class Sopel(irc.AbstractBot):
         load_error = 0
         load_disabled = 0
 
-        LOGGER.info("Loading plugins...")
+        LOGGER.info('Loading plugins...')
         usable_plugins = plugins.get_usable_plugins(self.settings)
         for name, info in usable_plugins.items():
             plugin_handler, is_enabled = info
@@ -273,11 +273,11 @@ class Sopel(irc.AbstractBot):
                 plugin_handler.load()
             except Exception as e:
                 load_error = load_error + 1
-                LOGGER.exception("Error loading %s: %s", name, e)
+                LOGGER.exception('Error loading %s: %s', name, e)
             except SystemExit:
                 load_error = load_error + 1
                 LOGGER.exception(
-                    "Error loading %s (plugin tried to exit)", name)
+                    'Error loading %s (plugin tried to exit)', name)
             else:
                 try:
                     if plugin_handler.has_setup():
@@ -285,15 +285,15 @@ class Sopel(irc.AbstractBot):
                     plugin_handler.register(self)
                 except Exception as e:
                     load_error = load_error + 1
-                    LOGGER.exception("Error in %s setup: %s", name, e)
+                    LOGGER.exception('Error in %s setup: %s', name, e)
                 else:
                     load_success = load_success + 1
-                    LOGGER.info("Plugin loaded: %s", name)
+                    LOGGER.info('Plugin loaded: %s', name)
 
         total = sum([load_success, load_error, load_disabled])
         if total and load_success:
             LOGGER.info(
-                "Registered %d plugins, %d failed, %d disabled",
+                'Registered %d plugins, %d failed, %d disabled',
                 (load_success - 1),
                 load_error,
                 load_disabled)
@@ -323,8 +323,8 @@ class Sopel(irc.AbstractBot):
             for option_name in settings.parser.options(section_name):
                 if option_name not in defined_options:
                     LOGGER.warning(
-                        "Config option `%s.%s` is not defined by its section "
-                        "and may not be recognized by Sopel.",
+                        'Config option `%s.%s` is not defined by its section '
+                        'and may not be recognized by Sopel.',
                         section_name,
                         option_name,
                     )
@@ -351,13 +351,13 @@ class Sopel(irc.AbstractBot):
         # tear down
         plugin_handler.shutdown(self)
         plugin_handler.unregister(self)
-        LOGGER.info("Unloaded plugin %s", name)
+        LOGGER.info('Unloaded plugin %s', name)
         # reload & setup
         plugin_handler.reload()
         plugin_handler.setup(self)
         plugin_handler.register(self)
         meta = plugin_handler.get_meta_description()
-        LOGGER.info("Reloaded %s plugin %s from %s",
+        LOGGER.info('Reloaded %s plugin %s from %s',
                     meta['type'], name, meta['source'])
 
     def reload_plugins(self) -> None:
@@ -372,7 +372,7 @@ class Sopel(irc.AbstractBot):
         for name, handler in registered:
             handler.shutdown(self)
             handler.unregister(self)
-            LOGGER.info("Unloaded plugin %s", name)
+            LOGGER.info('Unloaded plugin %s', name)
 
         # reload & setup all plugins
         for name, handler in registered:
@@ -380,7 +380,7 @@ class Sopel(irc.AbstractBot):
             handler.setup(self)
             handler.register(self)
             meta = handler.get_meta_description()
-            LOGGER.info("Reloaded %s plugin %s from %s",
+            LOGGER.info('Reloaded %s plugin %s from %s',
                         meta['type'], name, meta['source'])
 
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls) -> None:
@@ -577,7 +577,7 @@ class Sopel(irc.AbstractBot):
                         self.settings, func)
                     self._rules_manager.register_url_callback(rule)
                 except plugins.exceptions.PluginError as err:
-                    LOGGER.error("Cannot register URL callback: %s", err)
+                    LOGGER.error('Cannot register URL callback: %s', err)
 
     # message dispatch
 
@@ -652,7 +652,7 @@ class Sopel(irc.AbstractBot):
                 usertimediff = current_time - self._times[nick][func]
                 if func.rate > 0 and usertimediff < func.rate:
                     LOGGER.info(
-                        "%s prevented from using %s in %s due to user limit: %d < %d",
+                        '%s prevented from using %s in %s due to user limit: %d < %d',
                         trigger.nick, func.__name__, trigger.sender, usertimediff,
                         func.rate
                     )
@@ -661,7 +661,7 @@ class Sopel(irc.AbstractBot):
                 globaltimediff = current_time - self._times[self.nick][func]
                 if func.global_rate > 0 and globaltimediff < func.global_rate:
                     LOGGER.info(
-                        "%s prevented from using %s in %s due to global limit: %d < %d",
+                        '%s prevented from using %s in %s due to global limit: %d < %d',
                         trigger.nick, func.__name__, trigger.sender, globaltimediff,
                         func.global_rate
                     )
@@ -671,7 +671,7 @@ class Sopel(irc.AbstractBot):
                 chantimediff = current_time - self._times[trigger.sender][func]
                 if func.channel_rate > 0 and chantimediff < func.channel_rate:
                     LOGGER.info(
-                        "%s prevented from using %s in %s due to channel limit: %d < %d",
+                        '%s prevented from using %s in %s due to channel limit: %d < %d',
                         trigger.nick, func.__name__, trigger.sender, chantimediff,
                         func.channel_rate
                     )
@@ -681,7 +681,7 @@ class Sopel(irc.AbstractBot):
         if trigger.sender in self.config:
             channel_config = self.config[trigger.sender]
             LOGGER.debug(
-                "Evaluating configuration for %s.%s in channel %s",
+                'Evaluating configuration for %s.%s in channel %s',
                 func.plugin_name, func.__name__, trigger.sender
             )
 
@@ -692,13 +692,13 @@ class Sopel(irc.AbstractBot):
                 # if "*" is used, we are disabling all plugins on provided channel
                 if '*' in disabled_plugins:
                     LOGGER.debug(
-                        "All plugins disabled in %s; skipping execution of %s.%s",
+                        'All plugins disabled in %s; skipping execution of %s.%s',
                         trigger.sender, func.plugin_name, func.__name__
                     )
                     return
                 if func.plugin_name in disabled_plugins:
                     LOGGER.debug(
-                        "Plugin %s is disabled in %s; skipping execution of %s",
+                        'Plugin %s is disabled in %s; skipping execution of %s',
                         func.plugin_name, trigger.sender, func.__name__
                     )
                     return
@@ -710,7 +710,7 @@ class Sopel(irc.AbstractBot):
                 if func.plugin_name in disabled_commands:
                     if func.__name__ in disabled_commands[func.plugin_name]:
                         LOGGER.debug(
-                            "Skipping execution of %s.%s in %s: disabled_commands matched",
+                            'Skipping execution of %s.%s in %s: disabled_commands matched',
                             func.plugin_name, func.__name__, trigger.sender
                         )
                         return
@@ -772,7 +772,7 @@ class Sopel(irc.AbstractBot):
         account = user_obj.account if user_obj else None
 
         # skip processing replayed messages
-        if "time" in pretrigger.tags and pretrigger.sender in self.channels:
+        if 'time' in pretrigger.tags and pretrigger.sender in self.channels:
             join_time = self.channels[pretrigger.sender].join_time
             if join_time is not None and pretrigger.time < join_time:
                 return
@@ -812,7 +812,7 @@ class Sopel(irc.AbstractBot):
             else:
                 block_type = 'host blocklist'
             LOGGER.debug(
-                "%s prevented from using %s by %s.",
+                '%s prevented from using %s by %s.',
                 pretrigger.nick,
                 ', '.join(list_of_blocked_rules),
                 block_type,
@@ -946,33 +946,33 @@ class Sopel(irc.AbstractBot):
 
     def _shutdown(self) -> None:
         """Internal bot shutdown method."""
-        LOGGER.info("Shutting down")
+        LOGGER.info('Shutting down')
         # Stop Job Scheduler
-        LOGGER.info("Stopping the Job Scheduler.")
+        LOGGER.info('Stopping the Job Scheduler.')
         self._scheduler.stop()
 
         try:
             self._scheduler.join(timeout=15)
         except RuntimeError:
-            LOGGER.exception("Unable to stop the Job Scheduler.")
+            LOGGER.exception('Unable to stop the Job Scheduler.')
         else:
-            LOGGER.info("Job Scheduler stopped.")
+            LOGGER.info('Job Scheduler stopped.')
 
         self._scheduler.clear_jobs()
 
         # Shutdown plugins
         LOGGER.info(
-            "Calling shutdown for %d plugins.", len(self.shutdown_methods))
+            'Calling shutdown for %d plugins.', len(self.shutdown_methods))
 
         for shutdown_method in self.shutdown_methods:
             try:
                 LOGGER.debug(
-                    "Calling %s.%s",
+                    'Calling %s.%s',
                     shutdown_method.__module__,
                     shutdown_method.__name__)
                 shutdown_method(self)
             except Exception as e:
-                LOGGER.exception("Error calling shutdown method: %s", e)
+                LOGGER.exception('Error calling shutdown method: %s', e)
 
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []

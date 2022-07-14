@@ -17,8 +17,8 @@ class User:
 
     :param nick: the user's nickname
     :type nick: :class:`sopel.tools.identifiers.Identifier`
-    :param str user: the user's local username ("user" in `user@host.name`)
-    :param str host: the user's hostname ("host.name" in `user@host.name`)
+    :param str user: the user's local username (``user`` in ``user@host.name``)
+    :param str host: the user's hostname (``host.name`` in ``user@host.name``)
     """
     __slots__ = (
         'nick', 'user', 'host', 'channels', 'account', 'away',

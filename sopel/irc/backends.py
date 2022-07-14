@@ -84,7 +84,7 @@ class AsyncioBackend(AbstractIRCBackend):
         self._keyfile: Optional[str] = keyfile
         self._verify_ssl: bool = verify_ssl
         self._ca_certs: Optional[str] = ca_certs
-        self._ssl_ciphers: str = ":".join(ssl_ciphers or [])
+        self._ssl_ciphers: str = ':'.join(ssl_ciphers or [])
         self._ssl_minimum_version: ssl.TLSVersion = ssl_minimum_version
 
         # timeout configuration

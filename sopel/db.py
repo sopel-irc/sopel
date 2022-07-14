@@ -234,7 +234,7 @@ class SopelDB:
         try:
             self.engine.connect()
         except OperationalError:
-            print("OperationalError: Unable to connect to database.")
+            print('OperationalError: Unable to connect to database.')
             raise
 
         # Create our tables
@@ -275,7 +275,7 @@ class SopelDB:
             LOGGER.info(
                 "Raw connection requested when 'db_type' is not 'sqlite':\n"
                 "Consider using 'db.session()' to get a SQLAlchemy session "
-                "instead here:\n%s",
+                'instead here:\n%s',
                 traceback.format_list(traceback.extract_stack()[:-1])[-1][:-1])
         return self.engine.raw_connection()
 
@@ -587,7 +587,7 @@ class SopelDB:
             session.execute(
                 delete(Nicknames)
                 .where(Nicknames.slug == slug)
-                .execution_options(synchronize_session="fetch")
+                .execution_options(synchronize_session='fetch')
             )
             session.commit()
 
@@ -609,19 +609,19 @@ class SopelDB:
             session.execute(
                 delete(Nicknames)
                 .where(Nicknames.nick_id == nick_id)
-                .execution_options(synchronize_session="fetch")
+                .execution_options(synchronize_session='fetch')
             )
             session.execute(
                 delete(NickValues)
                 .where(NickValues.nick_id == nick_id)
-                .execution_options(synchronize_session="fetch")
+                .execution_options(synchronize_session='fetch')
             )
             session.commit()
 
     @deprecated(
         version='8.0',
         removed_in='9.0',
-        reason="Renamed to `forget_nick_group`",
+        reason='Renamed to `forget_nick_group`',
     )
     def delete_nick_group(self, nick: str) -> None:  # pragma: nocover
         self.forget_nick_group(nick)
@@ -669,13 +669,13 @@ class SopelDB:
             session.execute(
                 delete(NickValues)
                 .where(NickValues.nick_id == second_id)
-                .execution_options(synchronize_session="fetch")
+                .execution_options(synchronize_session='fetch')
             )
             session.execute(
                 update(Nicknames)
                 .where(Nicknames.nick_id == second_id)
                 .values(nick_id=first_id)
-                .execution_options(synchronize_session="fetch")
+                .execution_options(synchronize_session='fetch')
             )
             session.commit()
 
@@ -700,7 +700,7 @@ class SopelDB:
                 update(ChannelValues)
                 .where(ChannelValues.channel == Identifier._lower_swapped(chan))
                 .values(channel=slug)
-                .execution_options(synchronize_session="fetch")
+                .execution_options(synchronize_session='fetch')
             )
             session.commit()
 
@@ -777,7 +777,7 @@ class SopelDB:
                 .where(
                     ChannelValues.channel == channel,
                     ChannelValues.key == key
-                ).execution_options(synchronize_session="fetch")
+                ).execution_options(synchronize_session='fetch')
             )
             session.commit()
 

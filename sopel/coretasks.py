@@ -45,13 +45,13 @@ Other plugins should use a different querytype.
 """
 
 MODE_PREFIX_PRIVILEGES = {
-    "v": plugin.VOICE,
-    "h": plugin.HALFOP,
-    "o": plugin.OP,
-    "a": plugin.ADMIN,
-    "q": plugin.OWNER,
-    "y": plugin.OPER,
-    "Y": plugin.OPER,
+    'v': plugin.VOICE,
+    'h': plugin.HALFOP,
+    'o': plugin.OP,
+    'a': plugin.ADMIN,
+    'q': plugin.OWNER,
+    'y': plugin.OPER,
+    'Y': plugin.OPER,
 }
 
 
@@ -102,8 +102,8 @@ def _join_event_processing(bot):
             channel = bot.memory['join_events_queue'].popleft()
         except IndexError:
             break
-        LOGGER.debug("Sending MODE and WHO after channel JOIN: %s", channel)
-        bot.write(["MODE", channel])
+        LOGGER.debug('Sending MODE and WHO after channel JOIN: %s', channel)
+        bot.write(['MODE', channel])
         _send_who(bot, channel)
 
 
@@ -144,7 +144,7 @@ def auth_after_register(bot):
     # nickserv-based auth method needs to check for current nick
     if auth_method == 'nickserv':
         if bot.nick != bot.make_identifier(bot.settings.core.nick):
-            LOGGER.warning("Sending nickserv GHOST command.")
+            LOGGER.warning('Sending nickserv GHOST command.')
             bot.say(
                 'GHOST %s %s' % (bot.settings.core.nick, auth_password),
                 auth_target or 'NickServ')
@@ -157,7 +157,7 @@ def auth_after_register(bot):
     elif auth_method == 'Q':
         bot.write(('AUTH', auth_username, auth_password))
     elif auth_method == 'userserv':
-        bot.say("LOGIN %s %s" % (auth_username, auth_password),
+        bot.say('LOGIN %s %s' % (auth_username, auth_password),
                 auth_target or 'UserServ')
 
 
@@ -176,13 +176,13 @@ def _execute_perform(bot):
     count = len(commands)
 
     if not count:
-        LOGGER.info("No custom command to execute.")
+        LOGGER.info('No custom command to execute.')
         return
 
-    LOGGER.info("Executing %d custom commands.", count)
+    LOGGER.info('Executing %d custom commands.', count)
     for i, command in enumerate(commands, 1):
         command = command.replace('$nickname', bot.config.core.nick)
-        LOGGER.debug("Executing custom command [%d/%d]: %s", i, count, command)
+        LOGGER.debug('Executing custom command [%d/%d]: %s', i, count, command)
         bot.write((command,))
 
 
@@ -202,7 +202,7 @@ def on_nickname_in_use(bot, trigger):
     handling), the bot will try to regain it.
     """
     LOGGER.error(
-        "Nickname already in use! (Nick: %s; Sender: %s; Args: %r)",
+        'Nickname already in use! (Nick: %s; Sender: %s; Args: %r)',
         trigger.nick,
         trigger.sender,
         trigger.args,
@@ -210,8 +210,8 @@ def on_nickname_in_use(bot, trigger):
     bot.change_current_nick(bot.nick + '_')
 
 
-@plugin.require_privmsg("This command only works as a private message.")
-@plugin.require_admin("This command requires admin privileges.")
+@plugin.require_privmsg('This command only works as a private message.')
+@plugin.require_admin('This command requires admin privileges.')
 @plugin.commands('execute')
 def execute_perform(bot, trigger):
     """Execute commands specified to perform on IRC server connect.
@@ -258,16 +258,16 @@ def startup(bot, trigger):
             # as expected if the conditions for running this block are met
             privmsg = (
                 "Hi, I'm your bot, %s. The IRC server didn't assign me the "
-                "nick you configured. This can cause problems for me, and "
+                'nick you configured. This can cause problems for me, and '
                 "make me do weird things. You'll probably want to stop me, "
                 "figure out why my nick isn't acceptable, and fix that before "
-                "starting me again." % bot.nick
+                'starting me again.' % bot.nick
             )
             debug_msg = (
                 "RPL_WELCOME indicated the server did not accept the bot's "
                 "configured nickname. Requested '%s'; got '%s'. This can "
-                "cause unexpected behavior. Please modify the configuration "
-                "and restart the bot." % (bot.nick, trigger.args[0])
+                'cause unexpected behavior. Please modify the configuration '
+                'and restart the bot.' % (bot.nick, trigger.args[0])
             )
             LOGGER.critical(debug_msg)
             bot.say(privmsg, bot.config.core.owner)
@@ -291,29 +291,29 @@ def startup(bot, trigger):
 
     channels = bot.config.core.channels
     if not channels:
-        LOGGER.info("No initial channels to JOIN.")
+        LOGGER.info('No initial channels to JOIN.')
     elif bot.config.core.throttle_join:
         throttle_rate = int(bot.config.core.throttle_join)
         throttle_wait = max(bot.config.core.throttle_wait, 1)
         channels_joined = 0
 
         LOGGER.info(
-            "Joining %d channels (with JOIN throttle ON); "
-            "this may take a moment.",
+            'Joining %d channels (with JOIN throttle ON); '
+            'this may take a moment.',
             len(channels))
 
         for channel in channels:
             channels_joined += 1
             if not channels_joined % throttle_rate:
                 LOGGER.debug(
-                    "Waiting %ds before next JOIN batch.",
+                    'Waiting %ds before next JOIN batch.',
                     throttle_wait)
                 time.sleep(throttle_wait)
             bot.join(channel)
     else:
         LOGGER.info(
-            "Joining %d channels (with JOIN throttle OFF); "
-            "this may take a moment.",
+            'Joining %d channels (with JOIN throttle OFF); '
+            'this may take a moment.',
             len(channels))
 
         for channel in bot.config.core.channels:
@@ -324,10 +324,10 @@ def startup(bot, trigger):
             'account-tag' in bot.enabled_capabilities and
             '@' not in bot.config.core.owner):
         msg = (
-            "This network supports using network services to identify you as "
-            "my owner, rather than just matching your nickname. This is much "
+            'This network supports using network services to identify you as '
+            'my owner, rather than just matching your nickname. This is much '
             "more secure. If you'd like to do this, make sure you're logged in "
-            "and reply with \"{}useserviceauth\""
+            'and reply with "{}useserviceauth"'
         ).format(bot.config.core.help_prefix)
         bot.say(msg, bot.config.core.owner)
 
@@ -358,7 +358,7 @@ def handle_isupport(bot, trigger):
             parameters[key] = value
         except ValueError:
             # ignore malformed parameter: log a warning and continue
-            LOGGER.warning("Unable to parse ISUPPORT parameter: %r", arg)
+            LOGGER.warning('Unable to parse ISUPPORT parameter: %r', arg)
 
     bot._isupport = bot._isupport.apply(**parameters)
 
@@ -413,7 +413,7 @@ def parse_reply_myinfo(bot, trigger):
     bot._myinfo = utils.MyInfo(*trigger.args[0:3])
 
     LOGGER.info(
-        "Received RPL_MYINFO from server: %s, %s, %s",
+        'Received RPL_MYINFO from server: %s, %s, %s',
         bot._myinfo.client,
         bot._myinfo.servername,
         bot._myinfo.version,
@@ -447,7 +447,7 @@ def enable_service_auth(bot, trigger):
     bot.say('Success! I will now use network services to identify you as my '
             'owner.')
     LOGGER.info(
-        "User %s set %s as owner account.",
+        'User %s set %s as owner account.',
         trigger.nick,
         trigger.account,
     )
@@ -465,10 +465,10 @@ def retry_join(bot, trigger):
     if channel in bot.memory['retry_join'].keys():
         bot.memory['retry_join'][channel] += 1
         if bot.memory['retry_join'][channel] > 10:
-            LOGGER.warning("Failed to join %s after 10 attempts.", channel)
+            LOGGER.warning('Failed to join %s after 10 attempts.', channel)
             return
         LOGGER.info(
-            "Rejoining channel %r failed, will retry in 6s.",
+            'Rejoining channel %r failed, will retry in 6s.',
             str(channel))
         time.sleep(6)
     else:
@@ -476,7 +476,7 @@ def retry_join(bot, trigger):
 
     attempt = bot.memory['retry_join'][channel] + 1
     LOGGER.info(
-        "Trying to rejoin channel %r (attempt %d/10)",
+        'Trying to rejoin channel %r (attempt %d/10)',
         str(channel), attempt)
     bot.join(channel)
 
@@ -507,12 +507,12 @@ def handle_names(bot, trigger):
     # If this ever needs to be updated, remember to change the mode handling in
     # the WHO-handler functions below, too.
     mapping = {
-        "+": plugin.VOICE,
-        "%": plugin.HALFOP,
-        "@": plugin.OP,
-        "&": plugin.ADMIN,
-        "~": plugin.OWNER,
-        "!": plugin.OPER,
+        '+': plugin.VOICE,
+        '%': plugin.HALFOP,
+        '@': plugin.OP,
+        '&': plugin.ADMIN,
+        '~': plugin.OWNER,
+        '!': plugin.OPER,
     }
 
     uhnames = 'UHNAMES' in bot.isupport
@@ -587,20 +587,20 @@ def _parse_modes(bot, args, clear=False):
     channel_name = bot.make_identifier(args[0])
     if channel_name.is_nick():
         # We don't do anything with user modes
-        LOGGER.debug("Ignoring user modes: %r", args)
+        LOGGER.debug('Ignoring user modes: %r', args)
         return
 
     channel = bot.channels[channel_name]
 
     # Unreal 3 sometimes sends an extraneous trailing space. If we're short an
     # arg, we'll find out later.
-    if args[-1] == "":
+    if args[-1] == '':
         args.pop()
     # If any args are still empty, that's something we may not be prepared for,
     # but let's continue anyway hoping they're trailing / not important.
     if len(args) < 2 or not all(args):
         LOGGER.debug(
-            "The server sent a possibly malformed MODE message: %r", args)
+            'The server sent a possibly malformed MODE message: %r', args)
 
     # parse the modestring with the parameters
     modeinfo = bot.modeparser.parse(args[1], tuple(args[2:]))
@@ -659,7 +659,7 @@ def _parse_modes(bot, args, clear=False):
     # log ignored modes (modes Sopel doesn't know how to handle)
     if modeinfo.ignored_modes:
         LOGGER.warning(
-            "Unknown MODE message, sending WHO. Message was: %r",
+            'Unknown MODE message, sending WHO. Message was: %r',
             args,
         )
         # send a WHO message to ensure we didn't miss anything
@@ -668,13 +668,13 @@ def _parse_modes(bot, args, clear=False):
     # log leftover parameters (too many arguments)
     if modeinfo.leftover_params:
         LOGGER.warning(
-            "Too many arguments received for MODE: args=%r chanmodes=%r",
+            'Too many arguments received for MODE: args=%r chanmodes=%r',
             args,
             bot.modeparser.chanmodes,
         )
 
-    LOGGER.info("Updated mode for channel: %s", channel.name)
-    LOGGER.debug("Channel %r mode: %r", str(channel.name), channel.modes)
+    LOGGER.info('Updated mode for channel: %s', channel.name)
+    LOGGER.debug('Channel %r mode: %r', str(channel.name), channel.modes)
 
 
 @plugin.event('NICK')
@@ -692,18 +692,18 @@ def track_nicks(bot, trigger):
         # e.g. by ZNC's keepnick module running in front of Sopel
         if old != bot.config.core.nick and new == bot.config.core.nick:
             LOGGER.info(
-                "Regained configured nick. Restarting is still recommended.")
+                'Regained configured nick. Restarting is still recommended.')
         else:
             privmsg = (
                 "Hi, I'm your bot, %s. Something has made my nick change. This "
-                "can cause some problems for me, and make me do weird things. "
+                'can cause some problems for me, and make me do weird things. '
                 "You'll probably want to restart me, and figure out what made "
-                "that happen so you can stop it happening again. (Usually, it "
+                'that happen so you can stop it happening again. (Usually, it '
                 "means you tried to give me a nick that's protected by NickServ.)"
             ) % bot.config.core.nick
             debug_msg = (
-                "Nick changed by server. This can cause unexpected behavior. "
-                "Please restart the bot."
+                'Nick changed by server. This can cause unexpected behavior. '
+                'Please restart the bot.'
             )
             LOGGER.critical(debug_msg)
             bot.say(privmsg, bot.config.core.owner)
@@ -712,7 +712,7 @@ def track_nicks(bot, trigger):
         # This should cut down the number of "weird things" that happen while
         # the active nick doesn't match the config, but it's not a substitute
         # for regaining the expected nickname.
-        LOGGER.info("Updating bot.nick property with server-changed nick.")
+        LOGGER.info('Updating bot.nick property with server-changed nick.')
         bot._nick = new
         return
 
@@ -721,7 +721,7 @@ def track_nicks(bot, trigger):
     if old in bot.users:
         bot.users[new] = bot.users.pop(old)
 
-    LOGGER.info("User named %r is now known as %r.", str(old), str(new))
+    LOGGER.info('User named %r is now known as %r.', str(old), str(new))
 
 
 @plugin.rule('(.*)')
@@ -734,7 +734,7 @@ def track_part(bot, trigger):
     nick = trigger.nick
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
-    LOGGER.info("User %r left a channel: %s", str(nick), channel)
+    LOGGER.info('User %r left a channel: %s', str(nick), channel)
 
 
 @plugin.event('KICK')
@@ -747,7 +747,7 @@ def track_kick(bot, trigger):
     channel = trigger.sender
     _remove_from_channel(bot, nick, channel)
     LOGGER.info(
-        "User %r got kicked by %r from a channel: %s",
+        'User %r got kicked by %r from a channel: %s',
         str(nick),
         str(trigger.nick),
         channel,
@@ -815,7 +815,7 @@ def _periodic_send_who(bot):
 
     if selected_channel is not None:
         # selected_channel's last who is either none or the oldest valid
-        LOGGER.debug("Sending WHO for channel: %s", selected_channel)
+        LOGGER.debug('Sending WHO for channel: %s', selected_channel)
         _send_who(bot, selected_channel)
 
 
@@ -840,18 +840,18 @@ def track_join(bot, trigger):
 
     # did *we* just join?
     if trigger.nick == bot.nick:
-        LOGGER.info("Channel joined: %s", channel)
+        LOGGER.info('Channel joined: %s', channel)
         bot.channels[channel].join_time = trigger.time
         if bot.settings.core.throttle_join:
-            LOGGER.debug("JOIN event added to queue for channel: %s", channel)
+            LOGGER.debug('JOIN event added to queue for channel: %s', channel)
             bot.memory['join_events_queue'].append(channel)
         else:
-            LOGGER.debug("Send MODE and direct WHO for channel: %s", channel)
-            bot.write(["MODE", channel])
+            LOGGER.debug('Send MODE and direct WHO for channel: %s', channel)
+            bot.write(['MODE', channel])
             _send_who(bot, channel)
     else:
         LOGGER.info(
-            "Channel %r joined by user: %s",
+            'Channel %r joined by user: %s',
             str(channel), trigger.nick)
 
     # set initial values
@@ -877,7 +877,7 @@ def track_quit(bot, trigger):
         channel.clear_user(trigger.nick)
     bot.users.pop(trigger.nick, None)
 
-    LOGGER.info("User quit: %s", trigger.nick)
+    LOGGER.info('User quit: %s', trigger.nick)
 
     configured_nick = bot.make_identifier(bot.settings.core.nick)
     if trigger.nick == configured_nick and trigger.nick != bot.nick:
@@ -965,7 +965,7 @@ def receive_cap_ls_reply(bot, trigger):
         return
 
     LOGGER.info(
-        "Client capability negotiation list: %s",
+        'Client capability negotiation list: %s',
         ', '.join(batched_caps.keys()),
     )
     bot.server_capabilities = batched_caps
@@ -987,13 +987,13 @@ def receive_cap_ls_reply(bot, trigger):
             bot._cap_reqs[cap] = [utils.CapReq('', 'coretasks')]
 
     def acct_warn(bot, cap):
-        LOGGER.info("Server does not support %s, or it conflicts with a custom "
-                    "plugin. User account validation unavailable or limited.",
+        LOGGER.info('Server does not support %s, or it conflicts with a custom '
+                    'plugin. User account validation unavailable or limited.',
                     cap[1:])
         if bot.config.core.owner_account or bot.config.core.admin_accounts:
             LOGGER.warning(
-                "Owner or admin accounts are configured, but %s is not "
-                "supported by the server. This may cause unexpected behavior.",
+                'Owner or admin accounts are configured, but %s is not '
+                'supported by the server. This may cause unexpected behavior.',
                 cap[1:])
     auth_caps = ['account-notify', 'extended-join', 'account-tag']
     for cap in auth_caps:
@@ -1028,7 +1028,7 @@ def receive_cap_ls_reply(bot, trigger):
         bot.write(('CAP', 'REQ', 'sasl'))
     else:
         bot.write(('CAP', 'END'))
-        LOGGER.info("End of client capability negotiation requests.")
+        LOGGER.info('End of client capability negotiation requests.')
 
 
 def receive_cap_ack_sasl(bot):
@@ -1137,7 +1137,7 @@ def auth_proceed(bot, trigger):
     if mech == 'PLAIN':
         if trigger.args[0] == '+':
             sasl_token = _make_sasl_plain_token(sasl_username, sasl_password)
-            LOGGER.info("Sending SASL Auth token.")
+            LOGGER.info('Sending SASL Auth token.')
             send_authenticate(bot, sasl_token)
             return
         else:
@@ -1167,9 +1167,9 @@ def sasl_success(bot, trigger):
 
     In this case, the SASL auth is a success, so we can close the negotiation.
     """
-    LOGGER.info("Successful SASL Auth.")
+    LOGGER.info('Successful SASL Auth.')
     bot.write(('CAP', 'END'))
-    LOGGER.info("End of client capability negotiation requests.")
+    LOGGER.info('End of client capability negotiation requests.')
 
 
 @plugin.event(events.ERR_SASLFAIL)
@@ -1182,7 +1182,7 @@ def sasl_success(bot, trigger):
 def sasl_fail(bot, trigger):
     """SASL Auth Failed: log the error and quit."""
     LOGGER.error(
-        "SASL Auth Failed; check your configuration: %s",
+        'SASL Auth Failed; check your configuration: %s',
         str(trigger))
     bot.quit('SASL Auth Failed')
 
@@ -1219,14 +1219,14 @@ def sasl_mechs(bot, trigger):
         """
         LOGGER.error(
             "Configured SASL mechanism '%s' is not advertised by this server. "
-            "Advertised values: %s",
+            'Advertised values: %s',
             mech,
             ', '.join(supported_mechs),
         )
         bot.quit('Wrong SASL configuration.')
     else:
         LOGGER.info(
-            "Selected SASL mechanism is %s, advertised: %s",
+            'Selected SASL mechanism is %s, advertised: %s',
             mech,
             ', '.join(supported_mechs),
         )
@@ -1262,14 +1262,14 @@ def blocks(bot, trigger):
     See [ignore system documentation]({% link _usage/ignoring-people.md %}).
     """
     STRINGS = {
-        "success_del": "Successfully deleted block: %s",
-        "success_add": "Successfully added block: %s",
-        "no_nick": "No matching nick block found for: %s",
-        "no_host": "No matching hostmask block found for: %s",
-        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|hostmask) sopel",
-        "invalid_display": "Invalid input for displaying blocks.",
-        "nonelisted": "No %s listed in the blocklist.",
-        'huh': "I could not figure out what you wanted to do.",
+        'success_del': 'Successfully deleted block: %s',
+        'success_add': 'Successfully added block: %s',
+        'no_nick': 'No matching nick block found for: %s',
+        'no_host': 'No matching hostmask block found for: %s',
+        'invalid': 'Invalid format for %s a block. Try: .blocks add (nick|hostmask) sopel',
+        'invalid_display': 'Invalid input for displaying blocks.',
+        'nonelisted': 'No %s listed in the blocklist.',
+        'huh': 'I could not figure out what you wanted to do.',
     }
 
     masks = set(s for s in bot.config.core.host_blocks if s != '')
@@ -1278,38 +1278,38 @@ def blocks(bot, trigger):
                 if nick != '')
     text = trigger.group().split()
 
-    if len(text) == 3 and text[1] == "list":
-        if text[2] == "hostmask":
+    if len(text) == 3 and text[1] == 'list':
+        if text[2] == 'hostmask':
             if len(masks) > 0:
                 blocked = ', '.join(str(mask) for mask in masks)
-                bot.say("Blocked hostmasks: {}".format(blocked))
+                bot.say('Blocked hostmasks: {}'.format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
-        elif text[2] == "nick":
+        elif text[2] == 'nick':
             if len(nicks) > 0:
                 blocked = ', '.join(str(nick) for nick in nicks)
-                bot.say("Blocked nicks: {}".format(blocked))
+                bot.say('Blocked nicks: {}'.format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('nicks'))
         else:
             bot.reply(STRINGS['invalid_display'])
 
-    elif len(text) == 4 and text[1] == "add":
-        if text[2] == "nick":
+    elif len(text) == 4 and text[1] == 'add':
+        if text[2] == 'nick':
             nicks.add(text[3])
             bot.config.core.nick_blocks = nicks
             bot.config.save()
-        elif text[2] == "hostmask":
+        elif text[2] == 'hostmask':
             masks.add(text[3].lower())
             bot.config.core.host_blocks = list(masks)
         else:
-            bot.reply(STRINGS['invalid'] % ("adding"))
+            bot.reply(STRINGS['invalid'] % ('adding'))
             return
 
         bot.reply(STRINGS['success_add'] % (text[3]))
 
-    elif len(text) == 4 and text[1] == "del":
-        if text[2] == "nick":
+    elif len(text) == 4 and text[1] == 'del':
+        if text[2] == 'nick':
             nick = bot.make_identifier(text[3])
             if nick not in nicks:
                 bot.reply(STRINGS['no_nick'] % (text[3]))
@@ -1318,7 +1318,7 @@ def blocks(bot, trigger):
             bot.config.core.nick_blocks = [str(n) for n in nicks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
-        elif text[2] == "hostmask":
+        elif text[2] == 'hostmask':
             mask = text[3].lower()
             if mask not in masks:
                 bot.reply(STRINGS['no_host'] % (text[3]))
@@ -1328,7 +1328,7 @@ def blocks(bot, trigger):
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:
-            bot.reply(STRINGS['invalid'] % ("deleting"))
+            bot.reply(STRINGS['invalid'] % ('deleting'))
             return
     else:
         bot.reply(STRINGS['huh'])
@@ -1348,7 +1348,7 @@ def recv_chghost(bot, trigger):
         new_user, new_host = trigger.args
     except ValueError:
         LOGGER.warning(
-            "Ignoring CHGHOST command with %s arguments: %r",
+            'Ignoring CHGHOST command with %s arguments: %r',
             'extra' if len(trigger.args) > 2 else 'insufficient',
             trigger.args)
         return
@@ -1356,7 +1356,7 @@ def recv_chghost(bot, trigger):
     bot.users[trigger.nick].user = new_user
     bot.users[trigger.nick].host = new_host
     LOGGER.info(
-        "Update user@host for nick %r: %s@%s",
+        'Update user@host for nick %r: %s@%s',
         str(trigger.nick), new_user, new_host)
 
 
@@ -1373,7 +1373,7 @@ def account_notify(bot, trigger):
     if account == '*':
         account = None
     bot.users[trigger.nick].account = account
-    LOGGER.info("Update account for nick %r: %s", str(trigger.nick), account)
+    LOGGER.info('Update account for nick %r: %s', str(trigger.nick), account)
 
 
 @plugin.event(events.RPL_WHOSPCRPL)
@@ -1388,7 +1388,7 @@ def recv_whox(bot, trigger):
         return
     if len(trigger.args) != 8:
         LOGGER.warning(
-            "While populating `bot.accounts` a WHO response was malformed.")
+            'While populating `bot.accounts` a WHO response was malformed.')
         return
     _, _, channel, user, host, nick, status, account = trigger.args
     away = 'G' in status
@@ -1418,12 +1418,12 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
     priv = 0
     if modes:
         mapping = {
-            "+": plugin.VOICE,
-            "%": plugin.HALFOP,
-            "@": plugin.OP,
-            "&": plugin.ADMIN,
-            "~": plugin.OWNER,
-            "!": plugin.OPER,
+            '+': plugin.VOICE,
+            '%': plugin.HALFOP,
+            '@': plugin.OP,
+            '&': plugin.ADMIN,
+            '~': plugin.OWNER,
+            '!': plugin.OPER,
         }
         for c in modes:
             priv = priv | mapping[c]
@@ -1460,7 +1460,7 @@ def track_notify(bot, trigger):
     user = bot.users[trigger.nick]
     user.away = bool(trigger.args)
     state_change = 'went away' if user.away else 'came back'
-    LOGGER.info("User %s: %s", state_change, trigger.nick)
+    LOGGER.info('User %s: %s', state_change, trigger.nick)
 
 
 @plugin.event('TOPIC')

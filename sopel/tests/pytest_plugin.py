@@ -30,12 +30,12 @@ def get_disable_setup():
     """
     @pytest.fixture(autouse=True)
     def disable_setup(request, monkeypatch):
-        setup = getattr(request.module, "setup", None)
-        isfixture = hasattr(setup, "_pytestfixturefunction")
+        setup = getattr(request.module, 'setup', None)
+        isfixture = hasattr(setup, '_pytestfixturefunction')
         if setup is not None and not isfixture and callable(setup):
             monkeypatch.setattr(
                 setup,
-                "_pytestfixturefunction",
+                '_pytestfixturefunction',
                 pytest.fixture(),
                 raising=False,
             )
@@ -81,11 +81,11 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         loader.clean_callable(tested_func, settings)
         test_rule = plugins.rules.Command.from_callable(settings, tested_func)
         parse_results = list(test_rule.parse(msg))
-        assert parse_results, "Example did not match any command."
+        assert parse_results, 'Example did not match any command.'
 
         match = parse_results[0]
-        sender = mockbot.nick if privmsg else "#channel"
-        hostmask = "%s!%s@%s" % (mockbot.nick, "UserName", "example.com")
+        sender = mockbot.nick if privmsg else '#channel'
+        hostmask = '%s!%s@%s' % (mockbot.nick, 'UserName', 'example.com')
 
         # TODO enable message tags
         full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
@@ -133,9 +133,9 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             for expected, output in zip(results, outputs):
                 if use_regexp:
                     message = (
-                        "Output does not match the regex:\n"
-                        "Pattern: %s\n"
-                        "Output: %s"
+                        'Output does not match the regex:\n'
+                        'Pattern: %s\n'
+                        'Output: %s'
                     ) % (expected, output)
                     if not re.match(expected, output):
                         raise AssertionError(message)
@@ -155,7 +155,7 @@ def insert_into_module(func, module_name, base_name, prefix):
     module = sys.modules[module_name]
     # Make sure the func method does not overwrite anything.
     for i in range(1000):
-        func.__name__ = str("%s_%s_%s" % (prefix, base_name, i))
+        func.__name__ = str('%s_%s_%s' % (prefix, base_name, i))
         if not hasattr(module, func.__name__):
             break
     else:

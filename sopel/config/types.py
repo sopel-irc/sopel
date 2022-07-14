@@ -192,7 +192,7 @@ class BaseValidated(abc.ABC):
             value = get_input(prompt + ' ')
 
         if not value and default is NO_DEFAULT:
-            raise ValueError("You must provide a value for this option.")
+            raise ValueError('You must provide a value for this option.')
 
         value = value or default
         section = getattr(parent, section_name)
@@ -232,7 +232,7 @@ class BaseValidated(abc.ABC):
         if self.default is not NO_DEFAULT:
             return self.default
         raise AttributeError(
-            "Missing required value for {}.{}".format(
+            'Missing required value for {}.{}'.format(
                 section._section_name, self.name
             )
         )
@@ -520,7 +520,7 @@ class ListAttribute(BaseValidated):
             user to switch to a multi-line value, without a delimiter.
 
         """
-        if "\n" in value:
+        if '\n' in value:
             items = (
                 # remove trailing comma
                 # because `value,\nother` is valid in Sopel 7.x
@@ -687,7 +687,7 @@ class FilenameAttribute(BaseValidated):
         if value is None:
             if self.default == NO_DEFAULT:
                 raise AttributeError(
-                    "Missing required value for {}.{}".format(
+                    'Missing required value for {}.{}'.format(
                         section._section_name, self.name
                     )
                 )
@@ -699,7 +699,7 @@ class FilenameAttribute(BaseValidated):
         result = os.path.expanduser(value)
         if not os.path.isabs(result):
             if not self.relative:
-                raise ValueError("Value must be an absolute path.")
+                raise ValueError('Value must be an absolute path.')
             result = os.path.join(settings.homedir, result)
 
         return self.parse(result)
@@ -738,12 +738,12 @@ class FilenameAttribute(BaseValidated):
                 os.makedirs(value)
             except (IOError, OSError):
                 raise ValueError(
-                    "Value must be an existing or creatable directory.")
+                    'Value must be an existing or creatable directory.')
         if not self.directory and not os.path.isfile(value):
             try:
                 open(value, 'w').close()
             except (IOError, OSError):
-                raise ValueError("Value must be an existing or creatable file.")
+                raise ValueError('Value must be an existing or creatable file.')
         return value
 
     def serialize(self, value):

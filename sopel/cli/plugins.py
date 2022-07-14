@@ -31,8 +31,8 @@ def build_parser():
     show_parser = subparsers.add_parser(
         'show',
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Show plugin details",
-        description="Show detailed information about a plugin.")
+        help='Show plugin details',
+        description='Show detailed information about a plugin.')
     utils.add_common_arguments(show_parser)
     show_parser.add_argument('name', help='Plugin name')
 
@@ -40,7 +40,7 @@ def build_parser():
     config_parser = subparsers.add_parser(
         'configure',
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Configure plugin with a config wizard",
+        help='Configure plugin with a config wizard',
         description=inspect.cleandoc("""
             Run a config wizard to configure a plugin.
 
@@ -53,7 +53,7 @@ def build_parser():
     list_parser = subparsers.add_parser(
         'list',
         formatter_class=argparse.RawTextHelpFormatter,
-        help="List available Sopel plugins",
+        help='List available Sopel plugins',
         description=inspect.cleandoc("""
             List available Sopel plugins from all possible sources.
 
@@ -93,7 +93,7 @@ def build_parser():
     disable_parser = subparsers.add_parser(
         'disable',
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Disable a Sopel plugins",
+        help='Disable a Sopel plugins',
         description=inspect.cleandoc("""
             Disable a Sopel plugin by its name, no matter where it comes from.
 
@@ -117,13 +117,13 @@ def build_parser():
         """))
     disable_parser.add_argument(
         '-r', '--remove', action='store_true', default=False,
-        help="Remove from ``core.enable`` list if applicable.")
+        help='Remove from ``core.enable`` list if applicable.')
 
     # sopel-plugins enable
     enable_parser = subparsers.add_parser(
         'enable',
         formatter_class=argparse.RawTextHelpFormatter,
-        help="Enable a Sopel plugin",
+        help='Enable a Sopel plugin',
         description=inspect.cleandoc("""
             Enable a Sopel plugin by its name, no matter where it comes from.
 
@@ -339,7 +339,7 @@ def handle_configure(options):
 
     if not is_enabled:
         tools.stderr(
-            "Plugin {0} has been configured but is not enabled. "
+            'Plugin {0} has been configured but is not enabled. '
             "Use 'sopel-plugins enable {0}' to enable it".format(plugin_name)
         )
 

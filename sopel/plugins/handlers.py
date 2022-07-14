@@ -312,9 +312,9 @@ class PyModulePlugin(AbstractPluginHandler):
         :rtype: Optional[str]
         """
         version: Optional[str] = None
-        if hasattr(self._module, "__version__"):
+        if hasattr(self._module, '__version__'):
             version = str(self._module.__version__)
-        elif self.module_name.startswith("sopel."):
+        elif self.module_name.startswith('sopel.'):
             version = release
 
         return version

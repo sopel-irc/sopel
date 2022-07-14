@@ -214,7 +214,7 @@ class Identifier(str):
         return low
 
     def __repr__(self):
-        return "%s(%r)" % (
+        return '%s(%r)' % (
             self.__class__.__name__,
             self.__str__()
         )

@@ -298,7 +298,7 @@ class ISupport:
 
         """
         if 'CHANMODES' not in self:
-            return {"A": "", "B": "", "C": "", "D": ""}
+            return {'A': '', 'B': '', 'C': '', 'D': ''}
 
         return dict(zip('ABCD', self['CHANMODES'][:4]))
 

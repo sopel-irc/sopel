@@ -93,7 +93,7 @@ r_entity = re.compile(r'&([^;\s]+);')
 @deprecated(
     version='8.0',
     removed_in='9.0',
-    reason="No longer needed now that Python 3.4+ has `html.unescape()`",
+    reason='No longer needed now that Python 3.4+ has `html.unescape()`',
 )
 def entity(match):
     """Convert an entity reference to the appropriate character.
@@ -174,7 +174,7 @@ def quote_query(string):
     :return str: the input URL with query parameter values URL-encoded
     """
     parsed = urlparse(string)
-    string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
+    string = string.replace(parsed.query, quote(parsed.query, '/=&'), 1)
     return string
 
 

@@ -157,7 +157,7 @@ class PreTrigger:
             try:
                 self.time = datetime.datetime.strptime(
                     tag_time,
-                    "%Y-%m-%dT%H:%M:%S.%fZ",
+                    '%Y-%m-%dT%H:%M:%S.%fZ',
                 ).replace(tzinfo=datetime.timezone.utc)
             except ValueError:
                 pass  # Server isn't conforming to spec, ignore the server-time

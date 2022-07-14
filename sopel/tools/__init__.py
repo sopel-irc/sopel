@@ -153,13 +153,13 @@ class OutputRedirect:
             except Exception:  # TODO: Be specific
                 pass
 
-        with codecs.open(self.logpath, 'ab', encoding="utf8",
+        with codecs.open(self.logpath, 'ab', encoding='utf8',
                          errors='xmlcharrefreplace') as logfile:
             try:
                 logfile.write(string)
             except UnicodeDecodeError:
                 # we got an invalid string, safely encode it to utf-8
-                logfile.write(str(string, 'utf8', errors="replace"))
+                logfile.write(str(string, 'utf8', errors='replace'))
 
     def flush(self):
         """Flush the file writing buffer."""

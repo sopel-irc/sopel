@@ -66,7 +66,7 @@ class ExpressionEvaluator:
             right = self._eval_node(node.right, timeout)
             if time.time() > timeout:
                 raise ExpressionEvaluator.Error(
-                    "Time for evaluating expression ran out.")
+                    'Time for evaluating expression ran out.')
             return self.binary_ops[type(node.op)](left, right)
 
         elif (isinstance(node, ast.UnaryOp) and
@@ -74,7 +74,7 @@ class ExpressionEvaluator:
             operand = self._eval_node(node.operand, timeout)
             if time.time() > timeout:
                 raise ExpressionEvaluator.Error(
-                    "Time for evaluating expression ran out.")
+                    'Time for evaluating expression ran out.')
             return self.unary_ops[type(node.op)](operand)
 
         raise ExpressionEvaluator.Error(
@@ -103,7 +103,7 @@ def guarded_mul(left, right):
         # my laptop, while (10**1000000)**2 has a noticeable delay. It could
         # certainly be improved.
         raise ValueError(
-            "Value is too large to be handled in limited time and memory.")
+            'Value is too large to be handled in limited time and memory.')
 
     return operator.mul(left, right)
 
@@ -195,7 +195,7 @@ def guarded_pow(num, exp):
         # on a fairly decent laptop processor.
         pass
     else:
-        raise ValueError("Pow expression too complex to calculate.")
+        raise ValueError('Pow expression too complex to calculate.')
 
     return operator.pow(num, exp)
 
