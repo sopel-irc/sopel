@@ -554,9 +554,13 @@ class CoreSection(StaticSection):
     """
 
     flood_max_wait = ValidatedAttribute('flood_max_wait', float, default=2)
-    """How much time to wait at most when flood protection kicks in.
+    """How many seconds to wait at most when flood protection kicks in.
 
     :default: ``2``
+
+    .. note::
+
+        If the maximum wait is 0, flood protection is effectively disabled.
 
     This is equivalent to the default value:
 
