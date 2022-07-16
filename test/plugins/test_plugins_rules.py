@@ -1109,6 +1109,13 @@ def test_kwargs_from_callable(mockbot):
     assert 'threaded' in kwargs
     assert 'output_prefix' in kwargs
     assert 'unblockable' in kwargs
+    assert 'user_rate_limit' in kwargs
+    assert 'channel_rate_limit' in kwargs
+    assert 'global_rate_limit' in kwargs
+    assert 'user_rate_message' in kwargs
+    assert 'channel_rate_message' in kwargs
+    assert 'global_rate_message' in kwargs
+    assert 'default_rate_message' in kwargs
     assert 'usages' in kwargs
     assert 'tests' in kwargs
     assert 'doc' in kwargs
@@ -1122,6 +1129,13 @@ def test_kwargs_from_callable(mockbot):
     assert kwargs['threaded'] is True
     assert kwargs['output_prefix'] == ''
     assert kwargs['unblockable'] is False
+    assert kwargs['user_rate_limit'] == 0
+    assert kwargs['channel_rate_limit'] == 0
+    assert kwargs['global_rate_limit'] == 0
+    assert kwargs['user_rate_message'] is None
+    assert kwargs['channel_rate_message'] is None
+    assert kwargs['global_rate_message'] is None
+    assert kwargs['default_rate_message'] is None
     assert kwargs['usages'] == tuple()
     assert kwargs['tests'] == tuple()
     assert kwargs['doc'] is None
@@ -1235,7 +1249,7 @@ def test_kwargs_from_callable_unblockable(mockbot):
 def test_kwargs_from_callable_rate_limit(mockbot):
     # prepare callable
     @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @plugin.rate(user=20, channel=30, server=40)
+    @plugin.rate(user=20, channel=30, server=40, message='Default message.')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1243,12 +1257,101 @@ def test_kwargs_from_callable_rate_limit(mockbot):
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
-    assert 'rate_limit' in kwargs
+    assert 'user_rate_limit' in kwargs
     assert 'channel_rate_limit' in kwargs
     assert 'global_rate_limit' in kwargs
-    assert kwargs['rate_limit'] == 20
+    assert 'user_rate_message' in kwargs
+    assert 'channel_rate_message' in kwargs
+    assert 'global_rate_message' in kwargs
+    assert 'default_rate_message' in kwargs
+    assert kwargs['user_rate_limit'] == 20
     assert kwargs['channel_rate_limit'] == 30
     assert kwargs['global_rate_limit'] == 40
+    assert kwargs['user_rate_message'] is None
+    assert kwargs['channel_rate_message'] is None
+    assert kwargs['global_rate_message'] is None
+    assert kwargs['default_rate_message'] == 'Default message.'
+
+
+def test_kwargs_from_callable_rate_limit_user(mockbot):
+    # prepare callable
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rate_user(20, 'User message.')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'user_rate_limit' in kwargs
+    assert 'channel_rate_limit' in kwargs
+    assert 'global_rate_limit' in kwargs
+    assert 'user_rate_message' in kwargs
+    assert 'channel_rate_message' in kwargs
+    assert 'global_rate_message' in kwargs
+    assert 'default_rate_message' in kwargs
+    assert kwargs['user_rate_limit'] == 20
+    assert kwargs['channel_rate_limit'] == 0
+    assert kwargs['global_rate_limit'] == 0
+    assert kwargs['user_rate_message'] == 'User message.'
+    assert kwargs['channel_rate_message'] is None
+    assert kwargs['global_rate_message'] is None
+    assert kwargs['default_rate_message'] is None
+
+
+def test_kwargs_from_callable_rate_limit_channel(mockbot):
+    # prepare callable
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rate_channel(20, 'Channel message.')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'user_rate_limit' in kwargs
+    assert 'channel_rate_limit' in kwargs
+    assert 'global_rate_limit' in kwargs
+    assert 'user_rate_message' in kwargs
+    assert 'channel_rate_message' in kwargs
+    assert 'global_rate_message' in kwargs
+    assert 'default_rate_message' in kwargs
+    assert kwargs['user_rate_limit'] == 0
+    assert kwargs['channel_rate_limit'] == 20
+    assert kwargs['global_rate_limit'] == 0
+    assert kwargs['user_rate_message'] is None
+    assert kwargs['channel_rate_message'] == 'Channel message.'
+    assert kwargs['global_rate_message'] is None
+    assert kwargs['default_rate_message'] is None
+
+
+def test_kwargs_from_callable_rate_limit_server(mockbot):
+    # prepare callable
+    @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
+    @plugin.rate_global(20, 'Server message.')
+    def handler(wrapped, trigger):
+        wrapped.reply('Hi!')
+
+    loader.clean_callable(handler, mockbot.settings)
+
+    # get kwargs
+    kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'user_rate_limit' in kwargs
+    assert 'channel_rate_limit' in kwargs
+    assert 'global_rate_limit' in kwargs
+    assert 'user_rate_message' in kwargs
+    assert 'channel_rate_message' in kwargs
+    assert 'global_rate_message' in kwargs
+    assert 'default_rate_message' in kwargs
+    assert kwargs['user_rate_limit'] == 0
+    assert kwargs['channel_rate_limit'] == 0
+    assert kwargs['global_rate_limit'] == 20
+    assert kwargs['user_rate_message'] is None
+    assert kwargs['channel_rate_message'] is None
+    assert kwargs['global_rate_message'] == 'Server message.'
+    assert kwargs['default_rate_message'] is None
 
 
 def test_kwargs_from_callable_examples(mockbot):
@@ -1459,16 +1562,16 @@ def test_rule_rate_limit(mockbot, triggerfactory):
     rule = rules.Rule(
         [regex],
         handler=handler,
-        rate_limit=20,
+        user_rate_limit=20,
         global_rate_limit=20,
         channel_rate_limit=20,
     )
-    assert rule.is_rate_limited(mocktrigger.nick) is False
+    assert rule.is_user_rate_limited(mocktrigger.nick) is False
     assert rule.is_channel_rate_limited(mocktrigger.sender) is False
     assert rule.is_global_rate_limited() is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_rate_limited(mocktrigger.nick) is True
+    assert rule.is_user_rate_limited(mocktrigger.nick) is True
     assert rule.is_channel_rate_limited(mocktrigger.sender) is True
     assert rule.is_global_rate_limited() is True
 
@@ -1485,16 +1588,16 @@ def test_rule_rate_limit_no_limit(mockbot, triggerfactory):
     rule = rules.Rule(
         [regex],
         handler=handler,
-        rate_limit=0,
+        user_rate_limit=0,
         global_rate_limit=0,
         channel_rate_limit=0,
     )
-    assert rule.is_rate_limited(mocktrigger.nick) is False
+    assert rule.is_user_rate_limited(mocktrigger.nick) is False
     assert rule.is_channel_rate_limited(mocktrigger.sender) is False
     assert rule.is_global_rate_limited() is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_rate_limited(mocktrigger.nick) is False
+    assert rule.is_user_rate_limited(mocktrigger.nick) is False
     assert rule.is_channel_rate_limited(mocktrigger.sender) is False
     assert rule.is_global_rate_limited() is False
 
@@ -1511,19 +1614,123 @@ def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
     rule = rules.Rule(
         [regex],
         handler=handler,
-        rate_limit=20,
+        user_rate_limit=20,
         global_rate_limit=20,
         channel_rate_limit=20,
         threaded=False,  # make sure there is no race-condition here
     )
-    assert rule.is_rate_limited(mocktrigger.nick) is False
+    assert rule.is_user_rate_limited(mocktrigger.nick) is False
     assert rule.is_channel_rate_limited(mocktrigger.sender) is False
     assert rule.is_global_rate_limited() is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_rate_limited(mocktrigger.nick) is False
+    assert rule.is_user_rate_limited(mocktrigger.nick) is False
     assert rule.is_channel_rate_limited(mocktrigger.sender) is False
     assert rule.is_global_rate_limited() is False
+
+
+def test_rule_rate_limit_messages(mockbot, triggerfactory):
+    def handler(bot, trigger):
+        return 'hello'
+
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
+    mocktrigger = wrapper._trigger
+
+    regex = re.compile(r'.*')
+    rule = rules.Rule(
+        [regex],
+        handler=handler,
+        user_rate_limit=20,
+        global_rate_limit=20,
+        channel_rate_limit=20,
+        user_rate_message='User message: {nick}',
+        channel_rate_message='Channel message: {nick}/{channel}',
+        global_rate_message='Server message: {nick}',
+        default_rate_message='Default message: {nick}',
+    )
+    assert rule.get_user_rate_message(mocktrigger.nick) == 'User message: Foo'
+    assert rule.get_channel_rate_message(
+        mocktrigger.nick, mocktrigger.sender
+    ) == 'Channel message: Foo/#channel'
+    assert rule.get_global_rate_message(
+        mocktrigger.nick
+    ) == 'Server message: Foo'
+
+
+def test_rule_rate_limit_messages_default(mockbot, triggerfactory):
+    def handler(bot, trigger):
+        return 'hello'
+
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
+    mocktrigger = wrapper._trigger
+
+    regex = re.compile(r'.*')
+    rule = rules.Rule(
+        [regex],
+        handler=handler,
+        user_rate_limit=20,
+        global_rate_limit=20,
+        channel_rate_limit=20,
+        default_rate_message='Default message',
+    )
+    assert rule.get_user_rate_message(mocktrigger.nick) == 'Default message'
+    assert rule.get_channel_rate_message(
+        mocktrigger.nick, mocktrigger.sender) == 'Default message'
+    assert rule.get_global_rate_message(mocktrigger.nick) == 'Default message'
+
+
+def test_rule_rate_limit_messages_default_mixed(mockbot, triggerfactory):
+    def handler(bot, trigger):
+        return 'hello'
+
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
+    mocktrigger = wrapper._trigger
+
+    regex = re.compile(r'.*')
+    rule = rules.Rule(
+        [regex],
+        handler=handler,
+        user_rate_limit=20,
+        global_rate_limit=20,
+        channel_rate_limit=20,
+        user_rate_message='User message.',
+        default_rate_message='The default.',
+    )
+    assert rule.get_user_rate_message(mocktrigger.nick) == 'User message.'
+    assert rule.get_channel_rate_message(
+        mocktrigger.nick, mocktrigger.sender) == 'The default.'
+    assert rule.get_global_rate_message(mocktrigger.nick) == 'The default.'
+
+    rule = rules.Rule(
+        [regex],
+        handler=handler,
+        user_rate_limit=20,
+        global_rate_limit=20,
+        channel_rate_limit=20,
+        channel_rate_message='Channel message.',
+        default_rate_message='The default.',
+    )
+    assert rule.get_user_rate_message(mocktrigger.nick) == 'The default.'
+    assert rule.get_channel_rate_message(
+        mocktrigger.nick, mocktrigger.sender) == 'Channel message.'
+    assert rule.get_global_rate_message(mocktrigger.nick) == 'The default.'
+
+    rule = rules.Rule(
+        [regex],
+        handler=handler,
+        user_rate_limit=20,
+        global_rate_limit=20,
+        channel_rate_limit=20,
+        global_rate_message='Server message.',
+        default_rate_message='The default.',
+    )
+    assert rule.get_user_rate_message(mocktrigger.nick) == 'The default.'
+    assert rule.get_channel_rate_message(
+        mocktrigger.nick, mocktrigger.sender) == 'The default.'
+    assert rule.get_global_rate_message(mocktrigger.nick) == 'Server message.'
 
 
 # -----------------------------------------------------------------------------

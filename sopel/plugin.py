@@ -40,6 +40,9 @@ __all__ = [
     'output_prefix',
     'priority',
     'rate',
+    'rate_user',
+    'rate_channel',
+    'rate_global',
     'require_account',
     'require_admin',
     'require_bot_privilege',
@@ -830,31 +833,211 @@ def ctcp(
     return add_attribute
 
 
-def rate(user: int = 0, channel: int = 0, server: int = 0) -> typing.Callable:
+def rate(
+    user: int = 0,
+    channel: int = 0,
+    server: int = 0,
+    *,
+    message: typing.Optional[str] = None,
+) -> typing.Callable:
     """Decorate a function to be rate-limited.
 
-    :param int user: seconds between permitted calls of this function by the
-                     same user
-    :param int channel: seconds between permitted calls of this function in
-                        the same channel, regardless of triggering user
-    :param int server: seconds between permitted calls of this function no
-                       matter who triggered it or where
+    :param user: seconds between permitted calls of this function by the same
+                 user
+    :param channel: seconds between permitted calls of this function in the
+                    same channel, regardless of triggering user
+    :param server: seconds between permitted calls of this function no matter
+                   who triggered it or where
+    :param message: optional keyword argument; default message sent as NOTICE
+                    when a rate limit is reached
 
     How often a function can be triggered on a per-user basis, in a channel,
     or across the server (bot) can be controlled with this decorator. A value
     of ``0`` means no limit. If a function is given a rate of 20, that
     function may only be used once every 20 seconds in the scope corresponding
-    to the parameter. Users on the admin list in Sopel’s configuration are
-    exempted from rate limits.
+    to the parameter::
+
+        from sopel import plugin
+
+        @plugin.rate(10)
+            # won't trigger if used more than once per 10s by a user
+
+        @plugin.rate(10, 10)
+            # won't trigger if used more than once per 10s by a user/channel
+
+        @plugin.rate(10, 10, 2)
+            # won't trigger if used more than once per 10s by a user/channel
+            # and never more than once every 2s
+
+    If a ``message`` is provided, it will be used as the default message sent
+    as a ``NOTICE`` to the user who hit the rate limit::
+
+        @rate(10, 10, 10, message='Hit the rate limit for this function.')
+            # will send a NOTICE
+
+    The message can contain a placeholder for ``nick``: the message will be
+    formatted with the nick that hit rate limit::
+
+        @rate(10, 10, 2, message='Sorry {nick}, you hit the rate limit!')
 
     Rate-limited functions that use scheduled future commands should import
     :class:`threading.Timer` instead of :mod:`sched`, or rate limiting will
     not work properly.
+
+    .. versionchanged:: 8.0
+
+        Optional keyword argument ``message`` was added in Sopel 8.
+
+    .. note::
+
+        Users on the admin list in Sopel's configuration are exempted from rate
+        limits.
+
+    .. seealso::
+
+        You can control each rate limit separately, with their own custom
+        message using :func:`rate_user`, :func:`rate_channel`, or
+        :func:`rate_global`.
+
     """
     def add_attribute(function):
-        function.rate = user
-        function.channel_rate = channel
-        function.global_rate = server
+        if not hasattr(function, 'user_rate'):
+            function.user_rate = user
+        if not hasattr(function, 'channel_rate'):
+            function.channel_rate = channel
+        if not hasattr(function, 'global_rate'):
+            function.global_rate = server
+        function.default_rate_message = message
+        return function
+    return add_attribute
+
+
+def rate_user(
+    rate: int,
+    message: typing.Optional[str] = None,
+) -> typing.Callable:
+    """Decorate a function to be rate-limited for a user.
+
+    :param rate: seconds between permitted calls of this function by the same
+                 user
+    :param message: optional; message sent as NOTICE when a user hits the limit
+
+    This decorator can be used alone or with the :func:`rate` decorator, as it
+    will always take precedence::
+
+        @rate(10, 10, 10)
+        @rate_user(20, 'You hit your rate limit for this function.')
+            # user limit will be set to 20, other to 10
+            # will send a NOTICE only when a user hits their own limit
+            # as other rate limits don't have any message set
+
+    The message can contain a placeholder for ``nick``: the message will be
+    formatted with the nick that hit rate limit::
+
+        @rate_user(5, 'Sorry {nick}, you hit your 5s limit!')
+
+    If you don't provide a message, the default message set by :func:`rate`
+    (if any) will be used instead.
+
+    .. versionadded:: 8.0
+
+    .. note::
+
+        Users on the admin list in Sopel's configuration are exempted from rate
+        limits.
+
+    """
+    def add_attribute(function):
+        function.user_rate = rate
+        function.user_rate_message = message
+        return function
+    return add_attribute
+
+
+def rate_channel(
+    rate: int,
+    message: typing.Optional[str] = None,
+) -> typing.Callable:
+    """Decorate a function to be rate-limited for a channel.
+
+    :param rate: seconds between permitted calls of this function in the same
+                 channel, regardless of triggering user
+    :param message: optional; message sent as NOTICE when a user hits the limit
+
+    This decorator can be used alone or with the :func:`rate` decorator, as it
+    will always take precedence::
+
+        @rate(10, 10, 10)
+        @rate_channel(5, 'You hit the channel rate limit for this function.')
+            # channel limit will be set to 5, other to 10
+            # will send a NOTICE only when a user hits the channel limit
+            # as other rate limits don't have any message set
+
+    If you don't provide a message, the default message set by :func:`rate`
+    (if any) will be used instead.
+
+    The message can contain placeholders for ``nick`` and ``channel``: the
+    message will be formatted with the nick that hit rate limit for said
+    ``channel``::
+
+        @rate_channel(
+            5,
+            'Sorry {nick}, you hit the 5s limit for the {channel} channel!',
+        )
+
+    .. versionadded:: 8.0
+
+    .. note::
+
+        Users on the admin list in Sopel's configuration are exempted from rate
+        limits.
+
+    """
+    def add_attribute(function):
+        function.channel_rate = rate
+        function.channel_rate_message = message
+        return function
+    return add_attribute
+
+
+def rate_global(
+    rate: int,
+    message: typing.Optional[str] = None,
+) -> typing.Callable:
+    """Decorate a function to be rate-limited for the whole server.
+
+    :param rate: seconds between permitted calls of this function no matter who
+                 triggered it or where
+    :param message: optional; message sent as NOTICE when a user hits the limit
+
+    This decorator can be used alone or with the :func:`rate` decorator, as it
+    will always take precedence::
+
+        @rate(10, 10, 10)
+        @rate_global(5, 'You hit the global rate limit for this function.')
+            # global limit will be set to 5, other to 10
+            # will send a NOTICE only when a user hits the global limit
+            # as other rate limits don't have any message set
+
+    If you don't provide a message, the default message set by :func:`rate`
+    (if any) will be used instead.
+
+    The message can contain a placeholder for ``nick``: the message will be
+    formatted with the nick that hit rate limit::
+
+        @rate_global(5, 'Sorry {nick}, you hit the 5s limit!')
+
+    .. versionadded:: 8.0
+
+    .. note::
+
+        Users on the admin list in Sopel's configuration are exempted from rate
+        limits.
+
+    """
+    def add_attribute(function):
+        function.global_rate = rate
+        function.global_rate_message = message
         return function
     return add_attribute
 

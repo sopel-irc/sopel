@@ -724,31 +724,65 @@ class AbstractRule(abc.ABC):
         """Tell if the rule is unblockable.
 
         :return: ``True`` when the rule is unblockable, ``False`` otherwise
-        :rtype: bool
         """
 
     @abc.abstractmethod
-    def is_rate_limited(self, nick) -> bool:
+    def is_user_rate_limited(self, nick: Identifier) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
         :return: ``True`` when the rule reached the limit, ``False`` otherwise
-        :rtype: bool
         """
 
     @abc.abstractmethod
-    def is_channel_rate_limited(self, channel) -> bool:
+    def is_channel_rate_limited(self, channel: Identifier) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
         :return: ``True`` when the rule reached the limit, ``False`` otherwise
-        :rtype: bool
         """
 
     @abc.abstractmethod
     def is_global_rate_limited(self) -> bool:
-        """Tell when the rule reached the server's rate limit.
+        """Tell when the rule reached the global rate limit.
 
         :return: ``True`` when the rule reached the limit, ``False`` otherwise
-        :rtype: bool
+        """
+
+    @abc.abstractmethod
+    def get_user_rate_message(self, nick: Identifier) -> Optional[str]:
+        """Give the message to send with a NOTICE to ``nick``.
+
+        :param nick: the nick that is rate limited
+        :return: A formatted string, or ``None`` if no message is set.
+
+        This method is called by the bot when a trigger hits the user rate
+        limit (i.e. for the specificed ``nick``).
+        """
+
+    @abc.abstractmethod
+    def get_channel_rate_message(
+        self,
+        nick: Identifier,
+        channel: Identifier,
+    ) -> Optional[str]:
+        """Give the message to send with a NOTICE to ``nick``.
+
+        :param nick: the nick that reached the channel's rate limit
+        :param channel: the channel that is rate limited
+        :return: A formatted string, or ``None`` if no message is set.
+
+        This method is called by the bot when a trigger hits the channel rate
+        limit (i.e. for the specificed ``channel``).
+        """
+
+    @abc.abstractmethod
+    def get_global_rate_message(self, nick: Identifier) -> Optional[str]:
+        """Give the message to send with a NOTICE to ``nick``.
+
+        :param nick: the nick that reached the global rate limit
+        :return: A formatted string, or ``None`` if no message is set.
+
+        This method is called by the bot when a trigger hits the global rate
+        limit (i.e. for any nick/channel).
         """
 
     @abc.abstractmethod
@@ -837,9 +871,17 @@ class Rule(AbstractRule):
             'threaded': getattr(handler, 'thread', True),
             'output_prefix': getattr(handler, 'output_prefix', ''),
             'unblockable': getattr(handler, 'unblockable', False),
-            'rate_limit': getattr(handler, 'rate', 0),
+            'user_rate_limit': getattr(handler, 'user_rate', 0),
             'channel_rate_limit': getattr(handler, 'channel_rate', 0),
             'global_rate_limit': getattr(handler, 'global_rate', 0),
+            'user_rate_message': getattr(
+                handler, 'user_rate_message', None),
+            'channel_rate_message': getattr(
+                handler, 'channel_rate_message', None),
+            'global_rate_message': getattr(
+                handler, 'global_rate_message', None),
+            'default_rate_message': getattr(
+                handler, 'default_rate_message', None),
             'usages': usages or tuple(),
             'tests': tests,
             'doc': inspect.getdoc(handler),
@@ -927,9 +969,13 @@ class Rule(AbstractRule):
                  threaded=True,
                  output_prefix=None,
                  unblockable=False,
-                 rate_limit=0,
+                 user_rate_limit=0,
                  channel_rate_limit=0,
                  global_rate_limit=0,
+                 user_rate_message=None,
+                 channel_rate_message=None,
+                 global_rate_message=None,
+                 default_rate_message=None,
                  usages=None,
                  tests=None,
                  doc=None):
@@ -952,9 +998,13 @@ class Rule(AbstractRule):
 
         # rate limiting
         self._unblockable = bool(unblockable)
-        self._rate_limit = rate_limit
+        self._user_rate_limit = user_rate_limit
         self._channel_rate_limit = channel_rate_limit
         self._global_rate_limit = global_rate_limit
+        self._user_rate_message = user_rate_message
+        self._channel_rate_message = channel_rate_message
+        self._global_rate_message = global_rate_message
+        self._default_rate_message = default_rate_message
 
         # metrics
         self._metrics_nick: Dict[Identifier, RuleMetrics] = {}
@@ -1062,7 +1112,7 @@ class Rule(AbstractRule):
             if result:
                 yield result
 
-    def match_event(self, event):
+    def match_event(self, event) -> bool:
         return bool(event and event in self._events)
 
     def match_ctcp(self, command: Optional[str]) -> bool:
@@ -1086,10 +1136,10 @@ class Rule(AbstractRule):
     def is_unblockable(self):
         return self._unblockable
 
-    def is_rate_limited(self, nick):
+    def is_user_rate_limited(self, nick):
         metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
         now = datetime.datetime.utcnow()
-        rate_limit = datetime.timedelta(seconds=self._rate_limit)
+        rate_limit = datetime.timedelta(seconds=self._user_rate_limit)
         return metrics.is_limited(now - rate_limit)
 
     def is_channel_rate_limited(self, channel):
@@ -1102,6 +1152,37 @@ class Rule(AbstractRule):
         now = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
         return self._metrics_global.is_limited(now - rate_limit)
+
+    def get_user_rate_message(self, nick):
+        template = self._user_rate_message or self._default_rate_message
+
+        if not template:
+            return None
+
+        return template.format(
+            nick=nick,
+        )
+
+    def get_channel_rate_message(self, nick, channel):
+        template = self._channel_rate_message or self._default_rate_message
+
+        if not template:
+            return None
+
+        return template.format(
+            nick=nick,
+            channel=channel,
+        )
+
+    def get_global_rate_message(self, nick):
+        template = self._global_rate_message or self._default_rate_message
+
+        if not template:
+            return None
+
+        return template.format(
+            nick=nick,
+        )
 
     def execute(self, bot, trigger):
         if not self._handler:
