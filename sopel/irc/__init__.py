@@ -30,18 +30,28 @@ import logging
 import os
 import threading
 import time
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TYPE_CHECKING
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TYPE_CHECKING,
+)
 
 from sopel import tools, trigger
 from sopel.tools import identifiers
-from .abstract_backends import AbstractIRCBackend
 from .backends import AsyncioBackend
 from .isupport import ISupport
-from .utils import CapReq, MyInfo, safe
-
+from .utils import CapReq, safe
 
 if TYPE_CHECKING:
     from sopel.config import Config
+    from .abstract_backends import AbstractIRCBackend
+    from .utils import MyInfo
 
 
 __all__ = ['abstract_backends', 'backends', 'utils']

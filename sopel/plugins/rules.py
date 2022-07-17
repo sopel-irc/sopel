@@ -24,18 +24,23 @@ import itertools
 import logging
 import re
 import threading
-import typing
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    Iterable,
+    Optional,
+    Type,
+    TYPE_CHECKING,
+    TypeVar,
+)
 from urllib.parse import urlparse
-
 
 from sopel import tools
 from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
 
-
-if typing.TYPE_CHECKING:
-    from typing import Any, Dict, Generator, Iterable, Optional, Type
-
+if TYPE_CHECKING:
     from sopel.tools.identifiers import Identifier
 
 
@@ -50,7 +55,7 @@ __all__ = [
     'URLCallback',
 ]
 
-TypedRule = typing.TypeVar('TypedRule', bound='AbstractRule')
+TypedRule = TypeVar('TypedRule', bound='AbstractRule')
 
 LOGGER = logging.getLogger(__name__)
 

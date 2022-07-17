@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime
 import functools
-from typing import Any, Callable, Dict, Optional, Set, Union
+from typing import Any, Callable, Dict, Optional, Set, TYPE_CHECKING, Union
 
 from sopel import privileges
 from sopel.tools import identifiers, memories
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 IdentifierFactory = Callable[[str], identifiers.Identifier]

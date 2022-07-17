@@ -27,7 +27,16 @@ from __future__ import annotations
 
 import enum
 import logging
-from typing import Dict, Iterator, List, NamedTuple, Optional, Set, Tuple
+from typing import (
+    Dict,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Set,
+    Tuple,
+)
+
 
 ModeTuple = Tuple[str, bool]
 """Tuple of mode information: ``(mode, is_added)``.

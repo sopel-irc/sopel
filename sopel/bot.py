@@ -16,14 +16,26 @@ import re
 import threading
 import time
 from types import MappingProxyType
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Mapping,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
 
 from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
 from sopel.lifecycle import deprecated
 from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
 from sopel.tools import jobs as tools_jobs
-from sopel.trigger import PreTrigger, Trigger
+from sopel.trigger import Trigger
+
+if TYPE_CHECKING:
+    from sopel.trigger import PreTrigger
 
 
 __all__ = ['Sopel', 'SopelWrapper']

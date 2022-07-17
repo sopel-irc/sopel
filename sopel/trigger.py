@@ -11,10 +11,22 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import Callable, cast, Dict, Match, Optional, Sequence, Tuple
+from typing import (
+    Callable,
+    cast,
+    Dict,
+    Match,
+    Optional,
+    Sequence,
+    Tuple,
+    TYPE_CHECKING,
+)
 
-from sopel import config, formatting, tools
+from sopel import formatting, tools
 from sopel.tools import identifiers, web
+
+if TYPE_CHECKING:
+    from sopel import config
 
 
 __all__ = [

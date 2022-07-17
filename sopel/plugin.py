@@ -11,8 +11,7 @@ from __future__ import annotations
 
 import functools
 import re
-import typing
-
+from typing import Any, Callable, Optional, Pattern, Union
 
 # import and expose privileges as shortcut
 from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
@@ -72,7 +71,7 @@ for example, to allow a user to retry a failed command immediately.
 """
 
 
-def unblockable(function: typing.Any) -> typing.Any:
+def unblockable(function: Any) -> Any:
     """Decorate a function to exempt it from the ignore/blocks system.
 
     For example, this can be used to ensure that important events such as
@@ -96,7 +95,7 @@ def unblockable(function: typing.Any) -> typing.Any:
     return function
 
 
-def interval(*intervals: typing.Union[int, float]) -> typing.Callable:
+def interval(*intervals: Union[int, float]) -> Callable:
     """Decorate a function to be called by the bot every *n* seconds.
 
     :param int intervals: one or more duration(s), in seconds
@@ -135,7 +134,7 @@ def interval(*intervals: typing.Union[int, float]) -> typing.Callable:
     return add_attribute
 
 
-def rule(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
+def rule(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a line matches the given pattern.
 
     :param str patterns: one or more regular expression(s)
@@ -190,7 +189,7 @@ def rule(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     return add_attribute
 
 
-def rule_lazy(*loaders: typing.Callable) -> typing.Callable:
+def rule_lazy(*loaders: Callable) -> Callable:
     """Decorate a callable as a rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -238,7 +237,7 @@ def rule_lazy(*loaders: typing.Callable) -> typing.Callable:
     return decorator
 
 
-def find(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
+def find(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called for each time a pattern is found in a line.
 
     :param str patterns: one or more regular expression(s)
@@ -293,7 +292,7 @@ def find(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     return add_attribute
 
 
-def find_lazy(*loaders: typing.Callable) -> typing.Callable:
+def find_lazy(*loaders: Callable) -> Callable:
     """Decorate a callable as a find rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -341,7 +340,7 @@ def find_lazy(*loaders: typing.Callable) -> typing.Callable:
     return decorator
 
 
-def search(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
+def search(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a pattern matches anywhere in a line.
 
     :param str patterns: one or more regular expression(s)
@@ -399,7 +398,7 @@ def search(*patterns: typing.Union[str, typing.Pattern]) -> typing.Callable:
     return add_attribute
 
 
-def search_lazy(*loaders: typing.Callable) -> typing.Callable:
+def search_lazy(*loaders: Callable) -> Callable:
     """Decorate a callable as a search rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -447,7 +446,7 @@ def search_lazy(*loaders: typing.Callable) -> typing.Callable:
     return decorator
 
 
-def thread(value: bool) -> typing.Callable:
+def thread(value: bool) -> Callable:
     """Decorate a function to specify if it should be run in a separate thread.
 
     :param bool value: if ``True``, the function is called in a separate thread;
@@ -468,8 +467,8 @@ def thread(value: bool) -> typing.Callable:
 
 
 def allow_bots(
-    function: typing.Optional[typing.Any] = None,
-) -> typing.Union[typing.Any, typing.Callable]:
+    function: Optional[Any] = None,
+) -> Union[Any, Callable]:
     """Decorate a function to specify that it should receive events from bots.
 
     On networks implementing the `Bot Mode specification`__, messages and
@@ -490,8 +489,8 @@ def allow_bots(
 
 
 def echo(
-    function: typing.Optional[typing.Any] = None,
-) -> typing.Union[typing.Any, typing.Callable]:
+    function: Optional[Any] = None,
+) -> Union[Any, Callable]:
     """Decorate a function to specify that it should receive echo messages.
 
     This decorator can be used to listen in on the messages that Sopel is
@@ -514,7 +513,7 @@ def echo(
     return add_attribute
 
 
-def command(*command_list: str) -> typing.Callable:
+def command(*command_list: str) -> Callable:
     """Decorate a function to set one or more commands that should trigger it.
 
     :param str command_list: one or more command name(s) to match
@@ -611,7 +610,7 @@ commands = command
 """Alias to :func:`command`."""
 
 
-def nickname_command(*command_list: str) -> typing.Callable:
+def nickname_command(*command_list: str) -> Callable:
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param str command_list: one or more command name(s) to match
@@ -661,7 +660,7 @@ nickname_commands = nickname_command
 """Alias to :func:`nickname_command`."""
 
 
-def action_command(*command_list: str) -> typing.Callable:
+def action_command(*command_list: str) -> Callable:
     """Decorate a function to trigger on CTCP ACTION lines.
 
     :param str command_list: one or more command name(s) to match
@@ -710,7 +709,7 @@ action_commands = action_command
 """Alias to :func:`action_command`."""
 
 
-def label(value: str) -> typing.Callable:
+def label(value: str) -> Callable:
     """Decorate a function to add a rule label.
 
     :param str value: a label for the rule
@@ -736,7 +735,7 @@ def label(value: str) -> typing.Callable:
     return add_attribute
 
 
-def priority(value: str) -> typing.Callable:
+def priority(value: str) -> Callable:
     """Decorate a function to be executed with higher or lower priority.
 
     :param str value: one of ``high``, ``medium``, or ``low``;
@@ -751,7 +750,7 @@ def priority(value: str) -> typing.Callable:
     return add_attribute
 
 
-def event(*event_list: str) -> typing.Callable:
+def event(*event_list: str) -> Callable:
     """Decorate a function to be triggered on specific IRC events.
 
     :param str event_list: one or more event name(s) on which to trigger
@@ -780,9 +779,9 @@ def event(*event_list: str) -> typing.Callable:
 
 
 def ctcp(
-    function: typing.Any = None,
+    function: Any = None,
     *command_list: str,
-) -> typing.Union[typing.Any, typing.Callable]:
+) -> Union[Any, Callable]:
     """Decorate a callable to trigger on CTCP commands (mostly, ``ACTION``).
 
     :param str command_list: one or more CTCP command(s) on which to trigger
@@ -838,8 +837,8 @@ def rate(
     channel: int = 0,
     server: int = 0,
     *,
-    message: typing.Optional[str] = None,
-) -> typing.Callable:
+    message: Optional[str] = None,
+) -> Callable:
     """Decorate a function to be rate-limited.
 
     :param user: seconds between permitted calls of this function by the same
@@ -914,8 +913,8 @@ def rate(
 
 def rate_user(
     rate: int,
-    message: typing.Optional[str] = None,
-) -> typing.Callable:
+    message: Optional[str] = None,
+) -> Callable:
     """Decorate a function to be rate-limited for a user.
 
     :param rate: seconds between permitted calls of this function by the same
@@ -956,8 +955,8 @@ def rate_user(
 
 def rate_channel(
     rate: int,
-    message: typing.Optional[str] = None,
-) -> typing.Callable:
+    message: Optional[str] = None,
+) -> Callable:
     """Decorate a function to be rate-limited for a channel.
 
     :param rate: seconds between permitted calls of this function in the same
@@ -1002,8 +1001,8 @@ def rate_channel(
 
 def rate_global(
     rate: int,
-    message: typing.Optional[str] = None,
-) -> typing.Callable:
+    message: Optional[str] = None,
+) -> Callable:
     """Decorate a function to be rate-limited for the whole server.
 
     :param rate: seconds between permitted calls of this function no matter who
@@ -1043,9 +1042,9 @@ def rate_global(
 
 
 def require_privmsg(
-    message: typing.Union[typing.Callable, typing.Optional[str]] = None,
+    message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> typing.Callable:
+) -> Callable:
     """Decorate a function to only be triggerable from a private message.
 
     :param str message: optional message said if triggered in a channel
@@ -1081,9 +1080,9 @@ def require_privmsg(
 
 
 def require_chanmsg(
-    message: typing.Union[typing.Callable, typing.Optional[str]] = None,
+    message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> typing.Callable:
+) -> Callable:
     """Decorate a function to only be triggerable from a channel message.
 
     :param str message: optional message said if triggered in private message
@@ -1129,9 +1128,9 @@ def require_chanmsg(
 
 
 def require_account(
-    message: typing.Union[typing.Callable, typing.Optional[str]] = None,
+    message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> typing.Callable:  # lgtm [py/similar-function]
+) -> Callable:  # lgtm [py/similar-function]
     """Decorate a function to require services/NickServ authentication.
 
     :param str message: optional message to say if a user without
@@ -1179,9 +1178,9 @@ def require_account(
 
 def require_privilege(
     level: int,
-    message: typing.Optional[str] = None,
+    message: Optional[str] = None,
     reply: bool = False,
-) -> typing.Callable:
+) -> Callable:
     """Decorate a function to require at least the given channel permission.
 
     :param int level: required privilege level to use this command
@@ -1222,9 +1221,9 @@ def require_privilege(
 
 
 def require_admin(
-    message: typing.Union[typing.Callable, typing.Optional[str]] = None,
+    message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> typing.Callable:  # lgtm [py/similar-function]
+) -> Callable:  # lgtm [py/similar-function]
     """Decorate a function to require the triggering user to be a bot admin.
 
     :param str message: optional message said to non-admin user
@@ -1261,9 +1260,9 @@ def require_admin(
 
 
 def require_owner(
-    message: typing.Union[typing.Callable, typing.Optional[str]] = None,
+    message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> typing.Callable:  # lgtm [py/similar-function]
+) -> Callable:  # lgtm [py/similar-function]
     """Decorate a function to require the triggering user to be the bot owner.
 
     :param str message: optional message said to non-owner user
@@ -1300,9 +1299,9 @@ def require_owner(
 
 def require_bot_privilege(
     level: int,
-    message: typing.Optional[str] = None,
+    message: Optional[str] = None,
     reply: bool = False,
-) -> typing.Callable:
+) -> Callable:
     """Decorate a function to require a minimum channel privilege for the bot.
 
     :param int level: minimum channel privilege the bot needs for this function
@@ -1341,7 +1340,7 @@ def require_bot_privilege(
     return actual_decorator
 
 
-def url(*url_rules: str) -> typing.Callable:
+def url(*url_rules: str) -> Callable:
     """Decorate a function to handle URLs.
 
     :param str url_rules: one or more regex pattern(s) to match URLs
@@ -1400,7 +1399,7 @@ def url(*url_rules: str) -> typing.Callable:
     return actual_decorator
 
 
-def url_lazy(*loaders: typing.Callable) -> typing.Callable:
+def url_lazy(*loaders: Callable) -> Callable:
     """Decorate a function to handle URL, using lazy-loading for its regex.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -1597,7 +1596,7 @@ class example:
         return func
 
 
-def output_prefix(prefix: str) -> typing.Callable:
+def output_prefix(prefix: str) -> Callable:
     """Decorate a function to add a prefix on its output.
 
     :param str prefix: the prefix to add (must include trailing whitespace if
