@@ -51,6 +51,9 @@ import itertools
 import os
 from typing import Optional
 
+# TODO: refactor along with usage in sopel.__init__ in py3.8+ world
+import importlib_metadata
+
 from sopel import __version__ as release, loader
 from . import exceptions
 
@@ -581,6 +584,23 @@ class EntryPointPlugin(PyModulePlugin):
 
     def load(self):
         self._module = self.entry_point.load()
+
+    def get_version(self) -> Optional[str]:
+        """Retrieve the plugin's version.
+
+        :return: the plugin's version string
+        :rtype: Optional[str]
+        """
+        version: Optional[str] = super().get_version()
+
+        if version is None and hasattr(self._module, "__package__"):
+            try:
+                version = importlib_metadata.version(self._module.__package__)
+            except ValueError:
+                # package name is probably empty-string; just give up
+                pass
+
+        return version
 
     def get_meta_description(self):
         """Retrieve a meta description for the plugin.
