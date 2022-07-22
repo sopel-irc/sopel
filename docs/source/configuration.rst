@@ -327,6 +327,9 @@ sending any new message (0.5s + 0.428s).
 You can **deactivate** this extra wait penalty by setting
 :attr:`~CoreSection.flood_penalty_ratio` to 0.
 
+To **deactivate all flood prevention (at your own risk)**, you need only to
+set :attr:`~CoreSection.flood_max_wait` to 0.
+
 The default configuration works fine with most tested networks, but individual
 bots' owners are invited to tweak as necessary to respect their network's flood
 policy.
@@ -340,9 +343,6 @@ policy.
 
     Even more additional configuration options: ``flood_max_wait``,
     ``flood_text_length``, and ``flood_penalty_ratio``.
-
-    It is now possible to deactivate the extra penalty for longer messages by
-    setting ``flood_penalty_ratio`` to 0.
 
 .. note::
 
