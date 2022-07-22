@@ -3,7 +3,7 @@ import os
 import pytest
 
 # This file lists files which should be ignored by pytest
-collect_ignore = ["setup.py", "sopel.py"]
+collect_ignore = []
 
 
 def pytest_addoption(parser):
