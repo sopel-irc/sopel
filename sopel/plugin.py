@@ -1586,11 +1586,6 @@ class example:
             "is_pattern": self.use_re,
             "is_admin": self.admin,
             "is_owner": self.owner,
-            # old-style flags
-            # TODO: to be removed in Sopel 8.0
-            "privmsg": self.privmsg,
-            "admin": self.admin,
-            "help": self.user_help,
         }
         func.example.append(record)
         return func
