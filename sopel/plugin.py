@@ -582,17 +582,16 @@ def command(*command_list: str) -> Callable:
 
     .. note::
 
-        You can use a regular expression for the command name(s), but this is
-        **not recommended** since version 7.1. For backward compatibility,
-        this behavior will be kept until version 8.0.
+        The command name will be escaped for use in a regular expression.
+        As such it is not possible to use something like ``.command\\d+`` to
+        catch something like ``.command1`` or ``.command2``.
 
-        Regex patterns are confusing for your users; please don't use them in
-        command names!
+        You have several options at your disposal to replace a regex in the
+        command name:
 
-        If you still want to use a regex pattern, please use the :func:`rule`
-        decorator instead. For extra arguments and subcommands based on a regex
-        pattern, you should handle these inside your decorated function, by
-        using the ``trigger`` object.
+        * use a command alias
+        * parse the arguments with your own regex within your plugin callable
+        * use a :func:`rule` instead
 
     """
     def add_attribute(function):
@@ -629,15 +628,18 @@ def nickname_command(*command_list: str) -> Callable:
 
     .. note::
 
-        You can use a regular expression for the command name(s), but this is
-        **not recommended** since version 7.1. For backward compatibility,
-        this behavior will be kept until version 8.0.
+        The command name will be escaped to be used in a regex command. As such
+        it is not possible to use something like ``command\\d+`` to catch
+        something like ``Bot: command1`` or ``Bot: command2``.
 
-        Regex patterns are confusing for your users; please don't use them in
-        command names!
+        You have several options at your disposal to replace a regex in the
+        command name:
 
-        If you need to use a regex pattern, please use the :func:`rule`
-        decorator instead, with the ``$nick`` variable::
+        * use a command alias
+        * parse the arguments with your own regex within your plugin callable
+        * use a :func:`rule`
+
+        The :func:`rule` can be used with a ``$nick`` variable::
 
             @rule(r'$nick .*')
                 # Would trigger on anything starting with "$nickname[:,]? ",
@@ -679,15 +681,18 @@ def action_command(*command_list: str) -> Callable:
 
     .. note::
 
-        You can use a regular expression for the command name(s), but this is
-        **not recommended** since version 7.1. For backward compatibility,
-        this behavior will be kept until version 8.0.
+        The command name will be escaped for use in a regular expression.
+        As such it is not possible to use something like ``/me command\\d+``
+        to catch something like ``/me command1`` or ``/me command2``.
 
-        Regex patterns are confusing for your users; please don't use them in
-        command names!
+        You have several options at your disposal to replace a regex in the
+        command name:
 
-        If you need to use a regex pattern, please use the :func:`rule`
-        decorator instead, with the :func:`ctcp` decorator::
+        * use a command alias
+        * parse the arguments with your own regex within your plugin callable
+        * use a :func:`rule`
+
+        The :func:`rule` must be used with the :func:`ctcp` decorator::
 
             @rule(r'hello!?')
             @ctcp('ACTION')

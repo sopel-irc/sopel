@@ -2125,10 +2125,7 @@ def test_command_from_callable_subcommand_aliases(mockbot):
     assert result.group(1) == 'reverse'
 
 
-def test_command_from_callable_regex_pattern(mockbot):
-    # TODO: this test must FAIL for Sopel 8.0
-    # Command name as regex pattern will be removed in Sopel 8.0
-
+def test_command_from_callable_escaped_regex_pattern(mockbot):
     # prepare callable
     @plugin.commands('main .*')
     def handler(wrapped, trigger):
@@ -2139,21 +2136,23 @@ def test_command_from_callable_regex_pattern(mockbot):
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
 
-    # match on ".main anything"
+    # does not match on ".main anything"
     line = ':Foo!foo@example.com PRIVMSG #sopel :.main anything'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
 
+    assert not results, 'Regex commands are not allowed since Sopel 8.0'
+
+    # match on ".main .*"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :.main .*'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
     assert len(results) == 1, (
-        'Exactly 1 command must match; MUST fail for Sopel 8.0')
+        'Command name must be escaped to get an exact match')
     result = results[0]
-    assert result.group(0) == '.main anything'
-    assert result.group(1) == 'main anything'
-    assert result.group(2) is None
-    assert result.group(3) is None
-    assert result.group(4) is None
-    assert result.group(5) is None
-    assert result.group(6) is None
+    assert result.group(0) == '.main .*'
+    assert result.group(1) == 'main .*'
 
 
 def test_command_from_callable_invalid(mockbot):
@@ -2167,21 +2166,6 @@ def test_command_from_callable_invalid(mockbot):
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
         rules.Command.from_callable(mockbot.settings, handler)
-
-
-def test_command_escape_name():
-    rule = rules.Command('hello', r'\.', plugin='testplugin')
-
-    assert rule.escape_name('hello') == 'hello'
-    assert rule.escape_name('hello world') == r'hello\ world'
-    assert rule.escape_name(r'hello\ world') == r'hello\ world', (
-        'Valid pattern must not be escaped')
-    assert rule.escape_name(r'.*') == r'.*', (
-        'Valid pattern must not be escaped')
-    assert rule.escape_name(r'a[bc]d') == r'a[bc]d', (
-        'Valid pattern must not be escaped')
-    assert rule.escape_name(r'hello(') == r'hello\(', (
-        'Invalid pattern must be escaped')
 
 
 # -----------------------------------------------------------------------------
@@ -2444,10 +2428,6 @@ def test_nick_command_from_callable(mockbot):
 
 
 def test_nick_command_from_callable_regex_pattern(mockbot):
-    # TODO: this test must FAIL for Sopel 8.0
-    # Command name as regex pattern will be removed in Sopel 8.0
-
-    # prepare callable
     @plugin.nickname_commands('do .*')
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
@@ -2457,16 +2437,21 @@ def test_nick_command_from_callable_regex_pattern(mockbot):
     # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
 
-    # match on ".main anything"
+    # does not match on ".do anything"
     line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot: do anything'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
 
-    assert len(results) == 1, (
-        'Exactly 1 command must match; MUST fail for Sopel 8.0')
+    assert not results, 'Regex commands are not allowed since Sopel 8.0'
+
+    # match on ".do .*"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :TestBot: do .*'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+    assert len(results) == 1, 'Exactly 1 command must match'
     result = results[0]
-    assert result.group(0) == 'TestBot: do anything'
-    assert result.group(1) == 'do anything'
+    assert result.group(0) == 'TestBot: do .*'
+    assert result.group(1) == 'do .*'
     assert result.group(2) is None
     assert result.group(3) is None
     assert result.group(4) is None
@@ -2649,9 +2634,6 @@ def test_action_command_from_callable(mockbot):
 
 
 def test_action_command_from_callable_regex_pattern(mockbot):
-    # TODO: this test must FAIL for Sopel 8.0
-    # Command name as regex pattern will be removed in Sopel 8.0
-
     # prepare callable
     @plugin.action_commands('do .*')
     def handler(wrapped, trigger):
@@ -2662,16 +2644,22 @@ def test_action_command_from_callable_regex_pattern(mockbot):
     # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
 
-    # match on ".main anything"
+    # does not match on ".do anything"
     line = ':Foo!foo@example.com PRIVMSG #sopel :\x01ACTION do anything\x01'
     pretrigger = trigger.PreTrigger(mockbot.nick, line)
     results = list(rule.match(mockbot, pretrigger))
 
-    assert len(results) == 1, (
-        'Exactly 1 command must match; MUST fail for Sopel 8.0')
+    assert not results, 'Regex commands are not allowed since Sopel 8.0'
+
+    # match on ".do .*"
+    line = ':Foo!foo@example.com PRIVMSG #sopel :\x01ACTION do .*\x01'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+    results = list(rule.match(mockbot, pretrigger))
+
+    assert len(results) == 1, 'Exactly 1 command must match'
     result = results[0]
-    assert result.group(0) == 'do anything'
-    assert result.group(1) == 'do anything'
+    assert result.group(0) == 'do .*'
+    assert result.group(1) == 'do .*'
     assert result.group(2) is None
     assert result.group(3) is None
     assert result.group(4) is None
