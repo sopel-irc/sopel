@@ -8,7 +8,7 @@ that you do the following:
 1. Describe your issue clearly and concisely.
 2. Give Sopel the `.version` command, and include the output in your issue.
 3. Note the OS you're running Sopel on, and how you installed Sopel (via your
-   package manager, pip, `setup.py install`, or running straight from source)
+   package manager, pip, `pip install .` straight from source)
 4. Include relevant output from the log files in `~/.sopel/logs/`.
 
 Committing Code
@@ -45,8 +45,89 @@ include your changes.
   the name of the thing you're changing in at the beginning of the message,
   followed by a colon: the plugin name for plugins, "docs" for documentation
   files, "coretasks" for `coretasks.py`, "db" for the database feature, etc.
-* Python files should always have  `from __future__ import generator_stop`
+* Python files should always have `from __future__ import annotations`
   as the first line after the module docstring.
+
+Running from source
+-------------------
+
+Sopel is your typical Python project: you can install it from source, edit
+the code using standard tooling, and take advantage of your favorite code
+editor.
+
+Assuming you are using standard tools:
+
+* Create a virtualenv.
+  * You can use `virtualenv` (or the `venv` built-in) directly,
+    `virtualenvwrapper`, or any tool that allows you to create and manage your
+    virtualenvs.
+  * Your project manager may create the virtualenv for you; be sure to check
+    the documentation of the tools you are using.
+* Fork Sopel's repository, and clone your fork locally.
+* Activate your virtualenv, and `cd` into your clone's folder.
+* Ensure you have the latest version of `pip`, and install `wheel`.
+* Install Sopel from source as an editable install.
+  * If you don't use a project manager (like Poetry or Hatch), you can do
+    that with `pip install -e .` from within the clone's directory, where
+    there is a `pyproject.toml` file.
+* Install development tools used to run tests and linters; there is a specific
+  requirement file you can use with `pip install -U -r dev-requirements.txt`.
+* Run `make qa` to run linters and tests.
+* Run `make cleandoc` or just `make docs` to build the documentation locally.
+
+At this point, you are all set, at least for the Python environment; all that's
+left is for you to configure your code editor the way you like, and read and
+write some code and documentation.
+
+Using branches
+--------------
+
+As previously stated, you should fork Sopel's repository to implement your
+changes and commit them. Moreover, we advise you to work from your own branch.
+
+To setup your local clone, we suggest the following steps:
+
+```
+$ cd path/to/your/dev/folder
+$ git clone git@github.com:<USERNAME>/sopel.git
+$ cd sopel/
+$ git remote add upstream git@github.com:sopel-irc/sopel.git
+$ git checkout -b <your-branch-name>
+```
+
+With that workflow, you have your local clone with a link to the upstream
+repository, and a branch to work on. Once you are done with your work, you can
+commit, and push to your repository.
+
+You'll probably need, at some point, to update your repository with the new
+commits from upstream. We suggest the following steps:
+
+```
+$ git checkout master
+$ git fetch upstream
+$ git rebase upstream/master
+$ git push
+```
+
+If you never pushed on your own `master` branch, you should not need to force
+the push, which is why we recommend to work on your own branch.
+
+Said branch can be updated with rebase:
+
+```
+$ git checkout <your-branch-name>
+$ git rebase master
+```
+
+To squash your commits, you can use interactive mode with
+`git rebase -i master`.
+
+In both cases, if you configured
+[a GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification)
+to sign your commits, don't forget the `-S` option:
+
+* `git rebase -S master`
+* `git rebase -S -i master`
 
 Documenting Code
 ----------------
