@@ -173,7 +173,7 @@ def mw_search(server, query, num):
     return None
 
 
-def say_snippet(bot, trigger, server, query, show_url=True):
+def say_snippet(bot, trigger, server, query, show_url=True, commanded=False):
     page_name = query.replace('_', ' ')
     query = quote(query.replace(' ', '_'))
     url = 'https://{}/wiki/{}'.format(server, query)
@@ -188,8 +188,11 @@ def say_snippet(bot, trigger, server, query, show_url=True):
         # see https://github.com/sopel-irc/sopel/issues/2259
         snippet = re.sub(r"\s+", " ", snippet)
     except KeyError:
-        if show_url:
-            bot.reply("Error fetching snippet for \"{}\".".format(page_name))
+        msg = 'Error fetching snippet for "{}".'.format(page_name)
+        if commanded:
+            bot.reply(msg)
+        else:
+            bot.say(msg)
         return
 
     msg = '{} | "{}'.format(page_name, snippet)
@@ -223,7 +226,7 @@ def say_section(bot, trigger, server, query, section):
 
     snippet = mw_section(server, query, section)
     if not snippet:
-        bot.reply("Error fetching section \"{}\" for page \"{}\".".format(section, page_name))
+        bot.say('Error fetching section "{}" for page "{}".'.format(section, page_name))
         return
 
     msg = '{} - {} | "{}"'.format(page_name, section.replace('_', ' '), snippet)
@@ -309,7 +312,7 @@ def wikipedia(bot, trigger):
         return plugin.NOLIMIT
     else:
         query = query[0]
-    say_snippet(bot, trigger, server, query)
+    say_snippet(bot, trigger, server, query, commanded=True)
 
 
 @plugin.command('wplang')
