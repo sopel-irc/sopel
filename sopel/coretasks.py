@@ -64,6 +64,7 @@ def setup(bot):
     The setup phase is used to activate the throttle feature to prevent a flood
     of JOIN commands when there are too many channels to join.
     """
+    bot.memory['retry_join'] = SopelMemory()
     bot.memory['join_events_queue'] = collections.deque()
 
     # Manage JOIN flood protection
@@ -82,6 +83,7 @@ def setup(bot):
 
 def shutdown(bot):
     """Clean up coretasks-related values in the bot's memory."""
+    bot.memory['retry_join'] = SopelMemory()
     try:
         bot.memory['join_events_queue'].clear()
     except KeyError:
@@ -286,39 +288,6 @@ def startup(bot, trigger):
             modes = '+' + modes
         bot.write(('MODE', bot.nick, modes))
 
-    # join channels
-    bot.memory['retry_join'] = SopelMemory()
-
-    channels = bot.config.core.channels
-    if not channels:
-        LOGGER.info("No initial channels to JOIN.")
-    elif bot.config.core.throttle_join:
-        throttle_rate = int(bot.config.core.throttle_join)
-        throttle_wait = max(bot.config.core.throttle_wait, 1)
-        channels_joined = 0
-
-        LOGGER.info(
-            "Joining %d channels (with JOIN throttle ON); "
-            "this may take a moment.",
-            len(channels))
-
-        for channel in channels:
-            channels_joined += 1
-            if not channels_joined % throttle_rate:
-                LOGGER.debug(
-                    "Waiting %ds before next JOIN batch.",
-                    throttle_wait)
-                time.sleep(throttle_wait)
-            bot.join(channel)
-    else:
-        LOGGER.info(
-            "Joining %d channels (with JOIN throttle OFF); "
-            "this may take a moment.",
-            len(channels))
-
-        for channel in bot.config.core.channels:
-            bot.join(channel)
-
     # warn for insecure auth method if necessary
     if (not bot.config.core.owner_account and
             'account-tag' in bot.enabled_capabilities and
@@ -400,6 +369,44 @@ def handle_isupport(bot, trigger):
             # and the server doesn't have the userhost-in-names capability
             # so we should ask for UHNAMES instead
             bot.write(('PROTOCTL', 'UHNAMES'))
+
+
+@plugin.event(events.RPL_ENDOFMOTD, events.ERR_NOMOTD)
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
+def join_channels(bot, trigger):
+    # join channels
+    channels = bot.config.core.channels
+    if not channels:
+        LOGGER.info("No initial channels to JOIN.")
+
+    elif bot.config.core.throttle_join:
+        throttle_rate = int(bot.config.core.throttle_join)
+        throttle_wait = max(bot.config.core.throttle_wait, 1)
+        channels_joined = 0
+
+        LOGGER.info(
+            "Joining %d channels (with JOIN throttle ON); "
+            "this may take a moment.",
+            len(channels))
+
+        for channel in channels:
+            channels_joined += 1
+            if not channels_joined % throttle_rate:
+                LOGGER.debug(
+                    "Waiting %ds before next JOIN batch.",
+                    throttle_wait)
+                time.sleep(throttle_wait)
+            bot.join(channel)
+    else:
+        LOGGER.info(
+            "Joining %d channels (with JOIN throttle OFF); "
+            "this may take a moment.",
+            len(channels))
+
+        for channel in bot.config.core.channels:
+            bot.join(channel)
 
 
 @plugin.event(events.RPL_MYINFO)
