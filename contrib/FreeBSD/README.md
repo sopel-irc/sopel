@@ -12,7 +12,7 @@ sysrc sopel_profiles="profile1 profile2 profile3"
 
 By default, the configuration directory is `/usr/local/etc`.
 
-The `sopel-profile1.cfg`, `sopel-profile2.cfg` and `sopel-profile3.cfg` files must be stored in the configuration directory.
+For the above example, the configuration files `sopel-profile1.cfg`, `sopel-profile2.cfg`, and `sopel-profile3.cfg` must be present there.
 
 sopel- is mandatory and can be changed with the `sopel_prefix` variable in `/etc/rc.conf` as another FreeBSD service.
 
