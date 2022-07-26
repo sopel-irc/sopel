@@ -17,7 +17,7 @@ For the above example, the configuration files `sopel-profile1.cfg`, `sopel-prof
 The service must be installed in `/usr/local/etc/rc.d`:
 
 ```sh
-cp sopel /usr/local/etc/rc.d
+cp sopel.sh /usr/local/etc/rc.d/sopel
 chmod +x /usr/local/etc/rc.d/sopel
 ```
 
