@@ -1,12 +1,20 @@
-This folder contains sopel and sopel-default.cfg designed to be distributed by third parties such as FreeBSD.
+This folder contains `sopel` and `sopel-default.cfg` designed to be distributed by third parties such as FreeBSD.
 
-`sopel-default.cfg` is a default configuration file for sopel. The -default prefix is mandatory and will be used as a 'profile'. The profiles may be changed with the variable `sopel_profiles` in `/etc/rc.conf`. For example:
+`sopel-default.cfg` is a default configuration file for sopel.
+
+The -default prefix is mandatory and will be used as a 'profile'.
+
+The profiles may be changed with the variable `sopel_profiles` in `/etc/rc.conf`. For example:
 
 ```sh
 sysrc sopel_profiles="profile1 profile2 profile3"
 ```
 
-The configuration files should be `${sopel_confdir}/${sopel_prefix}profile1.cfg`, `${sopel_confdir}/${sopel_prefix}profile2.cfg` and `${sopel_confdir}/${sopel_prefix}profile3.cfg`. The variable `sopel_confdir` is the default configuration directory (by default `/usr/local/etc`). `sopel_prefix`is the prefix for all files (by default `sopel-`).
+By default, the configuration directory is `/usr/local/etc`.
+
+The `sopel-profile1.cfg`, `sopel-profile2.cfg` and `sopel-profile3.cfg` files must be stored in the configuration directory.
+
+sopel- is mandatory and can be changed with the `sopel_prefix` variable in `/etc/rc.conf` as another FreeBSD service.
 
 The service must be installed in `/usr/local/etc/rc.d`:
 
@@ -15,7 +23,7 @@ cp sopel /usr/local/etc/rc.d
 chmod +x /usr/local/etc/rc.d/sopel
 ```
 
-The default configuration file must be installed in ${sopel_confdir}. For example:
+The default configuration file must be installed in the configuration directory as another profile. For example:
 
 ```sh
 cp sopel-default.cfg /usr/local/etc
@@ -27,9 +35,13 @@ If you want to run sopel at startup, the variable `sopel_enable` must be set to 
 sysrc sopel_enable="YES"
 ```
 
-If you want to change the python version, the variable `sopel_interpreter` (by default `/usr/local/bin/python3.9`) must be changed.
+If you want to change the python version, the variable `sopel_interpreter` must be changed. For example:
 
-Default values:
+```sh
+sysrc sopel_interpreter="/usr/local/bin/python3.8"
+```
+
+You can set any other variable, but by default, the sopel service has many default values:
 
 ```sh
 $ egrep -E '^: \$\{sopel_.+:=.+}' sopel
