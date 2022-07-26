@@ -33,6 +33,12 @@ If you want to run sopel at startup, the variable `sopel_enable` must be set to 
 sysrc sopel_enable="YES"
 ```
 
+Now, you can run the service with the `service(8)` command, but sopel needs to be configured first. You can configure it with `service sopel configure`. When sopel is configured, it can be started:
+
+```sh
+service sopel start
+```
+
 If you want to change the python version, the variable `sopel_interpreter` must be changed. For example:
 
 ```sh
