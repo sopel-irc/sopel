@@ -4,7 +4,7 @@ This folder contains `sopel` and `sopel-default.cfg` designed to be distributed 
 
 The -default prefix is mandatory and will be used as a 'profile'.
 
-The profiles may be changed with the variable `sopel_profiles` in `/etc/rc.conf`. For example:
+The profiles started by the service may be changed with the variable `sopel_profiles` in `/etc/rc.conf`, or with the `sysrc` command:
 
 ```sh
 sysrc sopel_profiles="profile1 profile2 profile3"
