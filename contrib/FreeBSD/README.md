@@ -27,13 +27,33 @@ The default configuration file must be installed in the configuration directory 
 cp sopel-default.cfg /usr/local/etc
 ```
 
+That configuration has the variables `logdir`, `homedir` and `pid_dir`.
+
+You must create `homedir`, `logdir` and `pid_dir` directories:
+
+```sh
+mkdir -p path/to/homedir
+mkdir -p path/to/logdir
+mkdir -p path/to/pid_dir
+```
+
+The service file has a variable named `sopel_user` (by default, the value is `sopel`). You must create that user before starting sopel.
+
+After creating the user for sopel, you must change the owner of the `logdir`, `pid_dir` and `homedir` directories:
+
+```sh
+chown sopel:sopel path/to/logdir
+chown sopel:sopel path/to/pid_dir
+chown sopel:sopel path/to/homedir
+```
+
 If you want to run sopel at startup, the variable `sopel_enable` must be set to `YES`:
 
 ```sh
 sysrc sopel_enable="YES"
 ```
 
-Now, you can run the service with the `service(8)` command, but sopel needs to be configured first. You can configure it with `service sopel configure`. When sopel is configured, it can be started:
+Now, you can run the service with the `service(8)` command, but if you want to change any options, you can do so by editing the `sopel-default.cfg` configuration file or by using `service sopel configure`. When sopel is configured, it can be started:
 
 ```sh
 service sopel start
