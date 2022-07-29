@@ -2,9 +2,6 @@ import os
 
 import pytest
 
-# This file lists files which should be ignored by pytest
-collect_ignore = []
-
 
 def pytest_addoption(parser):
     parser.addoption('--offline', action='store_true', default=False)
