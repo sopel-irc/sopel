@@ -1007,7 +1007,7 @@ class SopelDB:
         if not isinstance(name, Identifier):
             identifier = self.make_identifier(name)
         else:
-            identifier = typing.cast(Identifier, name)
+            identifier = typing.cast('Identifier', name)
 
         if identifier.is_nick():
             return self.get_nick_value(identifier, key, default)
