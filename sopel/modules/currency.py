@@ -137,15 +137,7 @@ def exchange(bot, match):
         LOGGER.error(err)
         return
 
-    query = match.string
-
-    targets = query.split()
-    amount_in = targets.pop(0)
-    base = targets.pop(0)
-    targets.pop(0)
-
-    # TODO: Use this instead after dropping Python 2 support
-    # amount, base, _, *targets = query.split()
+    amount_in, base, _, *targets = match.string.split()
 
     try:
         amount = float(amount_in)

@@ -118,14 +118,13 @@ class MockIRCServer:
     def __init__(self, bot, join_threads=True):
         self.bot = bot
         self.join_threads = join_threads
-        # TODO: `blocking` method args below should be made kwarg-ONLY in py3
 
     @property
     def chanserv(self):
         """ChanServ's message prefix."""
         return 'ChanServ!ChanServ@services.'
 
-    def channel_joined(self, channel, users=None, blocking=None):
+    def channel_joined(self, channel, users=None, *, blocking=None):
         """Send events as if the bot just joined a channel.
 
         :param str channel: channel to send message for
@@ -195,7 +194,7 @@ class MockIRCServer:
             for t in self.bot.running_triggers:
                 t.join()
 
-    def mode_set(self, channel, flags, users, blocking=None):
+    def mode_set(self, channel, flags, users, *, blocking=None):
         """Send a MODE event for a ``channel``
 
         :param str channel: channel receiving the MODE event
@@ -237,7 +236,7 @@ class MockIRCServer:
             for t in self.bot.running_triggers:
                 t.join()
 
-    def join(self, user, channel, blocking=None):
+    def join(self, user, channel, *, blocking=None):
         """Send a ``channel`` JOIN event from ``user``.
 
         :param user: factory for the user who joins the ``channel``
@@ -275,7 +274,7 @@ class MockIRCServer:
             for t in self.bot.running_triggers:
                 t.join()
 
-    def say(self, user, channel, text, blocking=None):
+    def say(self, user, channel, text, *, blocking=None):
         """Send a ``PRIVMSG`` to ``channel`` by ``user``.
 
         :param user: factory for the user who sends a message to ``channel``
@@ -314,7 +313,7 @@ class MockIRCServer:
             for t in self.bot.running_triggers:
                 t.join()
 
-    def pm(self, user, text, blocking=None):
+    def pm(self, user, text, *, blocking=None):
         """Send a ``PRIVMSG`` to the bot by a ``user``.
 
         :param user: factory for the user object who sends a message
