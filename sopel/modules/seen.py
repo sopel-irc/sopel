@@ -9,8 +9,15 @@ https://sopel.chat
 """
 from __future__ import annotations
 
+import logging
+
+from sqlalchemy.exc import SQLAlchemyError
+
 from sopel import plugin
 from sopel.tools.time import seconds_to_human
+
+
+logger = logging.getLogger(__name__)
 
 
 @plugin.command('seen')
@@ -63,9 +70,12 @@ def seen(bot, trigger):
 @plugin.require_chanmsg
 def note(bot, trigger):
     nick = trigger.nick
-    # as of Sopel 8, `trigger.time` is Aware, meaning we should store its value
-    # for timezone safety when comparing it later
-    bot.db.set_nick_value(nick, 'seen_timestamp', trigger.time.timestamp())
-    bot.db.set_nick_value(nick, 'seen_channel', trigger.sender)
-    bot.db.set_nick_value(nick, 'seen_message', trigger)
-    bot.db.set_nick_value(nick, 'seen_action', trigger.ctcp is not None)
+    try:
+        # as of Sopel 8, `trigger.time` is Aware, meaning we should store its value
+        # for timezone safety when comparing it later
+        bot.db.set_nick_value(nick, 'seen_timestamp', trigger.time.timestamp())
+        bot.db.set_nick_value(nick, 'seen_channel', trigger.sender)
+        bot.db.set_nick_value(nick, 'seen_message', trigger)
+        bot.db.set_nick_value(nick, 'seen_action', trigger.ctcp is not None)
+    except SQLAlchemyError as error:
+        logger.error("Unable to save seen, database error: %s" % error)
