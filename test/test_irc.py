@@ -353,7 +353,7 @@ def test_say_long_truncation_trailing(bot):
     )
 
 
-def test_say_no_repeat_protection(bot):
+def test_say_antiloop(bot):
     # five is fine
     bot.say('hello', '#sopel')
     bot.say('hello', '#sopel')
@@ -407,8 +407,73 @@ def test_say_no_repeat_protection(bot):
         'PRIVMSG #sopel :hello',
         'PRIVMSG #sopel :hello',
         'PRIVMSG #sopel :hello',
-        #  three time, then stop
+        #  three times, then stop
         'PRIVMSG #sopel :...',
         'PRIVMSG #sopel :...',
         'PRIVMSG #sopel :...',
+    )
+
+
+def test_say_antiloop_configuration(bot):
+    bot.settings.core.antiloop_threshold = 3
+    bot.settings.core.antiloop_silent_after = 2
+    bot.settings.core.antiloop_repeat_text = '???'
+
+    # three is fine now
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+    )
+
+    # fourth: replaced by '???'
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        # the extra hello is replaced by '???'
+        'PRIVMSG #sopel :???',
+    )
+
+    # this one will add one more '???'
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :???',
+        # the new one is also replaced by '???'
+        'PRIVMSG #sopel :???',
+    )
+
+    # but at some point it just stops talking
+    bot.say('hello', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        'PRIVMSG #sopel :hello',
+        #  two times, then stop
+        'PRIVMSG #sopel :???',
+        'PRIVMSG #sopel :???',
+    )
+
+
+def test_say_antiloop_deactivated(bot):
+    bot.settings.core.antiloop_threshold = 0
+
+    # no more loop prevention
+    for _ in range(10):
+        bot.say('hello', '#sopel')
+
+    expected = ['PRIVMSG #sopel :hello'] * 10
+    assert bot.backend.message_sent == rawlist(*expected), (
+        'When antiloop is deactivated, messages must not be replaced.'
     )
