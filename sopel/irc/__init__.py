@@ -25,6 +25,7 @@ who should worry about :class:`sopel.bot.Sopel` only.
 from __future__ import annotations
 
 import abc
+from collections import deque
 from datetime import datetime
 import logging
 import os
@@ -798,7 +799,7 @@ class AbstractBot(abc.ABC):
         with self.sending:
             recipient_id = self.make_identifier(recipient)
             recipient_stack = self.stack.setdefault(recipient_id, {
-                'messages': [],
+                'messages': deque(maxlen=10),
                 'flood_left': flood_burst_lines,
             })
 
@@ -846,7 +847,7 @@ class AbstractBot(abc.ABC):
 
             # Loop detection
             if antiloop_threshold > 0 and elapsed < antiloop_window:
-                messages = [m[1] for m in recipient_stack['messages'][-10:]]
+                messages = [m[1] for m in recipient_stack['messages']]
 
                 # If what we're about to send repeated at least N times
                 # in the anti-looping window, replace it
@@ -858,11 +859,10 @@ class AbstractBot(abc.ABC):
 
             self.backend.send_privmsg(recipient, text)
 
-            # update recipient meta-data
+            # update recipient metadata
             flood_left = recipient_stack['flood_left'] - 1
             recipient_stack['flood_left'] = max(0, flood_left)
             recipient_stack['messages'].append((time.time(), safe(text)))
-            recipient_stack['messages'] = recipient_stack['messages'][-10:]
 
         # Now that we've sent the first part, we need to send the rest if
         # requested. Doing so recursively seems simpler than iteratively.
