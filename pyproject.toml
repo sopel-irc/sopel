@@ -17,7 +17,7 @@ authors = [
   { name="dgw", email="dgw@technobabbl.es" },
 ]
 readme = "README.rst"
-license = { file="COPYING" }
+license = { text="EFL-2.0" }
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
