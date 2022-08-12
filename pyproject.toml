@@ -45,7 +45,7 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://sopel.chat/"
-"Release notes" = "https://github.com/sopel-irc/sopel/releases"
+"Release notes" = "https://sopel.chat/changelog/"
 "Documentation" = "https://sopel.chat/docs/"
 "Bug Tracker" = "https://github.com/sopel-irc/sopel/issues"
 "Donate on Open Collective" = "https://opencollective.com/sopel"
