@@ -1249,41 +1249,6 @@ class AbstractNamedRule(Rule):
         """
         return name in self._aliases
 
-    def escape_name(self, name):
-        """Escape the provided name if needed.
-
-        .. note::
-
-            Until now, Sopel has allowed command name to be regex pattern.
-            It was mentioned in the documentation without much details, and
-            there were no tests for it.
-
-            In order to ensure backward compatibility with previous versions of
-            Sopel, we make sure to escape command name only when it's needed.
-
-            **It is not recommended to use a regex pattern for your command
-            name. This feature will be removed in Sopel 8.0.**
-
-        """
-        if set('.^$*+?{}[]\\|()') & set(name):
-            # the name contains a regex pattern special character
-            # we assume the user knows what they are doing
-            try:
-                # make sure it compiles properly
-                # (nobody knows what they are doing)
-                re.compile(name)
-            except re.error as error:
-                original_name = name
-                name = re.escape(name)
-                LOGGER.warning(
-                    'Command name "%s" is an invalid regular expression '
-                    'and will be replaced by "%s": %s',
-                    original_name, name, error)
-        else:
-            name = re.escape(name)
-
-        return name
-
     @abc.abstractmethod
     def get_rule_regex(self):
         """Make the rule regex for this named rule.
@@ -1403,8 +1368,8 @@ class Command(AbstractNamedRule):
 
         to create a compiled regex to return.
         """
-        name = [self.escape_name(self._name)]
-        aliases = [self.escape_name(alias) for alias in self._aliases]
+        name = [re.escape(self._name)]
+        aliases = [re.escape(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
 
         # Escape all whitespace with a single backslash.
@@ -1525,8 +1490,8 @@ class NickCommand(AbstractNamedRule):
 
         to create a compiled regex to return.
         """
-        name = [self.escape_name(self._name)]
-        aliases = [self.escape_name(alias) for alias in self._aliases]
+        name = [re.escape(self._name)]
+        aliases = [re.escape(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
 
         return _compile_pattern(
@@ -1610,8 +1575,8 @@ class ActionCommand(AbstractNamedRule):
 
         to create a compiled regex to return.
         """
-        name = [self.escape_name(self._name)]
-        aliases = [self.escape_name(alias) for alias in self._aliases]
+        name = [re.escape(self._name)]
+        aliases = [re.escape(alias) for alias in self._aliases]
         pattern = r'|'.join(name + aliases)
         pattern = self.PATTERN_TEMPLATE.format(command=pattern)
         return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
