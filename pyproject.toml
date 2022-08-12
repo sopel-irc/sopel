@@ -48,8 +48,8 @@ dependencies = [
 "Release notes" = "https://github.com/sopel-irc/sopel/releases"
 "Documentation" = "https://sopel.chat/docs/"
 "Bug Tracker" = "https://github.com/sopel-irc/sopel/issues"
-"Funding on Open Collective" = "https://opencollective.com/sopel"
-"Sponsor on GitHub" = "https://github.com/sponsors/sopel-irc"
+"Donate on Open Collective" = "https://opencollective.com/sopel"
+"Donate on GitHub" = "https://github.com/sponsors/sopel-irc"
 "Source" = "https://github.com/sopel-irc/sopel"
 "Coverage" = "https://coveralls.io/github/sopel-irc/sopel"
 
