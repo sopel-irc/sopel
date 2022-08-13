@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=63.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+platforms = ["Linux x86, x86-64"]
+
+[tool.setuptools.packages.find]
+include = ["sopel", "sopel.*"]
+namespaces = false
+
+[project]
+name = "sopel"
+version = "8.0.0.dev0"
+description = "Simple and extensible IRC bot"
+authors = [
+  { name="dgw", email="dgw@technobabbl.es" },
+]
+readme = "README.rst"
+license = { text="EFL-2.0" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: Eiffel Forum License (EFL)",
+    "License :: OSI Approved :: Eiffel Forum License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Communications :: Chat :: Internet Relay Chat",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "xmltodict==0.12",
+    "pytz",
+    "praw>=4.0.0,<8.0.0",
+    "geoip2>=4.0,<5.0",
+    "requests>=2.24.0,<3.0.0",
+    "dnspython<3.0",
+    "sqlalchemy>=1.4,<1.5",
+    "importlib_metadata>=3.6",
+    "packaging",
+]
+
+[project.urls]
+"Homepage" = "https://sopel.chat/"
+"Release notes" = "https://sopel.chat/changelog/"
+"Documentation" = "https://sopel.chat/docs/"
+"Bug Tracker" = "https://github.com/sopel-irc/sopel/issues"
+"Donate on Open Collective" = "https://opencollective.com/sopel"
+"Donate on GitHub" = "https://github.com/sponsors/sopel-irc"
+"Source" = "https://github.com/sopel-irc/sopel"
+"Coverage" = "https://coveralls.io/github/sopel-irc/sopel"
+
+
+[project.scripts]
+sopel = "sopel.cli.run:main"
+sopel-config = "sopel.cli.config:main"
+sopel-plugins = "sopel.cli.plugins:main"
+
+[project.entry-points.pytest11]
+pytest-sopel = "sopel.tests.pytest_plugin"

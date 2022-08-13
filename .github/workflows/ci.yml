@@ -24,19 +24,19 @@ jobs:
           - 3.8
           - 3.9
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r dev-requirements.txt
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade -r dev-requirements.txt
+          python -m pip install -e .
       - name: Check code style
         run: make quality
-      - name: Install test package
-        run: python setup.py develop
       - name: Run pytest
         run: make test_norecord
       - name: Upload coverage data to coveralls.io
