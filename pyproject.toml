@@ -32,7 +32,7 @@ classifiers = [
 ]
 requires-python = ">=3.7"
 dependencies = [
-    "xmltodict<0.14",
+    "xmltodict>=0.12,<0.14",
     "pytz",
     "praw>=4.0.0,<8.0.0",
     "geoip2>=4.0,<5.0",
