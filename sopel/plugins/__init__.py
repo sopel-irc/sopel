@@ -68,8 +68,12 @@ def find_internal_plugins():
     include the ``coretasks`` plugin.
     """
     modules = importlib.util.find_spec('sopel.modules')
-    submodule_dir = modules.submodule_search_locations[0]  # only one expected
-    for name, _ in _list_plugin_filenames(submodule_dir):
+    plugin_list = itertools.chain.from_iterable(
+        _list_plugin_filenames(path)
+        for path in modules.submodule_search_locations
+    )
+
+    for name, _ in set(plugin_list):
         yield handlers.PyModulePlugin(name, 'sopel.modules')
 
 
