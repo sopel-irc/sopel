@@ -67,8 +67,9 @@ def find_internal_plugins():
     Internal plugins can be found under ``sopel.modules``. This list does not
     include the ``coretasks`` plugin.
     """
-    modules = importlib.import_module('sopel.modules')
-    for name, _ in _list_plugin_filenames(modules.__path__[0]):
+    modules = importlib.util.find_spec('sopel.modules')
+    submodule_dir = modules.submodule_search_locations[0]  # only one expected
+    for name, _ in _list_plugin_filenames(submodule_dir):
         yield handlers.PyModulePlugin(name, 'sopel.modules')
 
 
