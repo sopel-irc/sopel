@@ -54,7 +54,6 @@ dependencies = [
 "Source" = "https://github.com/sopel-irc/sopel"
 "Coverage" = "https://coveralls.io/github/sopel-irc/sopel"
 
-
 [project.scripts]
 sopel = "sopel.cli.run:main"
 sopel-config = "sopel.cli.config:main"
@@ -62,3 +61,11 @@ sopel-plugins = "sopel.cli.plugins:main"
 
 [project.entry-points.pytest11]
 pytest-sopel = "sopel.tests.pytest_plugin"
+
+[tool.pytest.ini_options]
+python_files = "*.py"
+addopts = "--tb=short -p no:nose"
+norecursedirs = "build contrib"
+filterwarnings = [
+    "ignore::pytest.PytestAssertRewriteWarning",
+]
