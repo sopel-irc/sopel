@@ -460,7 +460,7 @@ def test_handle_isupport_uhnames(mockbot):
 
 def test_handle_isupport_namesx_with_multi_prefix(mockbot):
     # set multi-prefix
-    mockbot.server_capabilities['multi-prefix'] = None
+    mockbot.on_message(':irc.example.com CAP Sopel ACK :multi-prefix')
 
     # send NAMESX in ISUPPORT
     mockbot.on_message(
@@ -500,13 +500,6 @@ def test_handle_rpl_myinfo(mockbot):
     assert mockbot.myinfo.client == 'TestName'
     assert mockbot.myinfo.servername == 'irc.example.net'
     assert mockbot.myinfo.version == 'example-1.2.3'
-
-
-def test_sasl_plain_token_generation():
-    """Make sure SASL PLAIN tokens match the expected format."""
-    assert (
-        coretasks._make_sasl_plain_token('sopel', 'sasliscool') ==
-        'sopel\x00sopel\x00sasliscool')
 
 
 def test_recv_chghost(mockbot, ircfactory):

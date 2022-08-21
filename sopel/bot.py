@@ -18,6 +18,7 @@ import time
 from types import MappingProxyType
 from typing import (
     Any,
+    Callable,
     Dict,
     Iterable,
     Mapping,
@@ -30,7 +31,11 @@ from typing import (
 from sopel import db, irc, logger, plugin, plugins, tools
 from sopel.irc import modes
 from sopel.lifecycle import deprecated
-from sopel.plugins import jobs as plugin_jobs, rules as plugin_rules
+from sopel.plugins import (
+    capabilities as plugin_capabilities,
+    jobs as plugin_jobs,
+    rules as plugin_rules,
+)
 from sopel.tools import jobs as tools_jobs
 from sopel.trigger import Trigger
 
@@ -51,6 +56,7 @@ class Sopel(irc.AbstractBot):
         self._running_triggers_lock = threading.Lock()
         self._plugins: Dict[str, Any] = {}
         self._rules_manager = plugin_rules.Manager()
+        self._cap_requests_manager = plugin_capabilities.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
 
         self._url_callbacks = tools.SopelMemory()
@@ -66,16 +72,6 @@ class Sopel(irc.AbstractBot):
         """
         A dictionary mapping lowercased nicks to dictionaries which map
         function names to the time which they were last used by that nick.
-        """
-
-        self.server_capabilities = {}
-        """A dict mapping supported IRCv3 capabilities to their options.
-
-        For example, if the server specifies the capability ``sasl=EXTERNAL``,
-        it will be here as ``{"sasl": "EXTERNAL"}``. Capabilities specified
-        without any options will have ``None`` as the value.
-
-        For servers that do not support IRCv3, this will be an empty set.
         """
 
         self.modeparser = modes.ModeParser()
@@ -113,6 +109,11 @@ class Sopel(irc.AbstractBot):
 
         self.shutdown_methods = []
         """List of methods to call on shutdown."""
+
+    @property
+    def cap_requests(self) -> plugin_capabilities.Manager:
+        """Capability Requests manager."""
+        return self._cap_requests_manager
 
     @property
     def rules(self) -> plugin_rules.Manager:
@@ -881,6 +882,120 @@ class Sopel(irc.AbstractBot):
             running_triggers = running_triggers + self._running_triggers
             self._running_triggers = [
                 t for t in running_triggers if t.is_alive()]
+
+    # capability negotiation
+    def request_capabilities(self) -> bool:
+        """Request available capabilities and return if negotiation is on.
+
+        :return: tell if the negotiation is active or not
+
+        This takes the available capabilities and asks the request manager to
+        request only these that are available.
+
+        If none is available or if none is requested, the negotiation is not
+        active and this returns ``False``. It is the responsibility of the
+        caller to make sure it signals the IRC server to end the negotiation
+        with a ``CAP END`` command.
+        """
+        available_capabilities = self._capabilities_manager.available.keys()
+
+        if not available_capabilities:
+            LOGGER.debug('No client capability to negotiate.')
+            return False
+
+        LOGGER.info(
+            "Client capability negotiation list: %s",
+            ', '.join(available_capabilities),
+        )
+
+        self._cap_requests_manager.request_available(
+            self, available_capabilities)
+
+        return bool(self._cap_requests_manager.requested)
+
+    def resume_capability_negotiation(
+        self,
+        cap_req: Tuple[str, ...],
+        plugin_name: str,
+    ) -> None:
+        """Resume capability negotiation and close when necessary.
+
+        :param cap_req: a capability request
+        :param plugin_name: plugin that requested the capability and wants to
+                            resume capability negotiation
+
+        This will resume a capability request through the bot's
+        :attr:`capability requests manager<cap_requests>`, and if the
+        negotiation wasn't completed before and is now complete, it will send
+        a ``CAP END`` command.
+
+        This method must be used by plugins that declare a capability request
+        with a handler that returns
+        :attr:`sopel.plugin.CapabilityNegotiation.CONTINUE` on acknowledgement
+        in order for the bot to resume and eventually close negotiation.
+
+        For example, this is useful for SASL auth which happens while
+        negotiating capabilities.
+        """
+        was_completed, is_complete = self._cap_requests_manager.resume(
+            cap_req, plugin_name,
+        )
+        if not was_completed and is_complete:
+            LOGGER.info("End of client capability negotiation requests.")
+            self.write(('CAP', 'END'))
+
+    @deprecated(
+        'bot.cap_req is replaced by @plugin.capability decorator',
+        version='8.0',
+        removed_in='9.0',
+    )
+    def cap_req(
+        self,
+        plugin_name: str,
+        capability: str,
+        arg: Optional[str] = None,
+        failure_callback: Optional[Callable] = None,
+        success_callback: Optional[Callable] = None,
+    ) -> None:
+        """Obsolete capability request method.
+
+        .. deprecated:: 8.0
+
+            This will be removed in Sopel 9.0. See the
+            :class:`sopel.plugin.capability` decorator for a replacement.
+
+        .. warning::
+
+            This method must not be used. This will emulate the old behavior
+            by adding a :class:`sopel.plugin.capability` with a wrapper around
+            ``success_callback`` and ``failure_callback``, however the behavior
+            is not the same as before. The callback won't be called if the
+            request is never made, i.e. never REQ, ACK, or NAK, as the new
+            system doesn't try to emulate the server's response.
+
+        """
+        if capability.startswith('~'):
+            capability = '-%s' % capability.strip('~')
+        elif capability.startswith('='):
+            capability = capability.strip('=')
+
+        @plugin.capability(capability)
+        def cap_req_wrapper(
+            cap_req: Tuple[str, ...],
+            bot: SopelWrapper,
+            acknowledged: bool,
+        ) -> plugin.CapabilityNegotiation:
+            LOGGER.warning(
+                'Emulation of callback for "%s" request.', ' '.join(cap_req))
+            if acknowledged and success_callback:
+                success_callback(bot)
+            elif not acknowledged and failure_callback:
+                failure_callback(bot)
+
+            # always consider the request to be DONE
+            return plugin.CapabilityNegotiation.DONE
+
+        self._cap_requests_manager.register(plugin_name, cap_req_wrapper)
 
     # event handlers
 
