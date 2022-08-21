@@ -42,6 +42,7 @@ dependencies = [
     "sqlalchemy>=1.4,<1.5",
     "importlib_metadata>=3.6",
     "packaging",
+    "sopel-help>=0.4.0",
 ]
 
 [project.urls]
