@@ -29,7 +29,7 @@ exist for each type of plugin.
 from __future__ import annotations
 
 import collections
-import imp
+import importlib
 import itertools
 import os
 
@@ -67,12 +67,13 @@ def find_internal_plugins():
     Internal plugins can be found under ``sopel.modules``. This list does not
     include the ``coretasks`` plugin.
     """
-    plugin_dir = imp.find_module(
-        'modules',
-        [imp.find_module('sopel')[1]]
-    )[1]
+    modules = importlib.util.find_spec('sopel.modules')
+    plugin_list = itertools.chain.from_iterable(
+        _list_plugin_filenames(path)
+        for path in modules.submodule_search_locations
+    )
 
-    for name, _ in _list_plugin_filenames(plugin_dir):
+    for name, _ in set(plugin_list):
         yield handlers.PyModulePlugin(name, 'sopel.modules')
 
 
