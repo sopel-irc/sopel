@@ -1,0 +1,313 @@
+"""Capability Requests management for plugins."""
+from __future__ import annotations
+
+import logging
+from typing import (
+    Dict,
+    FrozenSet,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
+
+
+if TYPE_CHECKING:
+    from sopel.bot import Sopel, SopelWrapper
+    from sopel.plugin import capability, CapabilityNegotiation
+
+
+LOGGER = logging.getLogger(__name__)
+
+
+class Manager:
+    """Manager of Capability Requests."""
+    def __init__(self):
+        self._registered: Dict[
+            # CAP REQ :<text>
+            Tuple[str, ...],
+            # mapping (plugin, request + status)
+            Dict[str, Tuple[capability, bool]],
+        ] = {}
+        self._requested: Set[Tuple[str, ...]] = set()
+        self._acknowledged: Set[Tuple[str, ...]] = set()
+        self._denied: Set[Tuple[str, ...]] = set()
+
+    # properties
+
+    @property
+    def registered(self) -> FrozenSet[Tuple[str, ...]]:
+        """Set of registered capabilities."""
+        return frozenset(self._registered.keys())
+
+    @property
+    def requested(self) -> FrozenSet[Tuple[str, ...]]:
+        """Set of requested capabilities."""
+        return frozenset(self._requested)
+
+    @property
+    def acknowledged(self) -> FrozenSet[Tuple[str, ...]]:
+        """Set of acknowledged capability requests."""
+        return frozenset(self._acknowledged)
+
+    @property
+    def denied(self) -> FrozenSet[Tuple[str, ...]]:
+        """Set of denied capability requests."""
+        return frozenset(self._denied)
+
+    @property
+    def is_complete(self) -> bool:
+        """Tell if the capability negotiation is complete.
+
+        When capability negotiation is complete, the bot can send ``CAP END``
+        to notify the server that negotiation is complete.
+        """
+        return all(
+            status
+            for cap_req, values in self._registered.items()
+            for _plugin_capability, status in values.values()
+            if cap_req in self._requested
+        )
+
+    # tell if registered, requested, acknowledged, or denied
+
+    def is_registered(self, request: Iterable[str]) -> bool:
+        """Tell if a capability request is registered.
+
+        :param request: a set of capabilities that form a capability request
+                        together; this can be any iterable
+        """
+        return tuple(sorted(request)) in self._registered
+
+    def is_requested(self, request: Iterable[str]) -> bool:
+        """Tell if a capability request is requested.
+
+        :param request: a set of capabilities that form a capability request
+                        together; this can be any iterable
+        """
+        return tuple(sorted(request)) in self._requested
+
+    def is_acknowledged(self, request: Iterable[str]) -> bool:
+        """Tell if a capability request is acknowledged.
+
+        :param request: a set of capabilities that form a capability request
+                        together; this can be any iterable
+        """
+        return tuple(sorted(request)) in self._acknowledged
+
+    def is_denied(self, request: Iterable[str]) -> bool:
+        """Tell if a capability request is denied.
+
+        :param request: a set of capabilities that form a capability request
+                        together; this can be any iterable
+        """
+        return tuple(sorted(request)) in self._denied
+
+    # register, request, resume, acknowledge, deny, etc.
+
+    def register(self, plugin_name: str, request: capability) -> None:
+        """Register a capability ``request`` for ``plugin_name``.
+
+        :param request: the capability request to register for later
+        """
+        plugin_caps = self._registered.setdefault(request.cap_req, {})
+        plugin_caps[plugin_name] = (
+            request, False,
+        )
+        LOGGER.debug('Capability Request registered: %s', str(request))
+
+    def request_available(
+        self,
+        bot: Sopel,
+        available_capabilities: Iterable[str],
+    ) -> None:
+        """Request available capabilities.
+
+        :param bot: the bot instance used to send capability requests
+        :param available_capabilities: available capabilities
+
+        This sends ``CAP REQ`` commands for requests that can be made, i.e.
+        all the requested capabilities (with or without prefix) must be
+        available for Sopel to send the request.
+
+        Requests made are stored as requested; others are ignored.
+        """
+        # Requesting capabilities when they are available
+        capabilities = set(available_capabilities)
+        for cap_req, plugin_requests in self._registered.items():
+            # request only if all are available
+            cap_req_enables = {
+                cap.lstrip('-')
+                for cap in cap_req
+            }
+            text = ' '.join(cap_req)
+            if cap_req_enables <= capabilities:
+                self._registered[cap_req] = {
+                    plugin_name: (handler_info[0], False)
+                    for plugin_name, handler_info in plugin_requests.items()
+                }
+                self._requested.add(cap_req)
+                LOGGER.debug('Capability negotiation request: "%s".', text)
+                bot.write(('CAP', 'REQ'), text=text)
+            else:
+                LOGGER.debug(
+                    'Unable to negotiate capability request: "%s".', text,
+                )
+
+    def resume(
+        self,
+        request: Iterable[str],
+        plugin_name: str,
+    ) -> Tuple[bool, bool]:
+        """Resume the registered plugin capability request.
+
+        :return: a 2-value tuple with (was completed, is completed)
+
+        The capability request, for that plugin, will be marked as done,
+        and the result will be about the capability negotiation process:
+
+        * was it already completed before the resume?
+        * is it completed now?
+
+        If the capability request cannot be found for that plugin, the result
+        value remains the same (it stay uncomplete or complete)
+        """
+        cap_req = tuple(sorted(request))
+        was_completed = self.is_complete
+        if cap_req not in self._requested:
+            return was_completed, was_completed
+
+        handler_info: Optional[Tuple[capability, bool]] = self._registered.get(
+            cap_req, {},
+        ).get(
+            plugin_name, None,
+        )
+
+        if not handler_info:
+            return was_completed, was_completed
+
+        self._registered[cap_req][plugin_name] = (handler_info[0], True)
+        return was_completed, self.is_complete
+
+    def acknowledge(
+        self,
+        bot: SopelWrapper,
+        cap_req: Tuple[str, ...],
+    ) -> Optional[List[Tuple[bool, Optional[CapabilityNegotiation]]]]:
+        """Acknowledge a capability request and execute handlers.
+
+        :param bot: bot instance to manage the capabilities for
+        :param cap_req: the capability request from ``CAP ACK :<cap_req>``
+        :return: a list of results and statuses if the capability was requested
+
+        This acknowledges a capability request and executes its callbacks from
+        plugins. It returns the result, as a list of 2-value tuples: the first
+        value tells if the callback is done with the processing, and the second
+        is the returned value.
+
+        If the capability request was denied before, it is now considered
+        acknowledged instead.
+
+        If the capability wasn't requested, the result will be ``None``.
+        """
+        # nothing to acknowledge
+        if cap_req not in self._requested:
+            LOGGER.debug('Received CAP ACK for an unknown CAP REQ.')
+            return None
+
+        # update acknowledged: callbacks may fail, server ACK nonetheless
+        self._acknowledged.add(cap_req)
+
+        if cap_req in self._denied:
+            self._denied.remove(cap_req)
+
+        # execute callbacks
+        return self._callbacks(bot, cap_req, True)
+
+    def deny(
+        self,
+        bot: SopelWrapper,
+        cap_req: Tuple[str, ...],
+    ) -> Optional[List[Tuple[bool, Optional[CapabilityNegotiation]]]]:
+        """Deny a capability request and execute handlers.
+
+        :param bot: bot instance to manage the capabilities for
+        :param cap_req: the capability request from ``CAP NAK :<cap_req>``
+
+        This denies a capability request and executes its callbacks from
+        plugins. It returns the result, as a list of 2-value tuples: the first
+        value tells if the callback is done with the processing, and the second
+        is the returned value.
+
+        If the capability request was acknowledged before, it is now considered
+        denied instead.
+
+        If the capability wasn't requested, the result will be ``None``.
+        """
+        # nothing to deny
+        if cap_req not in self._requested:
+            LOGGER.debug('Received CAP NAK for an unknwon CAP REQ.')
+            return None
+
+        # update denied: callbacks may fail, server NAK nonetheless
+        self._denied.add(cap_req)
+
+        if cap_req in self._acknowledged:
+            self._acknowledged.remove(cap_req)
+
+        # execute callbacks
+        return self._callbacks(bot, cap_req, False)
+
+    def _callbacks(
+        self,
+        bot: SopelWrapper,
+        cap_req: Tuple[str, ...],
+        acknowledged: bool,
+    ) -> List[Tuple[bool, Optional[CapabilityNegotiation]]]:
+        # call back request handlers
+        plugin_requests: Dict[str, Tuple[capability, bool]] = self._registered.get(
+            cap_req, {},
+        )
+        return [
+            self._callback(plugin_name, handler_info, bot, acknowledged)
+            for plugin_name, handler_info in plugin_requests.items()
+        ]
+
+    def _callback(
+        self,
+        plugin_name: str,
+        handler_info: Tuple[capability, bool],
+        bot: SopelWrapper,
+        acknowledged: bool,
+    ) -> Tuple[bool, Optional[CapabilityNegotiation]]:
+        handler = handler_info[0]
+        is_done, result = handler.callback(bot, acknowledged)
+        # update done status in registered
+        self._registered[handler.cap_req][plugin_name] = (handler, is_done)
+        return (is_done, result)
+
+    def get(
+        self,
+        cap_req: Tuple[str, ...],
+        *,
+        plugins: Union[List[str], Tuple[str, ...], Set[str]] = (),
+    ) -> Generator[Tuple[str, capability], None, None]:
+        """Retrieve the registered request handlers for a capability request.
+
+        :param cap_req: the capability request to retrieve handlers for
+        :return: yield 2-value tuples with (plugin name, capability)
+        """
+        plugin_requests = self._registered.get(cap_req, {})
+        if plugins:
+            yield from (
+                (plugin_name, plugin_requests[plugin_name][0])
+                for plugin_name in plugins
+                if plugin_name in plugin_requests
+            )
+        else:
+            for plugin_name, handler_info in plugin_requests.items():
+                yield (plugin_name, handler_info[0])

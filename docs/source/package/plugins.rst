@@ -12,6 +12,7 @@ Plugin Internal Machinery
 
     loader
     plugins/plugins
+    plugins/capabilities
     plugins/exceptions
     plugins/handlers
     plugins/jobs
