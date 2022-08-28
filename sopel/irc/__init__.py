@@ -184,6 +184,11 @@ class AbstractBot(abc.ABC):
             and can be used with :func:`sopel.tools.get_sendable_message`.
 
         """
+        # Clients "SHOULD" assume messages will be truncated at 512 bytes if
+        # the LINELEN ISUPPORT token is not present.
+        # See https://modern.ircdocs.horse/#linelen-parameter
+        max_line_length = self.isupport.get('LINELEN', 512)
+
         if self.hostmask is not None:
             hostmask_length = len(self.hostmask)
         else:
@@ -200,7 +205,7 @@ class AbstractBot(abc.ABC):
             )
 
         return (
-            512  # maximum IRC line length in bytes, per RFC
+            max_line_length
             - 1  # leading colon
             - hostmask_length  # calculated/maximum length of own hostmask prefix
             - 1  # space between prefix & command

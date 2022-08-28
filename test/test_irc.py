@@ -34,6 +34,19 @@ def prefix_length(bot):
     return 1 + len(bot.nick) + 1 + 1 + len(bot.user) + 1 + 63 + 1
 
 
+def test_safe_text_length_with_linelen_no_hostmask(tmpconfig, botfactory):
+    # this test doesn't work using only the plain `bot` fixture
+    bot = botfactory.preloaded(tmpconfig)
+
+    assert bot.hostmask is None
+    bot.on_message(
+        ':irc.example.com 005 Sopel NETWORK=LLTest LINELEN=1024 '
+        ':are supported by this server')
+    # normal lines are capped at 512 bytes, and 1024 is exactly twice that
+    # expect the extra 512 in full + the result of hostmask_unknown below
+    assert bot.safe_text_length('#channel') == 414 + 512
+
+
 def test_safe_text_length_hostmask_unknown(bot):
     assert bot.hostmask is None
     assert bot.safe_text_length('#channel') == 414
