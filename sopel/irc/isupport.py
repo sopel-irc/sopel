@@ -115,6 +115,7 @@ ISUPPORT_PARSERS = {
     'HOSTLEN': int,
     'INVEX': _optional(_single_character, default='I'),
     'KICKLEN': int,
+    'LINELEN': int,
     'MAXLIST': _map_items(int),
     'MAXTARGETS': _optional(int),
     'MODES': _optional(int),
