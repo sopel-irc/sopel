@@ -8,9 +8,13 @@ https://sopel.chat
 """
 from __future__ import annotations
 
-import unicodedata
-
 from sopel import plugin
+
+# unicodedata2 can provide a more-modern UCD than the one that comes with Python, use it if present
+try:
+    import unicodedata2 as unicodedata
+except ImportError:
+    import unicodedata
 
 
 def get_codepoint_name(char):
