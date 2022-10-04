@@ -20,7 +20,7 @@ import dns.resolver
 import requests
 from urllib3.exceptions import LocationValueError  # type: ignore[import]
 
-from sopel import plugin, tools
+from sopel import plugin, privileges, tools
 from sopel.config import types
 from sopel.tools import web
 
@@ -59,6 +59,12 @@ class UrlSection(types.StaticSection):
     # TODO some validation rules maybe?
     exclude = types.ListAttribute('exclude')
     """A list of regular expressions to match URLs for which the title should not be shown."""
+    exclude_required_access = types.ChoiceAttribute(
+        'exclude_required_access',
+        choices=privileges.__all__,
+        default='OP',
+    )
+    """Minimum channel access level required to edit ``exclude`` list using chat commands."""
     exclusion_char = types.ValidatedAttribute('exclusion_char', default='!')
     """A character (or string) which, when immediately preceding a URL, will stop that URL's title from being shown."""
     shorten_url_length = types.ValidatedAttribute(
@@ -146,6 +152,20 @@ def shutdown(bot: Sopel):
             pass
 
 
+def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger):
+    if trigger.admin:
+        return True
+
+    required_access = bot.config.url.exclude_required_access
+    channel = bot.channels[trigger.sender]
+    user_access = channel.privileges[trigger.nick]
+
+    if user_access >= getattr(privileges, required_access):
+        return True
+
+    return False
+
+
 @plugin.command('urlexclude', 'urlpexclude', 'urlban', 'urlpban')
 @plugin.example('.urlpexclude example\\.com/\\w+', user_help=True)
 @plugin.example('.urlexclude example.com/path', user_help=True)
@@ -159,6 +179,12 @@ def url_ban(bot: SopelWrapper, trigger: Trigger):
 
     if not url:
         bot.reply('This command requires a URL to exclude.')
+        return
+
+    if not _user_can_change_excludes(bot, trigger):
+        bot.reply(
+            'Only admins and channel members with %s access or higher may '
+            'modify URL excludes.' % bot.config.url.exclude_required_access)
         return
 
     if trigger.group(1) in ['urlpexclude', 'urlpban']:
@@ -204,6 +230,12 @@ def url_unban(bot: SopelWrapper, trigger: Trigger):
 
     if not url:
         bot.reply('This command requires a URL to allow.')
+        return
+
+    if not _user_can_change_excludes(bot, trigger):
+        bot.reply(
+            'Only admins and channel members with %s access or higher may '
+            'modify URL excludes.' % bot.config.url.exclude_required_access)
         return
 
     if trigger.group(1) in ['urlpallow', 'urlpunban']:
