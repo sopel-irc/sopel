@@ -930,7 +930,8 @@ class Sopel(irc.AbstractBot):
         """
         message = 'Unexpected error'
         if exception:
-            message = '{} ({})'.format(message, exception)
+            detail = ' ({})'.format(exception) if str(exception) else ''
+            message = 'Unexpected {}{}'.format(type(exception).__name__, detail)
 
         if trigger:
             message = '{} from {} at {}. Message was: {}'.format(
