@@ -245,4 +245,4 @@ class AbstractIRCBackend(abc.ABC):
         :param str dest: nickname or channel name
         :param str text: the text to send
         """
-        self.send_command('NOTICE', dest, text=text)
+        self.send_command('NOTICE', safe(dest), text=text)
