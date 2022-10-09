@@ -160,6 +160,10 @@ def shutdown(bot):
 @plugin.interval(2.5)
 def remind_monitoring(bot):
     """Check for reminder"""
+    if not bot.backend.is_connected():
+        # IRC connection not ready; wait until next check.
+        return
+
     now = int(time.time())
     unixtimes = [int(key) for key in bot.rdb]
     oldtimes = [t for t in unixtimes if t <= now]
