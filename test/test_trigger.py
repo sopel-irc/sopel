@@ -88,7 +88,7 @@ def test_quit_pretrigger_empty(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == []
-    assert pretrigger.text == 'QUIT'  # TODO BUG: the command is not part of `pretrigger.args`
+    assert pretrigger.text == ''
     assert pretrigger.plain == ''
     assert pretrigger.event == 'QUIT'
     assert pretrigger.nick == Identifier('Foo')
@@ -121,7 +121,7 @@ def test_away_pretrigger_back(nick):
     assert pretrigger.hostmask == 'Foo!foo@example.com'
     assert pretrigger.line == line
     assert pretrigger.args == []
-    assert pretrigger.text == 'AWAY'  # TODO BUG: the command is not part of `pretrigger.args`
+    assert pretrigger.text == ''
     assert pretrigger.plain == ''
     assert pretrigger.event == 'AWAY'
     assert pretrigger.nick == Identifier('Foo')
@@ -189,7 +189,7 @@ def test_unusual_pretrigger(nick):
     assert pretrigger.hostmask is None
     assert pretrigger.line == line
     assert pretrigger.args == []
-    assert pretrigger.text == 'PING'
+    assert pretrigger.text == ''
     assert pretrigger.plain == ''
     assert pretrigger.event == 'PING'
     assert pretrigger.sender is None

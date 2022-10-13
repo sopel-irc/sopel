@@ -228,7 +228,8 @@ class PreTrigger:
             self.args.append(self.text)
         else:
             self.args = line.split(' ')
-            self.text = self.args[-1]
+            # see `text` attr documentation above, and #2360
+            self.text = self.args[-1] if len(self.args) > 1 else ''
 
         self.event = self.args[0]
         self.args = self.args[1:]
