@@ -38,7 +38,7 @@ __all__ = [
 IdentifierFactory = Callable[[str], identifiers.Identifier]
 
 
-COMMANDS_WITH_CONTEXT = [
+COMMANDS_WITH_CONTEXT = frozenset({
     'INVITE',
     'JOIN',
     'KICK',
@@ -47,8 +47,8 @@ COMMANDS_WITH_CONTEXT = [
     'PART',
     'PRIVMSG',
     'TOPIC',
-]
-"""List of commands with a :attr:`trigger.sender<Trigger.sender>`.
+})
+"""Set of commands with a :attr:`trigger.sender<Trigger.sender>`.
 
 Most IRC messages a plugin will want to handle (channel messages and PMs) are
 associated with a context, exposed in the Trigger's ``sender`` property.
