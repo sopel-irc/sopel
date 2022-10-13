@@ -38,6 +38,27 @@ __all__ = [
 IdentifierFactory = Callable[[str], identifiers.Identifier]
 
 
+COMMANDS_WITH_CONTEXT = [
+    'INVITE',
+    'JOIN',
+    'KICK',
+    'MODE',
+    'NOTICE',
+    'PART',
+    'PRIVMSG',
+    'TOPIC',
+]
+"""List of commands with a :attr:`trigger.sender<Trigger.sender>`.
+
+Most IRC messages a plugin will want to handle (channel messages and PMs) are
+associated with a context, exposed in the Trigger's ``sender`` property.
+However, not *all* commands can be directly associated to a channel or nick.
+
+For IRC message types other than those listed here, the ``trigger``\'s
+``sender`` property will be ``None``.
+"""
+
+
 class PreTrigger:
     """A parsed raw message from the server.
 
@@ -90,6 +111,14 @@ class PreTrigger:
     .. py:attribute:: sender
 
         Channel name or query where this message was received.
+
+        .. warning::
+
+            The ``sender`` Will be ``None`` for commands that have no implicit
+            channel or private-message context, for example AWAY or QUIT.
+
+            The :attr:`COMMANDS_WITH_CONTEXT` attribute lists IRC commands for
+            which ``sender`` can be relied upon.
 
     .. py:attribute:: tags
 
@@ -210,11 +239,11 @@ class PreTrigger:
         nick, self.user, self.host = components_match.groups()
         self.nick: identifiers.Identifier = self.make_identifier(nick)
 
-        # If we have arguments, the first one is the sender
-        # Unless it's a QUIT event
+        # If we have arguments, the first one is *usually* the sender,
+        # most numerics and certain general events (e.g. QUIT) excepted
         target: Optional[identifiers.Identifier] = None
 
-        if self.args and self.event != 'QUIT':
+        if self.args and self.event in COMMANDS_WITH_CONTEXT:
             target = self.make_identifier(self.args[0])
 
             # Unless we're messaging the bot directly, in which case that
@@ -292,6 +321,15 @@ class Trigger(str):
             # message sent from a private message
         else:
             # message sent from a channel
+
+    .. warning::
+
+        The ``sender`` Will be ``None`` for commands that have no implicit
+        channel or private-message context, for example AWAY or QUIT.
+
+        The :attr:`COMMANDS_WITH_CONTEXT` attribute lists IRC commands for
+        which ``sender`` can be relied upon.
+
     """
     time = property(lambda self: self._pretrigger.time)
     """When the message was received.

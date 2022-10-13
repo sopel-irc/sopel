@@ -80,6 +80,56 @@ def test_quit_pretrigger(nick):
     assert pretrigger.sender is None
 
 
+def test_quit_pretrigger_empty(nick):
+    """Make sure empty quit message is also fine"""
+    line = ':Foo!foo@example.com QUIT'
+    pretrigger = PreTrigger(nick, line)
+    assert pretrigger.tags == {}
+    assert pretrigger.hostmask == 'Foo!foo@example.com'
+    assert pretrigger.line == line
+    assert pretrigger.args == []
+    assert pretrigger.text == 'QUIT'  # TODO BUG: the command is not part of `pretrigger.args`
+    assert pretrigger.plain == ''
+    assert pretrigger.event == 'QUIT'
+    assert pretrigger.nick == Identifier('Foo')
+    assert pretrigger.user == 'foo'
+    assert pretrigger.host == 'example.com'
+    assert pretrigger.sender is None
+
+
+def test_away_pretrigger(nick):
+    line = ':Foo!foo@example.com AWAY :away message text'
+    pretrigger = PreTrigger(nick, line)
+    assert pretrigger.tags == {}
+    assert pretrigger.hostmask == 'Foo!foo@example.com'
+    assert pretrigger.line == line
+    assert pretrigger.args == ['away message text']
+    assert pretrigger.text == 'away message text'
+    assert pretrigger.plain == 'away message text'
+    assert pretrigger.event == 'AWAY'
+    assert pretrigger.nick == Identifier('Foo')
+    assert pretrigger.user == 'foo'
+    assert pretrigger.host == 'example.com'
+    assert pretrigger.sender is None
+
+
+def test_away_pretrigger_back(nick):
+    """Make sure empty away message (meaning "I'm back") is also fine"""
+    line = ':Foo!foo@example.com AWAY'
+    pretrigger = PreTrigger(nick, line)
+    assert pretrigger.tags == {}
+    assert pretrigger.hostmask == 'Foo!foo@example.com'
+    assert pretrigger.line == line
+    assert pretrigger.args == []
+    assert pretrigger.text == 'AWAY'  # TODO BUG: the command is not part of `pretrigger.args`
+    assert pretrigger.plain == ''
+    assert pretrigger.event == 'AWAY'
+    assert pretrigger.nick == Identifier('Foo')
+    assert pretrigger.user == 'foo'
+    assert pretrigger.host == 'example.com'
+    assert pretrigger.sender is None
+
+
 def test_join_pretrigger(nick):
     line = ':Foo!foo@example.com JOIN #Sopel'
     pretrigger = PreTrigger(nick, line)
@@ -142,6 +192,7 @@ def test_unusual_pretrigger(nick):
     assert pretrigger.text == 'PING'
     assert pretrigger.plain == ''
     assert pretrigger.event == 'PING'
+    assert pretrigger.sender is None
 
 
 def test_ctcp_intent_pretrigger(nick):
