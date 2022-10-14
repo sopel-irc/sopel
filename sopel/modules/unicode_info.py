@@ -10,11 +10,14 @@ from __future__ import annotations
 
 from sopel import plugin
 
-# unicodedata2 can provide a more-modern UCD than the one that comes with Python, use it if present
+# Python built-in unicodedata uses UCD version 13 (as of Python 3.10)
+# unicodedata2 can provide a more recent version, so we use that if present
+# See also: https://docs.python.org/3/library/unicodedata.html
 try:
-    import unicodedata2 as unicodedata
+    # ignore type check for these imports (no stubs for unicodedata2)
+    import unicodedata2 as unicodedata  # type: ignore[import]
 except ImportError:
-    import unicodedata
+    import unicodedata  # type: ignore[no-redef]
 
 
 def get_codepoint_name(char):
