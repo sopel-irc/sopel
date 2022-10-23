@@ -52,6 +52,7 @@ dependencies = [
     "importlib_metadata>=3.6",
     "packaging>=23.2",
     "sopel-help>=0.4.0",
+    "scramp>=1.4.4,<2",
 ]
 
 [project.urls]

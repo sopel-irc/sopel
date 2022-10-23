@@ -32,6 +32,9 @@ import re
 import time
 from typing import Callable, Optional, TYPE_CHECKING
 
+from scramp import ScramClient, ScramException
+from scramp.core import ClientStage as ScramClientStage
+
 from sopel import config, plugin
 from sopel.irc import isupport, utils
 from sopel.tools import events, jobs, SopelMemory, target
@@ -1250,7 +1253,38 @@ def auth_proceed(bot, trigger):
             bot.write(('AUTHENTICATE', '*'))
             return
 
-    # TODO: Implement SCRAM challenges
+    elif mech == "SCRAM-SHA-256":
+        if trigger.args[0] == "+":
+            bot._scram_client = ScramClient([mech], sasl_username, sasl_password)
+            client_first = bot._scram_client.get_client_first()
+            LOGGER.info("Sending SASL SCRAM client first")
+            send_authenticate(bot, client_first)
+        elif bot._scram_client.stage == ScramClientStage.get_client_first:
+            server_first = base64.b64decode(trigger.args[0]).decode("utf-8")
+            bot._scram_client.set_server_first(server_first)
+            if bot._scram_client.iterations < 4096:
+                LOGGER.warning(
+                    "SASL SCRAM iteration count is insecure, continuing anyway"
+                )
+            elif bot._scram_client.iterations >= 4_000_000:
+                LOGGER.warning(
+                    "SASL SCRAM iteration count is very high, this will be slow..."
+                )
+            client_final = bot._scram_client.get_client_final()
+            LOGGER.info("Sending SASL SCRAM client final")
+            send_authenticate(bot, client_final)
+        elif bot._scram_client.stage == ScramClientStage.get_client_final:
+            server_final = base64.b64decode(trigger.args[0]).decode("utf-8")
+            try:
+                bot._scram_client.set_server_final(server_final)
+            except ScramException as e:
+                LOGGER.error("SASL SCRAM failed: %r", e)
+                bot.write(("AUTHENTICATE", "*"))
+                raise e
+            LOGGER.info("SASL SCRAM succeeded")
+            bot.write(("AUTHENTICATE", "+"))
+            bot._scram_client = None
+        return
 
 
 def _make_sasl_plain_token(account, password):
