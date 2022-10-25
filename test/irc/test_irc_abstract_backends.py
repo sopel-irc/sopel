@@ -1,7 +1,9 @@
 """Tests for core ``sopel.irc.backends``"""
 from __future__ import annotations
 
+import pytest
 
+from sopel.irc.isupport import ISupport
 from sopel.tests.mocks import MockIRCBackend
 
 
@@ -298,3 +300,40 @@ def test_send_notice_safe():
     expected = 'NOTICE #sopel :Helloworld!\r\n'
     assert backend.message_sent == [expected.encode('utf-8')]
     assert bot.message_sent == [expected]
+
+
+def test_decode_line_utf8():
+    bot = BotCollector()
+    backend = MockIRCBackend(bot)
+    backend.isupport = ISupport()
+
+    test = "PRIVMSG #sopel :Hello, Martín!"
+    assert backend.decode_line(test.encode("utf-8")) == test
+
+
+def test_decode_line_utf8only():
+    bot = BotCollector()
+    backend = MockIRCBackend(bot)
+    backend.isupport = ISupport(UTF8ONLY=None)
+
+    test = "PRIVMSG #sopel :Hello, Martín!"
+    with pytest.raises(UnicodeDecodeError):
+        backend.decode_line(test.encode("cp1252"))
+
+
+def test_decode_line_nonsense():
+    bot = BotCollector()
+    backend = MockIRCBackend(bot)
+    backend.isupport = ISupport()
+
+    with pytest.raises(ValueError):
+        backend.decode_line(bytes(range(256)))
+
+
+def test_decode_line_cp1252():
+    bot = BotCollector()
+    backend = MockIRCBackend(bot)
+    backend.isupport = ISupport()
+
+    test = "PRIVMSG #sopel :Hello, Martín!"
+    assert backend.decode_line(test.encode("cp1252")) == test

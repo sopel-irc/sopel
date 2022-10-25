@@ -67,16 +67,15 @@ class AbstractIRCBackend(abc.ABC):
         # We can't trust clients to pass valid Unicode.
         try:
             data = str(line, encoding='utf-8')
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as e:
+            # ...unless the server announces UTF8ONLY
+            if "UTF8ONLY" in self.isupport:
+                raise e
             # not Unicode; let's try CP-1252
             try:
                 data = str(line, encoding='cp1252')
             except UnicodeDecodeError:
-                # Okay, let's try ISO 8859-1
-                try:
-                    data = str(line, encoding='iso8859-1')
-                except UnicodeDecodeError:
-                    raise ValueError('Unable to decode data from server.')
+                raise ValueError('Unable to decode data from server.')
 
         return data
 
