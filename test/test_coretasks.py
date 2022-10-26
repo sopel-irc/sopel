@@ -579,6 +579,69 @@ def test_sasl_scram_sha_256_auth(mockbot):
     )
 
 
+def test_sasl_scram_sha_256_nonsense_server_first(mockbot):
+    """Verify the bot handles a nonsense SCRAM-SHA-256 server_first correctly."""
+    mech = ScramMechanism()
+    salt, stored_key, server_key, iter_count = mech.make_auth_info(
+        "hunter2", iteration_count=5000
+    )
+    scram_server = mech.make_server(
+        lambda x: (salt, stored_key, server_key, iter_count)
+    )
+
+    mockbot.settings.core.auth_method = "sasl"
+    mockbot.settings.core.auth_target = "SCRAM-SHA-256"
+    mockbot.on_message("CAP TestBot ACK :sasl")
+    mockbot.on_message("AUTHENTICATE +")
+
+    scram_server.set_client_first(
+        b64decode(mockbot.backend.message_sent[-1].split(b" ")[-1]).decode("utf-8")
+    )
+    mockbot.on_message(
+        "AUTHENTICATE "
+        + b64encode(b"j=unk").decode("utf-8")
+    )
+    assert (
+        len(mockbot.backend.message_sent) == 3
+        and mockbot.backend.message_sent[-1] == rawlist("AUTHENTICATE *")[0]
+    )
+
+
+def test_sasl_scram_sha_256_nonsense_server_final(mockbot):
+    """Verify the bot handles a nonsense SCRAM-SHA-256 server_final correctly."""
+    mech = ScramMechanism()
+    salt, stored_key, server_key, iter_count = mech.make_auth_info(
+        "hunter2", iteration_count=5000
+    )
+    scram_server = mech.make_server(
+        lambda x: (salt, stored_key, server_key, iter_count)
+    )
+
+    mockbot.settings.core.auth_method = "sasl"
+    mockbot.settings.core.auth_target = "SCRAM-SHA-256"
+    mockbot.on_message("CAP TestBot ACK :sasl")
+    mockbot.on_message("AUTHENTICATE +")
+
+    scram_server.set_client_first(
+        b64decode(mockbot.backend.message_sent[-1].split(b" ")[-1]).decode("utf-8")
+    )
+    mockbot.on_message(
+        "AUTHENTICATE "
+        + b64encode(scram_server.get_server_first().encode("utf-8")).decode("utf-8")
+    )
+    scram_server.set_client_final(
+        b64decode(mockbot.backend.message_sent[-1].split(b" ")[-1]).decode("utf-8")
+    )
+    mockbot.on_message(
+        "AUTHENTICATE "
+        + b64encode(b"j=unk").decode("utf-8")
+    )
+    assert (
+        len(mockbot.backend.message_sent) == 4
+        and mockbot.backend.message_sent[-1] == rawlist("AUTHENTICATE *")[0]
+    )
+
+
 def test_recv_chghost(mockbot, ircfactory):
     """Ensure that CHGHOST messages are correctly handled."""
     irc = ircfactory(mockbot)
