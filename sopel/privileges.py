@@ -56,6 +56,16 @@ In that case, ``priv`` contains both VOICE and OP privileges, but not HALFOP.
 from __future__ import annotations
 
 
+__all__ = [
+    'VOICE',
+    'HALFOP',
+    'OP',
+    'ADMIN',
+    'OWNER',
+    'OPER',
+]
+
+
 VOICE = 1
 """Privilege level for the +v channel permission
 
