@@ -197,7 +197,7 @@ def color(text, fg=None, bg=None):
     0-99. The known color names can be found in the :class:`colors` class of
     this module.
     """
-    if not fg and not bg:
+    if fg is None and bg is None:
         return text
 
     fg = _get_color(fg)

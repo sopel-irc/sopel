@@ -24,6 +24,9 @@ def test_color():
     assert color(text) == text
     assert color(text, colors.PINK) == '\x0313' + text + '\x03'
     assert color(text, colors.PINK, colors.TEAL) == '\x0313,10' + text + '\x03'
+    assert color(text, '3') == '\x0303' + text + '\x03'  # ensure single-digit str is zero-padded
+    assert color(text, 3) == '\x0303' + text + '\x03'  # ensure ints are zero-padded
+    assert color(text, 0) == '\x0300' + text + '\x03'  # ensure that color 0 isn't treated as boolean false
     pytest.raises(ValueError, color, text, 100)
     pytest.raises(ValueError, color, text, 'INVALID')
 
