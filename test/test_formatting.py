@@ -29,6 +29,12 @@ def test_color():
     assert color(text, 0) == '\x0300' + text + '\x03'  # ensure that color 0 isn't treated as boolean false
     pytest.raises(ValueError, color, text, 100)
     pytest.raises(ValueError, color, text, 'INVALID')
+    pytest.raises(ValueError, color, text, '')
+    # test background color as well
+    pytest.raises(ValueError, color, text, '', '')
+    pytest.raises(ValueError, color, text, None, '')
+    pytest.raises(ValueError, color, text, colors.PINK, '')
+    pytest.raises(ValueError, color, text, '', colors.PINK)
 
 
 def test_hex_color():
