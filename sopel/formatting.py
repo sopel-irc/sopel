@@ -190,7 +190,7 @@ def color(text, fg=None, bg=None):
     :param mixed fg: the foreground color
     :param mixed bg: the background color
     :raises TypeError: if ``text`` is not a string
-    :raises ValueError: if ``fg`` or ``bg`` is an unrecognized color value)
+    :raises ValueError: if ``fg`` or ``bg`` is an unrecognized color value
     :rtype: str
 
     The color can be a string of the color name, or an integer in the range
@@ -236,7 +236,7 @@ def hex_color(text, fg=None, bg=None):
     :param str fg: the foreground color
     :param str bg: the background color
     :raises TypeError: if ``text`` is not a string
-    :raises ValueError: if ``fg`` or ``bg`` is an unrecognized color value)
+    :raises ValueError: if ``fg`` or ``bg`` is an unrecognized color value
     :rtype: str
 
     The color can be provided with a string of either 3 or 6 hexadecimal digits.
