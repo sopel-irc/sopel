@@ -471,6 +471,17 @@ def test_handle_isupport_namesx_with_multi_prefix(mockbot):
     )
 
 
+def test_handle_isupport_utf8only(mockbot):
+    assert not mockbot.backend.utf8only
+
+    mockbot.on_message(
+        ":irc.example.com 005 Sopel UTF8ONLY :are supported by this server"
+    )
+
+    assert "UTF8ONLY" in mockbot.isupport
+    assert mockbot.backend.utf8only
+
+
 def test_handle_rpl_myinfo(mockbot):
     """Test handling RPL_MYINFO events."""
     assert not hasattr(mockbot, 'myinfo'), (
