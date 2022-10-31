@@ -128,7 +128,7 @@ class AbstractIRCBackend(abc.ABC):
         and can be sent as-is.
         """
         max_length = unicode_max_length = 510
-        raw_command = ' '.join(args)
+        raw_command = ' '.join(safe(arg) for arg in args)
         if text is not None:
             raw_command = '{args} :{text}'.format(args=raw_command,
                                                   text=safe(text))
@@ -151,7 +151,7 @@ class AbstractIRCBackend(abc.ABC):
         A ``PING`` command should be sent at a regular interval to make sure
         the server knows the IRC connection is still active.
         """
-        self.send_command('PING', safe(host))
+        self.send_command('PING', host)
 
     def send_pong(self, host: str) -> None:
         """Send a ``PONG`` command to the server.
@@ -161,14 +161,14 @@ class AbstractIRCBackend(abc.ABC):
         A ``PONG`` command must be sent each time the server sends a ``PING``
         command to the client.
         """
-        self.send_command('PONG', safe(host))
+        self.send_command('PONG', host)
 
     def send_nick(self, nick: str) -> None:
         """Send a ``NICK`` command with a ``nick``.
 
         :param nick: nickname to take
         """
-        self.send_command('NICK', safe(nick))
+        self.send_command('NICK', nick)
 
     def send_user(self, user: str, mode: str, nick: str, name: str) -> None:
         """Send a ``USER`` command with a ``user``.
@@ -178,14 +178,14 @@ class AbstractIRCBackend(abc.ABC):
         :param nick: nickname associated with this user
         :param name: "real name" for the user
         """
-        self.send_command('USER', safe(user), mode, safe(nick), text=name)
+        self.send_command('USER', user, mode, nick, text=name)
 
     def send_pass(self, password: str) -> None:
         """Send a ``PASS`` command with a ``password``.
 
         :param password: password for authentication
         """
-        self.send_command('PASS', safe(password))
+        self.send_command('PASS', password)
 
     def send_join(self, channel: str, password: Optional[str] = None) -> None:
         """Send a ``JOIN`` command to ``channel`` with optional ``password``.
@@ -194,9 +194,9 @@ class AbstractIRCBackend(abc.ABC):
         :param password: optional password for protected channels
         """
         if password is None:
-            self.send_command('JOIN', safe(channel))
+            self.send_command('JOIN', channel)
         else:
-            self.send_command('JOIN', safe(channel), safe(password))
+            self.send_command('JOIN', channel, password)
 
     def send_part(self, channel: str, reason: Optional[str] = None) -> None:
         """Send a ``PART`` command to ``channel``.
@@ -204,7 +204,7 @@ class AbstractIRCBackend(abc.ABC):
         :param channel: the channel to part
         :param text: optional text for leaving the channel
         """
-        self.send_command('PART', safe(channel), text=reason)
+        self.send_command('PART', channel, text=reason)
 
     def send_quit(self, reason: Optional[str] = None) -> None:
         """Send a ``QUIT`` command.
@@ -228,7 +228,7 @@ class AbstractIRCBackend(abc.ABC):
         :param nick: nickname to kick from the ``channel``
         :param reason: optional reason for the kick
         """
-        self.send_command('KICK', safe(channel), safe(nick), text=reason)
+        self.send_command('KICK', channel, nick, text=reason)
 
     def send_privmsg(self, dest: str, text: str) -> None:
         """Send a ``PRIVMSG`` command to ``dest`` with ``text``.
@@ -236,7 +236,7 @@ class AbstractIRCBackend(abc.ABC):
         :param dest: nickname or channel name
         :param text: the text to send
         """
-        self.send_command('PRIVMSG', safe(dest), text=text)
+        self.send_command('PRIVMSG', dest, text=text)
 
     def send_notice(self, dest: str, text: str) -> None:
         """Send a ``NOTICE`` command to ``dest`` with ``text``.
