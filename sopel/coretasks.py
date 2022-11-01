@@ -87,7 +87,7 @@ def _handle_account_and_extjoin_capabilities(
     return plugin.CapabilityNegotiation.DONE
 
 
-def _sasl_capability(
+def _handle_sasl_capability(
     cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
     # Manage CAP REQ :sasl
@@ -157,7 +157,7 @@ CAP_EXTENDED_JOIN = plugin.capability(
     'extended-join', handler=_handle_account_and_extjoin_capabilities)
 CAP_ACCOUNT_TAG = plugin.capability(
     'account-tag', handler=_handle_account_and_extjoin_capabilities)
-CAP_SASL = plugin.capability('sasl', handler=_sasl_capability)
+CAP_SASL = plugin.capability('sasl', handler=_handle_sasl_capability)
 
 
 def setup(bot: Sopel):
