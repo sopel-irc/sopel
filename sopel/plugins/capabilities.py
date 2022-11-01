@@ -1,4 +1,17 @@
-"""Capability Requests management for plugins."""
+"""Capability Requests management for plugins.
+
+.. versionadded:: 8.0
+
+.. important::
+
+    This is all relatively new. Its usage and documentation is for Sopel core
+    development and advanced developers. It is subject to rapid changes
+    between versions without much (or any) warning.
+
+    Do **not** build your plugin based on what is here, you do **not** need to.
+
+"""
+
 from __future__ import annotations
 
 import logging
@@ -25,7 +38,28 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Manager:
-    """Manager of Capability Requests."""
+    """Manager of plugins' capability requests.
+
+    Whenever a plugin declares a capability request (through
+    :class:`sopel.plugin.capability`), the bot will register the request with
+    this manager.
+
+    The bot is responsible to call the manager at the appropriate time, and the
+    manager will store requests' state and handle acknowledgement, by following
+    this workflow:
+
+    1. the bot will register plugins' requests with the :meth:`register` method
+    2. the bot will request the list of available capabilities with the
+       ``CAP LS`` subcommand
+    3. upon receiving the list, it'll use the :meth:`request_available` method
+       to let the manager send the required ``CAP REQ`` messages.
+    4. when the server ``ACK`` a request, the bot will call the
+       :meth:`acknowledge` method; when the server ``NAK`` a request, the bot
+       will call the :meth:`deny` method
+    5. once all requests are handled (either directly or after calling the
+       :meth:`resume` method), the bot will send the ``CAP END`` message to end
+       capability negotiation
+    """
     def __init__(self):
         self._registered: Dict[
             # CAP REQ :<text>
@@ -41,22 +75,65 @@ class Manager:
 
     @property
     def registered(self) -> FrozenSet[Tuple[str, ...]]:
-        """Set of registered capabilities."""
+        """Set of registered capability requests.
+
+        Each element is a capability request as a tuple of capability names::
+
+            >>> manager.registered
+            {('cap1',), ('cap2', 'cap3')}
+
+        A registered request is a request wanted by a plugin. The request may
+        or may not be requested, acknowledged, or denied.
+        """
         return frozenset(self._registered.keys())
 
     @property
     def requested(self) -> FrozenSet[Tuple[str, ...]]:
-        """Set of requested capabilities."""
+        """Set of requested capability requests.
+
+        Each element is a capability request as a tuple of capability names::
+
+            >>> manager.requested
+            {('cap1',), ('cap2', 'cap3')}
+
+        A requested request is a registered request for which the bot sent
+        a ``CAP REQ`` message to the server. The request may or may not be
+        acknowledged or denied.
+
+        Only registered requests can be requested.
+        """
         return frozenset(self._requested)
 
     @property
     def acknowledged(self) -> FrozenSet[Tuple[str, ...]]:
-        """Set of acknowledged capability requests."""
+        """Set of acknowledged capability requests.
+
+        Each element is a capability request as a tuple of capability names::
+
+            >>> manager.acknowledged
+            {('cap1',), ('cap2', 'cap3')}
+
+        An acknowledged request is a registered and requested request for which
+        the bot received a ``CAP ACK`` message.
+
+        Only requested requests can be acknowledged.
+        """
         return frozenset(self._acknowledged)
 
     @property
     def denied(self) -> FrozenSet[Tuple[str, ...]]:
-        """Set of denied capability requests."""
+        """Set of denied capability requests.
+
+        Each element is a capability request as a tuple of capability names::
+
+            >>> manager.denied
+            {('cap1',), ('cap2', 'cap3')}
+
+        A denied request is a registered and requested request for which the
+        bot received a ``CAP NAK`` message.
+
+        Only requested requests can be denied.
+        """
         return frozenset(self._denied)
 
     @property
@@ -65,6 +142,10 @@ class Manager:
 
         When capability negotiation is complete, the bot can send ``CAP END``
         to notify the server that negotiation is complete.
+
+        The capability negotiation is complete when all capability requests
+        have been either acknowledged or denied successfuly (directly or by
+        calling the :meth:`resume` method).
         """
         return all(
             status
@@ -113,6 +194,25 @@ class Manager:
         """Register a capability ``request`` for ``plugin_name``.
 
         :param request: the capability request to register for later
+
+        Once registered, the capability request can be requested by the bot. A
+        registered request appears in :attr:`registered`::
+
+            >>> from sopel import plugin
+            >>> request = plugin.capability('cap1')
+            >>> manager.register('coretasks', request)
+            >>> ('cap1',) in manager.registered
+            True
+            >>> manager.is_registered(('cap1',))
+            True
+
+        It is not, however, directly requested::
+
+            >>> manager.is_requested(('cap1',))
+            False
+
+        See :meth:`request_available` to automatically request capabilities
+        advertised by the server.
         """
         plugin_caps = self._registered.setdefault(request.cap_req, {})
         plugin_caps[plugin_name] = (
@@ -134,7 +234,36 @@ class Manager:
         all the requested capabilities (with or without prefix) must be
         available for Sopel to send the request.
 
-        Requests made are stored as requested; others are ignored.
+        Requests made are stored as requested; others are ignored::
+
+            >>> # manager.register => cap1 and cap2, not cap3
+            >>> manager.request_available(bot, ('cap1', 'cap3'))
+            >>> manager.is_requested(('cap1',))
+            True
+            >>> manager.is_requested(('cap2',))
+            False
+            >>> manager.is_requested(('cap3',))
+            False
+
+        .. important::
+
+            The capability request ``('cap1', '-cap2')`` means "enable cap1 and
+            disable cap2", and the request will be acknowledged or denied at
+            once. If the server doesn't advertise any of these capabilities,
+            the client **should not** send a request.
+
+            As a result, Sopel will send a request to enable or disable
+            a capability only if it is advertised first. If a request is
+            never made, its callback will never be called, because there
+            won't be any related ACK/NAK message from the server.
+
+            Plugin authors should not use the request's callback to activate or
+            deactivate features, and instead check the bot's capabilities every
+            time they need to.
+
+            The only exception to that is when the plugin needs to perform an
+            operation while negotiating the capabilities (such as SASL auth).
+
         """
         # Requesting capabilities when they are available
         capabilities = set(available_capabilities)
@@ -175,6 +304,20 @@ class Manager:
 
         If the capability request cannot be found for that plugin, the result
         value remains the same (it stay uncomplete or complete)
+
+        .. important::
+
+            When a request's callback returns
+            :attr:`~sopel.plugin.CapabilityNegotiation.CONTINUE`, this method
+            must be called later (once the plugin has finished its job) or the
+            bot will never send the ``CAP END`` command and hang forever.
+
+        .. seealso::
+
+            Plugins can use the method
+            :meth:`~sopel.bot.Sopel.resume_capability_negotiation` from the bot
+            to resume and automatically send ``CAP END`` when necessary.
+
         """
         cap_req = tuple(sorted(request))
         was_completed = self.is_complete
