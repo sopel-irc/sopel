@@ -18,7 +18,6 @@ import time
 from types import MappingProxyType
 from typing import (
     Any,
-    Callable,
     Dict,
     Iterable,
     Mapping,
@@ -943,59 +942,6 @@ class Sopel(irc.AbstractBot):
         if not was_completed and is_complete:
             LOGGER.info("End of client capability negotiation requests.")
             self.write(('CAP', 'END'))
-
-    @deprecated(
-        'bot.cap_req is replaced by @plugin.capability decorator',
-        version='8.0',
-        removed_in='9.0',
-    )
-    def cap_req(
-        self,
-        plugin_name: str,
-        capability: str,
-        arg: Optional[str] = None,
-        failure_callback: Optional[Callable] = None,
-        success_callback: Optional[Callable] = None,
-    ) -> None:
-        """Obsolete capability request method.
-
-        .. deprecated:: 8.0
-
-            This will be removed in Sopel 9.0. See the
-            :class:`sopel.plugin.capability` decorator for a replacement.
-
-        .. warning::
-
-            This method must not be used. This will emulate the old behavior
-            by adding a :class:`sopel.plugin.capability` with a wrapper around
-            ``success_callback`` and ``failure_callback``, however the behavior
-            is not the same as before. The callback won't be called if the
-            request is never made, i.e. never REQ, ACK, or NAK, as the new
-            system doesn't try to emulate the server's response.
-
-        """
-        if capability.startswith('~'):
-            capability = '-%s' % capability.strip('~')
-        elif capability.startswith('='):
-            capability = capability.strip('=')
-
-        @plugin.capability(capability)
-        def cap_req_wrapper(
-            cap_req: Tuple[str, ...],
-            bot: SopelWrapper,
-            acknowledged: bool,
-        ) -> plugin.CapabilityNegotiation:
-            LOGGER.warning(
-                'Emulation of callback for "%s" request.', ' '.join(cap_req))
-            if acknowledged and success_callback:
-                success_callback(bot)
-            elif not acknowledged and failure_callback:
-                failure_callback(bot)
-
-            # always consider the request to be DONE
-            return plugin.CapabilityNegotiation.DONE
-
-        self._cap_requests_manager.register(plugin_name, cap_req_wrapper)
 
     # event handlers
 
