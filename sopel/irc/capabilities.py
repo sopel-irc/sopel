@@ -1,4 +1,21 @@
-"""Management of IRC server capabilities."""
+"""Management of IRC capability negotiation.
+
+.. versionadded:: 8.0
+
+This module contains the :class:`Capabilities` class which tracks the state of
+the capability negotiation with the IRC server: it can store and update the
+state of available and enabled capabilities.
+
+.. important::
+
+    Plugin authors should not instantiate this class directly, as the bot
+    exposes an instance through its :attr:`~sopel.irc.AbstractBot.capabilities`
+    attribute.
+
+    All state handling methods (such as :meth:`Capabilities.handle_ls`) are
+    used by the ``coretasks`` plugin, and should not be used outside.
+
+"""
 from __future__ import annotations
 
 from typing import (
@@ -18,21 +35,70 @@ if TYPE_CHECKING:
 
 
 class CapabilityInfo(NamedTuple):
-    """Capability metadata."""
+    """Capability metadata.
+
+    This contains the details of a capability: if :attr:`available`,
+    :attr:`enabled`, and its :attr:`params` (if advertised).
+
+    .. note::
+
+        You can get a capability's info through
+        :meth:`Capabilities.get_capability_info`.
+
+    """
     name: str
+    """Name of the capability.
+
+    The name of a capability is the name as it appears in the ``CAP LS``
+    subcommand, such as ``multi-prefix`` or ``sasl``.
+    """
     params: Optional[str]
+    """Advertised parameters for this capability.
+
+    When a server supports ``CAP`` version 302, capabilities can have
+    parameters. The format and the meaning of the parameters depend on the
+    capability itself.
+
+    For example, the ``sasl`` capability can provide the list of SASL
+    mechanisms the server supports, such as ``PLAIN,EXTERNAL``.
+    """
     available: bool
+    """Flag to tell if the server advertises this capability or not.
+
+    This is ``True`` if the ``CAP LS`` subcommand contains the capability.
+    """
     enabled: bool
+    """Flag to tell if the capability is enabled on the server."""
 
 
 class Capabilities:
-    """Capabilities negotiated with the server."""
+    """Capabilities negotiated with the server.
+
+    This stores a representation of the capability negotiation state between
+    the bot and the server: it stores the list of :attr:`available` and
+    :attr:`enabled` capabilities, and can track the state by handling various
+    ``CAP`` subcommands:
+
+    * :meth:`handle_ls` for ``CAP LS``
+    * :meth:`handle_ack` for ``CAP ACK``
+    * :meth:`handle_nak` for ``CAP NAK``
+    * :meth:`handle_new` for ``CAP NEW``
+    * :meth:`handle_del` for ``CAP ADD``
+    """
     def __init__(self) -> None:
         self._available: Dict[str, Optional[str]] = {}
         self._enabled: Set[str] = set()
 
     def get_capability_info(self, name: str) -> CapabilityInfo:
-        """Retrieve metadata about a capability."""
+        """Retrieve metadata about a capability.
+
+        The returned :class:`CapabilityInfo` will tell if the capability is
+        advertised by the server; and if so, its parameters and whether it is
+        enabled.
+
+        If the capability is unknown, then its ``available`` attribute will be
+        ``False``, and its ``params`` attribute will be ``None``.
+        """
         params = self._available.get(name)
         return CapabilityInfo(
             name,
@@ -43,12 +109,22 @@ class Capabilities:
 
     @property
     def available(self) -> Dict[str, Optional[str]]:
-        """Dict of available server capabilities."""
+        """Dict of available server capabilities.
+
+        Each key is the name of a capability advertised by the server, and each
+        value is the parameters as advertised (if any) for this capability.
+
+        If a capability is not in this ``dict``, it means the server doesn't
+        advertise it, and it cannot be requested.
+        """
         return dict(self._available.items())  # return a copy
 
     @property
     def enabled(self) -> FrozenSet[str]:
-        """Set of enabled server capabilities."""
+        """Set of enabled server capabilities.
+
+        Each element is the name of a capability that is enabled on the server.
+        """
         return frozenset(self._enabled)
 
     def is_available(self, name: str) -> bool:
