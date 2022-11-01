@@ -374,6 +374,8 @@ class PyModulePlugin(AbstractPluginHandler):
             # annotate all callables in relevant_parts with `plugin_name`
             # attribute to make per-channel config work; see #1839
             setattr(part, 'plugin_name', self.name)
+
+        # TODO: replace add_plugin to direct call to register_* methods
         bot.add_plugin(self, *relevant_parts)
 
     def unregister(self, bot):

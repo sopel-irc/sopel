@@ -394,6 +394,8 @@ class Sopel(irc.AbstractBot):
             LOGGER.info("Reloaded %s plugin %s from %s",
                         meta['type'], name, meta['source'])
 
+    # TODO: deprecate both add_plugin and remove_plugin; see #2425
+
     def add_plugin(self, plugin, callables, jobs, shutdowns, urls) -> None:
         """Add a loaded plugin to the bot's registry.
 
