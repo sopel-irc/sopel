@@ -169,6 +169,7 @@ class PreTrigger:
         line: str,
         url_schemes: Optional[Sequence] = None,
         identifier_factory: IdentifierFactory = identifiers.Identifier,
+        statusmsg_prefixes: Tuple[str, ...] = tuple(),
     ):
         self.make_identifier = identifier_factory
         line = line.strip('\r\n')
@@ -243,9 +244,13 @@ class PreTrigger:
         # If we have arguments, the first one is *usually* the sender,
         # most numerics and certain general events (e.g. QUIT) excepted
         target: Optional[identifiers.Identifier] = None
+        status_prefix: Optional[str] = None
 
         if self.args and self.event in COMMANDS_WITH_CONTEXT:
-            target = self.make_identifier(self.args[0])
+            raw_target = self.args[0]
+            if statusmsg_prefixes and raw_target[0] in statusmsg_prefixes:
+                status_prefix, raw_target = raw_target[0], raw_target[1:]
+            target = self.make_identifier(raw_target)
 
             # Unless we're messaging the bot directly, in which case that
             # second arg will be our bot's name.
@@ -253,6 +258,7 @@ class PreTrigger:
                 target = self.nick
 
         self.sender = target
+        self.status_prefix = status_prefix
 
         # Parse CTCP
         if self.event == 'PRIVMSG' or self.event == 'NOTICE':
@@ -331,6 +337,16 @@ class Trigger(str):
         The :attr:`COMMANDS_WITH_CONTEXT` attribute lists IRC commands for
         which ``sender`` can be relied upon.
 
+    """
+    status_prefix = property(lambda self: self._pretrigger.status_prefix)
+    """The prefix used for the :attr:`sender` for status-specific messages.
+
+    :type: Optional[str]
+
+    This will be ``None`` by default. If a message is sent to a channel, it may
+    have a status prefix for status-specific messages. In that case, the prefix
+    is removed from the channel's identifier (see :attr:`sender`) and saved to
+    this attribute.
     """
     time = property(lambda self: self._pretrigger.time)
     """When the message was received.

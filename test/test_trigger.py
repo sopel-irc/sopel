@@ -46,6 +46,7 @@ def test_basic_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == '#Sopel'
+    assert pretrigger.status_prefix is None
 
 
 def test_pm_pretrigger(nick):
@@ -62,6 +63,37 @@ def test_pm_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == Identifier('Foo')
+    assert pretrigger.status_prefix is None
+
+
+def test_statusmsg_pretrigger(nick):
+    line = ':Foo!foo@example.com PRIVMSG @#Sopel :Hello, world'
+    pretrigger = PreTrigger(nick, line, statusmsg_prefixes=tuple('@'))
+    assert pretrigger.tags == {}
+    assert pretrigger.hostmask == 'Foo!foo@example.com'
+    assert pretrigger.line == line
+    assert pretrigger.args == ['@#Sopel', 'Hello, world']
+    assert pretrigger.text == 'Hello, world'
+    assert pretrigger.plain == 'Hello, world'
+    assert pretrigger.event == 'PRIVMSG'
+    assert pretrigger.nick == Identifier('Foo')
+    assert pretrigger.user == 'foo'
+    assert pretrigger.host == 'example.com'
+    assert pretrigger.sender == '#Sopel'
+    assert pretrigger.status_prefix == '@'
+
+
+def test_statusmsg_custom_prefix_pretrigger(nick):
+    line = ':Foo!foo@example.com PRIVMSG £#Sopel :Hello, world'
+    pretrigger = PreTrigger(nick, line, statusmsg_prefixes=('@', '£'))
+    assert pretrigger.sender == '#Sopel'
+    assert pretrigger.status_prefix == '£'
+
+    # no statusmsg_prefixes set (use default)
+    line = ':Foo!foo@example.com PRIVMSG £#Sopel :Hello, world'
+    pretrigger = PreTrigger(nick, line)
+    assert pretrigger.sender == '£#Sopel'
+    assert pretrigger.status_prefix is None
 
 
 def test_quit_pretrigger(nick):
@@ -78,6 +110,7 @@ def test_quit_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender is None
+    assert pretrigger.status_prefix is None
 
 
 def test_quit_pretrigger_empty(nick):
@@ -95,6 +128,7 @@ def test_quit_pretrigger_empty(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender is None
+    assert pretrigger.status_prefix is None
 
 
 def test_away_pretrigger(nick):
@@ -111,6 +145,7 @@ def test_away_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender is None
+    assert pretrigger.status_prefix is None
 
 
 def test_away_pretrigger_back(nick):
@@ -128,6 +163,7 @@ def test_away_pretrigger_back(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender is None
+    assert pretrigger.status_prefix is None
 
 
 def test_join_pretrigger(nick):
@@ -144,6 +180,7 @@ def test_join_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == Identifier('#Sopel')
+    assert pretrigger.status_prefix is None
 
 
 def test_tags_pretrigger(nick):
@@ -162,6 +199,7 @@ def test_tags_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == '#Sopel'
+    assert pretrigger.status_prefix is None
 
 
 def test_intents_pretrigger(nick):
@@ -179,6 +217,7 @@ def test_intents_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == '#Sopel'
+    assert pretrigger.status_prefix is None
 
 
 def test_unusual_pretrigger(nick):
@@ -193,6 +232,7 @@ def test_unusual_pretrigger(nick):
     assert pretrigger.plain == ''
     assert pretrigger.event == 'PING'
     assert pretrigger.sender is None
+    assert pretrigger.status_prefix is None
 
 
 def test_ctcp_intent_pretrigger(nick):
@@ -210,6 +250,7 @@ def test_ctcp_intent_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == Identifier('Foo')
+    assert pretrigger.status_prefix is None
 
 
 def test_ctcp_data_pretrigger(nick):
@@ -227,6 +268,7 @@ def test_ctcp_data_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == Identifier('Foo')
+    assert pretrigger.status_prefix is None
 
 
 def test_ctcp_action_pretrigger(nick):
@@ -244,6 +286,7 @@ def test_ctcp_action_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == '#Sopel'
+    assert pretrigger.status_prefix is None
 
 
 def test_ctcp_action_trigger(nick, configfactory):
@@ -289,6 +332,7 @@ def test_ircv3_extended_join_pretrigger(nick):
     assert pretrigger.user == 'foo'
     assert pretrigger.host == 'example.com'
     assert pretrigger.sender == Identifier('#Sopel')
+    assert pretrigger.status_prefix is None
 
 
 def test_ircv3_extended_join_trigger(nick, configfactory):
@@ -376,3 +420,16 @@ def test_ircv3_server_time_trigger(nick, configfactory):
     line = '@time=2016-01-09T04:20 :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
     assert pretrigger.time is not None
+
+
+def test_statusmsg_trigger(nick, configfactory):
+    line = ':Foo!foo@example.com PRIVMSG @#channel :text message'
+    pretrigger = PreTrigger(nick, line, statusmsg_prefixes=tuple('@'))
+    config = configfactory('default.cfg', TMP_CONFIG)
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+
+    assert trigger.sender == '#channel'
+    assert trigger.sender == Identifier('#channel')
+    assert trigger.status_prefix == '@'
