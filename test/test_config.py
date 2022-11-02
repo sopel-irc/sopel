@@ -227,6 +227,67 @@ def test_fileattribute_given_file_when_dir(fakeconfig):
         fakeconfig.fake.ad_fileattr = testfile
 
 
+def test_fileattribute_relative_with_quotes(fakeconfig):
+    testfile = os.path.join(fakeconfig.core.homedir, 'test.tmp')
+
+    # double quotes
+    fakeconfig.fake.rf_fileattr = '"test.tmp"'
+    assert fakeconfig.fake.rf_fileattr == testfile
+
+    # single quotes
+    fakeconfig.fake.rf_fileattr = "'test.tmp'"
+    assert fakeconfig.fake.rf_fileattr == testfile
+
+
+def test_fileattribute_relative_with_nested_double_quotes(fakeconfig):
+    testfile = os.path.join(fakeconfig.core.homedir, '"test.tmp"')
+
+    # double quotes nested inside single quotes
+    fakeconfig.fake.rf_fileattr = "'\"test.tmp\"'"
+    assert fakeconfig.fake.rf_fileattr == testfile
+
+
+def test_fileattribute_relative_with_nested_single_quotes(fakeconfig):
+    testfile = os.path.join(fakeconfig.core.homedir, "'test.tmp'")
+
+    # single quotes nested inside double quotes
+    fakeconfig.fake.rf_fileattr = '"\'test.tmp\'"'
+    assert fakeconfig.fake.rf_fileattr == testfile
+
+
+def test_fileattribute_relative_with_inside_quotes(fakeconfig):
+    testfile = os.path.join(fakeconfig.core.homedir, 'test".tmp')
+    fakeconfig.fake.rf_fileattr = 'test".tmp'
+
+    assert fakeconfig.fake.rf_fileattr == testfile, (
+        'Quote inside the filename must be kept'
+    )
+
+
+def test_fileattribute_absolute_with_quotes(fakeconfig):
+    testfile = os.path.join(fakeconfig.core.homedir, 'test.tmp')
+
+    # double quotes
+    fakeconfig.fake.af_fileattr = '"%s"' % testfile
+    assert fakeconfig.fake.af_fileattr == testfile
+
+    # single quotes
+    fakeconfig.fake.af_fileattr = "'%s'" % testfile
+    assert fakeconfig.fake.af_fileattr == testfile
+
+
+def test_fileattribute_absolute_with_inside_quotes(fakeconfig):
+    testfile = os.path.join(fakeconfig.core.homedir, 'test".tmp')
+
+    # double quotes
+    fakeconfig.fake.af_fileattr = '"%s"' % testfile
+    assert fakeconfig.fake.af_fileattr == testfile
+
+    # single quotes
+    fakeconfig.fake.af_fileattr = "'%s'" % testfile
+    assert fakeconfig.fake.af_fileattr == testfile
+
+
 def test_configparser_env_priority_over_file(monkeypatch, fakeconfig):
     monkeypatch.setenv('SOPEL_CORE_OWNER', 'not_dgw')
     assert fakeconfig.core.owner == 'not_dgw'
