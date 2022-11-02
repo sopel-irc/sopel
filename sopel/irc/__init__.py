@@ -322,6 +322,7 @@ class AbstractBot(abc.ABC):
             message,
             url_schemes=self.settings.core.auto_url_schemes,
             identifier_factory=self.make_identifier,
+            statusmsg_prefixes=self.isupport.get('STATUSMSG'),
         )
         if all(
             cap not in self.enabled_capabilities
@@ -371,6 +372,7 @@ class AbstractBot(abc.ABC):
                 ":{0}!{1}@{2} {3}".format(self.nick, self.user, host, raw),
                 url_schemes=self.settings.core.auto_url_schemes,
                 identifier_factory=self.make_identifier,
+                statusmsg_prefixes=self.isupport.get('STATUSMSG'),
             )
             self.dispatch(pretrigger)
 

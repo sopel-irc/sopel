@@ -118,6 +118,7 @@ class TriggerFactory:
             raw,
             url_schemes=url_schemes,
             identifier_factory=mockbot.make_identifier,
+            statusmsg_prefixes=mockbot.isupport.get('STATUSMSG'),
         )
         return trigger.Trigger(mockbot.settings, pretrigger, match)
 
