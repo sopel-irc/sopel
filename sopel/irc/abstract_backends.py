@@ -24,9 +24,6 @@ class AbstractIRCBackend(abc.ABC):
     backend implementation will not function correctly.
     """
     def __init__(self, bot: AbstractBot):
-        self.utf8only: bool = False
-        """Whether we are operating in utf8-only mode."""
-
         self.bot: AbstractBot = bot
 
     @abc.abstractmethod
@@ -72,7 +69,7 @@ class AbstractIRCBackend(abc.ABC):
             data = str(line, encoding='utf-8')
         except UnicodeDecodeError as e:
             # ...unless the server announces UTF8ONLY
-            if self.utf8only:
+            if 'UTF8ONLY' in self.bot.isupport:
                 raise e
             # not Unicode; let's try CP-1252
             try:

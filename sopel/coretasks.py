@@ -331,10 +331,6 @@ def handle_isupport(bot, trigger):
 
     bot._isupport = bot._isupport.apply(**parameters)
 
-    # update backend's utf8only setting
-    if 'UTF8ONLY' in bot.isupport:
-        bot.backend.utf8only = True
-
     # update bot's mode parser
     if 'CHANMODES' in bot.isupport:
         bot.modeparser.chanmodes = bot.isupport.CHANMODES

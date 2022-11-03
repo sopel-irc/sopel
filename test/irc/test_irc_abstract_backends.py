@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import pytest
 
+from sopel.irc.isupport import ISupport
 from sopel.tests.mocks import MockIRCBackend
 
 
@@ -303,6 +304,7 @@ def test_send_notice_safe():
 
 def test_decode_line_utf8():
     bot = BotCollector()
+    bot.isupport = ISupport()
     backend = MockIRCBackend(bot)
 
     test = "PRIVMSG #sopel :Hello, Martín!"
@@ -311,8 +313,8 @@ def test_decode_line_utf8():
 
 def test_decode_line_utf8only():
     bot = BotCollector()
+    bot.isupport = ISupport(UTF8ONLY=None)
     backend = MockIRCBackend(bot)
-    backend.utf8only = True
 
     test = "PRIVMSG #sopel :Hello, Martín!"
     with pytest.raises(UnicodeDecodeError):
@@ -321,6 +323,7 @@ def test_decode_line_utf8only():
 
 def test_decode_line_nonsense():
     bot = BotCollector()
+    bot.isupport = ISupport()
     backend = MockIRCBackend(bot)
 
     with pytest.raises(ValueError):
@@ -329,6 +332,7 @@ def test_decode_line_nonsense():
 
 def test_decode_line_cp1252():
     bot = BotCollector()
+    bot.isupport = ISupport()
     backend = MockIRCBackend(bot)
 
     test = "PRIVMSG #sopel :Hello, Martín!"
