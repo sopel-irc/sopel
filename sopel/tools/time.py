@@ -263,10 +263,10 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
     :return: a tuple of 2-value tuples, each for a time amount and its label
     :rtype: :class:`tuple`
 
-    This helper function get a time split in years, months, days, hours,
+    This helper function takes a time split into years, months, days, hours,
     minutes, and seconds to return a tuple with the correct label for each
-    unit. The label is pluralized and account for zéro, one, and more than one
-    value per unit::
+    unit. The label is pluralized according to whether the value is zero, one,
+    or more than one::
 
         >>> get_time_unit(days=1, hours=15, minutes=54, seconds=19)
         (
@@ -370,4 +370,5 @@ def seconds_to_human(secs, granularity=2):
         result += " ago"
     else:
         result = "in " + result
+
     return result
