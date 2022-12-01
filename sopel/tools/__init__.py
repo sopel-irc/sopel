@@ -32,10 +32,6 @@ from .memories import (  # NOQA
 from . import time, web  # NOQA
 
 
-# Can be implementation-dependent
-_regex_type = type(re.compile(''))
-
-
 # Long kept for Python compatibility, but it's time we let these go.
 raw_input = deprecated(  # pragma: no cover
     'Use the `input` function directly.',
