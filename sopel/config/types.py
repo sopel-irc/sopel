@@ -741,7 +741,8 @@ class FilenameAttribute(BaseValidated):
                     "Value must be an existing or creatable directory.")
         if not self.directory and not os.path.isfile(value):
             try:
-                open(value, 'w').close()
+                with open(value, 'w') as f:
+                    f.close()
             except (IOError, OSError):
                 raise ValueError("Value must be an existing or creatable file.")
         return value

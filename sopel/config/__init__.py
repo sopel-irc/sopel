@@ -193,10 +193,9 @@ class Config:
             still worth keeping in mind.
 
         """
-        cfgfile = open(self.filename, 'w')
-        self.parser.write(cfgfile)
-        cfgfile.flush()
-        cfgfile.close()
+        with open(self.filename, 'w') as cfgfile:
+            self.parser.write(cfgfile)
+            cfgfile.flush()
 
     def add_section(self, name):
         """Add a new, empty section to the config file.
