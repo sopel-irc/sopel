@@ -23,6 +23,9 @@ __all__ = [
     'CONTROL_STRIKETHROUGH',
     'CONTROL_MONOSPACE',
     'CONTROL_REVERSE',
+    # convenience lists
+    'CONTROL_FORMATTING',
+    'CONTROL_NON_PRINTING',
     # utility functions
     'color',
     'hex_color',
