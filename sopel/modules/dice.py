@@ -229,6 +229,7 @@ def roll(bot, trigger):
             "The type of this equation is, apparently, not a string. "
             "How did you do that, anyway?"
         )
+        return
     except ValueError:
         # As it seems that ValueError is raised if the resulting equation would
         # be too big, give a semi-serious answer to reflect on this.
