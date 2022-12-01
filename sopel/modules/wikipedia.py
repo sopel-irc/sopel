@@ -243,7 +243,7 @@ def mw_section(server, query, section):
                     .format(server, query))
     sections = get(sections_url).json()
 
-    section_number = None
+    fetch_title = section_number = None
 
     for entry in sections['parse']['sections']:
         if entry['anchor'] == section:
@@ -252,15 +252,15 @@ def mw_section(server, query, section):
             # e.g. template documentation (usually pulled in from /doc subpage).
             # One might expect this prop to be nullable because in most cases it
             # will simply repeat the requested page title, but it's always set.
-            fetch_title = quote(entry['fromtitle'])
+            fetch_title = entry.get('fromtitle')
             break
 
-    if not section_number:
+    if section_number is None or fetch_title is None:
         return None
 
     snippet_url = ('https://{0}/w/api.php?format=json&redirects'
                    '&action=parse&page={1}&prop=text'
-                   '&section={2}').format(server, fetch_title, section_number)
+                   '&section={2}').format(server, quote(fetch_title), section_number)
 
     data = get(snippet_url).json()
 
