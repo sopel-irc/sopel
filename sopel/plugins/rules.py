@@ -500,9 +500,9 @@ class RuleMetrics:
 
     def __exit__(
         self,
-        type: Optional[Any] = None,
-        value: Optional[Any] = None,
-        traceback: Optional[Any] = None,
+        type: Optional[Any],
+        value: Optional[Any],
+        traceback: Optional[Any],
     ) -> None:
         self.end()
 

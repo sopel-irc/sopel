@@ -54,6 +54,7 @@ def _check_failed(bot):
 @plugin.interval(wait_time)
 def check_version(bot):
     version = version_info
+    r = None
     success = False
 
     try:
@@ -64,7 +65,7 @@ def check_version(bot):
         success = True
 
     try:
-        if success:
+        if r is not None:
             info = r.json()
     except json.JSONDecodeError:
         _check_failed(bot)
