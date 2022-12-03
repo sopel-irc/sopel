@@ -788,7 +788,7 @@ def _send_who(bot, channel):
         # that it has the requested format. WHO replies with different
         # querytypes in the response were initiated elsewhere and will be
         # ignored.
-        bot.write(['WHO', channel, 'a%nuachtf,' + CORE_QUERYTYPE])
+        bot.write(['WHO', channel, 'a%nuachrtf,' + CORE_QUERYTYPE])
     else:
         # We might be on an old network, but we still care about keeping our
         # user list updated
@@ -1395,17 +1395,17 @@ def recv_whox(bot, trigger):
         # Ignored, some plugin probably called WHO
         LOGGER.debug("Ignoring WHO reply for channel '%s'; not queried by coretasks", trigger.args[1])
         return
-    if len(trigger.args) != 8:
+    if len(trigger.args) != 9:
         LOGGER.warning(
             "While populating `bot.accounts` a WHO response was malformed.")
         return
-    _, _, channel, user, host, nick, status, account = trigger.args
+    _, _, channel, user, host, nick, status, account, realname = trigger.args
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
-    _record_who(bot, channel, user, host, nick, account, away, modes)
+    _record_who(bot, channel, user, host, nick, realname, account, away, modes)
 
 
-def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=None):
+def _record_who(bot, channel, user, host, nick, realname=None, account=None, away=None, modes=None):
     nick = bot.make_identifier(nick)
     channel = bot.make_identifier(channel)
     if nick not in bot.users:
@@ -1418,6 +1418,8 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
             usr.host = host
         if usr.user is None and user:
             usr.user = user
+    if realname:
+        usr.realname = realname
     if account == '0':
         usr.account = None
     else:
@@ -1452,9 +1454,10 @@ def _record_who(bot, channel, user, host, nick, account=None, away=None, modes=N
 def recv_who(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is not enabled."""
     channel, user, host, _, nick, status = trigger.args[1:7]
+    realname = trigger.args[-1].partition(' ')[-1]
     away = 'G' in status
     modes = ''.join([c for c in status if c in '~&@%+!'])
-    _record_who(bot, channel, user, host, nick, away=away, modes=modes)
+    _record_who(bot, channel, user, host, nick, realname, away=away, modes=modes)
 
 
 @plugin.event('AWAY')
