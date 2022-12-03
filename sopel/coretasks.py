@@ -38,7 +38,9 @@ from sopel.tools import events, jobs, SopelMemory, target
 
 LOGGER = logging.getLogger(__name__)
 
-CORE_QUERYTYPE = '999'
+WHOX_QUERY = '%nuachrtf'
+"""List of WHOX flags coretasks requests."""
+WHOX_QUERYTYPE = '999'
 """WHOX querytype to indicate requests/responses from coretasks.
 
 Other plugins should use a different querytype.
@@ -783,12 +785,12 @@ def _remove_from_channel(bot, nick, channel):
 def _send_who(bot, channel):
     if 'WHOX' in bot.isupport:
         # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
-        # Needed for accounts in WHO replies. The `CORE_QUERYTYPE` parameter
+        # Needed for accounts in WHO replies. The `WHOX_QUERYTYPE` parameter
         # for WHO is used to identify the reply from the server and confirm
         # that it has the requested format. WHO replies with different
         # querytypes in the response were initiated elsewhere and will be
         # ignored.
-        bot.write(['WHO', channel, 'a%nuachrtf,' + CORE_QUERYTYPE])
+        bot.write(['WHO', channel, ','.join(WHOX_QUERY, WHOX_QUERYTYPE)])
     else:
         # We might be on an old network, but we still care about keeping our
         # user list updated
@@ -1391,11 +1393,11 @@ def account_notify(bot, trigger):
 @plugin.priority('medium')
 def recv_whox(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is enabled."""
-    if len(trigger.args) < 2 or trigger.args[1] != CORE_QUERYTYPE:
+    if len(trigger.args) < 2 or trigger.args[1] != WHOX_QUERYTYPE:
         # Ignored, some plugin probably called WHO
         LOGGER.debug("Ignoring WHO reply for channel '%s'; not queried by coretasks", trigger.args[1])
         return
-    if len(trigger.args) != 9:
+    if len(trigger.args) != len(WHOX_QUERY):
         LOGGER.warning(
             "While populating `bot.accounts` a WHO response was malformed.")
         return
