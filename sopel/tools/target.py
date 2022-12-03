@@ -23,7 +23,7 @@ class User:
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
     __slots__ = (
-        'nick', 'user', 'host', 'channels', 'account', 'away',
+        'nick', 'user', 'host', 'realname', 'channels', 'account', 'away',
     )
 
     def __init__(
@@ -39,6 +39,11 @@ class User:
         """The user's local username."""
         self.host = host
         """The user's hostname."""
+        self.realname = None
+        """The user's realname.
+
+        Will be ``None`` if not received from the server yet.
+        """
         self.channels: Dict[identifiers.Identifier, 'Channel'] = {}
         """The channels the user is in.
 
