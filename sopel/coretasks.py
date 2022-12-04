@@ -275,7 +275,7 @@ def startup(bot, trigger):
             bot.say(privmsg, bot.config.core.owner)
 
     # set flag
-    bot.connection_registered = True
+    bot._connection_registered = True
 
     # handle auth method
     auth_after_register(bot)

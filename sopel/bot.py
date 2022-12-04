@@ -976,6 +976,8 @@ class Sopel(irc.AbstractBot):
     def _shutdown(self) -> None:
         """Internal bot shutdown method."""
         LOGGER.info("Shutting down")
+        # Proactively tell plugins (at least the ones that bother to check)
+        self._connection_registered = False
         # Stop Job Scheduler
         LOGGER.info("Stopping the Job Scheduler.")
         self._scheduler.stop()

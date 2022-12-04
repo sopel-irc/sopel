@@ -222,7 +222,9 @@ def test_execute_perform_send_commands(mockbot):
     ]
 
     mockbot.config.core.commands_on_connect = commands
-    mockbot.connection_registered = True
+    # For testing, pretend connection already happened
+    mockbot.backend.connected = True
+    mockbot._connection_registered = True
 
     coretasks._execute_perform(mockbot)
     assert mockbot.backend.message_sent == rawlist(*commands)
@@ -234,7 +236,9 @@ def test_execute_perform_replaces_nickname(mockbot):
     sent_command = 'MODE {} +Xxw'.format(mockbot.config.core.nick)
 
     mockbot.config.core.commands_on_connect = [command, ]
-    mockbot.connection_registered = True  # For testing, simulate connected
+    # For testing, pretend connection already happened
+    mockbot.backend.connected = True
+    mockbot._connection_registered = True
 
     coretasks._execute_perform(mockbot)
     assert mockbot.backend.message_sent == rawlist(sent_command)
