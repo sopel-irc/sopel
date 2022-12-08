@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
-import typing
+from typing import TYPE_CHECKING
 
 from .identifiers import Identifier
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from typing import Callable, Optional
 
     IdentifierFactory = Callable[[str], Identifier]

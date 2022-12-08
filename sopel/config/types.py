@@ -101,8 +101,10 @@ class StaticSection:
         attribute = getattr(self.__class__, name)
         if default is NO_DEFAULT and not attribute.is_secret:
             try:
+                # get current value of this setting to use as prompt default
                 default = getattr(self, name)
             except AttributeError:
+                # there is no current value; that's OK
                 pass
             except ValueError:
                 print('The configured value for this option was invalid.')
