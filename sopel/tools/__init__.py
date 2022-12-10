@@ -119,6 +119,12 @@ class OutputRedirect:
     A simplified object used to write to both the terminal and a log file.
     """
 
+    @deprecated(
+        "Remnant of Sopel's pre-7.0 logging system. "
+        "You shouldn't have been using this anyway.",
+        version='8.0',
+        removed_in='8.1',
+    )
     def __init__(self, logpath, stderr=False, quiet=False):
         """Create an object which will log to both a file and the terminal.
 
