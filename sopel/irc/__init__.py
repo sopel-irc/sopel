@@ -6,9 +6,15 @@ the Sopel bot.
 
 In particular, it defines the interface for the IRC backend
 (:class:`~sopel.irc.abstract_backends.AbstractIRCBackend`), and the
-interface for the bot itself (:class:`~sopel.irc.AbstractBot`). This is all
-internal code that isn't supposed to be used directly by a plugin developer,
-who should worry about :class:`sopel.bot.Sopel` only.
+interface for the bot itself (:class:`~sopel.irc.AbstractBot`).
+
+.. warning::
+
+    This is all internal code, not intended for direct use by plugins. It is
+    subject to change between versions, even patch releases, without any
+    advance warning.
+
+    Please use the public APIs on :class:`bot <sopel.bot.Sopel>`.
 
 .. important::
 

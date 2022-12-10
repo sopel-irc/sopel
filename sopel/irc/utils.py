@@ -1,3 +1,12 @@
+""":mod:`sopel.irc.utils` contains low-level tools for IRC protocol handling.
+
+.. warning::
+
+    This is all internal code, not intended for direct use by plugins. It is
+    subject to change between versions, even patch releases, without any
+    advance notice.
+
+"""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.

@@ -1,3 +1,14 @@
+""":mod:`sopel.irc.backends` defines Sopel's IRC connection handlers.
+
+.. warning::
+
+    This is all internal code, not intended for direct use by plugins. It is
+    subject to change between versions, even patch releases, without any
+    advance warning.
+
+    Please use the public APIs on :class:`bot <sopel.bot.Sopel>`.
+
+"""
 # Copyright 2019, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
 # Licensed under the Eiffel Forum License 2.
