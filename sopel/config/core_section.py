@@ -12,7 +12,7 @@ from sopel.config.types import (
     StaticSection,
     ValidatedAttribute,
 )
-from sopel.tools import Identifier
+from sopel.tools.identifiers import Identifier
 
 
 COMMAND_DEFAULT_PREFIX = r'\.'

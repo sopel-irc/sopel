@@ -32,7 +32,6 @@ import os.path
 import re
 
 from sopel.lifecycle import deprecated
-from sopel.tools import get_input
 
 
 LOGGER = logging.getLogger(__name__)
@@ -191,7 +190,7 @@ class BaseValidated(abc.ABC):
         if self.is_secret:
             value = getpass.getpass(prompt + ' (hidden input) ')
         else:
-            value = get_input(prompt + ' ')
+            value = input(prompt + ' ')
 
         if not value and default is NO_DEFAULT:
             raise ValueError("You must provide a value for this option.")
@@ -362,7 +361,7 @@ class BooleanAttribute(BaseValidated):
         the ``default`` value is returned instead.
         """
         prompt = '{} ({})'.format(prompt, 'Y/n' if default else 'y/N')
-        value = get_input(prompt + ' ') or default
+        value = input(prompt + ' ') or default
         section = getattr(parent, section_name)
         return self._parse(value, parent, section)
 
@@ -607,7 +606,7 @@ class ListAttribute(BaseValidated):
             default = []
         print(prompt)
         values = []
-        value = get_input(each_prompt + ' ') or default
+        value = input(each_prompt + ' ') or default
         if (value == default) and not default:
             value = ''
         while value:
@@ -615,7 +614,7 @@ class ListAttribute(BaseValidated):
                 values.extend(value)
             else:
                 values.append(value)
-            value = get_input(each_prompt + ' ')
+            value = input(each_prompt + ' ')
 
         section = getattr(parent, section_name)
         values = self._serialize(values, parent, section)
