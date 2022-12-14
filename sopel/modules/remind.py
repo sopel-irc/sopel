@@ -160,7 +160,7 @@ def shutdown(bot):
 @plugin.interval(2.5)
 def remind_monitoring(bot):
     """Check for reminder"""
-    if not bot.backend.is_connected():
+    if not bot.connection_registered:
         # IRC connection not ready; wait until next check.
         return
 
