@@ -79,7 +79,7 @@ def searchxkcd_search(query):
         if not hits:
             return None
         first = hits[0]['objectID']
-    except (JSONDecodeError, KeyError, IndexError):
+    except (JSONDecodeError, LookupError):
         LOGGER.debug("Data format from searchxkcd API could not be understood.")
         return None
 
