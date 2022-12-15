@@ -15,7 +15,7 @@ import re
 import requests
 
 from sopel import plugin
-from sopel.modules.search import bing_search
+from sopel.modules.search import duck_search
 
 PLUGIN_OUTPUT_PREFIX = '[xkcd] '
 
@@ -45,7 +45,7 @@ def get_info(number=None):
 
 
 def web_search(query):
-    url = bing_search(query + sites_query)
+    url = duck_search(query + sites_query)
     if not url:
         return None
     match = re.match(r'(?:https?://)?(?:m\.)?xkcd\.com/(\d+)/?', url)
