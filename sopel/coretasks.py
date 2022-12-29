@@ -790,7 +790,7 @@ def _send_who(bot, channel):
         # that it has the requested format. WHO replies with different
         # querytypes in the response were initiated elsewhere and will be
         # ignored.
-        bot.write(['WHO', channel, ','.join(WHOX_QUERY, WHOX_QUERYTYPE)])
+        bot.write(['WHO', channel, '{},{}'.format(WHOX_QUERY, WHOX_QUERYTYPE)])
     else:
         # We might be on an old network, but we still care about keeping our
         # user list updated
