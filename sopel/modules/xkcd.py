@@ -9,6 +9,8 @@ https://sopel.chat
 """
 from __future__ import annotations
 
+from json import JSONDecodeError
+import logging
 import random
 import re
 
@@ -17,7 +19,12 @@ import requests
 from sopel import plugin
 from sopel.modules.search import duck_search
 
+LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[xkcd] '
+
+# used with permission of site owner
+# https://twitter.com/Dmdboi/status/1589202274999767041
+SEARCHXKCD_API = 'https://gq67pznq1k.execute-api.eu-west-1.amazonaws.com/search'
 
 ignored_sites = [
     # For searching the web
@@ -51,6 +58,32 @@ def web_search(query):
     match = re.match(r'(?:https?://)?(?:m\.)?xkcd\.com/(\d+)/?', url)
     if match:
         return match.group(1)
+
+
+def searchxkcd_search(query):
+    parameters = {
+        'q': query,
+        'page': 0,
+    }
+    try:
+        response = requests.post(SEARCHXKCD_API, params=parameters)
+    except requests.exceptions.ConnectionError as e:
+        LOGGER.debug("Unable to reach searchxkcd API: %s", e)
+        return None
+    except Exception as e:
+        LOGGER.debug("Unexpected error calling searchxkcd API: %s", e)
+        return None
+
+    try:
+        hits = response.json()['results']['hits']
+        if not hits:
+            return None
+        first = hits[0]['objectID']
+    except (JSONDecodeError, LookupError):
+        LOGGER.debug("Data format from searchxkcd API could not be understood.")
+        return None
+
+    return first
 
 
 @plugin.command('xkcd')
@@ -90,7 +123,10 @@ def xkcd(bot, trigger):
             if (query.lower() == "latest" or query.lower() == "newest"):
                 requested = latest
             else:
-                number = web_search(query)
+                number = searchxkcd_search(query)
+                if number is None:
+                    # generic web-search engine as fallback
+                    number = web_search(query)
                 if not number:
                     bot.reply('Could not find any comics for that query.')
                     return
