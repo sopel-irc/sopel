@@ -8,6 +8,7 @@ https://sopel.chat
 from __future__ import annotations
 
 from html.parser import HTMLParser
+import logging
 import re
 
 from requests import get
@@ -16,6 +17,8 @@ from sopel import plugin
 from sopel.config import types
 from sopel.tools.web import quote, unquote
 
+
+LOGGER = logging.getLogger(__name__)
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
@@ -272,18 +275,72 @@ def mw_section(server, query, section):
     return text
 
 
+def say_image_description(bot, trigger, server, image):
+    desc = mw_image_description(server, image)
+
+    if desc:
+        bot.say(desc, truncation=" […]")
+
+
+def mw_image_description(server, image):
+    """Retrieves the description for the given image."""
+    params = "&".join([
+        "action=query",
+        "prop=imageinfo",
+        "format=json",
+        "indexpageids=1",
+        "iiprop=extmetadata",
+        "iiextmetadatafilter=ImageDescription",
+        "iilimit=1",
+        "titles={image}".format(image=image),
+    ])
+    url = "https://{server}/w/api.php?{params}".format(server=server, params=params)
+
+    response = get(url)
+    json = response.json()
+
+    try:
+        query_data = json["query"]
+        pageids = query_data["pageids"]
+        pages = query_data["pages"]
+
+        page = pages[pageids[0]]
+
+        raw_desc = page["imageinfo"][0]["extmetadata"]["ImageDescription"]["value"]
+
+    except LookupError:
+        LOGGER.exception("Error getting image description for %r, response was: %r", image, json)
+        return None
+
+    # Some descriptions contain markup, use WikiParser to discard that
+    parser = WikiParser(image)
+    parser.feed(raw_desc)
+    desc = parser.get_result()
+    desc = ' '.join(desc.split())  # collapse multiple whitespace chars
+
+    return desc
+
+
 # Matches a wikipedia page (excluding spaces and #, but not /File: links), with a separate optional field for the section
 @plugin.url(r'https?:\/\/([a-z]+(?:\.m)?\.wikipedia\.org)\/wiki\/((?!File\:)[^ #]+)#?([^ ]*)')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
-    if match.group(3):
-        if match.group(3).startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
-            say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
+    server = match.group(1)
+    query = unquote(match.group(2))
+    section = unquote(match.group(3))
+
+    if section:
+        if section.startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
+            say_snippet(bot, trigger, server, query, show_url=False)
+        elif section.startswith('/media'):
+            # gh2316: media fragments are usually images; try to get an image description
+            image = section[7:]  # strip '/media' prefix in pre-3.9 friendly way
+            say_image_description(bot, trigger, server, image)
         else:
-            say_section(bot, trigger, match.group(1), unquote(match.group(2)), unquote(match.group(3)))
+            say_section(bot, trigger, server, query, section)
     else:
-        say_snippet(bot, trigger, match.group(1), unquote(match.group(2)), show_url=False)
+        say_snippet(bot, trigger, server, query, show_url=False)
 
 
 @plugin.command('wikipedia', 'wp')
