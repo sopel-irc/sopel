@@ -1,4 +1,11 @@
-"""Tools for getting and displaying the time."""
+"""Tools for getting and displaying the time.
+
+.. versionadded:: 5.3
+.. versionchanged:: 6.0
+
+    Moved from ``willie`` namespace to ``sopel`` namespace for project rename.
+
+"""
 from __future__ import annotations
 
 import datetime
@@ -34,6 +41,8 @@ def validate_timezone(zone):
     case-insensitivity will be expected.
 
     If the zone is not valid, ``ValueError`` will be raised.
+
+    .. versionadded:: 6.0
     """
     if zone is None:
         return None
@@ -52,6 +61,8 @@ def validate_format(tformat):
     :param str tformat: the format string to validate
     :return: the format string, if valid
     :raise ValueError: when ``tformat`` is not a valid time format string
+
+    .. versionadded:: 6.0
     """
     try:
         time = datetime.datetime.utcnow()
@@ -72,6 +83,8 @@ def get_nick_timezone(db, nick):
 
     If a timezone cannot be found for ``nick``, or if it is invalid, ``None``
     will be returned.
+
+    .. versionadded:: 7.0
     """
     try:
         return validate_timezone(db.get_nick_value(nick, 'timezone'))
@@ -90,6 +103,8 @@ def get_channel_timezone(db, channel):
 
     If a timezone cannot be found for ``channel``, or if it is invalid,
     ``None`` will be returned.
+
+    .. versionadded:: 7.0
     """
     try:
         return validate_timezone(db.get_channel_value(channel, 'timezone'))
@@ -225,6 +240,7 @@ def seconds_to_split(seconds):
         >>> seconds_to_split(143659)
         (0, 0, 1, 15, 54, 19)
 
+    .. versionadded:: 7.1
     """
     years, seconds_left = divmod(int(seconds), YEARS)
     months, seconds_left = divmod(seconds_left, MONTHS)
@@ -247,10 +263,10 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
     :return: a tuple of 2-value tuples, each for a time amount and its label
     :rtype: :class:`tuple`
 
-    This helper function get a time split in years, months, days, hours,
+    This helper function takes a time split into years, months, days, hours,
     minutes, and seconds to return a tuple with the correct label for each
-    unit. The label is pluralized and account for zéro, one, and more than one
-    value per unit::
+    unit. The label is pluralized according to whether the value is zero, one,
+    or more than one::
 
         >>> get_time_unit(days=1, hours=15, minutes=54, seconds=19)
         (
@@ -266,6 +282,8 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
 
         >>> get_time_unit(*seconds_to_split(143659))
         # ... same result as the example above
+
+    .. versionadded:: 7.1
 
     .. note::
 
@@ -326,6 +344,7 @@ def seconds_to_human(secs, granularity=2):
         >>> seconds_to_human(3672, granularity=1)
         '1 hour ago'
 
+    .. versionadded:: 7.0
     """
     if isinstance(secs, datetime.timedelta):
         secs = secs.total_seconds()
@@ -351,4 +370,5 @@ def seconds_to_human(secs, granularity=2):
         result += " ago"
     else:
         result = "in " + result
+
     return result
