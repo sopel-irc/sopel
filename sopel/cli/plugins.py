@@ -5,7 +5,7 @@ import argparse
 import inspect
 import operator
 
-from sopel import config, plugins, tools
+from sopel import config, plugins
 from . import utils
 
 
@@ -254,7 +254,7 @@ def handle_show(options):
 
     # plugin does not exist
     if plugin_name not in usable_plugins:
-        tools.stderr('No plugin named %s' % plugin_name)
+        utils.stderr('No plugin named %s' % plugin_name)
         return ERR_CODE
 
     plugin, is_enabled = usable_plugins[plugin_name]
@@ -313,32 +313,32 @@ def handle_configure(options):
 
     # plugin does not exist
     if plugin_name not in usable_plugins:
-        tools.stderr('No plugin named %s' % plugin_name)
+        utils.stderr('No plugin named %s' % plugin_name)
         return ERR_CODE
 
     plugin, is_enabled = usable_plugins[plugin_name]
     try:
         plugin.load()
     except Exception as error:
-        tools.stderr('Cannot load plugin %s: %s' % (plugin_name, error))
+        utils.stderr('Cannot load plugin %s: %s' % (plugin_name, error))
         return ERR_CODE
 
     if not plugin.has_configure():
-        tools.stderr('Nothing to configure for plugin %s' % plugin_name)
+        utils.stderr('Nothing to configure for plugin %s' % plugin_name)
         return 0  # nothing to configure is not exactly an error case
 
     print('Configure %s' % plugin.get_label())
     try:
         plugin.configure(settings)
     except KeyboardInterrupt:
-        tools.stderr(
+        utils.stderr(
             '\nOperation cancelled; the config file has not been modified.')
         return ERR_CODE  # cancelled operation
 
     settings.save()
 
     if not is_enabled:
-        tools.stderr(
+        utils.stderr(
             "Plugin {0} has been configured but is not enabled. "
             "Use 'sopel-plugins enable {0}' to enable it".format(plugin_name)
         )
@@ -350,7 +350,7 @@ def _handle_disable_plugin(settings, plugin_name, force):
     excluded = settings.core.exclude
     # nothing left to do if already excluded
     if plugin_name in excluded:
-        tools.stderr('Plugin %s already disabled.' % plugin_name)
+        utils.stderr('Plugin %s already disabled.' % plugin_name)
         return False
 
     # recalculate state: at the moment, the plugin is not in the excluded list
@@ -364,7 +364,7 @@ def _handle_disable_plugin(settings, plugin_name, force):
 
     # if not enabled at this point, exclude if options.force is used
     if not is_enabled and not force:
-        tools.stderr(
+        utils.stderr(
             'Plugin %s is disabled but not excluded; '
             'use -f/--force to force its exclusion.'
             % plugin_name)
@@ -380,7 +380,7 @@ def display_unknown_plugins(unknown_plugins):
     :param list unknown_plugins: list of unknown plugins
     """
     # at least one of the plugins does not exist
-    tools.stderr(utils.get_many_text(
+    utils.stderr(utils.get_many_text(
         unknown_plugins,
         one='No plugin named {item}.',
         two='No plugin named {first} or {second}.',
@@ -406,7 +406,7 @@ def handle_disable(options):
 
     # coretasks is sacred
     if 'coretasks' in plugin_names:
-        tools.stderr('Plugin coretasks cannot be disabled.')
+        utils.stderr('Plugin coretasks cannot be disabled.')
         return ERR_CODE  # do nothing and return an error code
 
     unknown_plugins = [
@@ -457,7 +457,7 @@ def _handle_enable_plugin(settings, usable_plugins, plugin_name, allow_only):
 
     # coretasks is sacred
     if plugin_name == 'coretasks':
-        tools.stderr('Plugin coretasks is always enabled.')
+        utils.stderr('Plugin coretasks is always enabled.')
         return False
 
     # is it already enabled, but should we enforce anything?
@@ -465,10 +465,10 @@ def _handle_enable_plugin(settings, usable_plugins, plugin_name, allow_only):
     if is_enabled and not allow_only:
         # already enabled, and no allow-only option: all good
         if plugin_name in enabled:
-            tools.stderr('Plugin %s is already enabled.' % plugin_name)
+            utils.stderr('Plugin %s is already enabled.' % plugin_name)
         else:
             # suggest to use --allow-only option
-            tools.stderr(
+            utils.stderr(
                 'Plugin %s is enabled; '
                 'use option -a/--allow-only to enforce allow only policy.'
                 % plugin_name)
@@ -485,7 +485,7 @@ def _handle_enable_plugin(settings, usable_plugins, plugin_name, allow_only):
         ]
     elif plugin_name in enabled:
         # not excluded, and already in enabled list: all good
-        tools.stderr('Plugin %s is already enabled' % plugin_name)
+        utils.stderr('Plugin %s is already enabled' % plugin_name)
         return False
 
     if plugin_name not in enabled and (enabled or allow_only):
@@ -563,9 +563,9 @@ def main():
         elif action == 'enable':
             return handle_enable(options)
     except KeyboardInterrupt:
-        tools.stderr('Bye!')
+        utils.stderr('Bye!')
         return ERR_CODE
     except config.ConfigurationNotFound as err:
-        tools.stderr(err)
-        tools.stderr('Use `sopel-config init` to create a new config file.')
+        utils.stderr(err)
+        utils.stderr('Use `sopel-config init` to create a new config file.')
         return ERR_CODE

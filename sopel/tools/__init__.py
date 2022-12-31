@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import codecs
 import logging
-import os
 import re
 import sys
 
@@ -119,6 +118,12 @@ class OutputRedirect:
     A simplified object used to write to both the terminal and a log file.
     """
 
+    @deprecated(
+        "Remnant of Sopel's pre-7.0 logging system. "
+        "You shouldn't have been using this anyway.",
+        version='8.0',
+        removed_in='8.1',
+    )
     def __init__(self, logpath, stderr=False, quiet=False):
         """Create an object which will log to both a file and the terminal.
 
@@ -165,36 +170,28 @@ class OutputRedirect:
             sys.__stdout__.flush()
 
 
+@deprecated(
+    "Plugins should use a logger object.",
+    version='8.0',
+    removed_in='8.1',
+)
 def stderr(string):
-    """Print the given ``string`` to stderr.
+    # don't like importing inside functions, but circular imports ensue otherwise
+    from sopel.cli.utils import stderr as _stderr
 
-    :param str string: the string to output
-
-    This is equivalent to ``print >> sys.stderr, string``
-    """
-    print(string, file=sys.stderr)
+    return _stderr(string)
 
 
+@deprecated(
+    "Function for internal use, moved to `sopel.cli.utils`.",
+    version='8.0',
+    removed_in='8.1',
+)
 def check_pid(pid):
-    """Check if a process is running with the given ``PID``.
+    # don't like importing inside functions, but circular imports ensue otherwise
+    from sopel.cli.utils import check_pid as _check_pid
 
-    :param int pid: PID to check
-    :return bool: ``True`` if the given PID is running, ``False`` otherwise
-
-    *Availability: POSIX systems only.*
-
-    .. note::
-        Matching the :py:func:`os.kill` behavior this function needs on Windows
-        was rejected in
-        `Python issue #14480 <https://bugs.python.org/issue14480>`_, so
-        :py:func:`check_pid` cannot be used on Windows systems.
-    """
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    else:
-        return True
+    return _check_pid(pid)
 
 
 def get_hostmask_regex(mask):

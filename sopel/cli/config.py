@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import os
 
-from sopel import tools
 from . import utils
 
 
@@ -108,8 +107,8 @@ def handle_list(options):
             print(name)
 
     if not found:
-        tools.stderr('No config file found at this location: %s' % configdir)
-        tools.stderr('Use `sopel-config init` to create a new config file.')
+        utils.stderr('No config file found at this location: %s' % configdir)
+        utils.stderr('Use `sopel-config init` to create a new config file.')
 
     return 0  # successful operation
 
@@ -132,20 +131,20 @@ def handle_init(options):
     config_name, ext = os.path.splitext(config_filename)
 
     if ext and ext != '.cfg':
-        tools.stderr('Configuration wizard accepts .cfg files only')
+        utils.stderr('Configuration wizard accepts .cfg files only')
         return 1
     elif not ext:
         config_filename = config_name + '.cfg'
 
     if os.path.isfile(config_filename):
-        tools.stderr('Configuration file %s already exists' % config_filename)
+        utils.stderr('Configuration file %s already exists' % config_filename)
         return 1
 
     print('Starting Sopel config wizard for: %s' % config_filename)
     try:
         utils.wizard(config_name)
     except KeyboardInterrupt:
-        tools.stderr('\nOperation cancelled; no file has been created.')
+        utils.stderr('\nOperation cancelled; no file has been created.')
         return 1  # cancelled operation
 
     return 0  # successful operation
@@ -163,7 +162,7 @@ def handle_get(options):
     try:
         settings = utils.load_settings(options)
     except Exception as error:
-        tools.stderr(error)
+        utils.stderr(error)
         return 2
 
     section = options.section
@@ -171,10 +170,10 @@ def handle_get(options):
 
     # Making sure the section.option exists
     if not settings.parser.has_section(section):
-        tools.stderr('Section "%s" does not exist' % section)
+        utils.stderr('Section "%s" does not exist' % section)
         return 1
     if not settings.parser.has_option(section, option):
-        tools.stderr(
+        utils.stderr(
             'Section "%s" does not have a "%s" option' % (section, option))
         return 1
 

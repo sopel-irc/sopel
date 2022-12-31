@@ -16,14 +16,14 @@ import signal
 import sys
 import time
 
-from sopel import __version__, bot, config, logger, tools
+from sopel import __version__, bot, config, logger
 from . import utils
 
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
 # from source on an unsupported version of Python.
 if sys.version_info < (3, 7):
-    tools.stderr('Error: Sopel requires Python 3.7+.')
+    utils.stderr('Error: Sopel requires Python 3.7+.')
     sys.exit(1)
 
 LOGGER = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ def run(settings, pid_file, daemon=False):
             p = bot.Sopel(settings, daemon=daemon)
             p.setup()
         except KeyboardInterrupt:
-            tools.stderr('Bot setup interrupted')
+            utils.stderr('Bot setup interrupted')
             break
         except Exception:
             # In that case, there is nothing we can do.
@@ -71,7 +71,7 @@ def run(settings, pid_file, daemon=False):
             # direct access to the exception traceback right in the console.
             # Besides, we can't know if logging has been set up or not, so
             # we can't rely on that here.
-            tools.stderr('Unexpected error in bot setup')
+            utils.stderr('Unexpected error in bot setup')
             raise
 
         try:
@@ -204,7 +204,7 @@ def check_not_root():
         if os.environ.get("USERNAME") == "Administrator":
             raise RuntimeError('Error: Do not run Sopel as Administrator.')
     else:
-        tools.stderr(
+        utils.stderr(
             "Warning: %s is an uncommon operating system platform. "
             "Sopel should still work, but please contact Sopel's developers "
             "if you experience issues."
@@ -305,11 +305,11 @@ def command_start(opts):
     try:
         settings = get_configuration(opts)
     except config.ConfigurationError as e:
-        tools.stderr(e)
+        utils.stderr(e)
         return ERR_CODE_NO_RESTART
 
     if settings.core.not_configured:
-        tools.stderr('Bot is not configured, can\'t start')
+        utils.stderr('Bot is not configured, can\'t start')
         return ERR_CODE_NO_RESTART
 
     # Step Two: Handle process-lifecycle options and manage the PID file
@@ -317,10 +317,10 @@ def command_start(opts):
     pid_file_path = get_pid_filename(settings, pid_dir)
     pid = get_running_pid(pid_file_path)
 
-    if pid is not None and tools.check_pid(pid):
-        tools.stderr('There\'s already a Sopel instance running '
+    if pid is not None and utils.check_pid(pid):
+        utils.stderr('There\'s already a Sopel instance running '
                      'with this config file.')
-        tools.stderr('Try using either the `sopel stop` '
+        utils.stderr('Try using either the `sopel stop` '
                      'or the `sopel restart` command.')
         return ERR_CODE
 
@@ -370,11 +370,11 @@ def command_stop(opts):
     try:
         settings = utils.load_settings(opts)
     except config.ConfigurationNotFound as error:
-        tools.stderr('Configuration "%s" not found' % error.filename)
+        utils.stderr('Configuration "%s" not found' % error.filename)
         return ERR_CODE
 
     if settings.core.not_configured:
-        tools.stderr('Sopel is not configured, can\'t stop')
+        utils.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
     # Configure logging
@@ -384,17 +384,17 @@ def command_stop(opts):
     filename = get_pid_filename(settings, settings.core.pid_dir)
     pid = get_running_pid(filename)
 
-    if pid is None or not tools.check_pid(pid):
-        tools.stderr('Sopel is not running!')
+    if pid is None or not utils.check_pid(pid):
+        utils.stderr('Sopel is not running!')
         return ERR_CODE
 
     # Stop Sopel
     if opts.kill:
-        tools.stderr('Killing the Sopel')
+        utils.stderr('Killing the Sopel')
         os.kill(pid, signal.SIGKILL)
         return
 
-    tools.stderr('Signaling Sopel to stop gracefully')
+    utils.stderr('Signaling Sopel to stop gracefully')
     if hasattr(signal, 'SIGUSR1'):
         os.kill(pid, signal.SIGUSR1)
     else:
@@ -413,11 +413,11 @@ def command_restart(opts):
     try:
         settings = utils.load_settings(opts)
     except config.ConfigurationNotFound as error:
-        tools.stderr('Configuration "%s" not found' % error.filename)
+        utils.stderr('Configuration "%s" not found' % error.filename)
         return ERR_CODE
 
     if settings.core.not_configured:
-        tools.stderr('Sopel is not configured, can\'t stop')
+        utils.stderr('Sopel is not configured, can\'t stop')
         return ERR_CODE
 
     # Configure logging
@@ -427,11 +427,11 @@ def command_restart(opts):
     filename = get_pid_filename(settings, settings.core.pid_dir)
     pid = get_running_pid(filename)
 
-    if pid is None or not tools.check_pid(pid):
-        tools.stderr('Sopel is not running!')
+    if pid is None or not utils.check_pid(pid):
+        utils.stderr('Sopel is not running!')
         return ERR_CODE
 
-    tools.stderr('Asking Sopel to restart')
+    utils.stderr('Asking Sopel to restart')
     if hasattr(signal, 'SIGUSR2'):
         os.kill(pid, signal.SIGUSR2)
     else:
@@ -488,7 +488,7 @@ def main(argv=None):
         print("\n\nInterrupted")
         return ERR_CODE
     except RuntimeError as err:
-        tools.stderr(str(err))
+        utils.stderr(str(err))
         return ERR_CODE
 
 

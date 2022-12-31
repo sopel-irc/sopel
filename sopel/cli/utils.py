@@ -3,8 +3,9 @@ from __future__ import annotations
 import inspect
 import logging
 import os
+import sys
 
-from sopel import config, plugins, tools
+from sopel import config, plugins
 
 # Allow clean import *
 __all__ = [
@@ -88,7 +89,7 @@ def wizard(filename):
             os.makedirs(configdir)
             print('Config directory created')
     except Exception:
-        tools.stderr('There was a problem creating {}'.format(configdir))
+        stderr('There was a problem creating {}'.format(configdir))
         raise
 
     name, ext = os.path.splitext(basename)
@@ -115,8 +116,8 @@ def wizard(filename):
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
-                     "This shouldn't happen. Check permissions.")
+        stderr("Encountered an error while writing the config file. "
+               "This shouldn't happen. Check permissions.")
         raise
 
     print("Config file written successfully!")
@@ -141,8 +142,8 @@ def plugins_wizard(filename):
     try:
         settings.save()
     except Exception:  # TODO: Be specific
-        tools.stderr("Encountered an error while writing the config file. "
-                     "This shouldn't happen. Check permissions.")
+        stderr("Encountered an error while writing the config file. "
+               "This shouldn't happen. Check permissions.")
         raise
 
     return settings
@@ -357,3 +358,46 @@ def get_many_text(items, one, two, many):
         message = many.format(left=left, last=last)
 
     return message
+
+
+def check_pid(pid):
+    """Check if a process is running with the given ``PID``.
+
+    :param int pid: PID to check
+    :return bool: ``True`` if the given PID is running, ``False`` otherwise
+
+    *Availability: POSIX systems only.*
+
+    .. versionchanged:: 8.0
+
+        Moved from :mod:`sopel.tools` to :mod:`sopel.cli.utils`.
+
+    .. note::
+
+        Matching the :py:func:`os.kill` behavior this function needs on Windows
+        was rejected in
+        `Python issue #14480 <https://bugs.python.org/issue14480>`_, so
+        :func:`check_pid` cannot be used on Windows systems.
+
+    """
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
+
+
+def stderr(string):
+    """Print the given ``string`` to stderr.
+
+    :param str string: the string to output
+
+    Just a convenience function.
+
+    .. versionchanged:: 8.0
+
+        Moved from :mod:`sopel.tools` to :mod:`sopel.cli.utils`.
+
+    """
+    print(string, file=sys.stderr)

@@ -52,7 +52,6 @@ from __future__ import annotations
 import configparser
 import os
 
-from sopel import tools
 from . import core_section, types
 
 
@@ -344,7 +343,7 @@ class Config:
         d = 'n'
         if default:
             d = 'y'
-        ans = tools.get_input(question + ' (y/n)? [' + d + '] ')
+        ans = input(question + ' (y/n)? [' + d + '] ')
         if not ans:
             ans = d
         return ans.lower() == 'y'
