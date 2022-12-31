@@ -1,4 +1,12 @@
-"""Tools to help safely do calculations from user input"""
+"""Tools to help safely do calculations from user input
+
+.. versionadded:: 5.3
+.. note::
+
+    Most of this is internal machinery. :func:`eval_equation` is the "public"
+    part, used by Sopel's built-in ``calc`` plugin.
+
+"""
 from __future__ import annotations
 
 import ast
@@ -18,6 +26,12 @@ class ExpressionEvaluator:
     Instances can pass ``binary_ops`` and ``unary_ops`` arguments with dicts of
     the form ``{ast.Node, function}``. When the :class:`ast.Node <ast.AST>` used
     as key is found, it will be evaluated using the given ``function``.
+
+    .. versionadded:: 4.1
+    .. versionchanged:: 5.3
+
+        Moved from :mod:`.tools` to :mod:`.tools.calculation`.
+
     """
 
     class Error(Exception):
@@ -89,6 +103,12 @@ def guarded_mul(left, right):
     :param right: the right operand
     :type right: int or float
     :raise ValueError: if the inputs are too large to handle safely
+
+    .. versionadded:: 4.5
+    .. versionchanged:: 5.3
+
+        Moved from :mod:`.tools` to :mod:`.tools.calculation`.
+
     """
     # Only handle ints because floats will overflow anyway.
     if not isinstance(left, numbers.Integral):
@@ -166,6 +186,12 @@ def pow_complexity(num, exp):
     accurate results outside these boundaries. The results derived from large
     ``num`` and ``exp`` were quite accurate for small ``num`` and very large
     ``exp`` though, except when ``num`` was a power of 2.
+
+    .. versionadded:: 4.5
+    .. versionchanged:: 5.3
+
+        Moved from :mod:`.tools` to :mod:`.tools.calculation`.
+
     """
     if num in (0, 1) or exp in (0, 1):
         return 0
@@ -184,6 +210,12 @@ def guarded_pow(num, exp):
     :param exp: exponent
     :type exp: int or float
     :raise ValueError: if the inputs are too large to handle safely
+
+    .. versionadded:: 4.5
+    .. versionchanged:: 5.3
+
+        Moved from :mod:`.tools` to :mod:`.tools.calculation`.
+
     """
     # Only handle ints because floats will overflow anyway.
     if not isinstance(num, numbers.Integral):
@@ -201,6 +233,19 @@ def guarded_pow(num, exp):
 
 
 class EquationEvaluator(ExpressionEvaluator):
+    """Specific subclass of :class:`ExpressionEvaluator` for simple math
+
+    This presets the allowed operators to safeguard against user input that
+    could try to do things that will adversely affect the running bot, while
+    still letting users pass arbitrary mathematical expressions using the
+    available (mostly arithmetic) operators.
+
+    .. versionadded:: 4.5
+    .. versionchanged:: 5.3
+
+        Moved from :mod:`.tools` to :mod:`.tools.calculation`.
+
+    """
     __bin_ops = {
         ast.Add: operator.add,
         ast.Sub: operator.sub,
@@ -241,4 +286,10 @@ eval_equation = EquationEvaluator()
 
 Supports addition (+), subtraction (-), multiplication (*), division (/),
 power (**) and modulo (%).
+
+.. versionadded:: 4.1
+.. versionchanged:: 5.3
+
+    Moved from :mod:`.tools` to :mod:`.tools.calculation`.
+
 """
