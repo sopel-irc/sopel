@@ -31,6 +31,37 @@ RESTART_SIGNALS = [
 ]
 
 
+class NotConnectedBackend(AbstractIRCBackend):
+    """IRC Backend shim to use before the bot has started connecting.
+
+    :param bot: an instance of a bot that uses the backend
+
+    This exists to intercept attempts to do "illegal" things before
+    connection, like sending messages to IRC before we even have a socket.
+    """
+    def __init__(
+        self,
+        bot: AbstractBot,
+    ):
+        super().__init__(bot)
+
+    def is_connected(self) -> bool:
+        """This backend type is never connected.
+
+        :return: False
+        """
+        return False
+
+    def on_irc_error(self, pretrigger: PreTrigger) -> None:
+        raise RuntimeError("Received error from unconnected backend.")
+
+    def irc_send(self, data: bytes) -> None:
+        raise RuntimeError("Attempt to send data to unconnected backend.")
+
+    def run_forever(self) -> None:
+        raise RuntimeError("Attempt to run dummy backend that cannot connect.")
+
+
 class AsyncioBackend(AbstractIRCBackend):
     """IRC Backend implementation using :mod:`asyncio`.
 

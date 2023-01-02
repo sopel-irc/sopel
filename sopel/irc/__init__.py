@@ -45,7 +45,7 @@ from typing import (
 
 from sopel import tools, trigger
 from sopel.tools import identifiers
-from .backends import AsyncioBackend
+from .backends import AsyncioBackend, NotConnectedBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
 
@@ -72,7 +72,7 @@ class AbstractBot(abc.ABC):
         self._nick: identifiers.Identifier = self.make_identifier(
             settings.core.nick)
 
-        self.backend: Optional[AbstractIRCBackend] = None
+        self.backend: AbstractIRCBackend = NotConnectedBackend(self)
         """IRC Connection Backend."""
         self._connection_registered = False
         """Flag stating whether the IRC Connection is registered yet."""
