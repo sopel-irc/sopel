@@ -66,10 +66,12 @@ Assuming you are using standard tools:
 * Fork Sopel's repository, and clone your fork locally.
 * Activate your virtualenv, and `cd` into your clone's folder.
 * Ensure you have the latest version of `pip`, and install `wheel`.
-* Install Sopel from source as an editable install using the `dev` extra.
+* Install Sopel from source as an editable install, and install the dev
+  depencendies using the `requirements.txt` file:
   * If you don't use a project manager (like Poetry or Hatch), you can do
-    that with `pip install -e .[dev]` from within the clone's directory, where
+    that with `pip install -e .` from within the clone's directory, where
     there is a `pyproject.toml` file.
+  * For the requirement file, you can use `pip install -U -r requirements.txt`
 * Run `make qa` to run linters and tests.
 * Run `make cleandoc` or just `make docs` to build the documentation locally.
 
