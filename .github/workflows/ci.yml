@@ -35,7 +35,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
-          python -m pip install -e .[dev]
+          python -m pip install --upgrade -r requirements.txt
+          python -m pip install -e .
       - name: Check code style
         run: make quality
       - name: Run pytest
