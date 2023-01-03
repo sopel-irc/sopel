@@ -66,8 +66,8 @@ Note that you don't specifically need to use ``@plugin.thread(False)``, but
 it is still recommended to prevent any race condition.
 
 
-Capability negotiation
-======================
+Managing Capability negotiation
+===============================
 
 `Capability negotiation`__ is a feature of IRCv3 that allows a server to
 advertise a list of optional capabilities, and allows its clients to request
