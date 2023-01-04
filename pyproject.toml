@@ -13,8 +13,18 @@ namespaces = false
 name = "sopel"
 version = "8.0.0.dev0"
 description = "Simple and extensible IRC bot"
+maintainers = [
+  { name="dgw", email="dgw@technobabbl.es" },
+  { name="Florian Strzelecki", email="florian.strzelecki@gmail.com" },
+]
 authors = [
   { name="dgw", email="dgw@technobabbl.es" },
+  { name="Florian Strzelecki", email="florian.strzelecki@gmail.com" },
+  { name="Sean B. Palmer" },
+  { name="Else Powell" },
+  { name="Elad Alfassa" },
+  { name="Dimitri Molenaars" },
+  { name="Michael Yanovich" },
 ]
 readme = "README.rst"
 license = { text="EFL-2.0" }
