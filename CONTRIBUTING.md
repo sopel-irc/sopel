@@ -67,7 +67,7 @@ Assuming you are using standard tools:
 * Activate your virtualenv, and `cd` into your clone's folder.
 * Ensure you have the latest version of `pip`, and install `wheel`.
 * Install Sopel from source as an editable install, and install the dev
-  depencendies using the `requirements.txt` file:
+  dependencies using the `requirements.txt` file:
   * If you don't use a project manager (like Poetry or Hatch), you can do
     that with `pip install -e .` from within the clone's directory, where
     there is a `pyproject.toml` file.
