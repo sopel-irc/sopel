@@ -919,7 +919,7 @@ class Sopel(irc.AbstractBot):
     def error(
         self,
         trigger: Optional[Trigger] = None,
-        exception: BaseException = None,
+        exception: Optional[BaseException] = None,
     ):
         """Called internally when a plugin causes an error.
 
