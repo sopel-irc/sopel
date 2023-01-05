@@ -79,30 +79,29 @@ def _find_geoip_db(bot):
     elif (os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLite2-City.mmdb')) and
             os.path.isfile(os.path.join('/usr/share/GeoIP', 'GeoLite2-ASN.mmdb'))):
         return '/usr/share/GeoIP'
-    elif urlretrieve:
-        LOGGER.info('Downloading GeoIP database')
-        bot.say('Downloading GeoIP database, please wait...')
 
-        common_params = {'license_key': 'JXBEmLjOzislFnh4', 'suffix': 'tar.gz'}
-        base_url = 'https://download.maxmind.com/app/geoip_download'
-        geolite_urls = []
+    LOGGER.info('Downloading GeoIP database')
+    bot.say('Downloading GeoIP database, please wait...')
 
-        for edition in ['ASN', 'City']:
-            geolite_urls.append(
-                '{base}?{params}'.format(
-                    base=base_url,
-                    params=web.urlencode(dict(common_params, **{'edition_id': 'GeoLite2-%s' % edition})),
-                )
+    common_params = {'license_key': 'JXBEmLjOzislFnh4', 'suffix': 'tar.gz'}
+    base_url = 'https://download.maxmind.com/app/geoip_download'
+    geolite_urls = []
+
+    for edition in ['ASN', 'City']:
+        geolite_urls.append(
+            '{base}?{params}'.format(
+                base=base_url,
+                params=web.urlencode(dict(common_params, **{'edition_id': 'GeoLite2-%s' % edition})),
             )
+        )
 
-        for url in geolite_urls:
-            LOGGER.debug('GeoIP Source URL: %s', url)
-            full_path = os.path.join(config.core.homedir, url.split("/")[-1])
-            urlretrieve(url, full_path)
-            _decompress(full_path, config.core.homedir)
-        return bot.config.core.homedir
-    else:
-        return False
+    for url in geolite_urls:
+        LOGGER.debug('GeoIP Source URL: %s', url)
+        full_path = os.path.join(config.core.homedir, url.split("/")[-1])
+        urlretrieve(url, full_path)
+        _decompress(full_path, config.core.homedir)
+
+    return config.core.homedir
 
 
 @plugin.command('iplookup', 'ip')
