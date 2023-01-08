@@ -172,6 +172,12 @@ class ISupport:
     The list of possible parameters can be found at
     `modern.ircdocs.horse's RPL_ISUPPORT Parameters`__.
 
+    .. important::
+
+        While this object's attributes and dict-like behavior are part of
+        Sopel's public API, its *methods* are considered internal code and
+        plugins should not call them.
+
     .. __: https://modern.ircdocs.horse/#rplisupport-parameters
     """
     def __init__(self, **kwargs):

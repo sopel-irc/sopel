@@ -13,9 +13,14 @@ actions represented by the raw message:
 Errors (ignored modes and unused parameters) are also included, mostly for
 detecting when an IRC server is not conforming to specifications.
 
-This is mostly for internal use only as plugin developers should be more
-interested in :attr:`privileges<sopel.tools.target.Channel.privileges>` rather
-than how Sopel knows about them.
+.. important::
+
+    This is mostly for internal use only as plugin developers should be more
+    interested in :attr:`privileges<sopel.tools.target.Channel.privileges>`
+    rather than how Sopel knows about them.
+
+    The interface of this module is subject to change between Sopel releases
+    without advance notice, even in patch versions.
 
 .. seealso::
 
