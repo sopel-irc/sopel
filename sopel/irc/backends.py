@@ -31,7 +31,7 @@ RESTART_SIGNALS = [
 ]
 
 
-class NotConnectedBackend(AbstractIRCBackend):
+class UninitializedBackend(AbstractIRCBackend):
     """IRC Backend shim to use before the bot has started connecting.
 
     :param bot: an instance of a bot that uses the backend
