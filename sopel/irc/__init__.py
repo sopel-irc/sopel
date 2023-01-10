@@ -94,6 +94,17 @@ class AbstractBot(abc.ABC):
 
     @property
     def connection_registered(self) -> bool:
+        """Whether the IRC connection is registered.
+
+        This is a property so it can accurately reflect not only the socket
+        state (connection to IRC server), but also whether the connection is
+        ready to accept "normal" IRC commands.
+
+        Before registration is completed, only a very limited set of commands
+        are allowed to be used. Sopel itself takes care of these, so plugins
+        will be more concerned with whether they are allowed to use methods
+        like :meth:`say` yet.
+        """
         return (
             self.backend is not None
             and self.backend.is_connected()
