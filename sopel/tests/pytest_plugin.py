@@ -90,7 +90,12 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         # TODO enable message tags
         full_message = ':{} PRIVMSG {} :{}'.format(hostmask, sender, msg)
         pretrigger = trigger.PreTrigger(
-            mockbot.nick, full_message, url_schemes=url_schemes)
+            mockbot.nick,
+            full_message,
+            url_schemes=url_schemes,
+            identifier_factory=mockbot.make_identifier,
+            statusmsg_prefixes=mockbot.isupport.get('STATUSMSG'),
+        )
         test_trigger = trigger.Trigger(mockbot.settings, pretrigger, match)
         pattern = re.compile(r'^%s: ' % re.escape(mockbot.nick))
 
@@ -116,6 +121,8 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
                     mockbot.nick,
                     message.decode('utf-8'),
                     url_schemes=url_schemes,
+                    identifier_factory=mockbot.make_identifier,
+                    statusmsg_prefixes=mockbot.isupport.get('STATUSMSG'),
                 )
                 for message in wrapper.backend.message_sent
             )
