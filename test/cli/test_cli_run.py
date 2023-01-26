@@ -62,12 +62,10 @@ def test_build_parser_start():
     assert hasattr(options, 'config')
     assert hasattr(options, 'configdir')
     assert hasattr(options, 'daemonize')
-    assert hasattr(options, 'quiet')
 
     assert options.config == 'default'
     assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.daemonize is False
-    assert options.quiet is False
 
 
 def test_build_parser_start_config():
@@ -97,13 +95,6 @@ def test_build_parser_start_daemonize():
     assert options.daemonize is True
 
 
-def test_build_parser_start_quiet():
-    parser = build_parser()
-
-    options = parser.parse_args(['start', '--quiet'])
-    assert options.quiet is True
-
-
 def test_build_parser_stop():
     """Assert parser's namespace exposes stop's options (default values)"""
     parser = build_parser()
@@ -113,12 +104,10 @@ def test_build_parser_stop():
     assert hasattr(options, 'config')
     assert hasattr(options, 'configdir')
     assert hasattr(options, 'kill')
-    assert hasattr(options, 'quiet')
 
     assert options.config == 'default'
     assert options.configdir == config.DEFAULT_HOMEDIR
     assert options.kill is False
-    assert options.quiet is False
 
 
 def test_build_parser_stop_config():
@@ -148,13 +137,6 @@ def test_build_parser_stop_kill():
     assert options.kill is True
 
 
-def test_build_parser_stop_quiet():
-    parser = build_parser()
-
-    options = parser.parse_args(['stop', '--quiet'])
-    assert options.quiet is True
-
-
 def test_build_parser_restart():
     """Assert parser's namespace exposes restart's options (default values)"""
     parser = build_parser()
@@ -163,11 +145,9 @@ def test_build_parser_restart():
     assert isinstance(options, argparse.Namespace)
     assert hasattr(options, 'config')
     assert hasattr(options, 'configdir')
-    assert hasattr(options, 'quiet')
 
     assert options.config == 'default'
     assert options.configdir == config.DEFAULT_HOMEDIR
-    assert options.quiet is False
 
 
 def test_build_parser_restart_config():
@@ -185,13 +165,6 @@ def test_build_parser_restart_configdir():
 
     options = parser.parse_args(['restart', '--config-dir', 'custom'])
     assert options.configdir == 'custom'
-
-
-def test_build_parser_restart_quiet():
-    parser = build_parser()
-
-    options = parser.parse_args(['restart', '--quiet'])
-    assert options.quiet is True
 
 
 def test_build_parser_configure():
