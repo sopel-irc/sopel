@@ -697,6 +697,11 @@ class FilenameAttribute(BaseValidated):
         if not value:
             return self.parse(value)
 
+        if value.startswith('"') and value.endswith('"'):
+            value = value.strip('"')
+        elif value.startswith("'") and value.endswith("'"):
+            value = value.strip("'")
+
         result = os.path.expanduser(value)
         if not os.path.isabs(result):
             if not self.relative:
