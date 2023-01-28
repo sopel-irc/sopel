@@ -400,11 +400,12 @@ def test_require_account(bot, trigger, trigger_account):
     assert mock_(bot, trigger_account) is True
 
 
-def test_require_privilege(bot, trigger):
+def test_require_privilege(bot, trigger, trigger_pm):
     @module.require_privilege(module.VOICE)
     def mock_v(bot, trigger, match=None):
         return True
     assert mock_v(bot, trigger) is True
+    assert mock_v(bot, trigger_pm) is not True
 
     @module.require_privilege(module.OP, 'You must be at least opped!')
     def mock_o(bot, trigger, match=None):
