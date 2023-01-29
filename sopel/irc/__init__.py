@@ -80,7 +80,7 @@ class AbstractBot(abc.ABC):
 
         self.backend: Optional[AbstractIRCBackend] = None
         """IRC Connection Backend."""
-        self._connection_registered = False
+        self._connection_registered = threading.Event()
         """Flag stating whether the IRC Connection is registered yet."""
         self.settings = settings
         """Bot settings."""
@@ -103,7 +103,7 @@ class AbstractBot(abc.ABC):
         return (
             self.backend is not None
             and self.backend.is_connected()
-            and self._connection_registered)
+            and self._connection_registered.is_set())
 
     @property
     def nick(self) -> identifiers.Identifier:
@@ -428,7 +428,7 @@ class AbstractBot(abc.ABC):
 
     def on_close(self) -> None:
         """Call shutdown methods."""
-        self._connection_registered = False
+        self._connection_registered.clear()
         self._shutdown()
 
     def _shutdown(self) -> None:
@@ -662,7 +662,7 @@ class AbstractBot(abc.ABC):
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
 
-        self._connection_registered = False
+        self._connection_registered.clear()
         self.backend.send_quit(reason=message)
         self.hasquit = True
         # Wait for acknowledgment from the server. Per RFC 2812 it should be
