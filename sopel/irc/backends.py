@@ -42,6 +42,80 @@ RESTART_SIGNALS = [
 ]
 
 
+class UninitializedBackend(AbstractIRCBackend):
+    """IRC Backend shim to use before the bot has started connecting.
+
+    :param bot: an instance of a bot that uses the backend
+
+    This exists to intercept attempts to do "illegal" things before
+    connection, like sending messages to IRC before we even have a socket.
+    """
+    def __init__(
+        self,
+        bot: AbstractBot,
+    ):
+        super().__init__(bot)
+
+    def is_connected(self) -> False:
+        """Check if the backend is connected to an IRC server.
+
+        **Always returns False:** This backend type is never connected.
+
+        Jobs (:func:`~.plugin.interval`) or other time-based triggers can be
+        invoked before the bot is finished initizalizing, even before it has
+        begun the IRC connection process. We need to provide a reliable way for
+        those triggers to abort early if they need a connection.
+
+        .. note::
+
+            Your plugin code doesn't need to call this directly; unless your
+            plugin does something during connection setup, it should check the
+            :attr:`bot.connection_registered <.AbstractBot.connection_registered>`
+            flag, which also takes into account whether the IRC connection is
+            ready to accept normal commands like PRIVMSG.
+
+        """
+        return False
+
+    def on_irc_error(self, pretrigger: PreTrigger) -> None:
+        """Dummy IRC error handler.
+
+        Since it should be impossible to receive an error from IRC when there
+        is no server connection, this implementation raises an error if it is
+        ever called.
+        """
+        raise RuntimeError("Received error from unconnected backend.")
+
+    def irc_send(self, data: bytes) -> None:
+        """Dummy method to send IRC data.
+
+        Since it is impossible to send data to IRC without an IRC connection,
+        this implementation raises an error if it is ever called.
+
+        .. note::
+
+            Plugins will likely never need to call this method directly, but
+            many public API methods of ``bot`` call it.
+
+            Plugin code that can be triggered by anything that isn't an IRC
+            event/message should check the
+            :attr:`bot.connection_registered <.AbstractBot.connection_registered>`
+            flag before calling any bot method that modifies IRC state.
+
+        """
+        raise RuntimeError("Attempt to send data to unconnected backend.")
+
+    def run_forever(self) -> None:
+        """Dummy connection setup method.
+
+        Since this implementation is a placeholder and does not actually
+        connect to IRC, it raises an error if it is ever called. The bot
+        should switch to an appropriate backend type before trying to
+        connect; not doing so is a bug.
+        """
+        raise RuntimeError("Attempt to run dummy backend that cannot connect.")
+
+
 class AsyncioBackend(AbstractIRCBackend):
     """IRC Backend implementation using :mod:`asyncio`.
 

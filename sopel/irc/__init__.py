@@ -51,7 +51,7 @@ from typing import (
 
 from sopel import tools, trigger
 from sopel.tools import identifiers
-from .backends import AsyncioBackend
+from .backends import AsyncioBackend, UninitializedBackend
 from .isupport import ISupport
 from .utils import CapReq, safe
 
@@ -78,7 +78,7 @@ class AbstractBot(abc.ABC):
         self._nick: identifiers.Identifier = self.make_identifier(
             settings.core.nick)
 
-        self.backend: Optional[AbstractIRCBackend] = None
+        self.backend: AbstractIRCBackend = UninitializedBackend(self)
         """IRC Connection Backend."""
         self._connection_registered = False
         """Flag stating whether the IRC Connection is registered yet."""
@@ -100,6 +100,17 @@ class AbstractBot(abc.ABC):
 
     @property
     def connection_registered(self) -> bool:
+        """Whether the IRC connection is registered.
+
+        This is a property so it can accurately reflect not only the socket
+        state (connection to IRC server), but also whether the connection is
+        ready to accept "normal" IRC commands.
+
+        Before registration is completed, only a very limited set of commands
+        are allowed to be used. Sopel itself takes care of these, so plugins
+        will be more concerned with whether they are allowed to use methods
+        like :meth:`say` yet.
+        """
         return (
             self.backend is not None
             and self.backend.is_connected()
