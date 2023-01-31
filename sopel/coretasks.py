@@ -782,7 +782,7 @@ def _remove_from_channel(bot, nick, channel):
                 bot.users.pop(nick, None)
 
 
-def _send_who(bot, channel):
+def _send_who(bot, mask):
     if 'WHOX' in bot.isupport:
         # WHOX syntax, see http://faerion.sourceforge.net/doc/irc/whox.var
         # Needed for accounts in WHO replies. The `WHOX_QUERYTYPE` parameter
@@ -790,14 +790,15 @@ def _send_who(bot, channel):
         # that it has the requested format. WHO replies with different
         # querytypes in the response were initiated elsewhere and will be
         # ignored.
-        bot.write(['WHO', channel, '{},{}'.format(WHOX_QUERY, WHOX_QUERYTYPE)])
+        bot.write(['WHO', mask, '{},{}'.format(WHOX_QUERY, WHOX_QUERYTYPE)])
     else:
         # We might be on an old network, but we still care about keeping our
         # user list updated
-        bot.write(['WHO', channel])
+        bot.write(['WHO', mask])
 
-    channel_id = bot.make_identifier(channel)
-    bot.channels[channel_id].last_who = datetime.datetime.utcnow()
+    target_id = bot.make_identifier(mask)
+    if not target_id.is_nick():
+        bot.channels[target_id].last_who = datetime.datetime.utcnow()
 
 
 @plugin.interval(30)
@@ -839,16 +840,19 @@ def track_join(bot, trigger):
     to know more about said user (privileges, modes, etc.).
     """
     channel = trigger.sender
+    new_channel = channel not in bot.channels
+    self_join = trigger.nick == bot.nick
+    new_user = trigger.nick not in bot.users
 
     # is it a new channel?
-    if channel not in bot.channels:
+    if new_channel:
         bot.channels[channel] = target.Channel(
             channel,
             identifier_factory=bot.make_identifier,
         )
 
     # did *we* just join?
-    if trigger.nick == bot.nick:
+    if self_join:
         LOGGER.info("Channel joined: %s", channel)
         bot.channels[channel].join_time = trigger.time
         if bot.settings.core.throttle_join:
@@ -864,16 +868,21 @@ def track_join(bot, trigger):
             str(channel), trigger.nick)
 
     # set initial values
-    user = bot.users.get(trigger.nick)
-    if user is None:
+    if new_user:
         user = target.User(trigger.nick, trigger.user, trigger.host)
         bot.users[trigger.nick] = user
+    else:
+        user = bot.users.get(trigger.nick)
     bot.channels[channel].add_user(user)
 
     if len(trigger.args) > 1 and trigger.args[1] != '*' and (
             'account-notify' in bot.enabled_capabilities and
             'extended-join' in bot.enabled_capabilities):
         user.account = trigger.args[1]
+
+    if new_user and not new_channel:
+        # send WHO to populate new user's realname etc.
+        _send_who(bot, trigger.nick)
 
 
 @plugin.event('QUIT')
