@@ -632,7 +632,9 @@ class Sopel(irc.AbstractBot):
             if 'disable_plugins' in channel_config:
                 disabled_plugins = channel_config.disable_plugins.split(',')
 
-                if '*' in disabled_plugins:
+                if plugin_name == 'coretasks':
+                    LOGGER.debug("disable_plugins refuses to skip a coretasks handler")
+                elif '*' in disabled_plugins:
                     return
                 elif plugin_name in disabled_plugins:
                     return
@@ -642,7 +644,9 @@ class Sopel(irc.AbstractBot):
                 disabled_commands = literal_eval(channel_config.disable_commands)
                 disabled_commands = disabled_commands.get(plugin_name, [])
                 if rule.get_rule_label() in disabled_commands:
-                    return
+                    if plugin_name != 'coretasks':
+                        return
+                    LOGGER.debug("disable_commands refuses to skip a coretasks handler")
 
         try:
             rule.execute(sopel, trigger)
@@ -705,8 +709,10 @@ class Sopel(irc.AbstractBot):
                     )
                     return
 
-        # if channel has its own config section, check for excluded plugins/plugin methods
-        if trigger.sender in self.config:
+        # if channel has its own config section, check for excluded plugins/plugin methods,
+        # but only if the source plugin is NOT coretasks, because we NEED those handlers.
+        # Normal, whole-bot configuration will not let you disable coretasks either.
+        if trigger.sender in self.config and func.plugin_name != 'coretasks':
             channel_config = self.config[trigger.sender]
             LOGGER.debug(
                 "Evaluating configuration for %s.%s in channel %s",
