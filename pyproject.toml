@@ -54,6 +54,7 @@ dependencies = [
     "importlib_metadata>=3.6",
     "packaging",
     "sopel-help>=0.4.0",
+    "sopel-py>=1.0.1",  # TODO: drop for 8.1
 ]
 
 [project.urls]
