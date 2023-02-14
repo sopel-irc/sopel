@@ -127,11 +127,6 @@ def build_parser():
              'background. The instance will be named after the name of the '
              'configuration file used to run it. '
              'To stop it, use ``sopel stop`` (with the same configuration).')
-    parser_start.add_argument(
-        '--quiet',
-        action="store_true",
-        dest="quiet",
-        help="Suppress all output")
     utils.add_common_arguments(parser_start)
 
     # manage `configure` subcommand
@@ -166,11 +161,6 @@ def build_parser():
         action='store_true',
         default=False,
         help='Kill Sopel without a graceful quit')
-    parser_stop.add_argument(
-        '--quiet',
-        action="store_true",
-        dest="quiet",
-        help="Suppress all output")
     utils.add_common_arguments(parser_stop)
 
     # manage `restart` subcommand
@@ -178,11 +168,6 @@ def build_parser():
         'restart',
         description='Restart a running Sopel instance',
         help='Restart a running Sopel instance')
-    parser_restart.add_argument(
-        '--quiet',
-        action="store_true",
-        dest="quiet",
-        help="Suppress all output")
     utils.add_common_arguments(parser_restart)
 
     return parser
