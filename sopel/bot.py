@@ -983,7 +983,7 @@ class Sopel(irc.AbstractBot):
         """Internal bot shutdown method."""
         LOGGER.info("Shutting down")
         # Proactively tell plugins (at least the ones that bother to check)
-        self._connection_registered = False
+        self._connection_registered.clear()
         # Stop Job Scheduler
         LOGGER.info("Stopping the Job Scheduler.")
         self._scheduler.stop()
