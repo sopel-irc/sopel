@@ -13,7 +13,7 @@ requests-mock~=1.9.3
 sphinx>=4,<5
 # specify exact autoprogram version because the new (in 2021) maintainer
 # showed that they will indeed make major changes in patch versions
-sphinxcontrib-autoprogram==0.1.7
+sphinxcontrib-autoprogram==0.1.8
 # custom plugin to help with RFC links
 sphinx-rfcsection~=0.1.1
 vcrpy<3.0.0
