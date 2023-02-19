@@ -29,8 +29,8 @@ class IrcLoggingHandler(logging.Handler):
         :param record: the log record to output
         :type record: :class:`logging.LogRecord`
         """
-        if self._bot.backend is None or not self._bot.backend.is_connected():
-            # Don't emit logs when the bot is not connected.
+        if not self._bot.connection_registered:
+            # Don't emit logs to IRC when the bot is not connected & registered.
             return
 
         try:
