@@ -48,6 +48,33 @@ def test_prepare_command_text_too_long():
     assert result == expected
 
 
+def test_prepare_command_command_safe():
+    backend = MockIRCBackend(BotCollector())
+
+    result = backend.prepare_command(
+        "PRIVMSG\r\nMODE #sopel +o Mallory\r\nPRIVMSG", "#sopel", text="Hello"
+    )
+    assert result == "PRIVMSGMODE #sopel +o MalloryPRIVMSG #sopel :Hello\r\n"
+
+
+def test_prepare_command_target_safe():
+    backend = MockIRCBackend(BotCollector())
+
+    result = backend.prepare_command(
+        "PRIVMSG", "#sopel\r\nMODE #sopel +o Mallory\r\nPRIVMSG #sopel", text="Hello"
+    )
+    assert result == "PRIVMSG #sopelMODE #sopel +o MalloryPRIVMSG #sopel :Hello\r\n"
+
+
+def test_prepare_command_text_safe():
+    backend = MockIRCBackend(BotCollector())
+
+    result = backend.prepare_command(
+        "PRIVMSG", "#sopel", text="Hello\r\nMODE #sopel +o Mallory"
+    )
+    assert result == "PRIVMSG #sopel :HelloMODE #sopel +o Mallory\r\n"
+
+
 def test_send_command():
     bot = BotCollector()
     backend = MockIRCBackend(bot)

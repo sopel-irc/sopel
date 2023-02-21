@@ -53,7 +53,7 @@ from sopel import tools, trigger
 from sopel.tools import identifiers
 from .backends import AsyncioBackend, UninitializedBackend
 from .isupport import ISupport
-from .utils import CapReq, safe
+from .utils import CapReq
 
 if TYPE_CHECKING:
     from sopel.config import Config
@@ -590,7 +590,6 @@ class AbstractBot(abc.ABC):
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
 
-        args = [safe(arg) for arg in args]
         self.backend.send_command(*args, text=text)
 
     # IRC Commands
@@ -895,7 +894,7 @@ class AbstractBot(abc.ABC):
             # update recipient metadata
             flood_left = recipient_stack['flood_left'] - 1
             recipient_stack['flood_left'] = max(0, flood_left)
-            recipient_stack['messages'].append((time.time(), safe(text)))
+            recipient_stack['messages'].append((time.time(), text))
 
         # Now that we've sent the first part, we need to send the rest if
         # requested. Doing so recursively seems simpler than iteratively.
