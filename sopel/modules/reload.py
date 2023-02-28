@@ -8,7 +8,6 @@ https://sopel.chat
 from __future__ import annotations
 
 import logging
-import subprocess
 
 from sopel import plugin, plugins
 
@@ -54,19 +53,6 @@ def f_reload(bot, trigger):
         plugin_meta['type'],
         plugin_meta['source'],
     ))
-
-
-@plugin.nickname_command('update')
-@plugin.require_admin
-@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def f_update(bot, trigger):
-    """Pulls the latest versions of all plugins from Git (for use by admins only)."""
-    proc = subprocess.Popen('/usr/bin/git pull',
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=True)
-    bot.reply(proc.communicate()[0])
-
-    f_reload(bot, trigger)
 
 
 @plugin.nickname_command("load")
@@ -117,14 +103,6 @@ def f_load(bot, trigger):
 def pm_f_reload(bot, trigger):
     """Wrapper for allowing delivery of .reload command via PM"""
     f_reload(bot, trigger)
-
-
-@plugin.command('update')
-@plugin.require_privmsg
-@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def pm_f_update(bot, trigger):
-    """Wrapper for allowing delivery of .update command via PM"""
-    f_update(bot, trigger)
 
 
 @plugin.command("load")
