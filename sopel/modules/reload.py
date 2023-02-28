@@ -35,7 +35,11 @@ def _load(bot, plugin):
 @plugin.require_admin
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_reload(bot, trigger):
-    """Reloads a plugin (for use by admins only)."""
+    """Reload a plugin (for use by admins only)
+
+    NOTE: Designed to work with single-file plugins only, during development.
+    Restart the bot instead when making significant changes.
+    """
     name = trigger.group(2)
 
     if not name or name == '*' or name.upper() == 'ALL THE THINGS':
@@ -75,7 +79,7 @@ def f_update(bot, trigger):
 @plugin.require_admin
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def f_load(bot, trigger):
-    """Loads a plugin (for use by admins only)."""
+    """Load a plugin (for use by admins only)"""
     name = trigger.group(2)
     if not name:
         bot.reply('Load what?')
