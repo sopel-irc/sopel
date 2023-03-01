@@ -198,47 +198,55 @@ def enumerate_configs(config_dir, extension='.cfg'):
             yield item
 
 
-def find_config(config_dir, name, extension='.cfg'):
+def find_config(config_dir: str, name: str, extension: str = '.cfg') -> str:
     """Build the absolute path for the given configuration file ``name``.
 
-    :param str config_dir: path to the configuration directory
-    :param str name: configuration file ``name``
-    :param str extension: configuration file's extension (default to ``.cfg``)
-    :return: the path of the configuration file, either in the current
-             directory or from the ``config_dir`` directory
+    :param config_dir: path to the configuration directory
+    :param name: configuration file ``name``
+    :param extension: configuration file's extension (defaults to ``.cfg``)
+    :return: the absolute path to the configuration file, either in the current
+             directory or in the ``config_dir`` directory
 
-    This function tries different locations:
+    This function appends the extension if absent before checking the following:
 
-    * the current directory
-    * the ``config_dir`` directory with the ``extension`` suffix
-    * the ``config_dir`` directory without a suffix
+    * If ``name`` is an absolute path, it is returned whether it exists or not
+    * If ``name`` exists in the ``config_dir``, the absolute path is returned
+    * If ``name`` exists in the current directory, its absolute path is returned
+    * Otherwise, the path to the nonexistent file within ``config_dir`` is returned
 
     Example::
 
         >>> from sopel.cli import utils
         >>> from sopel import config
+        >>> os.getcwd()
+        '/sopel'
         >>> os.listdir()
         ['local.cfg', 'extra.ini']
         >>> os.listdir(config.DEFAULT_HOMEDIR)
-        ['config.cfg', 'extra.ini', 'plugin.cfg', 'README']
+        ['config.cfg', 'extra.ini', 'logs', 'plugins']
         >>> utils.find_config(config.DEFAULT_HOMEDIR, 'local.cfg')
-        'local.cfg'
-        >>> utils.find_config(config.DEFAULT_HOMEDIR, 'local')
-        '/home/username/.sopel/local'
+        '/sopel/local.cfg'
         >>> utils.find_config(config.DEFAULT_HOMEDIR, 'config')
         '/home/username/.sopel/config.cfg'
         >>> utils.find_config(config.DEFAULT_HOMEDIR, 'extra', '.ini')
         '/home/username/.sopel/extra.ini'
 
-    """
-    if os.path.isfile(name):
-        return os.path.abspath(name)
-    name_ext = name + extension
-    for filename in enumerate_configs(config_dir, extension):
-        if name_ext == filename:
-            return os.path.join(config_dir, name_ext)
+    .. versionchanged:: 8.0
+        Files in the ``config_dir`` are now preferred, and files without the
+        requested extension are no longer returned.
 
-    return os.path.join(config_dir, name)
+    """
+    if not name.endswith(extension):
+        name = name + extension
+
+    if os.path.isabs(name):
+        return name
+    conf_dir_name = os.path.join(config_dir, name)
+    if os.path.isfile(conf_dir_name):
+        return conf_dir_name
+    elif os.path.isfile(name):
+        return os.path.abspath(name)
+    return conf_dir_name
 
 
 def add_common_arguments(parser):
