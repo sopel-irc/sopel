@@ -232,6 +232,7 @@ def find_config(config_dir: str, name: str, extension: str = '.cfg') -> str:
         '/home/username/.sopel/extra.ini'
 
     .. versionchanged:: 8.0
+
         Files in the ``config_dir`` are now preferred, and files without the
         requested extension are no longer returned.
 
