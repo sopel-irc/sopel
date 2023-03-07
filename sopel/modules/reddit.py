@@ -18,6 +18,7 @@ import prawcore  # type: ignore[import]
 import requests
 
 from sopel import plugin
+from sopel.config import types
 from sopel.formatting import bold, color, colors
 from sopel.tools import time
 from sopel.tools.web import USER_AGENT
@@ -39,6 +40,11 @@ video_url = r'https?://v\.redd\.it/([\w-]+)'
 gallery_url = r'https?://(?:www\.)?reddit\.com/gallery/([\w-]+)'
 
 
+class RedditSection(types.StaticSection):
+    slash_info = types.BooleanAttribute('slash_info', True)
+    """Expand inline references to users (u/someone) and subreddits (r/subname) in chat."""
+
+
 def setup(bot):
     if 'reddit_praw' not in bot.memory:
         # Create a PRAW instance just once, at load time
@@ -48,6 +54,19 @@ def setup(bot):
             client_secret=None,
             check_for_updates=False,
         )
+    bot.config.define_section('reddit', RedditSection)
+
+
+def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | slash\\_info | off | Whether the bot should expand inline references to users (`u/someone`) or subreddits (`r/subname`) |
+    """
+    config.define_section('reddit', RedditSection)
+    config.reddit.configure_setting(
+        'slash_info', "Expand references like u/someone or r/subname in chat?"
+    )
 
 
 def shutdown(bot):
@@ -457,6 +476,10 @@ def get_channel_spoiler_free(bot, trigger):
 def reddit_slash_info(bot, trigger):
     searchtype = trigger.group('prefix').lower()
     match = trigger.group('id')
+
+    if not bot.config.reddit.slash_info:
+        return
+
     if searchtype == "r":
         return subreddit_info(bot, trigger, match, commanded=False)
     elif searchtype == "u":
