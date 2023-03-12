@@ -825,6 +825,12 @@ Example of configuration to log errors only in the ``##bot_logs`` channel::
     logging_channel_level = ERROR
     logging_channel_format = %(message)s
 
+.. note::
+
+   ``DEBUG`` is not supported for ``logging_channel_level``. The bot would
+   either flood itself off the network or spend most of its time waiting for
+   flood protection delays (thus becoming unusable).
+
 .. versionadded:: 7.0
 
    Configuration options ``logging_channel_level``, ``logging_channel_format``
