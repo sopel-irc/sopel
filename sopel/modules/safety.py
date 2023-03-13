@@ -120,6 +120,7 @@ def setup(bot: Sopel):
             # Python on Windows throws an exception if the file is in use
             LOGGER.warning('Could not delete %s: %s', old_file, str(err))
 
+    LOGGER.info('Ensuring unsafe domain list is up-to-date (safety plugin setup)')
     update_local_cache(bot, init=True)
 
 
