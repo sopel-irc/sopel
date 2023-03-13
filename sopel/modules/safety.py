@@ -118,7 +118,7 @@ def setup(bot: Sopel):
         except Exception as err:
             # for lack of a more specific error type...
             # Python on Windows throws an exception if the file is in use
-            LOGGER.info('Could not delete %s: %s', old_file, str(err))
+            LOGGER.warning('Could not delete %s: %s', old_file, str(err))
 
     update_local_cache(bot, init=True)
 
@@ -141,12 +141,12 @@ def download_domain_list(bot: Sopel, path: str) -> bool:
     url = bot.settings.safety.domain_blocklist_url
     if url is None or not url.startswith("http"):
         url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-    LOGGER.info("Downloading unsafe domain list from %s", url)
+    LOGGER.debug("Downloading unsafe domain list from %s", url)
     old_etag = bot.db.get_plugin_value("safety", "unsafe_domain_list_etag")
     if old_etag:
         r = requests.head(url)
         if r.headers["ETag"] == old_etag and os.path.isfile(path):
-            LOGGER.info("Unsafe domain list unchanged, skipping")
+            LOGGER.debug("Unsafe domain list unchanged, skipping")
             return False
 
     r = requests.get(url, stream=True)
@@ -486,6 +486,6 @@ def _clean_cache(bot: Sopel):
 
         LOGGER.debug('Safety cache cleanup finished.')
     else:
-        LOGGER.info(
+        LOGGER.debug(
             'Skipping safety cache cleanup: Cache is locked, '
             'cleanup already running.')
