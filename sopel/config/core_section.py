@@ -872,8 +872,6 @@ class CoreSection(StaticSection):
                                             'WARNING')
     """The lowest severity of logs to display in IRC channel logs.
 
-    If not specified, this falls back to using :attr:`logging_level`.
-
     .. seealso::
 
         The :ref:`Log to a Channel` chapter.
@@ -881,8 +879,9 @@ class CoreSection(StaticSection):
     .. versionadded:: 7.0
     .. versionchanged:: 8.0
 
-        Removed ``DEBUG`` from available choices; setting it causes the bot to
-        get caught in an ever-increasing flood prevention loop.
+        No longer uses the value of :attr:`logging_level` if not set. Removed
+        ``DEBUG`` from the available choices; setting it caused the bot to get
+        caught in an ever-increasing flood prevention loop.
 
     """
 
