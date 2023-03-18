@@ -868,17 +868,21 @@ class CoreSection(StaticSection):
 
     logging_channel_level = ChoiceAttribute('logging_channel_level',
                                             ['CRITICAL', 'ERROR', 'WARNING',
-                                             'INFO', 'DEBUG'],
+                                             'INFO'],
                                             'WARNING')
     """The lowest severity of logs to display in IRC channel logs.
-
-    If not specified, this falls back to using :attr:`logging_level`.
 
     .. seealso::
 
         The :ref:`Log to a Channel` chapter.
 
     .. versionadded:: 7.0
+    .. versionchanged:: 8.0
+
+        No longer uses the value of :attr:`logging_level` if not set. Removed
+        ``DEBUG`` from the available choices; setting it caused the bot to get
+        caught in an ever-increasing flood prevention loop.
+
     """
 
     logging_datefmt = ValidatedAttribute('logging_datefmt')

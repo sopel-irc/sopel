@@ -807,9 +807,10 @@ Log to a Channel
 ----------------
 
 It is possible to send logs to an IRC channel, by configuring
-:attr:`~CoreSection.logging_channel`. By default, it uses the same log level,
-format, and date-format parameters as console logs. This can be overridden
-with these settings:
+:attr:`~CoreSection.logging_channel`. By default, it logs ``WARNING`` or higher
+messages, using the same date and log-line format parameters as the console
+logging output. The following settings can be used to customize output to the
+logging channel:
 
 * ``format`` with :attr:`~CoreSection.logging_channel_format`
 * ``datefmt`` with :attr:`~CoreSection.logging_channel_datefmt`
@@ -825,11 +826,21 @@ Example of configuration to log errors only in the ``##bot_logs`` channel::
     logging_channel_level = ERROR
     logging_channel_format = %(message)s
 
+.. note::
+
+   ``DEBUG`` is not supported for ``logging_channel_level``. The bot would
+   either flood itself off the network or spend most of its time waiting for
+   flood protection delays (thus becoming unusable).
+
 .. versionadded:: 7.0
 
    Configuration options ``logging_channel_level``, ``logging_channel_format``
-   and ``logging_channel_datefmt`` has been added to extend logging
+   and ``logging_channel_datefmt`` have been added to extend logging
    configuration.
+
+.. versionchanged:: 8.0
+
+   Channel logging no longer inherits the console ``logging_level`` setting.
 
 Raw Logs
 --------

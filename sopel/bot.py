@@ -245,13 +245,12 @@ class Sopel(irc.AbstractBot):
     def setup_logging(self) -> None:
         """Set up logging based on config options."""
         logger.setup_logging(self.settings)
-        base_level = self.settings.core.logging_level or 'INFO'
         base_format = self.settings.core.logging_format
         base_datefmt = self.settings.core.logging_datefmt
 
         # configure channel logging if required by configuration
         if self.settings.core.logging_channel:
-            channel_level = self.settings.core.logging_channel_level or base_level
+            channel_level = self.settings.core.logging_channel_level
             channel_format = self.settings.core.logging_channel_format or base_format
             channel_datefmt = self.settings.core.logging_channel_datefmt or base_datefmt
             channel_params = {}
