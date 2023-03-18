@@ -120,6 +120,13 @@ class CapabilityNegotiation(enum.Enum):
     """
 
 
+if TYPE_CHECKING:
+    CapabilityHandler = Callable[
+        [Tuple[str, ...], SopelWrapper, bool],
+        CapabilityNegotiation,
+    ]
+
+
 class capability:
     """Decorate a function to request a capability and handle the result.
 
@@ -209,20 +216,10 @@ class capability:
     def __init__(
         self,
         *cap_req: str,
-        handler: Optional[
-            Callable[
-                [Tuple[str, ...], SopelWrapper, bool],
-                CapabilityNegotiation,
-            ]
-        ] = None,
+        handler: Optional[CapabilityHandler] = None,
     ) -> None:
         self._cap_req: Tuple[str, ...] = tuple(sorted(cap_req))
-        self._handler: Optional[
-            Callable[
-                [Tuple[str, ...], SopelWrapper, bool],
-                CapabilityNegotiation,
-            ]
-        ] = handler
+        self._handler: Optional[CapabilityHandler] = handler
 
     @property
     def cap_req(self) -> Tuple[str, ...]:
@@ -280,12 +277,11 @@ class capability:
 
     def __call__(
         self,
-        handler: Callable[
-            [Tuple[str, ...], SopelWrapper, bool],
-            CapabilityNegotiation,
-        ],
+        handler: CapabilityHandler,
     ) -> capability:
         """Register a capability negotiation callback."""
+        if self._handler is not None:
+            raise RuntimeError("Cannot re-use capability decorator")
         self._handler = handler
         return self
 

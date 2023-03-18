@@ -33,6 +33,18 @@ def test_capability(cap_ack_wrapped):
     assert result == (True, None)
 
 
+def test_capability_handler_define_once():
+    @plugin.capability('away-notify')
+    def handler(name, bot, acknowledged):
+        ...
+
+    assert isinstance(handler, plugin.capability)
+
+    # cannot redefine a handler
+    with pytest.raises(RuntimeError):
+        handler(lambda x, y, z: None)
+
+
 def test_capability_handler_continue(cap_ack_wrapped):
     @plugin.capability('away-notify')
     def handler(name, bot, acknowledged):
