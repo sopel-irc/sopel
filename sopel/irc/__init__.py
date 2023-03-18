@@ -72,7 +72,7 @@ class AbstractBot(abc.ABC):
         self._user: str = settings.core.user
         self._name: str = settings.core.name
         self._isupport = ISupport()
-        self._capabilities_manager = Capabilities()
+        self._capabilities = Capabilities()
         self._myinfo: Optional[MyInfo] = None
         self._nick: identifiers.Identifier = self.make_identifier(
             settings.core.nick)
@@ -139,7 +139,7 @@ class AbstractBot(abc.ABC):
     @property
     def capabilities(self) -> Capabilities:
         """Capabilities negotiated with the server."""
-        return self._capabilities_manager
+        return self._capabilities
 
     @property
     def enabled_capabilities(self) -> Set[str]:
@@ -159,7 +159,7 @@ class AbstractBot(abc.ABC):
             Will be removed in Sopel 9.
 
         """
-        return set(self._capabilities_manager.enabled)
+        return set(self._capabilities.enabled)
 
     @property
     def server_capabilities(self) -> Dict[str, Optional[str]]:
@@ -185,7 +185,7 @@ class AbstractBot(abc.ABC):
             Will be removed in Sopel 9.
 
         """
-        return self._capabilities_manager.available
+        return self._capabilities.available
 
     @property
     def isupport(self) -> ISupport:

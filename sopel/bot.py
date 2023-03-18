@@ -898,7 +898,7 @@ class Sopel(irc.AbstractBot):
         caller to make sure it signals the IRC server to end the negotiation
         with a ``CAP END`` command.
         """
-        available_capabilities = self._capabilities_manager.available.keys()
+        available_capabilities = self._capabilities.available.keys()
 
         if not available_capabilities:
             LOGGER.debug('No client capability to negotiate.')
