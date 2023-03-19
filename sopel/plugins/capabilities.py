@@ -194,6 +194,8 @@ class Manager:
         """Register a capability ``request`` for ``plugin_name``.
 
         :param request: the capability request to register for later
+        :raise RuntimeError: when the capability request is too long for a
+                             single ``CAP REQ`` and ``CAP * ACK``
 
         Once registered, the capability request can be requested by the bot. A
         registered request appears in :attr:`registered`::
@@ -213,7 +215,26 @@ class Manager:
 
         See :meth:`request_available` to automatically request capabilities
         advertised by the server.
+
+        .. warning::
+
+            Sopel cannot accept a request that is too long, because it does not
+            know how to handle a multi-line ACK, and it would not know how to
+            call back the appropriate :class:`~sopel.plugin.capability`
+            handler.
+
         """
+        cap_req = ' '.join(request.cap_req)
+        if len(cap_req.encode('utf-8')) > 500:
+            # "CAP * ACK " is 10 bytes, leaving 500 bytes for the capabilities.
+            # Sopel cannot allow multi-line requests, as it won't know how to
+            # deal properly with multi-line ACK.
+            # The spec says a client SHOULD send multiple requests; however
+            # the spec also says that a server will ACK or NAK a whole request
+            # at once. So technically, multiple REQs are not the same as a
+            # single REQ.
+            raise RuntimeError('Capability request too long: %s' % cap_req)
+
         plugin_caps = self._registered.setdefault(request.cap_req, {})
         plugin_caps[plugin_name] = (
             request, False,

@@ -74,6 +74,18 @@ def test_capability_handler_raises(cap_ack_wrapped):
         handler.callback(cap_ack_wrapped, True)
 
 
+def test_capability_too_long():
+    cap_reqs = ('example/cap',) * 41
+    assert len(' '.join(cap_reqs).encode('utf-8')) <= 500, 'Example too long'
+    plugin.capability(*cap_reqs)  # nothing happens
+
+    cap_reqs = ('example/cap',) * 42
+    assert len(' '.join(cap_reqs).encode('utf-8')) > 500, 'Example too short'
+
+    with pytest.raises(ValueError):
+        plugin.capability(*cap_reqs)
+
+
 def test_allow_bots():
     # test decorator with parentheses
     @plugin.allow_bots()

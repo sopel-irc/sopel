@@ -81,6 +81,12 @@ def test_manager_register():
     assert not manager.acknowledged
     assert not manager.denied
 
+    # let's mess with the size of the capability request
+    cap_too_long = plugin.capability('example/cap')
+    cap_too_long._cap_req = cap_too_long._cap_req * 50
+    with pytest.raises(RuntimeError):
+        manager.register('example', cap_too_long)
+
 
 def test_manager_register_multiple_plugins():
     manager = Manager()

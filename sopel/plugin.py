@@ -207,6 +207,13 @@ class capability:
         If you want to handle a ``CAP`` message without requesting the
         capability, you should use the :func:`event` decorator instead.
 
+    .. warning::
+
+        The list of ``cap_req`` is limited in size to prevent the bot from
+        separating the ``CAP REQ`` in multiple lines as the bot does not know
+        how to call back the capability handler upon receiving the multi-line
+        ``ACK * REQ``.
+
     .. seealso::
 
         The IRCv3 specification on `Client Capability Negotiation`__.
@@ -218,6 +225,17 @@ class capability:
         *cap_req: str,
         handler: Optional[CapabilityHandler] = None,
     ) -> None:
+        cap_req_text = ' '.join(cap_req)
+        if len(cap_req_text.encode('utf-8')) > 500:
+            # "CAP * ACK " is 10 bytes, leaving 500 bytes for the capabilities.
+            # Sopel cannot allow multi-line requests, as it won't know how to
+            # deal properly with multi-line ACK.
+            # The spec says a client SHOULD send multiple requests; however
+            # the spec also says that a server will ACK or NAK a whole request
+            # at once. So technically, multiple REQs are not the same as a
+            # single REQ.
+            raise ValueError('Capability request too long: %s' % cap_req_text)
+
         self._cap_req: Tuple[str, ...] = tuple(sorted(cap_req))
         self._handler: Optional[CapabilityHandler] = handler
 
