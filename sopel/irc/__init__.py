@@ -48,6 +48,7 @@ from typing import (
 )
 
 from sopel import tools, trigger
+from sopel.lifecycle import deprecated
 from sopel.tools import identifiers
 from .backends import AsyncioBackend, UninitializedBackend
 from .capabilities import Capabilities
@@ -142,6 +143,13 @@ class AbstractBot(abc.ABC):
         return self._capabilities
 
     @property
+    @deprecated(
+        reason='Capability handling has been rewritten. '
+        'Use `bot.capabilities.is_enabled()` or `bot.capabilities.enabled` instead.',
+        version='8.0',
+        warning_in='8.1',
+        removed_in='9.0',
+    )
     def enabled_capabilities(self) -> Set[str]:
         """A set containing the IRCv3 capabilities that the bot has enabled.
 
@@ -162,6 +170,13 @@ class AbstractBot(abc.ABC):
         return set(self._capabilities.enabled)
 
     @property
+    @deprecated(
+        reason='Capability handling has been rewritten. '
+        'Use `bot.capabilities.is_available()` or `bot.capabilities.available` instead.',
+        version='8.0',
+        warning_in='8.1',
+        removed_in='9.0',
+    )
     def server_capabilities(self) -> Dict[str, Optional[str]]:
         """A dict mapping supported IRCv3 capabilities to their options.
 
