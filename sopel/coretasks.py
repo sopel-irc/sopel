@@ -30,10 +30,15 @@ import functools
 import logging
 import re
 import time
+from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
 from sopel.tools import events, jobs, SopelMemory, target
+
+if TYPE_CHECKING:
+    from sopel.bot import Sopel, SopelWrapper
+    from sopel.trigger import Trigger
 
 
 LOGGER = logging.getLogger(__name__)
@@ -57,10 +62,105 @@ MODE_PREFIX_PRIVILEGES = {
 }
 
 
-batched_caps = {}
+def _handle_account_and_extjoin_capabilities(
+    cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
+) -> plugin.CapabilityNegotiation:
+    if acknowledged:
+        return plugin.CapabilityNegotiation.DONE
+
+    name = ', '.join(cap_req)
+    owner_account = bot.settings.core.owner_account
+    admin_accounts = bot.settings.core.admin_accounts
+
+    LOGGER.info(
+        'Server does not support "%s". '
+        'User account validation unavailable or limited.',
+        name,
+    )
+    if owner_account or admin_accounts:
+        LOGGER.warning(
+            'Owner or admin accounts are configured, but "%s" is not '
+            'supported by the server. This may cause unexpected behavior.',
+            name,
+        )
+
+    return plugin.CapabilityNegotiation.DONE
 
 
-def setup(bot):
+def _handle_sasl_capability(
+    cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
+) -> plugin.CapabilityNegotiation:
+    # Manage CAP REQ :sasl
+    auth_method = bot.settings.core.auth_method
+    server_auth_method = bot.settings.core.server_auth_method
+    is_required = 'sasl' in (auth_method, server_auth_method)
+
+    if not is_required:
+        # not required: we are fine, available or not
+        return plugin.CapabilityNegotiation.DONE
+    elif not acknowledged:
+        # required but not available: error, we must stop here
+        LOGGER.error(
+            'SASL capability is not enabled; '
+            'cannot authenticate with SASL.',
+        )
+        return plugin.CapabilityNegotiation.ERROR
+
+    # Check SASL configuration (password is required)
+    password, mech = _get_sasl_pass_and_mech(bot)
+    if not password:
+        raise config.ConfigurationError(
+            'SASL authentication required but no password available; '
+            'please check your configuration file.',
+        )
+
+    cap_info = bot.capabilities.get_capability_info('sasl')
+    cap_params = cap_info.params
+
+    available_mechs = cap_params.split(',') if cap_params else []
+
+    if available_mechs and mech not in available_mechs:
+        # Raise an error if configured to use an unsupported SASL mechanism,
+        # but only if the server actually advertised supported mechanisms,
+        # i.e. this network supports SASL 3.2
+
+        # SASL 3.1 failure is handled (when possible)
+        # by the sasl_mechs() function
+
+        # See https://github.com/sopel-irc/sopel/issues/1780 for background
+        raise config.ConfigurationError(
+            'SASL mechanism "{mech}" is not advertised by this server; '
+            'available mechanisms are: {available}.'.format(
+                mech=mech,
+                available=', '.join(available_mechs),
+            )
+        )
+
+    bot.write(('AUTHENTICATE', mech))
+
+    # If we want to do SASL, we have to wait before we can send CAP END. So if
+    # we are, wait on 903 (SASL successful) to send it.
+    return plugin.CapabilityNegotiation.CONTINUE
+
+
+CAP_ECHO_MESSAGE = plugin.capability('echo-message')
+CAP_MULTI_PREFIX = plugin.capability('multi-prefix')
+CAP_AWAY_NOTIFY = plugin.capability('away-notify')
+CAP_CHGHOST = plugin.capability('chghost')
+CAP_CAP_NOTIFY = plugin.capability('cap-notify')
+CAP_SERVER_TIME = plugin.capability('server-time')
+CAP_USERHOST_IN_NAMES = plugin.capability('userhost-in-names')
+CAP_MESSAGE_TAGS = plugin.capability('message-tags')
+CAP_ACCOUNT_NOTIFY = plugin.capability(
+    'account-notify', handler=_handle_account_and_extjoin_capabilities)
+CAP_EXTENDED_JOIN = plugin.capability(
+    'extended-join', handler=_handle_account_and_extjoin_capabilities)
+CAP_ACCOUNT_TAG = plugin.capability(
+    'account-tag', handler=_handle_account_and_extjoin_capabilities)
+CAP_SASL = plugin.capability('sasl', handler=_handle_sasl_capability)
+
+
+def setup(bot: Sopel):
     """Set up the coretasks plugin.
 
     The setup phase is used to activate the throttle feature to prevent a flood
@@ -253,6 +353,11 @@ def startup(bot, trigger):
     if bot.connection_registered:
         return
 
+    LOGGER.info(
+        'Enabled client capabilities: %s',
+        ', '.join(bot.capabilities.enabled),
+    )
+
     # nick shenanigans are serious business, but fortunately RPL_WELCOME
     # includes the actual nick used by the server after truncation, removal
     # of invalid characters, etc. so we can check for such shenanigans
@@ -291,9 +396,11 @@ def startup(bot, trigger):
         bot.write(('MODE', bot.nick, modes))
 
     # warn for insecure auth method if necessary
-    if (not bot.config.core.owner_account and
-            'account-tag' in bot.enabled_capabilities and
-            '@' not in bot.config.core.owner):
+    if (
+        not bot.config.core.owner_account and
+        bot.capabilities.is_enabled('account-tag') and
+        '@' not in bot.config.core.owner
+    ):
         msg = (
             "This network supports using network services to identify you as "
             "my owner, rather than just matching your nickname. This is much "
@@ -360,15 +467,15 @@ def handle_isupport(bot, trigger):
     # was NAMESX support status updated?
     if not namesx_support and 'NAMESX' in bot.isupport:
         # yes it was!
-        if 'multi-prefix' not in bot.server_capabilities:
-            # and the server doesn't have the multi-prefix capability
+        if not bot.capabilities.is_enabled('multi-prefix'):
+            # and the multi-prefix capability is not enabled
             # so we can ask the server to use the NAMESX feature
             bot.write(('PROTOCTL', 'NAMESX'))
     # was UHNAMES support status updated?
     if not uhnames_support and 'UHNAMES' in bot.isupport:
         # yes it was!
-        if 'userhost-in-names' not in bot.server_capabilities:
-            # and the server doesn't have the userhost-in-names capability
+        if not bot.capabilities.is_enabled('userhost-in-names'):
+            # and the userhost-in-names capability is not enabled
             # so we should ask for UHNAMES instead
             bot.write(('PROTOCTL', 'UHNAMES'))
 
@@ -443,7 +550,7 @@ def enable_service_auth(bot, trigger):
     """
     if bot.config.core.owner_account:
         return
-    if 'account-tag' not in bot.enabled_capabilities:
+    if not bot.capabilities.is_enabled('account-tag'):
         bot.say('This server does not fully support services auth, so this '
                 'command is not available.')
         return
@@ -525,7 +632,7 @@ def handle_names(bot, trigger):
     }
 
     uhnames = 'UHNAMES' in bot.isupport
-    userhost_in_names = 'userhost-in-names' in bot.enabled_capabilities
+    userhost_in_names = bot.capabilities.is_enabled('userhost-in-names')
 
     names = trigger.split()
     for name in names:
@@ -804,7 +911,7 @@ def _send_who(bot, mask):
 @plugin.interval(30)
 def _periodic_send_who(bot):
     """Periodically send a WHO request to keep user information up-to-date."""
-    if 'away-notify' in bot.enabled_capabilities:
+    if bot.capabilities.is_enabled('away-notify'):
         # WHO not needed to update 'away' status
         return
 
@@ -876,8 +983,9 @@ def track_join(bot, trigger):
     bot.channels[channel].add_user(user)
 
     if len(trigger.args) > 1 and trigger.args[1] != '*' and (
-            'account-notify' in bot.enabled_capabilities and
-            'extended-join' in bot.enabled_capabilities):
+        bot.capabilities.is_enabled('account-notify') and
+        bot.capabilities.is_enabled('extended-join')
+    ):
         user.account = trigger.args[1]
 
     if new_user and not new_channel:
@@ -904,175 +1012,144 @@ def track_quit(bot, trigger):
         auth_after_register(bot)
 
 
+def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
+    if not bot.capabilities.handle_ls(bot, trigger):
+        # multi-line, we must wait for more
+        return
+
+    if not bot.request_capabilities():
+        # Negotiation end because there is nothing to request
+        LOGGER.info('No capability negotiation.')
+        bot.write(('CAP', 'END'))
+
+
+def _handle_cap_acknowledgement(
+    bot: SopelWrapper,
+    cap_req: Tuple[str, ...],
+    results: List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]],
+    was_completed: bool,
+) -> None:
+    if any(
+        callback_result[1] == plugin.CapabilityNegotiation.ERROR
+        for callback_result in results
+    ):
+        # error: a plugin needs something and the bot cannot function properly
+        LOGGER.error(
+            'Capability negotiation failed for request: "%s"',
+            ' '.join(cap_req),
+        )
+        bot.write(('CAP', 'END'))  # close negotiation now
+        bot.quit('Error negotiating capabilities.')
+
+    if not was_completed and bot.cap_requests.is_complete:
+        # success: negotiation is complete and wasn't already
+        LOGGER.info('Capability negotiation ended successfuly.')
+        bot.write(('CAP', 'END'))  # close negotiation now
+
+
+def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
+    was_completed = bot.cap_requests.is_complete
+    cap_ack: Tuple[str, ...] = bot.capabilities.handle_ack(bot, trigger)
+
+    try:
+        result: Optional[
+            List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]]
+        ] = bot.cap_requests.acknowledge(bot, cap_ack)
+    except config.ConfigurationError as error:
+        LOGGER.error(
+            'Configuration error on ACK capability "%s": %s',
+            ', '.join(cap_ack),
+            error,
+        )
+        bot.write(('CAP', 'END'))  # close negotiation now
+        bot.quit('Configuration error.')
+        return None
+    except Exception as error:
+        LOGGER.exception(
+            'Error on ACK capability "%s": %s',
+            ', '.join(cap_ack),
+            error,
+        )
+        bot.write(('CAP', 'END'))  # close negotiation now
+        bot.quit('Error negotiating capabilities.')
+        return None
+
+    if result is None:
+        # a plugin may have requested the capability without using the proper
+        # interface: ignore
+        return None
+
+    _handle_cap_acknowledgement(bot, cap_ack, result, was_completed)
+
+
+def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
+    was_completed = bot.cap_requests.is_complete
+    cap_ack = bot.capabilities.handle_nak(bot, trigger)
+
+    try:
+        result: Optional[
+            List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]]
+        ] = bot.cap_requests.deny(bot, cap_ack)
+    except config.ConfigurationError as error:
+        LOGGER.error(
+            'Configuration error on NAK capability "%s": %s',
+            ', '.join(cap_ack),
+            error,
+        )
+        bot.write(('CAP', 'END'))  # close negotiation now
+        bot.quit('Configuration error.')
+        return None
+    except Exception as error:
+        LOGGER.exception(
+            'Error on NAK capability "%s": %s',
+            ', '.join(cap_ack),
+            error,
+        )
+        bot.write(('CAP', 'END'))  # close negotiation now
+        bot.quit('Error negotiating capabilities.')
+        return None
+
+    if result is None:
+        # a plugin may have requested the capability without using the proper
+        # interface: ignore
+        return None
+
+    _handle_cap_acknowledgement(bot, cap_ack, result, was_completed)
+
+
+def _receive_cap_new(bot: SopelWrapper, trigger: Trigger) -> None:
+    cap_new = bot.capabilities.handle_new(bot, trigger)
+    LOGGER.info('Capability is now available: %s', ', '.join(cap_new))
+    # TODO: try to request what wasn't requested before
+
+
+def _receive_cap_del(bot: SopelWrapper, trigger: Trigger) -> None:
+    cap_del = bot.capabilities.handle_del(bot, trigger)
+    LOGGER.info('Capability is now unavailable: %s', ', '.join(cap_del))
+    # TODO: what to do when a CAP is removed? NAK callbacks?
+
+
+CAP_HANDLERS: Dict[str, Callable[[SopelWrapper, Trigger], None]] = {
+    'LS': _receive_cap_ls_reply,  # Server is listing capabilities
+    'ACK': _receive_cap_ack,  # Server is acknowledging a capability
+    'NAK': _receive_cap_nak,  # Server is denying a capability
+    'NEW': _receive_cap_new,  # Server is adding new capability
+    'DEL': _receive_cap_del,  # Server is removing a capability
+}
+
+
 @plugin.event('CAP')
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.priority('medium')
-def receive_cap_list(bot, trigger):
+def receive_cap_list(bot: SopelWrapper, trigger: Trigger) -> None:
     """Handle client capability negotiation."""
-    cap = trigger.strip('-=~')
-    # Server is listing capabilities
-    if trigger.args[1] == 'LS':
-        receive_cap_ls_reply(bot, trigger)
-    # Server denied CAP REQ
-    elif trigger.args[1] == 'NAK':
-        entry = bot._cap_reqs.get(cap, None)
-        # If it was requested with bot.cap_req
-        if entry:
-            for req in entry:
-                # And that request was mandatory/prohibit, and a callback was
-                # provided
-                if req.prefix and req.failure:
-                    # Call it.
-                    req.failure(bot, req.prefix + cap)
-    # Server is removing a capability
-    elif trigger.args[1] == 'DEL':
-        entry = bot._cap_reqs.get(cap, None)
-        # If it was requested with bot.cap_req
-        if entry:
-            for req in entry:
-                # And that request wasn't prohibit, and a callback was
-                # provided
-                if req.prefix != '-' and req.failure:
-                    # Call it.
-                    req.failure(bot, req.prefix + cap)
-    # Server is adding new capability
-    elif trigger.args[1] == 'NEW':
-        entry = bot._cap_reqs.get(cap, None)
-        # If it was requested with bot.cap_req
-        if entry:
-            for req in entry:
-                # And that request wasn't prohibit
-                if req.prefix != '-':
-                    # Request it
-                    bot.write(('CAP', 'REQ', req.prefix + cap))
-    # Server is acknowledging a capability
-    elif trigger.args[1] == 'ACK':
-        caps = trigger.args[2].split()
-        for cap in caps:
-            cap.strip('-~= ')
-            bot.enabled_capabilities.add(cap)
-            entry = bot._cap_reqs.get(cap, [])
-            for req in entry:
-                if req.success:
-                    req.success(bot, req.prefix + trigger)
-            if cap == 'sasl':  # TODO why is this not done with bot.cap_req?
-                try:
-                    receive_cap_ack_sasl(bot)
-                except config.ConfigurationError as error:
-                    LOGGER.error(str(error))
-                    bot.quit('Wrong SASL configuration.')
-
-
-def receive_cap_ls_reply(bot, trigger):
-    if bot.server_capabilities:
-        # We've already seen the results, so someone sent CAP LS from a plugin.
-        # We're too late to do SASL, and we don't want to send CAP END before
-        # the plugin has done what it needs to, so just return
-        return
-
-    for cap in trigger.split():
-        c = cap.split('=')
-        if len(c) == 2:
-            batched_caps[c[0]] = c[1]
-        else:
-            batched_caps[c[0]] = None
-
-    # Not the last in a multi-line reply. First two args are * and LS.
-    if trigger.args[2] == '*':
-        return
-
-    LOGGER.info(
-        "Client capability negotiation list: %s",
-        ', '.join(batched_caps.keys()),
-    )
-    bot.server_capabilities = batched_caps
-
-    # If some other plugin requests it, we don't need to add another request.
-    # If some other plugin prohibits it, we shouldn't request it.
-    core_caps = [
-        'echo-message',
-        'multi-prefix',
-        'away-notify',
-        'chghost',
-        'cap-notify',
-        'server-time',
-        'userhost-in-names',
-        'message-tags',
-    ]
-    for cap in core_caps:
-        if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [utils.CapReq('', 'coretasks')]
-
-    def acct_warn(bot, cap):
-        LOGGER.info("Server does not support %s, or it conflicts with a custom "
-                    "plugin. User account validation unavailable or limited.",
-                    cap[1:])
-        if bot.config.core.owner_account or bot.config.core.admin_accounts:
-            LOGGER.warning(
-                "Owner or admin accounts are configured, but %s is not "
-                "supported by the server. This may cause unexpected behavior.",
-                cap[1:])
-    auth_caps = ['account-notify', 'extended-join', 'account-tag']
-    for cap in auth_caps:
-        if cap not in bot._cap_reqs:
-            bot._cap_reqs[cap] = [utils.CapReq('', 'coretasks', acct_warn)]
-
-    for cap, reqs in bot._cap_reqs.items():
-        # At this point, we know mandatory and prohibited don't co-exist, but
-        # we need to call back for optionals if they're also prohibited
-        prefix = ''
-        for entry in reqs:
-            if prefix == '-' and entry.prefix != '-':
-                entry.failure(bot, entry.prefix + cap)
-                continue
-            if entry.prefix:
-                prefix = entry.prefix
-
-        # It's not required, or it's supported, so we can request it
-        if prefix != '=' or cap in bot.server_capabilities:
-            # REQs fail as a whole, so we send them one capability at a time
-            bot.write(('CAP', 'REQ', entry.prefix + cap))
-        # If it's required but not in server caps, we need to call all the
-        # callbacks
-        else:
-            for entry in reqs:
-                if entry.failure and entry.prefix == '=':
-                    entry.failure(bot, entry.prefix + cap)
-
-    # If we want to do SASL, we have to wait before we can send CAP END. So if
-    # we are, wait on 903 (SASL successful) to send it.
-    if bot.config.core.auth_method == 'sasl' or bot.config.core.server_auth_method == 'sasl':
-        bot.write(('CAP', 'REQ', 'sasl'))
+    subcommand = trigger.args[1]
+    if subcommand in CAP_HANDLERS:
+        handler = CAP_HANDLERS[subcommand]
+        handler(bot, trigger)
     else:
-        bot.write(('CAP', 'END'))
-        LOGGER.info("End of client capability negotiation requests.")
-
-
-def receive_cap_ack_sasl(bot):
-    # Presumably we're only here if we said we actually *want* sasl, but still
-    # check anyway in case the server glitched.
-    password, mech = _get_sasl_pass_and_mech(bot)
-    if not password:
-        return
-
-    available_mechs = bot.server_capabilities.get('sasl', '')
-    available_mechs = available_mechs.split(',') if available_mechs else []
-
-    if available_mechs and mech not in available_mechs:
-        """
-        Raise an error if configured to use an unsupported SASL mechanism,
-        but only if the server actually advertised supported mechanisms,
-        i.e. this network supports SASL 3.2
-
-        SASL 3.1 failure is handled (when possible) by the sasl_mechs() function
-
-        See https://github.com/sopel-irc/sopel/issues/1780 for background
-        """
-        raise config.ConfigurationError(
-            "SASL mechanism '{}' is not advertised by this server.".format(mech))
-
-    bot.write(('AUTHENTICATE', mech))
+        LOGGER.info('Unknown CAP subcommand received: %s', subcommand)
 
 
 def send_authenticate(bot, token):
@@ -1160,7 +1237,9 @@ def auth_proceed(bot, trigger):
             return
         else:
             # Not an expected response from the server
-            LOGGER.warning("Aborting SASL: unexpected server reply '%s'" % trigger)
+            LOGGER.warning(
+                'Aborting SASL: unexpected server reply "%s"', trigger,
+            )
             # Send `authenticate-abort` command
             # See https://ircv3.net/specs/extensions/sasl-3.1#the-authenticate-command
             bot.write(('AUTHENTICATE', '*'))
@@ -1177,17 +1256,10 @@ def _make_sasl_plain_token(account, password):
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.priority('medium')
-def sasl_success(bot, trigger):
-    """End CAP request on successful SASL auth.
-
-    If SASL is configured, then the bot won't send ``CAP END`` once it gets
-    all the capability responses; it will wait for SASL auth result.
-
-    In this case, the SASL auth is a success, so we can close the negotiation.
-    """
+def sasl_success(bot: SopelWrapper, trigger: Trigger):
+    """Resume capability negotiation on successful SASL auth."""
     LOGGER.info("Successful SASL Auth.")
-    bot.write(('CAP', 'END'))
-    LOGGER.info("End of client capability negotiation requests.")
+    bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
 
 
 @plugin.event(events.ERR_SASLFAIL)
@@ -1202,6 +1274,9 @@ def sasl_fail(bot, trigger):
     LOGGER.error(
         "SASL Auth Failed; check your configuration: %s",
         str(trigger))
+    # negotiation done
+    bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
+    # quit
     bot.quit('SASL Auth Failed')
 
 
@@ -1214,6 +1289,8 @@ def sasl_mechs(bot, trigger):
     # check anyway in case the server glitched.
     password, mech = _get_sasl_pass_and_mech(bot)
     if not password:
+        # negotiation done
+        bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
         return
 
     supported_mechs = trigger.args[1].split(',')
@@ -1231,7 +1308,7 @@ def sasl_mechs(bot, trigger):
         to an IRC server NOT implementing the optional 908 reply.
 
         A network with SASL 3.2 should theoretically never get this far because
-        Sopel should catch the unadvertised mechanism in receive_cap_ack_sasl().
+        Sopel should catch the unadvertised mechanism in CAP_SASL.
 
         See https://github.com/sopel-irc/sopel/issues/1780 for background
         """
@@ -1241,6 +1318,7 @@ def sasl_mechs(bot, trigger):
             mech,
             ', '.join(supported_mechs),
         )
+        bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
         bot.quit('Wrong SASL configuration.')
     else:
         LOGGER.info(

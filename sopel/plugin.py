@@ -9,13 +9,26 @@
 
 from __future__ import annotations
 
+import enum
 import functools
+import logging
 import re
-from typing import Any, Callable, Optional, Pattern, Union
+from typing import (
+    Any,
+    Callable,
+    Optional,
+    Pattern,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
 
 # import and expose privileges as shortcut
 from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
 
+
+if TYPE_CHECKING:
+    from sopel.bot import SopelWrapper
 
 __all__ = [
     # constants
@@ -24,6 +37,8 @@ __all__ = [
     'action_command',
     'action_commands',
     'allow_bots',
+    'capability',
+    'CapabilityNegotiation',
     'command',
     'commands',
     'ctcp',
@@ -60,6 +75,9 @@ __all__ = [
 ]
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 NOLIMIT = 1
 """Return value for ``callable``\\s, which suppresses rate limiting.
 
@@ -69,6 +87,221 @@ for example, to allow a user to retry a failed command immediately.
 
 .. versionadded:: 4.0
 """
+
+
+class CapabilityNegotiation(enum.Enum):
+    """Capability Negotiation status."""
+
+    DONE = enum.auto()
+    """The capability negotiation can end.
+
+    This must be returned by a capability request handler to signify to the bot
+    that the capability has been properly negotiated and negotiation can end if
+    all other conditions are met.
+    """
+
+    CONTINUE = enum.auto()
+    """The capability negotiation must continue.
+
+    This must be returned by a capability request handler to signify to the bot
+    that the capability requires further processing (e.g. SASL
+    authentication) and negotiation must not end yet.
+
+    The plugin author MUST signal the bot once the negotiation is done.
+    """
+
+    ERROR = enum.auto()
+    """The capability negotiation callback was improperly executed.
+
+    If a capability request's handler returns this status, or if it raises an
+    exception, the bot will mark the request as errored. A handler can use this
+    return value to inform the bot that something wrong happened, without being
+    an error in the code itself.
+    """
+
+
+if TYPE_CHECKING:
+    CapabilityHandler = Callable[
+        [Tuple[str, ...], SopelWrapper, bool],
+        CapabilityNegotiation,
+    ]
+
+
+class capability:
+    """Decorate a function to request a capability and handle the result.
+
+    :param name: name of the capability to negotiate with the server; this
+                 positional argument can be used multiple times to form a
+                 single ``CAP REQ``
+    :param handler: optional keyword argument, acknowledgement handler
+
+    The Client Capability Negotiation is a feature of IRCv3 that exposes a
+    mechanism for a server to advertise a list of features and for clients to
+    request them when they are available.
+
+    This decorator will register a capability request, allowing the bot to
+    request capabilities if they are available. You can request more than one
+    at a time, which will make for one single request.
+
+    The handler must follow this interface::
+
+        from sopel import plugin
+        from sopel.bot import SopelWrapper
+
+        @plugin.capability('example/cap-name')
+        def capability_handler(
+            cap_req: Tuple[str, ...],
+            bot: SopelWrapper,
+            acknowledged: bool,
+        ) -> plugin.CapabilityNegotiation:
+            if acknowledged:
+                # do something if acknowledged
+                # i.e.
+                # activate a plugin's feature
+                pass
+            else:
+                # do something else if not
+                # i.e. use a fallback mechanism
+                # or deactivate a plugin's feature if needed
+                pass
+
+            # always return if Sopel can send "CAP END" (DONE)
+            # or if the plugin must notify the bot for that later (CONTINUE)
+            return CapabilityNegotiation.DONE
+
+    .. note::
+
+        Due to how Capability Negotiation works, a request will be acknowledged
+        or denied all at once. This means that this may succeed::
+
+            @plugin.capability('away-notify')
+
+        But this may not::
+
+            @plugin.capability('away-notify', 'example/incompatible-cap')
+
+        Even though the ``away-notify`` capability is available and can be
+        enabled, the second ``CAP REQ`` will be denied because the server won't
+        acknowledge a request that contains an incompatible capability.
+
+        In that case, if you don't need both at the same time, you should use
+        two different handlers::
+
+            @plugin.capability('away-notify')
+            def cap_away_notify(cap_req, bot, ack):
+                # handle away-notify acknowledgement
+
+            @plugin.capability('example/incompatible-cap')
+            def cap_example_incompatible_cap(cap_req, bot, ack):
+                # handle example/incompatible-cap acknowledgement
+                # or, most probably, lack thereof
+
+        This will allow the server to acknowledge or deny each capability
+        independently.
+
+    .. warning::
+
+        A function cannot be decorated more than once by this decorator, as
+        the result is an instance of :class:`capability`.
+
+        If you want to handle a ``CAP`` message without requesting the
+        capability, you should use the :func:`event` decorator instead.
+
+    .. warning::
+
+        The list of ``cap_req`` is limited in size to prevent the bot from
+        separating the ``CAP REQ`` in multiple lines as the bot does not know
+        how to call back the capability handler upon receiving the multi-line
+        ``ACK * REQ``.
+
+    .. seealso::
+
+        The IRCv3 specification on `Client Capability Negotiation`__.
+
+    .. __: https://ircv3.net/specs/extensions/capability-negotiation
+    """
+    def __init__(
+        self,
+        *cap_req: str,
+        handler: Optional[CapabilityHandler] = None,
+    ) -> None:
+        cap_req_text = ' '.join(cap_req)
+        if len(cap_req_text.encode('utf-8')) > 500:
+            # "CAP * ACK " is 10 bytes, leaving 500 bytes for the capabilities.
+            # Sopel cannot allow multi-line requests, as it won't know how to
+            # deal properly with multi-line ACK.
+            # The spec says a client SHOULD send multiple requests; however
+            # the spec also says that a server will ACK or NAK a whole request
+            # at once. So technically, multiple REQs are not the same as a
+            # single REQ.
+            raise ValueError('Capability request too long: %s' % cap_req_text)
+
+        self._cap_req: Tuple[str, ...] = tuple(sorted(cap_req))
+        self._handler: Optional[CapabilityHandler] = handler
+
+    @property
+    def cap_req(self) -> Tuple[str, ...]:
+        """Capability request as a sorted tuple.
+
+        This is the capability request that will be sent to the server as is.
+        A request is acknowledged or denied for all the capabilities it
+        contains, so the request ``(example/cap1, example/cap2)`` is not the
+        same as two requests, one for ``example/cap1`` and the other for
+        ``example/cap2``. This makes each request unique.
+        """
+        return self._cap_req
+
+    def callback(
+        self,
+        bot: SopelWrapper,
+        acknowledged: bool,
+    ) -> Tuple[bool, Optional[CapabilityNegotiation]]:
+        """Execute the acknowlegement callback of a capability request.
+
+        :param bot: a Sopel instance
+        :param acknowledged: tell if the capability request is acknowledged
+                             (``True``) or deny (``False``)
+        :return: a 2-value tuple that contains if the request is done and the
+                 result of the handler (if any)
+
+        It executes the handler when the capability request receives an
+        acknowledgement (either positive or negative), and returns the result.
+        The handler's return value is used to know if the capability
+        request is done, or if the bot must wait for resolution from the plugin
+        that requested the capability.
+
+        This method returns a 2-value tuple:
+
+        * the first value tells if the negotiation is done for this request
+        * the second is the handler's return value (if any)
+
+        If no handler is registered, this automatically returns
+        ``(True, None)``, as the negotiation is considered done (without any
+        result).
+
+        This doesn't prevent the handler from raising an exception.
+        """
+        result: Optional[CapabilityNegotiation] = None
+        if self._handler is not None:
+            result = self._handler(self.cap_req, bot, acknowledged)
+            LOGGER.debug(
+                'Cap request "%s" got "%s", '
+                'executed successfuly with status: %s',
+                ' '.join(self.cap_req),
+                'ACK' if acknowledged else 'NAK',
+                result.name,
+            )
+        return (result is None or result == CapabilityNegotiation.DONE, result)
+
+    def __call__(
+        self,
+        handler: CapabilityHandler,
+    ) -> capability:
+        """Register a capability negotiation callback."""
+        if self._handler is not None:
+            raise RuntimeError("Cannot re-use capability decorator")
+        self._handler = handler
+        return self
 
 
 def unblockable(function: Any) -> Any:

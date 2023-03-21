@@ -7,6 +7,7 @@ sopel.plugin
 
 .. automodule:: sopel.plugin
    :members:
+   :exclude-members: capability, CapabilityNegotiation
 
 
 About ``sopel.module``

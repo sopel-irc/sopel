@@ -39,10 +39,8 @@ import threading
 import time
 from typing import (
     Any,
-    Callable,
     Dict,
     Iterable,
-    List,
     Optional,
     Set,
     Tuple,
@@ -50,10 +48,11 @@ from typing import (
 )
 
 from sopel import tools, trigger
+from sopel.lifecycle import deprecated
 from sopel.tools import identifiers
 from .backends import AsyncioBackend, UninitializedBackend
+from .capabilities import Capabilities
 from .isupport import ISupport
-from .utils import CapReq
 
 if TYPE_CHECKING:
     from sopel.config import Config
@@ -74,6 +73,7 @@ class AbstractBot(abc.ABC):
         self._user: str = settings.core.user
         self._name: str = settings.core.name
         self._isupport = ISupport()
+        self._capabilities = Capabilities()
         self._myinfo: Optional[MyInfo] = None
         self._nick: identifiers.Identifier = self.make_identifier(
             settings.core.nick)
@@ -84,10 +84,6 @@ class AbstractBot(abc.ABC):
         """Flag stating whether the IRC Connection is registered yet."""
         self.settings = settings
         """Bot settings."""
-        self.enabled_capabilities: Set[str] = set()
-        """A set containing the IRCv3 capabilities that the bot has enabled."""
-        self._cap_reqs: Dict[str, List[CapReq]] = dict()
-        """A dictionary of capability names to a list of requests."""
 
         # internal machinery
         self.sending = threading.RLock()
@@ -140,6 +136,71 @@ class AbstractBot(abc.ABC):
         """The :class:`sopel.config.Config` for the current Sopel instance."""
         # TODO: Deprecate config, replaced by settings
         return self.settings
+
+    @property
+    def capabilities(self) -> Capabilities:
+        """Capabilities negotiated with the server."""
+        return self._capabilities
+
+    @property
+    @deprecated(
+        reason='Capability handling has been rewritten. '
+        'Use `bot.capabilities.is_enabled()` or `bot.capabilities.enabled` instead.',
+        version='8.0',
+        warning_in='8.1',
+        removed_in='9.0',
+    )
+    def enabled_capabilities(self) -> Set[str]:
+        """A set containing the IRCv3 capabilities that the bot has enabled.
+
+        .. deprecated:: 8.0
+
+            Enabled server capabilities are now managed by
+            :attr:`bot.capabilities <capabilities>` and its various methods and
+            attributes:
+
+            * use :meth:`bot.capabilities.is_enabled() <sopel.irc.capabilities.Capabilities.is_enabled>`
+              to check if a capability is enabled
+            * use :attr:`bot.capabilities.enabled <sopel.irc.capabilities.Capabilities.enabled>`
+              for a list of enabled capabilities
+
+            Will be removed in Sopel 9.
+
+        """
+        return set(self._capabilities.enabled)
+
+    @property
+    @deprecated(
+        reason='Capability handling has been rewritten. '
+        'Use `bot.capabilities.is_available()` or `bot.capabilities.available` instead.',
+        version='8.0',
+        warning_in='8.1',
+        removed_in='9.0',
+    )
+    def server_capabilities(self) -> Dict[str, Optional[str]]:
+        """A dict mapping supported IRCv3 capabilities to their options.
+
+        For example, if the server specifies the capability ``sasl=EXTERNAL``,
+        it will be here as ``{"sasl": "EXTERNAL"}``. Capabilities specified
+        without any options will have ``None`` as the value.
+
+        For servers that do not support IRCv3, this will be an empty set.
+
+        .. deprecated:: 8.0
+
+            Enabled server capabilities are now managed by
+            :attr:`bot.capabilities <capabilities>` and its various methods and
+            attributes:
+
+            * use :meth:`bot.capabilities.is_available() <sopel.irc.capabilities.Capabilities.is_available>`
+              to check if a capability is available
+            * use :attr:`bot.capabilities.available <sopel.irc.capabilities.Capabilities.available>`
+              for a list of available capabilities and their parameters
+
+            Will be removed in Sopel 9.
+
+        """
+        return self._capabilities.available
 
     @property
     def isupport(self) -> ISupport:
@@ -336,7 +397,7 @@ class AbstractBot(abc.ABC):
             statusmsg_prefixes=self.isupport.get('STATUSMSG'),
         )
         if all(
-            cap not in self.enabled_capabilities
+            not self.capabilities.is_enabled(cap)
             for cap in ['account-tag', 'extended-join']
         ):
             pretrigger.tags.pop('account', None)
@@ -364,7 +425,7 @@ class AbstractBot(abc.ABC):
         self.log_raw(raw, '>>')
 
         # Simulate echo-message
-        no_echo = 'echo-message' not in self.enabled_capabilities
+        no_echo = not self.capabilities.is_enabled('echo-message')
         echoed = ['PRIVMSG', 'NOTICE']
         if no_echo and any(raw.upper().startswith(cmd) for cmd in echoed):
             # Use the hostmask we think the IRC server is using for us,
@@ -474,89 +535,6 @@ class AbstractBot(abc.ABC):
             return
         logger = logging.getLogger('sopel.raw')
         logger.info("%s\t%r", prefix, line)
-
-    def cap_req(
-        self,
-        plugin_name: str,
-        capability: str,
-        arg: Optional[str] = None,
-        failure_callback: Optional[Callable] = None,
-        success_callback: Optional[Callable] = None,
-    ) -> None:
-        """Tell Sopel to request a capability when it starts.
-
-        :param plugin_name: the plugin requesting the capability
-        :param capability: the capability requested, optionally prefixed with
-                           ``-`` or ``=``
-        :param arg: arguments for the capability request
-        :param failure_callback: a function that will be called if the
-                                 capability request fails
-        :param success_callback: a function that will be called if the
-                                 capability is successfully requested
-
-        By prefixing the capability with ``-``, it will be ensured that the
-        capability is not enabled. Similarly, by prefixing the capability with
-        ``=``, it will be ensured that the capability is enabled. Requiring and
-        disabling is "first come, first served"; if one plugin requires a
-        capability, and another prohibits it, this function will raise an
-        exception in whichever plugin loads second. An exception will also be
-        raised if the plugin is being loaded after the bot has already started,
-        and the request would change the set of enabled capabilities.
-
-        If the capability is not prefixed, and no other plugin prohibits it, it
-        will be requested. Otherwise, it will not be requested. Since
-        capability requests that are not mandatory may be rejected by the
-        server, as well as by other plugins, a plugin which makes such a
-        request should account for that possibility.
-
-        The actual capability request to the server is handled after the
-        completion of this function. In the event that the server denies a
-        request, the ``failure_callback`` function will be called, if provided.
-        The arguments will be a :class:`~sopel.bot.Sopel` object, and the
-        capability which was rejected. This can be used to disable callables
-        which rely on the capability. It will be be called either if the server
-        NAKs the request, or if the server enabled it and later DELs it.
-
-        The ``success_callback`` function will be called upon acknowledgment
-        of the capability from the server, whether during the initial
-        capability negotiation, or later.
-
-        If ``arg`` is given, and does not exactly match what the server
-        provides or what other plugins have requested for that capability, it
-        is considered a conflict.
-        """
-        # TODO raise better exceptions
-        cap = capability[1:]
-        prefix = capability[0]
-
-        entry = self._cap_reqs.get(cap, [])
-        if any((ent.arg != arg for ent in entry)):
-            raise Exception('Capability conflict')
-
-        if prefix == '-':
-            if self.connection_registered and cap in self.enabled_capabilities:
-                raise Exception('Can not change capabilities after server '
-                                'connection has been completed.')
-            if any((ent.prefix != '-' for ent in entry)):
-                raise Exception('Capability conflict')
-            entry.append(CapReq(prefix, plugin_name, failure_callback, arg,
-                                success_callback))
-            self._cap_reqs[cap] = entry
-        else:
-            if prefix != '=':
-                cap = capability
-                prefix = ''
-            if self.connection_registered and (cap not in
-                                               self.enabled_capabilities):
-                raise Exception('Can not change capabilities after server '
-                                'connection has been completed.')
-            # Non-mandatory will callback at the same time as if the server
-            # rejected it.
-            if any((ent.prefix == '-' for ent in entry)) and prefix == '=':
-                raise Exception('Capability conflict')
-            entry.append(CapReq(prefix, plugin_name, failure_callback, arg,
-                                success_callback))
-            self._cap_reqs[cap] = entry
 
     def write(self, args: Iterable[str], text: Optional[str] = None) -> None:
         """Send a command to the server.

@@ -64,3 +64,134 @@ a QUIT/PART event, and they will be available after a JOIN event.
 
 Note that you don't specifically need to use ``@plugin.thread(False)``, but
 it is still recommended to prevent any race condition.
+
+
+Managing Capability negotiation
+===============================
+
+`Capability negotiation`__ is a feature of IRCv3 that allows a server to
+advertise a list of optional capabilities, and allows its clients to request
+such capabilities. You can see that as feature flags, activated by the client.
+
+Capability negotiation takes place after:
+
+* connecting to the IRC server
+* client's identification (``USER`` and ``NICK``)
+
+And before:
+
+* the ``RPL_WELCOME`` event (001)
+* ``ISUPPORT`` messages
+* client's authentication (except for SASL, which occurs in the capability
+  negotiation phase)
+
+.. warning::
+
+    This is a very advanced feature, and plugin authors should understand how
+    capability negotiation works before using it. Even if Sopel tries to make
+    it as simple as possible, plugin authors should be aware of the known
+    limitations and possible caveats.
+
+.. __: https://ircv3.net/specs/extensions/capability-negotiation
+
+Declaring requests: the ``capability`` decorator
+------------------------------------------------
+
+In :mod:`sopel.plugin` there is an advanced :class:`~sopel.plugin.capability`
+decorator: it is a class that declares a capability request and an optional
+handler to run after the capability is acknowledged or denied by the server::
+
+    """Sample plugin file"""
+
+    from sopel import plugin
+
+    # this will register a capability request
+    CAP_ACCOUNT_TAG = plugin.capability('account-tag')
+
+    # this will work as well
+    @plugin.capability('message-prefix')
+    def cap_message_prefix(cap_req, bot, acknowledged):
+        # do something if message-prefix is ACK or NAK
+        ...
+
+.. autoclass:: sopel.plugin.capability
+   :members:
+
+.. autoclass:: sopel.plugin.CapabilityNegotiation
+   :members:
+
+
+Working with capabilities
+-------------------------
+
+A plugin that requires capabilities, or that can enhance its features with
+capabilities, should rely on
+:attr:`bot.capabilities <sopel.irc.AbstractBot.capabilities>`'s methods'::
+
+    @plugin.command('mycommand')
+    def mycommand_handler(bot, trigger):
+        if bot.capabilities.is_enabled('cap1'):
+            # be fancy with enhanced capabilities
+        else:
+            # stick to the basics
+
+The :meth:`~sopel.irc.capabilities.Capabilities.is_enabled` method in
+particular is the most interesting, as it allows a plugin to always know if a
+capability is available or not.
+
+.. note::
+
+   Capability negotiation happens after the bot has loaded its plugins and
+   after the socket connection. As a result, it is not possible to know the
+   supported and enabled capabilities in the ``setup`` plugin hook.
+
+
+Ending negotiations
+-------------------
+
+Sopel automatically sends a ``CAP END`` message when all requests are handled.
+However in some cases, a plugin author may need to delay the end of CAP
+negotiation to perform an action that must be done first. In that case, a
+plugin must return :attr:`~sopel.plugin.CapabilityNegotiation.CONTINUE` in its
+callback.
+
+This is the case for SASL authentication, as seen in the ``coretasks``
+internal plugin that manages that:
+
+.. code-block:: python
+    :emphasize-lines: 8
+
+    @plugin.capability('sasl')
+    def cap_sasl_handler(cap_req, bot, acknowledged):
+        # ... <skip for readability> ...
+        bot.write(('AUTHENTICATE', mech))
+
+        # If we want to do SASL, we have to wait before we can send CAP END.
+        # So if we are, wait on 903 (SASL successful) to send it.
+        return plugin.CapabilityNegotiation.CONTINUE
+
+Later on, the plugin uses the
+:meth:`~sopel.bot.Sopel.resume_capability_negotiation` method to tell the bot
+that the request is complete, and the bot will send the ``CAP END``
+automatically:
+
+.. code-block:: python
+    :emphasize-lines: 8
+
+    @plugin.event(events.RPL_SASLSUCCESS)
+    @plugin.thread(False)
+    @plugin.unblockable
+    @plugin.priority('medium')
+    def sasl_success(bot: SopelWrapper, trigger: Trigger):
+        """Resume capability negotiation on successful SASL auth."""
+        LOGGER.info("Successful SASL Auth.")
+        bot.resume_capability_negotiation(
+            cap_sasl_handler.cap_req,
+            'coretasks'
+        )
+
+.. important::
+
+    Plugin callables that modify the bot's capability negotiation state should
+    always use ``@plugin.thread(False)`` and ``@plugin.unblockable`` to prevent
+    unwanted race conditions.

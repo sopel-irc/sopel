@@ -50,13 +50,17 @@ import inspect
 import itertools
 import os
 import sys
-from typing import Optional
+from typing import List, Optional, TYPE_CHECKING
 
 # TODO: refactor along with usage in sopel.__init__ in py3.8+ world
 import importlib_metadata
 
-from sopel import __version__ as release, loader
+from sopel import __version__ as release, loader, plugin as plugin_decorators
 from . import exceptions
+
+
+if TYPE_CHECKING:
+    from sopel.bot import Sopel
 
 
 class AbstractPluginHandler(abc.ABC):
@@ -154,6 +158,10 @@ class AbstractPluginHandler(abc.ABC):
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
         :rtype: bool
         """
+
+    @abc.abstractmethod
+    def get_capability_requests(self) -> List[plugin_decorators.capability]:
+        """Retrieve the plugin's list of capability requests."""
 
     @abc.abstractmethod
     def register(self, bot):
@@ -348,12 +356,26 @@ class PyModulePlugin(AbstractPluginHandler):
         """
         return hasattr(self._module, 'setup')
 
-    def register(self, bot):
+    def get_capability_requests(self) -> List[plugin_decorators.capability]:
+        return [
+            module_attribute
+            for module_attribute in vars(self._module).values()
+            if isinstance(module_attribute, plugin_decorators.capability)
+        ]
+
+    def register(self, bot: Sopel) -> None:
+        # capabilities are directly registered
+        for cap_request in self.get_capability_requests():
+            bot.cap_requests.register(self.name, cap_request)
+
+        # plugin callables go through ``bot.add_plugin``
         relevant_parts = loader.clean_module(self._module, bot.config)
         for part in itertools.chain(*relevant_parts):
             # annotate all callables in relevant_parts with `plugin_name`
             # attribute to make per-channel config work; see #1839
             setattr(part, 'plugin_name', self.name)
+
+        # TODO: replace add_plugin to direct call to register_* methods
         bot.add_plugin(self, *relevant_parts)
 
     def unregister(self, bot):

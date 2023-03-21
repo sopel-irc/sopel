@@ -7,6 +7,7 @@ IRC Core Implementation
     irc/backends
     irc/modes
     irc/isupport
+    irc/capabilities
     irc/utils
 
 .. automodule:: sopel.irc
