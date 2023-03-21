@@ -92,7 +92,7 @@ And before:
     it as simple as possible, plugin authors should be aware of the known
     limitations and possible caveats.
 
-.. __: https://ircv3.net/specs/extensions/capability-negotiation.html
+.. __: https://ircv3.net/specs/extensions/capability-negotiation
 
 Declaring requests: the ``capability`` decorator
 ------------------------------------------------

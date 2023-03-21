@@ -218,7 +218,7 @@ class capability:
 
         The IRCv3 specification on `Client Capability Negotiation`__.
 
-    .. __: https://ircv3.net/specs/extensions/capability-negotiation.html
+    .. __: https://ircv3.net/specs/extensions/capability-negotiation
     """
     def __init__(
         self,

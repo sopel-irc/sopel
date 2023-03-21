@@ -257,7 +257,8 @@ class Manager:
 
         Requests made are stored as requested; others are ignored::
 
-            >>> # manager.register => cap1 and cap2, not cap3
+            >>> manager.register('example', 'cap1')
+            >>> manager.register('example', 'cap2')
             >>> manager.request_available(bot, ('cap1', 'cap3'))
             >>> manager.is_requested(('cap1',))
             True
@@ -324,7 +325,7 @@ class Manager:
         * is it completed now?
 
         If the capability request cannot be found for that plugin, the result
-        value remains the same (it stay uncomplete or complete)
+        value remains the same (it stays incomplete or complete)
 
         .. important::
 
