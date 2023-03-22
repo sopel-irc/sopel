@@ -271,6 +271,10 @@ VALID_PARSE_VALUE = (
     ('STATUSMSG=ABCD', ('STATUSMSG', ('A', 'B', 'C', 'D'))),
     ('TOPICLEN=5', ('TOPICLEN', 5)),
     ('USERLEN=5', ('USERLEN', 5)),
+    ('NETWORK=Libera\\x20Chat', ('NETWORK', 'Libera Chat')),
+    ('NETWORK=Libera\\x5CChat', ('NETWORK', 'Libera\\Chat')),
+    ('NETWORK=Libera\\x3DChat', ('NETWORK', 'Libera=Chat')),
+    ('NETWORK=Libera\\x0aChat', ('NETWORK', 'Libera\\x0aChat')),
 )
 
 

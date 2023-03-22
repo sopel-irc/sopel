@@ -131,10 +131,37 @@ ISUPPORT_PARSERS = {
 }
 
 
+def _unescape_param(param):
+    """Handle escape sequences in ISUPPORT parameter values.
+
+    Sopel follows the recommendation of `modern.ircdocs.horse`__ which only
+    recognizes the escape sequences ``\\x20, \\x5C, \\x3D``. All other such
+    escape sequences will be passed through unaltered.
+
+    .. __: https://modern.ircdocs.horse/#rplisupport-005
+    """
+    HEX_PATTERN = r"\\x([0-9a-fA-F]{2})"
+
+    def _unescape(match):
+        num = match.group(1).upper()
+        if num == "20":
+            result = " "
+        elif num == "5C":
+            result = "\\"
+        elif num == "3D":
+            result = "="
+        else:
+            result = match.group(0)
+
+        return result
+
+    return re.sub(HEX_PATTERN, _unescape, param)
+
+
 def parse_parameter(arg):
     items = arg.split('=', 1)
     if len(items) == 2:
-        key, value = items
+        key, value = items[0], _unescape_param(items[1])
     else:
         key, value = items[0], None
 
