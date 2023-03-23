@@ -406,7 +406,18 @@ def process_urls(
             try:
                 ips = [ip_address(parsed_url.hostname)]
             except ValueError:
-                ips = [ip_address(ip) for ip in dns.resolver.resolve(parsed_url.hostname)]
+                # Extra try/except here in case the DNS resolution fails, see #2348
+                try:
+                    ips = [ip_address(ip) for ip in dns.resolver.resolve(parsed_url.hostname)]
+                except Exception as exc:
+                    LOGGER.debug(
+                        "Cannot resolve hostname %s, ignoring URL %s"
+                        " (exception was: %r)",
+                        parsed_url.hostname,
+                        url,
+                        exc,
+                    )
+                    continue
 
             private = False
             for ip in ips:
