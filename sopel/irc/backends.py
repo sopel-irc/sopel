@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import signal
+import socket
 import ssl
 import threading
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
@@ -379,6 +380,7 @@ class AsyncioBackend(AbstractIRCBackend):
 
     async def _run_forever(self) -> None:
         self._loop = asyncio.get_running_loop()
+        connection_kwargs = self.get_connection_kwargs()
 
         # register signal handlers
         for quit_signal in QUIT_SIGNALS:
@@ -389,16 +391,78 @@ class AsyncioBackend(AbstractIRCBackend):
         # open connection
         try:
             self._reader, self._writer = await asyncio.open_connection(
-                **self.get_connection_kwargs(),
+                **connection_kwargs,
             )
-        except ssl.SSLError:
-            LOGGER.exception('Unable to connect due to SSL error.')
+
+        # SSL Error
+        except ssl.SSLCertVerificationError as err:
+            LOGGER.error(
+                'Unable to connect due to an SSL validation error: %s',
+                err,
+            )
+            self.log_exception()
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
             return
-        except Exception:
-            LOGGER.exception('Unable to connect.')
+        except ssl.SSLError as err:
+            LOGGER.error('Unable to connect due to an SSL error: %s', err)
+            self.log_exception()
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+
+        # Specific connection error
+        except socket.gaierror as err:
+            LOGGER.error(
+                'Unable to connect due to invalid IRC server address: %s',
+                err,
+            )
+            LOGGER.error(
+                'You should verify that "%s:%s" is the correct address '
+                'to connect to the IRC server.',
+                connection_kwargs.get('host'),
+                connection_kwargs.get('port'),
+            )
+            self.log_exception()
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+        except TimeoutError as err:
+            LOGGER.error('Unable to connect due to a timeout: %s', err)
+            self.log_exception()
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+
+        # Generic connection error (OSError is used for any connection error)
+        except OSError as err:
+            LOGGER.error(
+                'Unable to connect: %s',
+                err,
+            )
+            LOGGER.error(
+                'You should verify that "%s:%s" is the correct address '
+                'to connect to the IRC server.',
+                connection_kwargs.get('host'),
+                connection_kwargs.get('port'),
+            )
+            self.log_exception()
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+
+        # Unexpected error
+        except Exception as err:
+            LOGGER.error(
+                'Unable to connect due to an unexpected error: %s',
+                err,
+            )
+            self.log_exception()
             # until there is a way to prevent an infinite loop of connection
             # error and reconnect, we have to tell the bot to quit here
             # TODO: prevent infinite connection failure loop
