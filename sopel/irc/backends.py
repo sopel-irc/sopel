@@ -397,7 +397,7 @@ class AsyncioBackend(AbstractIRCBackend):
         # SSL Error
         except ssl.SSLCertVerificationError as err:
             LOGGER.error(
-                'Unable to connect due to an SSL validation error: %s',
+                'Unable to connect due to SSL certificate verification failure: %s',
                 err,
             )
             self.log_exception()
