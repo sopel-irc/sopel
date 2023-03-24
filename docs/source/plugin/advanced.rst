@@ -15,6 +15,61 @@ If something is not in here, feel free to ask about it on our IRC channel, or
 maybe open an issue with the solution if you devise one yourself.
 
 
+Restricting commands to certain channels
+========================================
+
+Allowing games, for example, to be run only in specific channels is a
+relatively common request, but a difficult feature to support directly in
+Sopel's plugin API. Fortunately it is fairly trivial to build a custom
+decorator function that handles this in a configurable way.
+
+Here is a sample plugin that defines such a custom decorator, plus the
+scaffolding needed :ref:`for the plugin to pull its list of channels from the
+bot's settings <plugin-anatomy-config>`::
+
+    import functools
+
+    from sopel import plugin
+    from sopel.config import types
+
+
+    class MyPluginSection(types.StaticSection):
+        allowed_channels = types.ListAttribute('allowed_channels', default=['#botspam'])
+
+
+    def setup(bot):
+        bot.settings.define_section('myplugin', MyPluginSection)
+
+
+    def my_plugin_require_channel(func):
+        @functools.wraps(func)
+        def decorated(bot, trigger):
+            if trigger.sender not in bot.settings.myplugin.allowed_channels:
+                return
+            return func(bot, trigger)
+        return decorated
+
+
+    @plugin.command('command_name')
+    @plugin.require_chanmsg
+    @my_plugin_require_channel
+    def my_command(bot, trigger):
+        bot.say('This is the good channel.')
+
+.. important::
+
+    When using this example in your own plugin code, remember to change
+    ``myplugin`` to a section name appropriate for your plugin. It is also a
+    good idea to rename the ``MyPluginSection`` class accordingly.
+
+.. note::
+
+    The example here services the most common situations we have seen users
+    ask for help with on IRC. This kind of decorator could be written in many
+    different ways. Implementation of more complex approaches is left as an
+    exercise for the reader.
+
+
 Tracking events before/after the bot did
 ========================================
 
