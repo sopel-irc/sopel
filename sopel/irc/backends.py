@@ -313,9 +313,9 @@ class AsyncioBackend(AbstractIRCBackend):
         while not self._reader.at_eof():
             try:
                 line: bytes = await self._reader.readuntil(separator=b'\r\n')
-            except asyncio.exceptions.IncompleteReadError as e:
+            except asyncio.exceptions.IncompleteReadError as err:
                 LOGGER.warning('Receiving partial message from IRC.')
-                line = e.partial
+                line = err.partial
             except asyncio.exceptions.LimitOverrunError:
                 LOGGER.exception('Unable to read from IRC server.')
                 break
@@ -500,8 +500,25 @@ class AsyncioBackend(AbstractIRCBackend):
         self._read_task = asyncio.create_task(self.read_forever())
         try:
             await self._read_task
+
+        # task was cancelled, i.e. another exception is responsible for that
         except asyncio.CancelledError:
             LOGGER.debug('Read task was cancelled.')
+
+        # connection reset requires a log, but no exception log
+        except ConnectionResetError as err:
+            LOGGER.error('Connection reset on read: %s', err)
+
+        # generic (connection) error requires a specific exception log
+        except ConnectionError as err:
+            LOGGER.error('Connection error on read: %s', err)
+            self.log_exception()
+
+        except Exception as err:
+            LOGGER.error('Unexpected error on read: %s', err)
+            self.log_exception()
+
+        # task done (connection closed without error)
         else:
             LOGGER.debug('Reader received EOF.')
 
@@ -514,7 +531,26 @@ class AsyncioBackend(AbstractIRCBackend):
         # nothing to read anymore
         LOGGER.debug('Shutting down writer.')
         self._writer.close()
-        await self._writer.wait_closed()
+        try:
+            await self._writer.wait_closed()
+
+        # task was cancelled, i.e. another exception is responsible for that
+        except asyncio.CancelledError:
+            LOGGER.debug('Writer task was cancelled.')
+
+        # connection reset happened before on the read task
+        except ConnectionResetError as err:
+            LOGGER.debug('Connection reset while closing: %s', err)
+
+        # generic (connection) error requires a specific exception log
+        except ConnectionError as err:
+            LOGGER.error('Connection error while closing: %s', err)
+            self.log_exception()
+
+        except Exception:
+            LOGGER.error('Unexpected error while shutting down socket.')
+            self.log_exception()
+
         LOGGER.debug('All clear, exiting now.')
 
     def run_forever(self) -> None:
