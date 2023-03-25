@@ -13,7 +13,7 @@ from __future__ import annotations
 from ipaddress import ip_address
 import logging
 import re
-from typing import Generator, List, Optional, Tuple, TYPE_CHECKING
+from typing import Generator, List, NamedTuple, Optional, TYPE_CHECKING
 from urllib.parse import urlparse
 
 import dns.resolver
@@ -289,10 +289,10 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
         # needs to be a list so len() can be checked later
         urls = list(web.search_urls(trigger))
 
-    for url, title, domain, tinyurl, dispatched in process_urls(
+    for url, title, domain, tinyurl, ignored in process_urls(
         bot, trigger, urls, requested=True
     ):
-        if dispatched:
+        if ignored:
             result_count += 1
             continue
         message = "%s | %s" % (title, domain)
@@ -317,8 +317,13 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
 def title_auto(bot: SopelWrapper, trigger: Trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
-    where the URL redirects to and show the title for that (or call a function
-    from another plugin to give more information).
+    where the URL redirects to and show the title for that.
+
+    .. note::
+
+        URLs that match (before redirection) any other registered callbacks
+        will *not* have their titles shown.
+
     """
     # Enabled or disabled by feature flag
     if not bot.settings.url.enable_auto_title:
@@ -342,8 +347,8 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
             continue
         urls.append(url)
 
-    for url, title, domain, tinyurl, dispatched in process_urls(bot, trigger, urls):
-        if not dispatched:
+    for url, title, domain, tinyurl, ignored in process_urls(bot, trigger, urls):
+        if not ignored:
             message = '%s | %s' % (title, domain)
             if tinyurl:
                 message += ' ( %s )' % tinyurl
@@ -353,16 +358,30 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
         bot.memory["last_seen_url"][trigger.sender] = url
 
 
+class URLInfo(NamedTuple):
+    """Helper class for information about a URL handled by this plugin."""
+
+    url: str
+
+    title: Optional[str]
+    """The title associated with ``url``, if appropriate."""
+
+    hostname: Optional[str]
+    """The hostname associated with ``url``, if appropriate."""
+
+    tinyurl: Optional[str]
+    """A shortened form of ``url``, if appropriate."""
+
+    ignored: bool
+    """Whether or not this URL matches any registered callbacks or is explicitly excluded."""
+
+
 def process_urls(
     bot: SopelWrapper,
     trigger: Trigger,
     urls: List[str],
     requested: bool = False,
-) -> Generator[
-    Tuple[str, Optional[str], Optional[str], Optional[str], bool],
-    None,
-    None,
-]:
+) -> Generator[URLInfo, None, None]:
     """
     For each URL in the list, ensure it should be titled, and do so.
 
@@ -371,15 +390,25 @@ def process_urls(
     :param urls: The URLs detected in the triggering message
     :param requested: Whether the title was explicitly requested (vs automatic)
 
-    See if it's handled by another plugin. If not, find where it redirects to,
-    if anywhere. If that redirected URL should be handled by another plugin,
-    dispatch the callback for it. Return a list of
-    (url, title, hostname, tinyurl, dispatched) tuples for each URL.
+    Yields a tuple ``(url, title, hostname, tinyurl, ignored)`` for each URL.
 
-    If a callback was dispatched, only the url and dispatched=True will be set.
+    .. note:
 
-    For titles explicitly requested by the user, exclusion_char and excludes
-    are skipped.
+        If a URL in ``urls`` has any registered callbacks, this function will NOT
+        retrieve the title, and considers the URL as dispatched to those callbacks.
+        In this case, only the ``url`` and ``ignored=True`` will be set; all
+        other values will be ``None``.
+
+    .. note:
+
+        For titles explicitly requested by the user, ``exclusion_char`` and
+        exclusions from the ``.urlban``/``.urlpban`` commands are skipped.
+
+    .. versionchanged:: 8.0
+
+        This function **does not** notify callbacks registered for URLs
+        redirected to from URLs passed to this function. See #2432, #2230.
+
     """
     shorten_url_length = bot.config.url.shorten_url_length
     for url in urls:
@@ -391,7 +420,7 @@ def process_urls(
 
         if check_callbacks(bot, url, use_excludes=not requested):
             # URL matches a callback OR is excluded, ignore
-            yield (url, None, None, None, True)
+            yield URLInfo(url, None, None, None, True)
             continue
 
         # Prevent private addresses from being queried if enable_private_resolution is False
