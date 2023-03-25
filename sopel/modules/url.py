@@ -389,10 +389,10 @@ def process_urls(
 
         parsed_url = urlparse(url)
 
-        # Check the URL does not match an existing URL callback
         if check_callbacks(bot, url, use_excludes=not requested):
+            # URL matches a callback OR is excluded, ignore
             yield (url, None, None, None, True)
-            return
+            continue
 
         # Prevent private addresses from being queried if enable_private_resolution is False
         # FIXME: This does nothing when an attacker knows how to host a 302
