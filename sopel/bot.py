@@ -599,16 +599,17 @@ class Sopel(irc.AbstractBot):
         is_channel = trigger.sender and not trigger.sender.is_nick()
         channel = trigger.sender if is_channel else None
 
-        # TODO: these functions call now() and probably shouldn't
-        if rule.is_user_rate_limited(trigger.nick):
+        at_time = trigger.time
+
+        if rule.is_user_rate_limited(nick=trigger.nick, at_time=at_time):
             template = rule.user_rate_template
             rate_limit_type = "user"
             rate_limit_sec = rule._user_rate_limit
-        elif is_channel and rule.is_channel_rate_limited(channel=channel):
+        elif is_channel and rule.is_channel_rate_limited(channel=channel, at_time=at_time):
             template = rule.channel_rate_template
             rate_limit_type = "channel"
             rate_limit_sec = rule._channel_rate_limit
-        elif rule.is_global_rate_limited():
+        elif rule.is_global_rate_limited(at_time=at_time):
             template = rule.global_rate_template
             rate_limit_type = "global"
             rate_limit_sec = rule._global_rate_limit

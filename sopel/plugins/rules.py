@@ -732,23 +732,31 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def is_user_rate_limited(self, nick: Identifier) -> bool:
+    def is_user_rate_limited(self, nick: Identifier, at_time: Optional[datetime.datetime] = None) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
+        :param nick: the nick associated with this check
+        :param at_time: optional aware datetime for the rate limit check;
+                        if not given, ``utcnow`` will be used
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
     @abc.abstractmethod
-    def is_channel_rate_limited(self, channel: Identifier) -> bool:
+    def is_channel_rate_limited(self, channel: Identifier, at_time: Optional[datetime.datetime] = None) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
+        :param channel: the channel associated with this check
+        :param at_time: optional aware datetime for the rate limit check;
+                        if not given, ``utcnow`` will be used
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
     @abc.abstractmethod
-    def is_global_rate_limited(self) -> bool:
+    def is_global_rate_limited(self, at_time: Optional[datetime.datetime] = None) -> bool:
         """Tell when the rule reached the global rate limit.
 
+        :param at_time: optional aware datetime for the rate limit check;
+                        if not given, ``utcnow`` will be used
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
@@ -1136,22 +1144,25 @@ class Rule(AbstractRule):
     def is_unblockable(self):
         return self._unblockable
 
-    def is_user_rate_limited(self, nick):
+    def is_user_rate_limited(self, nick, at_time=None) -> bool:
+        if at_time is None:
+            at_time = datetime.datetime.utcnow()
         metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
-        now = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._user_rate_limit)
-        return metrics.is_limited(now - rate_limit)
+        return metrics.is_limited(at_time - rate_limit)
 
-    def is_channel_rate_limited(self, channel):
+    def is_channel_rate_limited(self, channel, at_time=None) -> bool:
+        if at_time is None:
+            at_time = datetime.datetime.utcnow()
         metrics: RuleMetrics = self._metrics_sender.get(channel, RuleMetrics())
-        now = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._channel_rate_limit)
-        return metrics.is_limited(now - rate_limit)
+        return metrics.is_limited(at_time - rate_limit)
 
-    def is_global_rate_limited(self):
-        now = datetime.datetime.utcnow()
+    def is_global_rate_limited(self, at_time=None) -> bool:
+        if at_time is None:
+            at_time = datetime.datetime.utcnow()
         rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
-        return self._metrics_global.is_limited(now - rate_limit)
+        return self._metrics_global.is_limited(at_time - rate_limit)
 
     @property
     def user_rate_template(self):
