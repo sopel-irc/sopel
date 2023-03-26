@@ -592,6 +592,44 @@ class Sopel(irc.AbstractBot):
                 except plugins.exceptions.PluginError as err:
                     LOGGER.error("Cannot register URL callback: %s", err)
 
+    def rate_limit_info(self, rule: plugin_rules.Rule, trigger: Trigger) -> Tuple[bool, Optional[str]]:
+        if trigger.admin or rule.is_unblockable():
+            return False, None
+
+        is_channel = trigger.sender and not trigger.sender.is_nick()
+        channel = trigger.sender if is_channel else None
+
+        # TODO: these functions call now() and probably shouldn't
+        if rule.is_user_rate_limited(trigger.nick):
+            template = rule.user_rate_template
+            rate_limit_type = "user"
+            rate_limit_sec = rule._user_rate_limit
+        elif is_channel and rule.is_channel_rate_limited(channel=channel):
+            template = rule.channel_rate_template
+            rate_limit_type = "channel"
+            rate_limit_sec = rule._channel_rate_limit
+        elif rule.is_global_rate_limited():
+            template = rule.global_rate_template
+            rate_limit_type = "global"
+            rate_limit_sec = rule._global_rate_limit
+        else:
+            return False, None
+
+        if template:
+            message = template.format(
+                nick=trigger.nick,
+                channel=channel or 'private message',
+                sender=trigger.sender,
+                plugin=rule.get_plugin_name(),
+                label=rule.get_rule_label(),
+                rate_limit_sec=rate_limit_sec,
+                rate_limit_type=rate_limit_type,
+            )
+        else:
+            message = None
+
+        return True, message
+
     # message dispatch
 
     def call_rule(
@@ -604,25 +642,11 @@ class Sopel(irc.AbstractBot):
         context = trigger.sender
         is_channel = context and not context.is_nick()
 
-        # rate limiting
-        if not trigger.admin and not rule.is_unblockable():
-            if rule.is_user_rate_limited(nick):
-                message = rule.get_user_rate_message(nick)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
-
-            if is_channel and rule.is_channel_rate_limited(context):
-                message = rule.get_channel_rate_message(nick, context)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
-
-            if rule.is_global_rate_limited():
-                message = rule.get_global_rate_message(nick)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
+        limited, limit_msg = self.rate_limit_info(rule, trigger)
+        if limit_msg:
+            sopel.notice(limit_msg, destination=nick)
+        if limited:
+            return
 
         # channel config
         if is_channel and context in self.config:

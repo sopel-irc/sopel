@@ -735,55 +735,50 @@ class AbstractRule(abc.ABC):
     def is_user_rate_limited(self, nick: Identifier) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
-        :return: ``True`` when the rule reached the limit, ``False`` otherwise
+        :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
     @abc.abstractmethod
     def is_channel_rate_limited(self, channel: Identifier) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
-        :return: ``True`` when the rule reached the limit, ``False`` otherwise
+        :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
     @abc.abstractmethod
     def is_global_rate_limited(self) -> bool:
         """Tell when the rule reached the global rate limit.
 
-        :return: ``True`` when the rule reached the limit, ``False`` otherwise
+        :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
+    @property
     @abc.abstractmethod
-    def get_user_rate_message(self, nick: Identifier) -> Optional[str]:
-        """Give the message to send with a NOTICE to ``nick``.
+    def user_rate_template(self) -> Optional[str]:
+        """Give the message template to send with a NOTICE to ``nick``.
 
-        :param nick: the nick that is rate limited
         :return: A formatted string, or ``None`` if no message is set.
 
-        This method is called by the bot when a trigger hits the user rate
+        This property is accessed by the bot when a trigger hits the user rate
         limit (i.e. for the specificed ``nick``).
         """
 
+    @property
     @abc.abstractmethod
-    def get_channel_rate_message(
-        self,
-        nick: Identifier,
-        channel: Identifier,
-    ) -> Optional[str]:
-        """Give the message to send with a NOTICE to ``nick``.
+    def channel_rate_template(self) -> Optional[str]:
+        """Give the message template to send with a NOTICE to ``nick``.
 
-        :param nick: the nick that reached the channel's rate limit
-        :param channel: the channel that is rate limited
         :return: A formatted string, or ``None`` if no message is set.
 
         This method is called by the bot when a trigger hits the channel rate
         limit (i.e. for the specificed ``channel``).
         """
 
+    @property
     @abc.abstractmethod
-    def get_global_rate_message(self, nick: Identifier) -> Optional[str]:
+    def global_rate_template(self) -> Optional[str]:
         """Give the message to send with a NOTICE to ``nick``.
 
-        :param nick: the nick that reached the global rate limit
         :return: A formatted string, or ``None`` if no message is set.
 
         This method is called by the bot when a trigger hits the global rate
@@ -1158,36 +1153,20 @@ class Rule(AbstractRule):
         rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
         return self._metrics_global.is_limited(now - rate_limit)
 
-    def get_user_rate_message(self, nick):
+    @property
+    def user_rate_template(self):
         template = self._user_rate_message or self._default_rate_message
+        return template
 
-        if not template:
-            return None
-
-        return template.format(
-            nick=nick,
-        )
-
-    def get_channel_rate_message(self, nick, channel):
+    @property
+    def channel_rate_template(self):
         template = self._channel_rate_message or self._default_rate_message
+        return template
 
-        if not template:
-            return None
-
-        return template.format(
-            nick=nick,
-            channel=channel,
-        )
-
-    def get_global_rate_message(self, nick):
+    @property
+    def global_rate_template(self):
         template = self._global_rate_message or self._default_rate_message
-
-        if not template:
-            return None
-
-        return template.format(
-            nick=nick,
-        )
+        return template
 
     def execute(self, bot, trigger):
         if not self._handler:

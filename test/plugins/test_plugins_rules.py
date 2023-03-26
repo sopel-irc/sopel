@@ -1633,10 +1633,6 @@ def test_rule_rate_limit_messages(mockbot, triggerfactory):
     def handler(bot, trigger):
         return 'hello'
 
-    wrapper = triggerfactory.wrapper(
-        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
-
     regex = re.compile(r'.*')
     rule = rules.Rule(
         [regex],
@@ -1649,22 +1645,14 @@ def test_rule_rate_limit_messages(mockbot, triggerfactory):
         global_rate_message='Server message: {nick}',
         default_rate_message='Default message: {nick}',
     )
-    assert rule.get_user_rate_message(mocktrigger.nick) == 'User message: Foo'
-    assert rule.get_channel_rate_message(
-        mocktrigger.nick, mocktrigger.sender
-    ) == 'Channel message: Foo/#channel'
-    assert rule.get_global_rate_message(
-        mocktrigger.nick
-    ) == 'Server message: Foo'
+    assert rule.user_rate_template == 'User message: {nick}'
+    assert rule.channel_rate_template == 'Channel message: {nick}/{channel}'
+    assert rule.global_rate_template == 'Server message: {nick}'
 
 
 def test_rule_rate_limit_messages_default(mockbot, triggerfactory):
     def handler(bot, trigger):
         return 'hello'
-
-    wrapper = triggerfactory.wrapper(
-        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1675,19 +1663,14 @@ def test_rule_rate_limit_messages_default(mockbot, triggerfactory):
         channel_rate_limit=20,
         default_rate_message='Default message',
     )
-    assert rule.get_user_rate_message(mocktrigger.nick) == 'Default message'
-    assert rule.get_channel_rate_message(
-        mocktrigger.nick, mocktrigger.sender) == 'Default message'
-    assert rule.get_global_rate_message(mocktrigger.nick) == 'Default message'
+    assert rule.user_rate_template == 'Default message'
+    assert rule.channel_rate_template == 'Default message'
+    assert rule.global_rate_template == 'Default message'
 
 
 def test_rule_rate_limit_messages_default_mixed(mockbot, triggerfactory):
     def handler(bot, trigger):
         return 'hello'
-
-    wrapper = triggerfactory.wrapper(
-        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1699,10 +1682,9 @@ def test_rule_rate_limit_messages_default_mixed(mockbot, triggerfactory):
         user_rate_message='User message.',
         default_rate_message='The default.',
     )
-    assert rule.get_user_rate_message(mocktrigger.nick) == 'User message.'
-    assert rule.get_channel_rate_message(
-        mocktrigger.nick, mocktrigger.sender) == 'The default.'
-    assert rule.get_global_rate_message(mocktrigger.nick) == 'The default.'
+    assert rule.user_rate_template == 'User message.'
+    assert rule.channel_rate_template == 'The default.'
+    assert rule.global_rate_template == 'The default.'
 
     rule = rules.Rule(
         [regex],
@@ -1713,10 +1695,9 @@ def test_rule_rate_limit_messages_default_mixed(mockbot, triggerfactory):
         channel_rate_message='Channel message.',
         default_rate_message='The default.',
     )
-    assert rule.get_user_rate_message(mocktrigger.nick) == 'The default.'
-    assert rule.get_channel_rate_message(
-        mocktrigger.nick, mocktrigger.sender) == 'Channel message.'
-    assert rule.get_global_rate_message(mocktrigger.nick) == 'The default.'
+    assert rule.user_rate_template == 'The default.'
+    assert rule.channel_rate_template == 'Channel message.'
+    assert rule.global_rate_template == 'The default.'
 
     rule = rules.Rule(
         [regex],
@@ -1727,10 +1708,9 @@ def test_rule_rate_limit_messages_default_mixed(mockbot, triggerfactory):
         global_rate_message='Server message.',
         default_rate_message='The default.',
     )
-    assert rule.get_user_rate_message(mocktrigger.nick) == 'The default.'
-    assert rule.get_channel_rate_message(
-        mocktrigger.nick, mocktrigger.sender) == 'The default.'
-    assert rule.get_global_rate_message(mocktrigger.nick) == 'Server message.'
+    assert rule.user_rate_template == 'The default.'
+    assert rule.channel_rate_template == 'The default.'
+    assert rule.global_rate_template == 'Server message.'
 
 
 # -----------------------------------------------------------------------------
