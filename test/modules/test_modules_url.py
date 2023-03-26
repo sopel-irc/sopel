@@ -60,13 +60,6 @@ def mockbot(configfactory):
     # register callables
     sopel.register_urls(callables)
 
-    # manually register URL Callback
-    pattern = re.escape('https://help.example.com/') + r'(.+)'
-
-    def callback(bot, trigger, match):
-        pass
-
-    sopel.register_url_callback(pattern, callback)
     return sopel
 
 
@@ -80,7 +73,6 @@ def test_check_callbacks(mockbot):
     """Test that check_callbacks works with both new & legacy URL callbacks."""
     assert url.check_callbacks(mockbot, 'https://example.com/test')
     assert url.check_callbacks(mockbot, 'http://example.com/test')
-    assert url.check_callbacks(mockbot, 'https://help.example.com/test')
     assert not url.check_callbacks(mockbot, 'https://not.example.com/test')
 
 
