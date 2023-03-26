@@ -28,7 +28,6 @@ from typing import (
 
 from sopel import db, irc, logger, plugins, tools
 from sopel.irc import modes
-from sopel.lifecycle import deprecated
 from sopel.plugins import (
     capabilities as plugin_capabilities,
     jobs as plugin_jobs,
@@ -56,15 +55,6 @@ class Sopel(irc.AbstractBot):
         self._rules_manager = plugin_rules.Manager()
         self._cap_requests_manager = plugin_capabilities.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
-
-        self._url_callbacks = tools.SopelMemory()
-        """Tracking of manually registered URL callbacks.
-
-        Should be manipulated only by use of :meth:`register_url_callback` and
-        :meth:`unregister_url_callback` methods, which are deprecated.
-
-        Remove in Sopel 9, along with the above related methods.
-        """
 
         self.modeparser = modes.ModeParser()
         """A mode parser used to parse ``MODE`` messages and modestrings."""
@@ -962,148 +952,6 @@ class Sopel(irc.AbstractBot):
 
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
-
-    # URL callbacks management
-
-    @deprecated(
-        reason='Issues with @url decorator have been fixed. Simply use that.',
-        version='7.1',
-        warning_in='8.0',
-        removed_in='9.0',
-    )
-    def register_url_callback(self, pattern, callback):
-        """Register a ``callback`` for URLs matching the regex ``pattern``.
-
-        :param pattern: compiled regex pattern to register
-        :type pattern: :ref:`re.Pattern <python:re-objects>`
-        :param callback: callable object to handle matching URLs
-        :type callback: :term:`function`
-
-        .. versionadded:: 7.0
-
-            This method replaces manual management of ``url_callbacks`` in
-            Sopel's plugins, so instead of doing this in ``setup()``::
-
-                if 'url_callbacks' not in bot.memory:
-                    bot.memory['url_callbacks'] = tools.SopelMemory()
-
-                regex = re.compile(r'http://example.com/path/.*')
-                bot.memory['url_callbacks'][regex] = callback
-
-            use this much more concise pattern::
-
-                regex = re.compile(r'http://example.com/path/.*')
-                bot.register_url_callback(regex, callback)
-
-        It's recommended you completely avoid manual management of URL
-        callbacks through the use of :func:`sopel.plugin.url`.
-
-        .. deprecated:: 7.1
-
-            Made obsolete by fixes to the behavior of
-            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
-
-        .. versionchanged:: 8.0
-
-            Stores registered callbacks in an internal property instead of
-            ``bot.memory['url_callbacks']``.
-
-        """
-        if isinstance(pattern, str):
-            pattern = re.compile(pattern)
-
-        self._url_callbacks[pattern] = callback
-
-    @deprecated(
-        reason='Issues with @url decorator have been fixed. Simply use that.',
-        version='7.1',
-        warning_in='8.0',
-        removed_in='9.0',
-    )
-    def unregister_url_callback(self, pattern, callback):
-        """Unregister the callback for URLs matching the regex ``pattern``.
-
-        :param pattern: compiled regex pattern to unregister callback
-        :type pattern: :ref:`re.Pattern <python:re-objects>`
-        :param callback: callable object to remove
-        :type callback: :term:`function`
-
-        .. versionadded:: 7.0
-
-            This method replaces manual management of ``url_callbacks`` in
-            Sopel's plugins, so instead of doing this in ``shutdown()``::
-
-                regex = re.compile(r'http://example.com/path/.*')
-                try:
-                    del bot.memory['url_callbacks'][regex]
-                except KeyError:
-                    pass
-
-            use this much more concise pattern::
-
-                regex = re.compile(r'http://example.com/path/.*')
-                bot.unregister_url_callback(regex, callback)
-
-        It's recommended you completely avoid manual management of URL
-        callbacks through the use of :func:`sopel.plugin.url`.
-
-        .. deprecated:: 7.1
-
-            Made obsolete by fixes to the behavior of
-            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
-
-        .. versionchanged:: 8.0
-
-            Deletes registered callbacks from an internal property instead of
-            ``bot.memory['url_callbacks']``.
-
-        """
-        if isinstance(pattern, str):
-            pattern = re.compile(pattern)
-
-        try:
-            del self._url_callbacks[pattern]
-        except KeyError:
-            pass
-
-    def search_url_callbacks(self, url):
-        """Yield callbacks whose regex pattern matches the ``url``.
-
-        :param str url: URL found in a trigger
-        :return: yield 2-value tuples of ``(callback, match)``
-
-        For each pattern that matches the ``url`` parameter, it yields a
-        2-value tuple of ``(callable, match)`` for that pattern.
-
-        The ``callable`` is the one registered with
-        :meth:`register_url_callback`, and the ``match`` is the result of
-        the regex pattern's ``search`` method.
-
-        .. versionadded:: 7.0
-
-        .. versionchanged:: 8.0
-
-            Searches for registered callbacks in an internal property instead
-            of ``bot.memory['url_callbacks']``.
-
-        .. deprecated:: 8.0
-
-            Made obsolete by fixes to the behavior of
-            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
-
-        .. seealso::
-
-            The Python documentation for the `re.search`__ function and
-            the `match object`__.
-
-        .. __: https://docs.python.org/3.7/library/re.html#re.search
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
-
-        """
-        for regex, function in self._url_callbacks.items():
-            match = regex.search(url)
-            if match:
-                yield function, match
 
 
 class SopelWrapper:
