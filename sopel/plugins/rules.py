@@ -465,11 +465,11 @@ class RuleMetrics:
 
     def start(self) -> None:
         """Record a starting time (before execution)."""
-        self.started_at = datetime.datetime.utcnow()
+        self.started_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
     def end(self) -> None:
         """Record a ending time (after execution)."""
-        self.ended_at = datetime.datetime.utcnow()
+        self.ended_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
     def set_return_value(self, value: Any) -> None:
         """Set the last return value of a rule."""
@@ -1146,21 +1146,21 @@ class Rule(AbstractRule):
 
     def is_user_rate_limited(self, nick, at_time=None) -> bool:
         if at_time is None:
-            at_time = datetime.datetime.utcnow()
+            at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
         metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
         rate_limit = datetime.timedelta(seconds=self._user_rate_limit)
         return metrics.is_limited(at_time - rate_limit)
 
     def is_channel_rate_limited(self, channel, at_time=None) -> bool:
         if at_time is None:
-            at_time = datetime.datetime.utcnow()
+            at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
         metrics: RuleMetrics = self._metrics_sender.get(channel, RuleMetrics())
         rate_limit = datetime.timedelta(seconds=self._channel_rate_limit)
         return metrics.is_limited(at_time - rate_limit)
 
     def is_global_rate_limited(self, at_time=None) -> bool:
         if at_time is None:
-            at_time = datetime.datetime.utcnow()
+            at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
         rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
         return self._metrics_global.is_limited(at_time - rate_limit)
 
