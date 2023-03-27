@@ -15,33 +15,34 @@ from sopel import plugin
 from sopel.config import types
 
 
+BACKEND = 'https://pronouns.sopel.chat'
 LOGGER = logging.getLogger(__name__)
 
 
 class PronounsSection(types.StaticSection):
     fetch_complete_list = types.BooleanAttribute('fetch_complete_list', default=True)
-    """Whether to attempt fetching the complete list pronoun.is uses, at bot startup."""
+    """Whether to attempt fetching the complete list the web backend uses, at bot startup."""
 
 
 def configure(settings):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
-    | fetch_complete_list | True | Whether to attempt fetching the complete pronoun list from pronoun.is at startup. |
+    | fetch_complete_list | True | Whether to attempt fetching the complete pronoun list from the web backend at startup. |
     """
     settings.define_section('pronouns', PronounsSection)
     settings.pronouns.configure_setting(
         'fetch_complete_list',
-        'Fetch the current pronoun.is list at startup?')
+        'Fetch the most current list of pronoun sets at startup?')
 
 
 def setup(bot):
     bot.config.define_section('pronouns', PronounsSection)
 
-    # Copied from pronoun.is, leaving a *lot* out.
+    # Copied from svelte-pronounisland, leaving a *lot* out.
     # If ambiguous, the earlier one will be used.
     # This basic set is hard-coded to guarantee that the ten most(ish) common sets
-    # will work, even if fetching the current pronoun.is set from GitHub fails.
+    # will work, even if fetching the current set from GitHub fails.
     bot.memory['pronoun_sets'] = {
         'ze/hir': 'ze/hir/hir/hirs/hirself',
         'ze/zir': 'ze/zir/zir/zirs/zirself',
@@ -58,12 +59,11 @@ def setup(bot):
     if not bot.config.pronouns.fetch_complete_list:
         return
 
-    # and now try to get the current one
-    # who needs an API that might never exist?
-    # (https://github.com/witch-house/pronoun.is/pull/96)
+    # and now try to get the current list our fork of the backend uses
+    # (https://github.com/sopel-irc/pronoun-service)
     try:
         r = requests.get(
-            'https://github.com/witch-house/pronoun.is/raw/master/resources/pronouns.tab')
+            'https://github.com/sopel-irc/pronoun-service/raw/main/src/lib/data/pronouns.tab')
         r.raise_for_status()
         fetched_pairs = _process_pronoun_sets(r.text.splitlines())
     except requests.exceptions.RequestException:
@@ -152,7 +152,7 @@ def pronouns(bot, trigger):
             # gender, but like… it's a bot.
             bot.say(
                 "I am a bot. Beep boop. My pronouns are it/it/its/its/itself. "
-                "See https://pronoun.is/it for examples."
+                "See {}/it for examples.".format(BACKEND)
             )
         else:
             bot.reply("I don't know {}'s pronouns. They can set them with "
@@ -166,8 +166,15 @@ def say_pronouns(bot, nick, pronouns):
             break
         short = pronouns
 
-    bot.say("{}'s pronouns are {}. See https://pronoun.is/{} for "
-            "examples.".format(nick, pronouns, short))
+    bot.say(
+        "{nick}'s pronouns are {pronouns}. See {BACKEND}/{short} for examples."
+        .format(
+            nick=nick,
+            pronouns=pronouns,
+            BACKEND=BACKEND,
+            short=short,
+        )
+    )
 
 
 @plugin.command('setpronouns')
