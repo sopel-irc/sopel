@@ -1144,25 +1144,34 @@ class Rule(AbstractRule):
     def is_unblockable(self):
         return self._unblockable
 
+    @property
+    def user_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._user_rate_limit)
+
+    @property
+    def channel_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._channel_rate_limit)
+
+    @property
+    def global_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._global_rate_limit)
+
     def is_user_rate_limited(self, nick, at_time=None) -> bool:
         if at_time is None:
             at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
         metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
-        rate_limit = datetime.timedelta(seconds=self._user_rate_limit)
-        return metrics.is_limited(at_time - rate_limit)
+        return metrics.is_limited(at_time - self.user_rate_limit)
 
     def is_channel_rate_limited(self, channel, at_time=None) -> bool:
         if at_time is None:
             at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
         metrics: RuleMetrics = self._metrics_sender.get(channel, RuleMetrics())
-        rate_limit = datetime.timedelta(seconds=self._channel_rate_limit)
-        return metrics.is_limited(at_time - rate_limit)
+        return metrics.is_limited(at_time - self.channel_rate_limit)
 
     def is_global_rate_limited(self, at_time=None) -> bool:
         if at_time is None:
             at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-        rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
-        return self._metrics_global.is_limited(at_time - rate_limit)
+        return self._metrics_global.is_limited(at_time - self.global_rate_limit)
 
     @property
     def user_rate_template(self):

@@ -604,15 +604,15 @@ class Sopel(irc.AbstractBot):
         if rule.is_user_rate_limited(nick=trigger.nick, at_time=at_time):
             template = rule.user_rate_template
             rate_limit_type = "user"
-            rate_limit_sec = rule._user_rate_limit
+            rate_limit = rule.user_rate_limit
         elif is_channel and rule.is_channel_rate_limited(channel=channel, at_time=at_time):
             template = rule.channel_rate_template
             rate_limit_type = "channel"
-            rate_limit_sec = rule._channel_rate_limit
+            rate_limit = rule.channel_rate_limit
         elif rule.is_global_rate_limited(at_time=at_time):
             template = rule.global_rate_template
             rate_limit_type = "global"
-            rate_limit_sec = rule._global_rate_limit
+            rate_limit = rule.global_rate_limit
         else:
             return False, None
 
@@ -623,6 +623,7 @@ class Sopel(irc.AbstractBot):
                 sender=trigger.sender,
                 plugin=rule.get_plugin_name(),
                 label=rule.get_rule_label(),
+                rate_limit=rate_limit,
                 rate_limit_sec=rate_limit_sec,
                 rate_limit_type=rate_limit_type,
             )
