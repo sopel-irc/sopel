@@ -592,7 +592,11 @@ class Sopel(irc.AbstractBot):
                 except plugins.exceptions.PluginError as err:
                     LOGGER.error("Cannot register URL callback: %s", err)
 
-    def rate_limit_info(self, rule: plugin_rules.Rule, trigger: Trigger) -> Tuple[bool, Optional[str]]:
+    def rate_limit_info(
+        self,
+        rule: plugin_rules.Rule,
+        trigger: Trigger,
+    ) -> Tuple[bool, Optional[str]]:
         if trigger.admin or rule.is_unblockable():
             return False, None
 
@@ -609,16 +613,22 @@ class Sopel(irc.AbstractBot):
             template = rule.user_rate_template
             rate_limit_type = "user"
             rate_limit = rule.user_rate_limit
+            metrics = user_metrics
         elif is_channel and channel_metrics.is_limited(at_time - rule.channel_rate_limit):
             template = rule.channel_rate_template
             rate_limit_type = "channel"
             rate_limit = rule.channel_rate_limit
+            metrics = channel_metrics
         elif global_metrics.is_limited(at_time - rule.global_rate_limit):
             template = rule.global_rate_template
             rate_limit_type = "global"
             rate_limit = rule.global_rate_limit
+            metrics = global_metrics
         else:
             return False, None
+
+        next_time = metrics.last_time + rate_limit
+        time_left = next_time - at_time
 
         if template:
             message = template.format(
@@ -627,8 +637,10 @@ class Sopel(irc.AbstractBot):
                 sender=trigger.sender,
                 plugin=rule.get_plugin_name(),
                 label=rule.get_rule_label(),
+                time_left=time_left,
+                time_left_sec=time_left.total_seconds(),
                 rate_limit=rate_limit,
-                rate_limit_sec=rate_limit_sec,
+                rate_limit_sec=rate_limit.total_seconds(),
                 rate_limit_type=rate_limit_type,
             )
         else:
