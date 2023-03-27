@@ -732,7 +732,11 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def is_user_rate_limited(self, nick: Identifier, at_time: Optional[datetime.datetime] = None) -> bool:
+    def is_user_rate_limited(
+        self,
+        nick: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
         :param nick: the nick associated with this check
@@ -742,7 +746,11 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def is_channel_rate_limited(self, channel: Identifier, at_time: Optional[datetime.datetime] = None) -> bool:
+    def is_channel_rate_limited(
+        self,
+        channel: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
         :param channel: the channel associated with this check
@@ -752,7 +760,10 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def is_global_rate_limited(self, at_time: Optional[datetime.datetime] = None) -> bool:
+    def is_global_rate_limited(
+        self,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         """Tell when the rule reached the global rate limit.
 
         :param at_time: optional aware datetime for the rate limit check;
@@ -1144,6 +1155,15 @@ class Rule(AbstractRule):
     def is_unblockable(self):
         return self._unblockable
 
+    def get_user_metrics(self, nick: Identifier) -> RuleMetrics:
+        return self._metrics_nick.get(nick, RuleMetrics())
+
+    def get_channel_metrics(self, channel: Identifier) -> RuleMetrics:
+        return self._metrics_sender.get(channel, RuleMetrics())
+
+    def get_global_metrics(self) -> RuleMetrics:
+        return self._metrics_global
+
     @property
     def user_rate_limit(self) -> datetime.timedelta:
         return datetime.timedelta(seconds=self._user_rate_limit)
@@ -1156,35 +1176,47 @@ class Rule(AbstractRule):
     def global_rate_limit(self) -> datetime.timedelta:
         return datetime.timedelta(seconds=self._global_rate_limit)
 
-    def is_user_rate_limited(self, nick, at_time=None) -> bool:
+    def is_user_rate_limited(
+        self,
+        nick: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         if at_time is None:
             at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-        metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
+        metrics = self.get_user_metrics(nick)
         return metrics.is_limited(at_time - self.user_rate_limit)
 
-    def is_channel_rate_limited(self, channel, at_time=None) -> bool:
+    def is_channel_rate_limited(
+        self,
+        channel: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         if at_time is None:
             at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-        metrics: RuleMetrics = self._metrics_sender.get(channel, RuleMetrics())
+        metrics = self.get_channel_metrics(channel)
         return metrics.is_limited(at_time - self.channel_rate_limit)
 
-    def is_global_rate_limited(self, at_time=None) -> bool:
+    def is_global_rate_limited(
+        self,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         if at_time is None:
             at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-        return self._metrics_global.is_limited(at_time - self.global_rate_limit)
+        metrics = self.get_global_metrics()
+        return metrics.is_limited(at_time - self.global_rate_limit)
 
     @property
-    def user_rate_template(self):
+    def user_rate_template(self) -> Optional[str]:
         template = self._user_rate_message or self._default_rate_message
         return template
 
     @property
-    def channel_rate_template(self):
+    def channel_rate_template(self) -> Optional[str]:
         template = self._channel_rate_message or self._default_rate_message
         return template
 
     @property
-    def global_rate_template(self):
+    def global_rate_template(self) -> Optional[str]:
         template = self._global_rate_message or self._default_rate_message
         return template
 

@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from ast import literal_eval
-from datetime import datetime
+import datetime
 import inspect
 import itertools
 import logging
@@ -601,15 +601,19 @@ class Sopel(irc.AbstractBot):
 
         at_time = trigger.time
 
-        if rule.is_user_rate_limited(nick=trigger.nick, at_time=at_time):
+        user_metrics = rule.get_user_metrics(trigger.nick)
+        channel_metrics = rule.get_channel_metrics(channel)
+        global_metrics = rule.get_global_metrics()
+
+        if user_metrics.is_limited(at_time - rule.user_rate_limit):
             template = rule.user_rate_template
             rate_limit_type = "user"
             rate_limit = rule.user_rate_limit
-        elif is_channel and rule.is_channel_rate_limited(channel=channel, at_time=at_time):
+        elif is_channel and channel_metrics.is_limited(at_time - rule.channel_rate_limit):
             template = rule.channel_rate_template
             rate_limit_type = "channel"
             rate_limit = rule.channel_rate_limit
-        elif rule.is_global_rate_limited(at_time=at_time):
+        elif global_metrics.is_limited(at_time - rule.global_rate_limit):
             template = rule.global_rate_template
             rate_limit_type = "global"
             rate_limit = rule.global_rate_limit
@@ -1029,7 +1033,7 @@ class Sopel(irc.AbstractBot):
 
         if trigger:
             message = '{} from {} at {}. Message was: {}'.format(
-                message, trigger.nick, str(datetime.utcnow()), trigger.group(0)
+                message, trigger.nick, str(datetime.datetime.utcnow()), trigger.group(0)
             )
 
         LOGGER.exception(message)

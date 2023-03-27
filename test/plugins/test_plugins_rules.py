@@ -468,7 +468,7 @@ def test_manager_has_action_command_aliases():
 # tests for :class:`Manager`
 
 def test_rulemetrics():
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
     time_window = datetime.timedelta(seconds=3600)
     metrics = rules.RuleMetrics()
 
