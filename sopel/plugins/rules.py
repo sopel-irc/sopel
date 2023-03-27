@@ -475,6 +475,16 @@ class RuleMetrics:
         """Set the last return value of a rule."""
         self.last_return_value = value
 
+    @property
+    def last_time(self) -> Optional[datetime.datetime]:
+        """Last recorded start/end time for the associated rule"""
+        # detect if we just started something or if it ended
+        last_time = self.started_at
+        if self.ended_at and self.started_at < self.ended_at:
+            last_time = self.ended_at
+
+        return last_time
+
     def is_limited(
         self,
         time_limit: datetime.datetime,
@@ -484,15 +494,12 @@ class RuleMetrics:
             # not even started, so not limited
             return False
 
-        # detect if we just started something or if it ended
-        last_time = self.started_at
         if self.ended_at and self.started_at < self.ended_at:
-            last_time = self.ended_at
             # since it ended, check the return value
             if self.last_return_value == IGNORE_RATE_LIMIT:
                 return False
 
-        return last_time > time_limit
+        return self.last_time > time_limit
 
     def __enter__(self) -> RuleMetrics:
         self.start()
