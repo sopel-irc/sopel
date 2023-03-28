@@ -15,7 +15,6 @@ from sopel import plugin
 from sopel.config import types
 
 
-BACKEND = 'https://pronouns.sopel.chat'
 LOGGER = logging.getLogger(__name__)
 
 
@@ -23,17 +22,30 @@ class PronounsSection(types.StaticSection):
     fetch_complete_list = types.BooleanAttribute('fetch_complete_list', default=True)
     """Whether to attempt fetching the complete list the web backend uses, at bot startup."""
 
+    link_base_url = types.ValidatedAttribute(
+        'link_base_url', default='https://pronouns.sopel.chat')
+    """Base URL for links to pronoun info.
+
+    Defaults to an instance of https://github.com/sopel-irc/pronoun-service
+    hosted by the Sopel project, but it's easy to make your own instance
+    available at a custom domain using one of many free static site hosts.
+    """
+
 
 def configure(settings):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
     | fetch_complete_list | True | Whether to attempt fetching the complete pronoun list from the web backend at startup. |
+    | link_base_url | https://pronouns.sopel.chat | Base URL for pronoun info links. |
     """
     settings.define_section('pronouns', PronounsSection)
     settings.pronouns.configure_setting(
         'fetch_complete_list',
         'Fetch the most current list of pronoun sets at startup?')
+    settings.pronouns.configure_setting(
+        'link_base_url',
+        'Base URL for pronoun info links:')
 
 
 def setup(bot):
@@ -152,7 +164,7 @@ def pronouns(bot, trigger):
             # gender, but like… it's a bot.
             bot.say(
                 "I am a bot. Beep boop. My pronouns are it/it/its/its/itself. "
-                "See {}/it for examples.".format(BACKEND)
+                "See {}/it for examples.".format(bot.settings.pronouns.link_base_url)
             )
         else:
             bot.reply("I don't know {}'s pronouns. They can set them with "
@@ -167,11 +179,11 @@ def say_pronouns(bot, nick, pronouns):
         short = pronouns
 
     bot.say(
-        "{nick}'s pronouns are {pronouns}. See {BACKEND}/{short} for examples."
+        "{nick}'s pronouns are {pronouns}. See {base_url}/{short} for examples."
         .format(
             nick=nick,
             pronouns=pronouns,
-            BACKEND=BACKEND,
+            base_url=bot.settings.pronouns.link_base_url,
             short=short,
         )
     )
