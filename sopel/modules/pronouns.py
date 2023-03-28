@@ -37,7 +37,7 @@ def configure(settings):
 
 
 def setup(bot):
-    bot.config.define_section('pronouns', PronounsSection)
+    bot.settings.define_section('pronouns', PronounsSection)
 
     # Copied from svelte-pronounisland, leaving a *lot* out.
     # If ambiguous, the earlier one will be used.
@@ -56,7 +56,7 @@ def setup(bot):
         'ey/em': 'ey/em/eir/eirs/eirself',
     }
 
-    if not bot.config.pronouns.fetch_complete_list:
+    if not bot.settings.pronouns.fetch_complete_list:
         return
 
     # and now try to get the current list our fork of the backend uses
@@ -142,7 +142,7 @@ def pronouns(bot, trigger):
             say_pronouns(bot, trigger.nick, pronouns)
         else:
             bot.reply("I don't know your pronouns! You can set them with "
-                      "{}setpronouns".format(bot.config.core.help_prefix))
+                      "{}setpronouns".format(bot.settings.core.help_prefix))
     else:
         pronouns = bot.db.get_nick_value(trigger.group(3), 'pronouns')
         if pronouns:
@@ -157,7 +157,7 @@ def pronouns(bot, trigger):
         else:
             bot.reply("I don't know {}'s pronouns. They can set them with "
                       "{}setpronouns".format(trigger.group(3),
-                                             bot.config.core.help_prefix))
+                                             bot.settings.core.help_prefix))
 
 
 def say_pronouns(bot, nick, pronouns):
