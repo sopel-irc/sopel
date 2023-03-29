@@ -1112,10 +1112,27 @@ def rate(
         @rate(10, 10, 10, message='Hit the rate limit for this function.')
             # will send a NOTICE
 
-    The message can contain a placeholder for ``nick``: the message will be
-    formatted with the nick that hit rate limit::
+    The message can contain placeholders which will be filled in:
 
-        @rate(10, 10, 2, message='Sorry {nick}, you hit the rate limit!')
+    * ``nick``: the nick that hit the rate limit
+    * ``channel``: the channel in which the rate limit was hit (will be
+      ``'private-message'`` for private messages)
+    * ``sender``: the sender (nick or channel) of the message which hit
+      the rate limit
+    * ``plugin``: the name of the plugin that hit the rate limit
+    * ``label``: the label of the plugin handler that hit the rate limit
+    * ``time_left``: the time remaining before the rate limit expires, as
+      a string
+    * ``time_left_sec``: the time remaining before the rate limit expires,
+      expressed in number of seconds
+    * ``rate_limit``: the rate limit, as a string
+    * ``rate_limit_sec``: the rate limit, expressed in number of seconds
+    * ``rate_limit_type``: the type of rate limit that was hit (one of
+      ``user, group, global``)
+
+    For example::
+
+        @rate(10, 10, 2, message='Sorry {nick}, you hit the {rate_limit_type} rate limit!')
 
     Rate-limited functions that use scheduled future commands should import
     :class:`threading.Timer` instead of :mod:`sched`, or rate limiting will
@@ -1168,10 +1185,9 @@ def rate_user(
             # will send a NOTICE only when a user hits their own limit
             # as other rate limits don't have any message set
 
-    The message can contain a placeholder for ``nick``: the message will be
-    formatted with the nick that hit rate limit::
+    The message can contain the same placeholders supported by :func:`rate`::
 
-        @rate_user(5, 'Sorry {nick}, you hit your 5s limit!')
+        @rate_user(5, 'Sorry {nick}, you hit your {rate_limit_sec}s limit!')
 
     If you don't provide a message, the default message set by :func:`rate`
     (if any) will be used instead.
@@ -1213,13 +1229,11 @@ def rate_channel(
     If you don't provide a message, the default message set by :func:`rate`
     (if any) will be used instead.
 
-    The message can contain placeholders for ``nick`` and ``channel``: the
-    message will be formatted with the nick that hit rate limit for said
-    ``channel``::
+    The message can contain the same placeholders supported by :func:`rate`::
 
         @rate_channel(
             5,
-            'Sorry {nick}, you hit the 5s limit for the {channel} channel!',
+            'Sorry {nick}, you hit the {rate_limit_sec}s limit for the {channel} channel!',
         )
 
     .. versionadded:: 8.0
@@ -1248,7 +1262,9 @@ def rate_global(
     :param message: optional; message sent as NOTICE when a user hits the limit
 
     This decorator can be used alone or with the :func:`rate` decorator, as it
-    will always take precedence::
+    will always take precedence.
+
+    For example::
 
         @rate(10, 10, 10)
         @rate_global(5, 'You hit the global rate limit for this function.')
@@ -1259,8 +1275,7 @@ def rate_global(
     If you don't provide a message, the default message set by :func:`rate`
     (if any) will be used instead.
 
-    The message can contain a placeholder for ``nick``: the message will be
-    formatted with the nick that hit rate limit::
+    The message can contain the same placeholders supported by :func:`rate`::
 
         @rate_global(5, 'Sorry {nick}, you hit the 5s limit!')
 
