@@ -36,6 +36,8 @@ from typing import (
 )
 from urllib.parse import urlparse
 
+import pytz
+
 from sopel import tools
 from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
@@ -465,11 +467,11 @@ class RuleMetrics:
 
     def start(self) -> None:
         """Record a starting time (before execution)."""
-        self.started_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+        self.started_at = pytz.utc.localize(datetime.datetime.utcnow())
 
     def end(self) -> None:
         """Record a ending time (after execution)."""
-        self.ended_at = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+        self.ended_at = pytz.utc.localize(datetime.datetime.utcnow())
 
     def set_return_value(self, value: Any) -> None:
         """Set the last return value of a rule."""
@@ -1189,7 +1191,7 @@ class Rule(AbstractRule):
         at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         if at_time is None:
-            at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+            at_time = pytz.utc.localize(datetime.datetime.utcnow())
         metrics = self.get_user_metrics(nick)
         return metrics.is_limited(at_time - self.user_rate_limit)
 
@@ -1199,7 +1201,7 @@ class Rule(AbstractRule):
         at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         if at_time is None:
-            at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+            at_time = pytz.utc.localize(datetime.datetime.utcnow())
         metrics = self.get_channel_metrics(channel)
         return metrics.is_limited(at_time - self.channel_rate_limit)
 
@@ -1208,7 +1210,7 @@ class Rule(AbstractRule):
         at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         if at_time is None:
-            at_time = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+            at_time = pytz.utc.localize(datetime.datetime.utcnow())
         metrics = self.get_global_metrics()
         return metrics.is_limited(at_time - self.global_rate_limit)
 
