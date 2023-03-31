@@ -250,7 +250,7 @@ def update_rates(bot):
     LOGGER.debug('Rate update completed')
 
 
-@plugin.command('cur', 'currency', 'exchange')
+@plugin.commands('cur', 'currency', 'exchange')
 @plugin.example('.cur 100 usd in btc cad eur',
                 r'100 USD is [\d\.]+ BTC, [\d\.]+ CAD, [\d\.]+ EUR',
                 re=True, online=True, vcr=True)
@@ -276,3 +276,21 @@ def exchange_re(bot, trigger):
     if bot.config.currency.auto_convert:
         match = EXCHANGE_REGEX.match(trigger)
         exchange(bot, match)
+
+
+@plugin.command('currencies')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
+def supported_cmd(bot, trigger):
+    """List which currency codes are supported for conversion."""
+    if not rates:
+        try:
+            update_rates(bot)
+        except Exception:
+            bot.reply("Couldn't fetch supported currencies. Please try again later.")
+            return
+
+    codes = sorted(list(rates.keys()))
+
+    bot.say(
+        "Supported currency codes: " + ' '.join(codes),
+        trigger.nick, max_messages=5)
