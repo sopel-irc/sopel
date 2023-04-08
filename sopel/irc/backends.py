@@ -394,10 +394,11 @@ class AsyncioBackend(AbstractIRCBackend):
                 **connection_kwargs,
             )
 
-        # SSL Error
+        # SSL Errors (certificate verification and generic SSL errors)
         except ssl.SSLCertVerificationError as err:
             LOGGER.error(
-                'Unable to connect due to SSL certificate verification failure: %s',
+                'Unable to connect due to '
+                'SSL certificate verification failure: %s',
                 err,
             )
             self.log_exception()
@@ -413,7 +414,7 @@ class AsyncioBackend(AbstractIRCBackend):
             self.bot.wantsrestart = False
             return
 
-        # Specific connection error
+        # Specific connection error (invalid address and timeout)
         except socket.gaierror as err:
             LOGGER.error(
                 'Unable to connect due to invalid IRC server address: %s',
@@ -438,12 +439,18 @@ class AsyncioBackend(AbstractIRCBackend):
             self.bot.wantsrestart = False
             return
 
-        # Generic connection error (OSError is used for any connection error)
+        # Generic connection error
+        except ConnectionError as err:
+            LOGGER.error('Unable to connect: %s', err)
+            self.log_exception()
+            # tell the bot to quit without restart
+            self.bot.hasquit = True
+            self.bot.wantsrestart = False
+            return
+
+        # Generic OSError (used for any unspecific connection error)
         except OSError as err:
-            LOGGER.error(
-                'Unable to connect: %s',
-                err,
-            )
+            LOGGER.error('Unable to connect: %s', err)
             LOGGER.error(
                 'You should verify that "%s:%s" is the correct address '
                 'to connect to the IRC server.',
