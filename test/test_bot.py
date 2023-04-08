@@ -102,6 +102,32 @@ def mockplugin(tmpdir):
 # -----------------------------------------------------------------------------
 # sopel.bot.SopelWrapper
 
+def test_wrapper_default_destination(mockbot, triggerfactory):
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
+
+    assert wrapper.default_destination == '#channel'
+
+
+def test_wrapper_default_destination_none(mockbot, triggerfactory):
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':irc.example.com 301 Sopel :I am away.')
+
+    assert wrapper.default_destination is None
+
+
+def test_wrapper_default_destination_statusmsg(mockbot, triggerfactory):
+    mockbot._isupport = mockbot.isupport.apply(
+        STATUSMSG=tuple('+'),
+    )
+
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
+
+    assert wrapper._trigger.sender == '#channel'
+    assert wrapper.default_destination == '+#channel'
+
+
 def test_wrapper_say(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
@@ -109,6 +135,20 @@ def test_wrapper_say(mockbot, triggerfactory):
 
     assert mockbot.backend.message_sent == rawlist(
         'PRIVMSG #channel :Hi!'
+    )
+
+
+def test_wrapper_say_statusmsg(mockbot, triggerfactory):
+    mockbot._isupport = mockbot.isupport.apply(
+        STATUSMSG=tuple('+'),
+    )
+
+    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
+    wrapper.say('Hi!')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG +#channel :Hi!'
     )
 
 
@@ -132,6 +172,20 @@ def test_wrapper_notice(mockbot, triggerfactory):
     )
 
 
+def test_wrapper_notice_statusmsg(mockbot, triggerfactory):
+    mockbot._isupport = mockbot.isupport.apply(
+        STATUSMSG=tuple('+'),
+    )
+
+    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
+    wrapper.notice('Hi!')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'NOTICE +#channel :Hi!'
+    )
+
+
 def test_wrapper_notice_override_destination(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
@@ -152,6 +206,20 @@ def test_wrapper_action(mockbot, triggerfactory):
     )
 
 
+def test_wrapper_action_statusmsg(mockbot, triggerfactory):
+    mockbot._isupport = mockbot.isupport.apply(
+        STATUSMSG=tuple('+'),
+    )
+
+    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
+    wrapper.action('Hi!')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG +#channel :\x01ACTION Hi!\x01'
+    )
+
+
 def test_wrapper_action_override_destination(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
@@ -169,6 +237,20 @@ def test_wrapper_reply(mockbot, triggerfactory):
 
     assert mockbot.backend.message_sent == rawlist(
         'PRIVMSG #channel :Test: Hi!'
+    )
+
+
+def test_wrapper_reply_statusmsg(mockbot, triggerfactory):
+    mockbot._isupport = mockbot.isupport.apply(
+        STATUSMSG=tuple('+'),
+    )
+
+    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
+    wrapper.reply('Hi!')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG +#channel :Test: Hi!'
     )
 
 
