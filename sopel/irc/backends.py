@@ -57,7 +57,7 @@ class UninitializedBackend(AbstractIRCBackend):
     ):
         super().__init__(bot)
 
-    def is_connected(self) -> False:
+    def is_connected(self) -> bool:
         """Check if the backend is connected to an IRC server.
 
         **Always returns False:** This backend type is never connected.
@@ -378,19 +378,18 @@ class AsyncioBackend(AbstractIRCBackend):
             'local_addr': self._source_address,
         }
 
-    async def _run_forever(self) -> None:
-        self._loop = asyncio.get_running_loop()
-        connection_kwargs = self.get_connection_kwargs()
-
-        # register signal handlers
-        for quit_signal in QUIT_SIGNALS:
-            self._loop.add_signal_handler(quit_signal, self._signal_quit)
-        for restart_signal in RESTART_SIGNALS:
-            self._loop.add_signal_handler(restart_signal, self._signal_restart)
+    async def _connect_to_server(
+        self, **connection_kwargs
+    ) -> Tuple[
+        Optional[asyncio.StreamReader],
+        Optional[asyncio.StreamWriter],
+    ]:
+        reader: Optional[asyncio.StreamReader] = None
+        writer: Optional[asyncio.StreamWriter] = None
 
         # open connection
         try:
-            self._reader, self._writer = await asyncio.open_connection(
+            reader, writer = await asyncio.open_connection(
                 **connection_kwargs,
             )
 
@@ -405,14 +404,12 @@ class AsyncioBackend(AbstractIRCBackend):
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
-            return
         except ssl.SSLError as err:
             LOGGER.error('Unable to connect due to an SSL error: %s', err)
             self.log_exception()
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
-            return
 
         # Specific connection error (invalid address and timeout)
         except socket.gaierror as err:
@@ -430,14 +427,12 @@ class AsyncioBackend(AbstractIRCBackend):
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
-            return
         except TimeoutError as err:
             LOGGER.error('Unable to connect due to a timeout: %s', err)
             self.log_exception()
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
-            return
 
         # Generic connection error
         except ConnectionError as err:
@@ -446,7 +441,6 @@ class AsyncioBackend(AbstractIRCBackend):
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
-            return
 
         # Generic OSError (used for any unspecific connection error)
         except OSError as err:
@@ -461,7 +455,6 @@ class AsyncioBackend(AbstractIRCBackend):
             # tell the bot to quit without restart
             self.bot.hasquit = True
             self.bot.wantsrestart = False
-            return
 
         # Unexpected error
         except Exception as err:
@@ -475,13 +468,34 @@ class AsyncioBackend(AbstractIRCBackend):
             # TODO: prevent infinite connection failure loop
             self.bot.hasquit = True
             self.bot.wantsrestart = False
+
+        return reader, writer
+
+    async def _run_forever(self) -> None:
+        self._loop = asyncio.get_running_loop()
+        connection_kwargs = self.get_connection_kwargs()
+
+        # register signal handlers
+        for quit_signal in QUIT_SIGNALS:
+            self._loop.add_signal_handler(quit_signal, self._signal_quit)
+        for restart_signal in RESTART_SIGNALS:
+            self._loop.add_signal_handler(restart_signal, self._signal_restart)
+
+        # connect to socket
+        LOGGER.debug('Attempt connection.')
+        self._reader, self._writer = await self._connect_to_server(
+            **connection_kwargs
+        )
+        if not self._reader or not self._writer:
+            LOGGER.debug('Connection attempt failed.')
             return
 
-        self._connected = True
-
+        # on socket connection
         LOGGER.debug('Connection registered.')
+        self._connected = True
         self.bot.on_connect()
 
+        # read forever
         LOGGER.debug('Waiting for messages...')
         self._read_task = asyncio.create_task(self.read_forever())
         try:
@@ -491,6 +505,7 @@ class AsyncioBackend(AbstractIRCBackend):
         else:
             LOGGER.debug('Reader received EOF.')
 
+        # on socket disconnection
         self._connected = False
 
         # cancel timeout tasks
