@@ -1230,9 +1230,9 @@ class SopelWrapper:
                               (e.g. plugin tag)
 
     This wrapper will be used to call Sopel's triggered commands and rules as
-    their ``bot`` argument. It acts as a proxy to :meth:`send messages<say>`
-    to the sender (either a channel or in a private message) and even to
-    :meth:`reply to someone<reply>` in a channel.
+    their ``bot`` argument. It acts as a proxy, providing the ``trigger``'s
+    ``sender`` (source channel or private message) as the default
+    ``destination`` argument for overridden methods.
     """
     def __init__(self, sopel, trigger, output_prefix=''):
         if not output_prefix:
