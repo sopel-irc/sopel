@@ -4,9 +4,9 @@ Make it talk
 ============
 
 The most basic way to make the bot talk is to use its
-:meth:`~sopel.bot.SopelWrapper.say` method. The wrapper knows the origin of
-the trigger (a channel or a private message), and it will use this origin as
-the default destination for your message::
+:meth:`~sopel.bot.Sopel.say` method. The wrapper knows the origin of the
+trigger (a channel or a private message), and it will use this origin as the
+default destination for your message::
 
     # will send that to trigger.sender
     bot.say('The bot is now talking!')
@@ -41,7 +41,7 @@ rule is triggered, you can use the bot's settings::
 
     The ``say`` method sends a ``PRIVMSG`` command to the IRC server. To send
     a ``NOTICE`` command instead, you need to use the
-    :meth:`~sopel.bot.SopelWrapper.notice` method instead.
+    :meth:`~sopel.bot.Sopel.notice` method instead.
 
 
 Make it reply
@@ -57,9 +57,8 @@ shortcut for that::
 
     bot.reply('ping!')
 
-As with the ``say`` method seen above, the
-:meth:`~sopel.bot.SopelWrapper.reply` method can send your message to another
-destination::
+As with the ``say`` method seen above, the :meth:`~sopel.bot.Sopel.reply`
+method can send your message to another destination::
 
     bot.reply('ping!', '#another-channel')
 
@@ -90,6 +89,6 @@ Besides talking, the bot can also **act**:
 * and even to :meth:`~sopel.bot.Sopel.quit` the server,
 
 Oh, and let's not forget about ``/me does something``, which can be done with
-the :meth:`~sopel.bot.SopelWrapper.action` method::
+the :meth:`~sopel.bot.Sopel.action` method::
 
     bot.action('does something')

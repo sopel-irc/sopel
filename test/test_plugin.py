@@ -447,18 +447,18 @@ def test_require_bot_privilege(configfactory,
     settings = configfactory('default.cfg', TMP_CONFIG)
     mockbot = botfactory.preloaded(settings)
     mockserver = ircfactory(mockbot)
-
-    bot = triggerfactory.wrapper(mockbot, BAN_MESSAGE)
     mockserver.channel_joined('#chan')
     mockserver.join('Foo', '#chan')
-    mockserver.mode_set('#chan', '+vo', ['Foo', bot.nick])
+    mockserver.mode_set('#chan', '+vo', ['Foo', mockbot.nick])
+
+    bot = triggerfactory.wrapper(mockbot, BAN_MESSAGE)
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.VOICE)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True, (
+    assert mock(bot, bot.trigger) is True, (
         'Bot must meet the requirement when having a higher privilege level.')
 
     @plugin.command('ban')
@@ -466,14 +466,14 @@ def test_require_bot_privilege(configfactory,
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True
+    assert mock(bot, bot.trigger) is True
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.OWNER)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is not True
+    assert mock(bot, bot.trigger) is not True
     assert not bot.backend.message_sent
 
     @plugin.command('ban')
@@ -481,7 +481,7 @@ def test_require_bot_privilege(configfactory,
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is not True
+    assert mock(bot, bot.trigger) is not True
     assert bot.backend.message_sent == rawlist('PRIVMSG #chan :Nope')
 
     @plugin.command('ban')
@@ -489,7 +489,7 @@ def test_require_bot_privilege(configfactory,
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is not True
+    assert mock(bot, bot.trigger) is not True
     assert bot.backend.message_sent[1:] == rawlist('PRIVMSG #chan :Foo: Nope')
 
 
@@ -501,29 +501,29 @@ def test_require_bot_privilege_private_message(configfactory,
     mockbot = botfactory.preloaded(settings)
     mockserver = ircfactory(mockbot)
 
-    bot = triggerfactory.wrapper(mockbot, BAN_PRIVATE_MESSAGE)
     mockserver.channel_joined('#chan')
     mockserver.join('Foo', '#chan')
-    mockserver.mode_set('#chan', '+vo', ['Foo', bot.nick])
+    mockserver.mode_set('#chan', '+vo', ['Foo', mockbot.nick])
+    bot = triggerfactory.wrapper(mockbot, BAN_PRIVATE_MESSAGE)
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.VOICE)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True
+    assert mock(bot, bot.trigger) is True
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.OP)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True
+    assert mock(bot, bot.trigger) is True
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.OWNER)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True, (
+    assert mock(bot, bot.trigger) is True, (
         'There must not be privilege check for a private message.')

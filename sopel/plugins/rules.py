@@ -653,7 +653,7 @@ class AbstractRule(abc.ABC):
 
         .. seealso::
 
-            See the :class:`sopel.bot.SopelWrapper` class for more information
+            See the :class:`sopel.bot.Sopel` class for more information
             on how the output prefix can be used.
         """
 
@@ -805,8 +805,8 @@ class AbstractRule(abc.ABC):
     def execute(self, bot, trigger):
         """Execute the triggered rule.
 
-        :param bot: Sopel wrapper
-        :type bot: :class:`sopel.bot.SopelWrapper`
+        :param bot: Sopel context bound to a trigger & a rule
+        :type bot: :class:`sopel.bot.Sopel`
         :param trigger: IRC line
         :type trigger: :class:`sopel.trigger.Trigger`
 

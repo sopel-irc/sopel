@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-from sopel import bot, loader, plugins, trigger
+from sopel import loader, plugins, trigger
 from .factories import BotFactory, ConfigFactory, IRCFactory, TriggerFactory, UserFactory
 
 
@@ -47,7 +47,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
     """Get a function that calls ``tested_func`` with fake wrapper and trigger.
 
     :param callable tested_func: a Sopel callable that accepts a
-                                 :class:`~.bot.SopelWrapper` and a
+                                 :class:`~.bot.Sopel` and a
                                  :class:`~.trigger.Trigger`
     :param str msg: message that is supposed to trigger the command
     :param list results: expected output from the callable
@@ -79,6 +79,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
             raise AssertionError('Function is not a command.')
 
         loader.clean_callable(tested_func, settings)
+        tested_func.output_prefix = ''
         test_rule = plugins.rules.Command.from_callable(settings, tested_func)
         parse_results = list(test_rule.parse(msg))
         assert parse_results, "Example did not match any command."
@@ -113,8 +114,9 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         expected_output_count = 0
         for _i in range(repeat):
             expected_output_count += len(results)
-            wrapper = bot.SopelWrapper(mockbot, test_trigger)
-            tested_func(wrapper, test_trigger)
+
+            with mockbot.sopel_wrapper(test_trigger, test_rule) as wrapper:
+                tested_func(wrapper, test_trigger)
 
             output_triggers = (
                 trigger.PreTrigger(

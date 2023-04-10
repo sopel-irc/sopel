@@ -37,7 +37,7 @@ from sopel.irc import isupport, utils
 from sopel.tools import events, jobs, SopelMemory, target
 
 if TYPE_CHECKING:
-    from sopel.bot import Sopel, SopelWrapper
+    from sopel.bot import Sopel
     from sopel.tools import Identifier
     from sopel.trigger import Trigger
 
@@ -64,7 +64,7 @@ MODE_PREFIX_PRIVILEGES = {
 
 
 def _handle_account_and_extjoin_capabilities(
-    cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
+    cap_req: Tuple[str, ...], bot: Sopel, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
     if acknowledged:
         return plugin.CapabilityNegotiation.DONE
@@ -89,7 +89,7 @@ def _handle_account_and_extjoin_capabilities(
 
 
 def _handle_sasl_capability(
-    cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
+    cap_req: Tuple[str, ...], bot: Sopel, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
@@ -1013,7 +1013,7 @@ def track_quit(bot, trigger):
         auth_after_register(bot)
 
 
-def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
+def _receive_cap_ls_reply(bot: Sopel, trigger: Trigger) -> None:
     if not bot.capabilities.handle_ls(bot, trigger):
         # multi-line, we must wait for more
         return
@@ -1025,7 +1025,7 @@ def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
 
 
 def _handle_cap_acknowledgement(
-    bot: SopelWrapper,
+    bot: Sopel,
     cap_req: Tuple[str, ...],
     results: List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]],
     was_completed: bool,
@@ -1048,7 +1048,7 @@ def _handle_cap_acknowledgement(
         bot.write(('CAP', 'END'))  # close negotiation now
 
 
-def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
+def _receive_cap_ack(bot: Sopel, trigger: Trigger) -> None:
     was_completed = bot.cap_requests.is_complete
     cap_ack: Tuple[str, ...] = bot.capabilities.handle_ack(bot, trigger)
 
@@ -1083,7 +1083,7 @@ def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
     _handle_cap_acknowledgement(bot, cap_ack, result, was_completed)
 
 
-def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
+def _receive_cap_nak(bot: Sopel, trigger: Trigger) -> None:
     was_completed = bot.cap_requests.is_complete
     cap_ack = bot.capabilities.handle_nak(bot, trigger)
 
@@ -1118,19 +1118,19 @@ def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
     _handle_cap_acknowledgement(bot, cap_ack, result, was_completed)
 
 
-def _receive_cap_new(bot: SopelWrapper, trigger: Trigger) -> None:
+def _receive_cap_new(bot: Sopel, trigger: Trigger) -> None:
     cap_new = bot.capabilities.handle_new(bot, trigger)
     LOGGER.info('Capability is now available: %s', ', '.join(cap_new))
     # TODO: try to request what wasn't requested before
 
 
-def _receive_cap_del(bot: SopelWrapper, trigger: Trigger) -> None:
+def _receive_cap_del(bot: Sopel, trigger: Trigger) -> None:
     cap_del = bot.capabilities.handle_del(bot, trigger)
     LOGGER.info('Capability is now unavailable: %s', ', '.join(cap_del))
     # TODO: what to do when a CAP is removed? NAK callbacks?
 
 
-CAP_HANDLERS: Dict[str, Callable[[SopelWrapper, Trigger], None]] = {
+CAP_HANDLERS: Dict[str, Callable[[Sopel, Trigger], None]] = {
     'LS': _receive_cap_ls_reply,  # Server is listing capabilities
     'ACK': _receive_cap_ack,  # Server is acknowledging a capability
     'NAK': _receive_cap_nak,  # Server is denying a capability
@@ -1143,7 +1143,7 @@ CAP_HANDLERS: Dict[str, Callable[[SopelWrapper, Trigger], None]] = {
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.priority('medium')
-def receive_cap_list(bot: SopelWrapper, trigger: Trigger) -> None:
+def receive_cap_list(bot: Sopel, trigger: Trigger) -> None:
     """Handle client capability negotiation."""
     subcommand = trigger.args[1]
     if subcommand in CAP_HANDLERS:
@@ -1257,7 +1257,7 @@ def _make_sasl_plain_token(account, password):
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.priority('medium')
-def sasl_success(bot: SopelWrapper, trigger: Trigger):
+def sasl_success(bot: Sopel, trigger: Trigger):
     """Resume capability negotiation on successful SASL auth."""
     LOGGER.info("Successful SASL Auth.")
     bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
@@ -1620,4 +1620,4 @@ def handle_url_callbacks(bot, trigger):
                 def decorated(bot, trigger):
                     return function(bot, trigger, match=match)
 
-                bot.call(decorated, bot, trigger)
+                bot.call(decorated, trigger)

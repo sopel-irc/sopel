@@ -15,7 +15,12 @@ from sopel.tools import Identifier, SopelMemory, target
 
 if typing.TYPE_CHECKING:
     from sopel.config import Config
-    from sopel.tests.factories import BotFactory, IRCFactory, UserFactory
+    from sopel.tests.factories import (
+        BotFactory,
+        IRCFactory,
+        TriggerFactory,
+        UserFactory,
+    )
     from sopel.tests.mocks import MockIRCServer
 
 
@@ -100,7 +105,25 @@ def mockplugin(tmpdir):
 
 
 # -----------------------------------------------------------------------------
-# sopel.bot.SopelWrapper
+# sopel.bot.Sopel.bind_trigger
+
+def test_bind_trigger(mockbot: bot.Sopel, triggerfactory: TriggerFactory):
+    trigger = triggerfactory(
+        mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
+
+    assert mockbot.trigger is None
+    token = mockbot.bind_trigger(trigger)
+    assert mockbot.trigger == trigger
+
+    with pytest.raises(RuntimeError):
+        mockbot.bind_trigger(trigger)
+
+    mockbot.unbind_trigger(token)
+    assert mockbot.trigger is None
+
+
+# -----------------------------------------------------------------------------
+# trigger bound
 
 def test_wrapper_default_destination(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
@@ -124,7 +147,7 @@ def test_wrapper_default_destination_statusmsg(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
 
-    assert wrapper._trigger.sender == '#channel'
+    assert wrapper.trigger.sender == '#channel'
     assert wrapper.default_destination == '+#channel'
 
 
@@ -143,7 +166,7 @@ def test_wrapper_say_statusmsg(mockbot, triggerfactory):
         STATUSMSG=tuple('+'),
     )
 
-    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+    wrapper: bot.Sopel = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
     wrapper.say('Hi!')
 
@@ -177,7 +200,7 @@ def test_wrapper_notice_statusmsg(mockbot, triggerfactory):
         STATUSMSG=tuple('+'),
     )
 
-    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+    wrapper: bot.Sopel = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
     wrapper.notice('Hi!')
 
@@ -211,7 +234,7 @@ def test_wrapper_action_statusmsg(mockbot, triggerfactory):
         STATUSMSG=tuple('+'),
     )
 
-    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+    wrapper: bot.Sopel = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
     wrapper.action('Hi!')
 
@@ -245,7 +268,7 @@ def test_wrapper_reply_statusmsg(mockbot, triggerfactory):
         STATUSMSG=tuple('+'),
     )
 
-    wrapper: bot.SopelWrapper = triggerfactory.wrapper(
+    wrapper: bot.Sopel = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG +#channel :test message')
     wrapper.reply('Hi!')
 
@@ -702,10 +725,9 @@ def test_call_rule(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -719,7 +741,7 @@ def test_call_rule(mockbot):
     assert not rule_hello.is_global_rate_limited()
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed twice now
     assert mockbot.backend.message_sent == rawlist(
@@ -757,10 +779,9 @@ def test_call_rule_rate_limited_user(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -774,7 +795,7 @@ def test_call_rule_rate_limited_user(mockbot):
     assert not rule_hello.is_global_rate_limited()
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert no new message
     assert mockbot.backend.message_sent == rawlist(
@@ -811,10 +832,9 @@ def test_call_rule_rate_limited_user_with_message(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -823,7 +843,7 @@ def test_call_rule_rate_limited_user_with_message(mockbot):
     assert items == [1]
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert there is now a NOTICE
     assert mockbot.backend.message_sent == rawlist(
@@ -860,10 +880,9 @@ def test_call_rule_rate_limited_channel(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -877,7 +896,7 @@ def test_call_rule_rate_limited_channel(mockbot):
     assert not rule_hello.is_global_rate_limited()
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert no new message
     assert mockbot.backend.message_sent == rawlist(
@@ -914,10 +933,9 @@ def test_call_rule_rate_limited_channel_with_message(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -931,7 +949,7 @@ def test_call_rule_rate_limited_channel_with_message(mockbot):
     assert not rule_hello.is_global_rate_limited()
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert there is now a NOTICE
     assert mockbot.backend.message_sent == rawlist(
@@ -968,10 +986,9 @@ def test_call_rule_rate_limited_global(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -985,7 +1002,7 @@ def test_call_rule_rate_limited_global(mockbot):
     assert rule_hello.is_global_rate_limited()
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert no new message
     assert mockbot.backend.message_sent == rawlist(
@@ -1022,10 +1039,9 @@ def test_call_rule_rate_limited_global_with_message(mockbot):
     # trigger and wrapper
     rule_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
 
     # call rule
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert the rule has been executed
     assert mockbot.backend.message_sent == rawlist(
@@ -1039,7 +1055,7 @@ def test_call_rule_rate_limited_global_with_message(mockbot):
     assert rule_hello.is_global_rate_limited()
 
     # call rule again
-    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+    mockbot.call_rule(rule_hello, rule_trigger)
 
     # assert there is now a NOTICE
     assert mockbot.backend.message_sent == rawlist(

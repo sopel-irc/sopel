@@ -9,7 +9,7 @@ from sopel import config, plugin
 from sopel.tests import rawlist
 
 if TYPE_CHECKING:
-    from sopel.bot import Sopel, SopelWrapper
+    from sopel.bot import Sopel
     from sopel.config import Config
     from sopel.tests.factories import BotFactory, ConfigFactory
 
@@ -233,7 +233,7 @@ def test_cap_ack_config_error(mockbot: Sopel):
     @plugin.capability('example/cap')
     def cap_req(
             cap_req: Tuple[str, ...],
-            bot: SopelWrapper,
+            bot: Sopel,
             acknowledged: bool,
     ) -> None:
         raise config.ConfigurationError('Improperly configured.')
@@ -255,7 +255,7 @@ def test_cap_ack_error(mockbot: Sopel):
     @plugin.capability('example/cap')
     def cap_req(
             cap_req: Tuple[str, ...],
-            bot: SopelWrapper,
+            bot: Sopel,
             acknowledged: bool,
     ) -> None:
         raise Exception('Random error.')
@@ -277,7 +277,7 @@ def test_cap_nak_config_error(mockbot: Sopel):
     @plugin.capability('example/cap')
     def cap_req(
             cap_req: Tuple[str, ...],
-            bot: SopelWrapper,
+            bot: Sopel,
             acknowledged: bool,
     ) -> None:
         raise config.ConfigurationError('Improperly configured.')
@@ -299,7 +299,7 @@ def test_cap_nak_error(mockbot: Sopel):
     @plugin.capability('example/cap')
     def cap_req(
             cap_req: Tuple[str, ...],
-            bot: SopelWrapper,
+            bot: Sopel,
             acknowledged: bool,
     ) -> None:
         raise Exception('Random error.')

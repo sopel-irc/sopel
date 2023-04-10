@@ -104,7 +104,7 @@ def create_reminder(bot, trigger, duration, message):
     """Create a reminder into the ``bot``'s database and reply to the sender
 
     :param bot: the bot's instance
-    :type bot: :class:`~sopel.bot.SopelWrapper`
+    :type bot: :class:`~sopel.bot.Sopel`
     :param trigger: the object that triggered the call
     :type trigger: :class:`~sopel.trigger.Trigger`
     :param int duration: duration from now, in seconds, until ``message``

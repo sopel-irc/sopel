@@ -25,7 +25,7 @@ from sopel.config import types
 from sopel.tools import web
 
 if TYPE_CHECKING:
-    from sopel.bot import Sopel, SopelWrapper
+    from sopel.bot import Sopel
     from sopel.config import Config
     from sopel.trigger import Trigger
 
@@ -152,7 +152,7 @@ def shutdown(bot: Sopel):
             pass
 
 
-def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger):
+def _user_can_change_excludes(bot: Sopel, trigger: Trigger):
     if trigger.admin:
         return True
 
@@ -170,7 +170,7 @@ def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger):
 @plugin.example('.urlpexclude example\\.com/\\w+', user_help=True)
 @plugin.example('.urlexclude example.com/path', user_help=True)
 @plugin.output_prefix('[url] ')
-def url_ban(bot: SopelWrapper, trigger: Trigger):
+def url_ban(bot: Sopel, trigger: Trigger):
     """Exclude a URL from auto title.
 
     Use ``urlpexclude`` to exclude a pattern instead of a URL.
@@ -221,7 +221,7 @@ def url_ban(bot: SopelWrapper, trigger: Trigger):
 @plugin.example('.urlpallow example\\.com/\\w+', user_help=True)
 @plugin.example('.urlallow example.com/path', user_help=True)
 @plugin.output_prefix('[url] ')
-def url_unban(bot: SopelWrapper, trigger: Trigger):
+def url_unban(bot: Sopel, trigger: Trigger):
     """Allow a URL for auto title.
 
     Use ``urlpallow`` to allow a pattern instead of a URL.
@@ -274,7 +274,7 @@ def url_unban(bot: SopelWrapper, trigger: Trigger):
     'Google | www.google.com',
     online=True, vcr=True)
 @plugin.output_prefix('[url] ')
-def title_command(bot: SopelWrapper, trigger: Trigger):
+def title_command(bot: Sopel, trigger: Trigger):
     """
     Show the title or URL information for the given URL, or the last URL seen
     in this channel.
@@ -314,7 +314,7 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
 
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.output_prefix('[url] ')
-def title_auto(bot: SopelWrapper, trigger: Trigger):
+def title_auto(bot: Sopel, trigger: Trigger):
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
     where the URL redirects to and show the title for that.
@@ -377,7 +377,7 @@ class URLInfo(NamedTuple):
 
 
 def process_urls(
-    bot: SopelWrapper,
+    bot: Sopel,
     trigger: Trigger,
     urls: List[str],
     requested: bool = False,
@@ -469,10 +469,10 @@ def process_urls(
         if (shorten_url_length > 0) and (len(url) > shorten_url_length):
             tinyurl = get_or_create_shorturl(bot, url)
 
-        yield (url, title, parsed_url.hostname, tinyurl, False)
+        yield URLInfo(url, title, parsed_url.hostname, tinyurl, False)
 
 
-def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> bool:
+def check_callbacks(bot: Sopel, url: str, use_excludes: bool = True) -> bool:
     """Check if ``url`` is excluded or matches any URL callback patterns.
 
     :param bot: Sopel instance
@@ -553,7 +553,7 @@ def find_title(url: str, verify: bool = True) -> Optional[str]:
     return title or None
 
 
-def get_or_create_shorturl(bot: SopelWrapper, url: str) -> Optional[str]:
+def get_or_create_shorturl(bot: Sopel, url: str) -> Optional[str]:
     """Get or create a short URL for ``url``
 
     :param bot: Sopel instance

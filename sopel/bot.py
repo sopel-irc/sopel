@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 from ast import literal_eval
+import contextlib
+import contextvars
 from datetime import datetime
 import inspect
 import itertools
@@ -18,9 +20,13 @@ import time
 from types import MappingProxyType
 from typing import (
     Any,
+    Callable,
     Dict,
+    Generator,
     Iterable,
+    List,
     Mapping,
+    MutableMapping,
     Optional,
     Tuple,
     TYPE_CHECKING,
@@ -40,23 +46,42 @@ from sopel.trigger import Trigger
 
 if TYPE_CHECKING:
     from sopel.trigger import PreTrigger
+    from sopel.config import Config
+    from sopel.tools.target import User
 
 
-__all__ = ['Sopel', 'SopelWrapper']
+__all__ = ['Sopel']
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Sopel(irc.AbstractBot):
-    def __init__(self, config, daemon=False):
+    def __init__(self, config: Config, daemon: bool = False):
         super().__init__(config)
         self._daemon = daemon  # Used for iPython. TODO something saner here
-        self._running_triggers = []
+        self._running_triggers: List[threading.Thread] = []
         self._running_triggers_lock = threading.Lock()
         self._plugins: Dict[str, Any] = {}
         self._rules_manager = plugin_rules.Manager()
         self._cap_requests_manager = plugin_capabilities.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
+
+        self._trigger_context: contextvars.ContextVar[
+            Trigger
+        ] = contextvars.ContextVar('_trigger_context')
+        """Context var for a trigger object.
+
+        This context is used to bind the bot to a trigger within a specific
+        context.
+        """
+        self._rule_context: contextvars.ContextVar[
+            plugin_rules.AbstractRule
+        ] = contextvars.ContextVar('_rule_context')
+        """Context var for a rule object.
+
+        This context is used to bind the bot to a plugin rule within a specific
+        context.
+        """
 
         self._url_callbacks = tools.SopelMemory()
         """Tracking of manually registered URL callbacks.
@@ -67,7 +92,7 @@ class Sopel(irc.AbstractBot):
         Remove in Sopel 9, along with the above related methods.
         """
 
-        self._times = {}
+        self._times: Dict[str, Dict[Callable, float]] = {}
         """
         A dictionary mapping lowercased nicks to dictionaries which map
         function names to the time which they were last used by that nick.
@@ -86,7 +111,7 @@ class Sopel(irc.AbstractBot):
         which contain the users in the channel and their permissions.
         """
 
-        self.users = tools.SopelIdentifierMemory(
+        self.users: MutableMapping[str, User] = tools.SopelIdentifierMemory(
             identifier_factory=self.make_identifier,
         )
         """A map of the users that Sopel is aware of.
@@ -106,7 +131,7 @@ class Sopel(irc.AbstractBot):
         plugins. See :class:`sopel.tools.memories.SopelMemory`.
         """
 
-        self.shutdown_methods = []
+        self.shutdown_methods: List[Callable] = []
         """List of methods to call on shutdown."""
 
     @property
@@ -192,8 +217,12 @@ class Sopel(irc.AbstractBot):
         if not self.users or self.nick not in self.users:
             # bot must be connected and in at least one channel
             return None
+        user: Optional[User] = self.users.get(self.nick)
 
-        return self.users.get(self.nick).hostmask
+        if not user:
+            return None
+
+        return user.hostmask
 
     @property
     def plugins(self) -> Mapping[str, plugins.handlers.AbstractPluginHandler]:
@@ -226,6 +255,120 @@ class Sopel(irc.AbstractBot):
             raise ValueError('Unknown channel %s' % channel)
 
         return self.channels[channel].has_privilege(self.nick, privilege)
+
+    # trigger binding
+
+    @property
+    def trigger(self) -> Optional[Trigger]:
+        """Context bound trigger.
+
+        .. seealso::
+
+            The :meth:`bind_trigger` method must be used to have a context
+            bound trigger.
+        """
+        return self._trigger_context.get(None)
+
+    @property
+    def rule(self) -> Optional[plugin_rules.AbstractRule]:
+        """Context bound plugin rule.
+
+        .. seealso::
+
+            The :meth:`bind_rule` method must be used to have a context bound
+            plugin rule.
+        """
+        return self._rule_context.get(None)
+
+    @property
+    def default_destination(self) -> Optional[str]:
+        """Default say/reply destination.
+
+        :return: the channel (with status prefix) or nick to send messages to
+
+        This property returns the :class:`str` version of the destination that
+        will be used by default by these methods:
+
+        * :meth:`say`
+        * :meth:`reply`
+        * :meth:`action`
+        * :meth:`notice`
+
+        For a channel, it also ensures that the status-specific prefix is added
+        to the result, so the bot replies with the same status.
+        """
+        if not self.trigger or not self.trigger.sender:
+            return None
+
+        trigger = self.trigger
+
+        # ensure str and not Identifier
+        destination = str(trigger.sender)
+
+        # prepend status prefix if it exists
+        if trigger.status_prefix:
+            destination = trigger.status_prefix + destination
+
+        return destination
+
+    @property
+    def output_prefix(self) -> str:
+        """Rule output prefix.
+
+        :return: an output prefix for the current rule (if bound)
+        """
+        if self.rule is None:
+            return ''
+
+        return self.rule.get_output_prefix()
+
+    def bind_trigger(self, trigger: Trigger) -> contextvars.Token:
+        """Bind the bot to a ``trigger`` instance.
+
+        :param trigger: the trigger instance to bind the bot with
+        :raise RuntimeError: when the bot is already bound to a trigger
+
+        Bind the bot to a ``trigger`` so it can be used in the context of a
+        plugin callable execution.
+
+        Once the plugin callable is done, a call to :meth:`unbind_trigger` must
+        be performed to unbind the bot.
+        """
+        if self.trigger is not None:
+            raise RuntimeError('Sopel is already bound to a trigger.')
+
+        return self._trigger_context.set(trigger)
+
+    def unbind_trigger(self, token: contextvars.Token) -> None:
+        """Unbind the bot from the trigger with a context ``token``.
+
+        :param token: the context token returned by :meth:`bind_trigger`
+        """
+        self._trigger_context.reset(token)
+
+    def bind_rule(self, rule: plugin_rules.AbstractRule) -> contextvars.Token:
+        """Bind the bot to a ``rule`` instance.
+
+        :param rule: the rule instance to bind the bot with
+        :raise RuntimeError: when the bot is already bound to a rule
+
+        Bind the bot to a ``rule`` so it can be used in the context of its
+        execution.
+
+        Once the plugin callable is done, a call to :meth:`unbind_rule` must
+        be performed to unbind the bot.
+        """
+        if self.rule is not None:
+            raise RuntimeError('Sopel is already bound to a rule.')
+
+        return self._rule_context.set(rule)
+
+    def unbind_rule(self, token: contextvars.Token) -> None:
+        """Unbind the bot from the rule with a context ``token``.
+
+        :param token: the context token returned by :meth:`bind_rule`
+        """
+        self._rule_context.reset(token)
 
     # setup
 
@@ -594,80 +737,139 @@ class Sopel(irc.AbstractBot):
 
     # message dispatch
 
+    @contextlib.contextmanager
+    def sopel_wrapper(
+        self,
+        trigger: Trigger,
+        rule: plugin_rules.AbstractRule,
+    ) -> Generator[Sopel, None, None]:
+        """Context manager to bind and unbind the bot to a trigger and a rule.
+
+        :param trigger: a trigger to bind the bot to
+        :param rule: a plugin rule to bind the bot to
+        :return: yield the bot bound to the trigger and the plugin rule
+
+        Bind the bot to a trigger and a rule for a specific context usage.
+        This makes the destination and the nick optional when sending messages
+        with the bot, for example::
+
+            with bot.sopel_wrapper(trigger, rule):
+                bot.say('My message')
+                bot.reply('Yes I am talking to you!')
+
+        This will send both messages to ``trigger.sender``, and the repply will
+        be prefixed by ``trigger.nick``.
+
+        If the ``rule`` has an output prefix, it will be used in the
+        :meth:`say` method.
+
+        .. versionadded: 8.0
+
+        .. seealso::
+
+            The :meth:`call_rule` method uses this context manager to ensure
+            that the rule executes with a bot properly bound to the trigger
+            and the rule that must be executed.
+
+        """
+        trigger_token = self.bind_trigger(trigger)
+        rule_token = self.bind_rule(rule)
+        try:
+            yield self
+        finally:
+            self.unbind_trigger(trigger_token)
+            self.unbind_rule(rule_token)
+
     def call_rule(
         self,
         rule: plugin_rules.AbstractRule,
-        sopel: 'SopelWrapper',
         trigger: Trigger,
     ) -> None:
-        nick = trigger.nick
-        context = trigger.sender
-        is_channel = context and not context.is_nick()
+        """Execute the ``rule`` with the bot bound to it and the ``trigger``.
 
-        # rate limiting
-        if not trigger.admin and not rule.is_unblockable():
-            if rule.is_user_rate_limited(nick):
-                message = rule.get_user_rate_message(nick)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
+        :param rule: the rule to execute
+        :param trigger: the trigger that matches the rule
 
-            if is_channel and rule.is_channel_rate_limited(context):
-                message = rule.get_channel_rate_message(nick, context)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
+        Perform all necessary checks before executing the rule. A rule might
+        not be executed if it is rate limited, or if it is disabled in a
+        channel by configuration.
 
-            if rule.is_global_rate_limited():
-                message = rule.get_global_rate_message(nick)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
+        The rule is executed with a bot bound to it and the trigger that
+        matches the rule.
 
-        # channel config
-        if is_channel and context in self.config:
-            channel_config = self.config[context]
-            plugin_name = rule.get_plugin_name()
+        .. warning::
 
-            # disable listed plugins completely on provided channel
-            if 'disable_plugins' in channel_config:
-                disabled_plugins = channel_config.disable_plugins.split(',')
+            This is an internal method documented to help contribution to the
+            development of Sopel's core. This should not be used by a plugin
+            directly.
 
-                if plugin_name == 'coretasks':
-                    LOGGER.debug("disable_plugins refuses to skip a coretasks handler")
-                elif '*' in disabled_plugins:
-                    return
-                elif plugin_name in disabled_plugins:
+        """
+        with self.sopel_wrapper(trigger, rule) as sopel:
+            nick = trigger.nick
+            context = trigger.sender
+            is_channel = context and not context.is_nick()
+
+            # rate limiting
+            if not trigger.admin and not rule.is_unblockable():
+                if rule.is_user_rate_limited(nick):
+                    message = rule.get_user_rate_message(nick)
+                    if message:
+                        sopel.notice(message, destination=nick)
                     return
 
-            # disable chosen methods from plugins
-            if 'disable_commands' in channel_config:
-                disabled_commands = literal_eval(channel_config.disable_commands)
-                disabled_commands = disabled_commands.get(plugin_name, [])
-                if rule.get_rule_label() in disabled_commands:
-                    if plugin_name != 'coretasks':
+                if is_channel and rule.is_channel_rate_limited(context):
+                    message = rule.get_channel_rate_message(nick, context)
+                    if message:
+                        sopel.notice(message, destination=nick)
+                    return
+
+                if rule.is_global_rate_limited():
+                    message = rule.get_global_rate_message(nick)
+                    if message:
+                        sopel.notice(message, destination=nick)
+                    return
+
+            # channel config
+            if is_channel and context in sopel.config:
+                channel_config = sopel.config[context]
+                plugin_name = rule.get_plugin_name()
+
+                # disable listed plugins completely on provided channel
+                if 'disable_plugins' in channel_config:
+                    disabled_plugins = channel_config.disable_plugins.split(',')
+
+                    if plugin_name == 'coretasks':
+                        LOGGER.debug("disable_plugins refuses to skip a coretasks handler")
+                    elif '*' in disabled_plugins:
                         return
-                    LOGGER.debug("disable_commands refuses to skip a coretasks handler")
+                    elif plugin_name in disabled_plugins:
+                        return
 
-        try:
-            rule.execute(sopel, trigger)
-        except KeyboardInterrupt:
-            raise
-        except Exception as error:
-            self.error(trigger, exception=error)
+                # disable chosen methods from plugins
+                if 'disable_commands' in channel_config:
+                    disabled_commands = literal_eval(channel_config.disable_commands)
+                    disabled_commands = disabled_commands.get(plugin_name, [])
+                    if rule.get_rule_label() in disabled_commands:
+                        if plugin_name != 'coretasks':
+                            return
+                        LOGGER.debug("disable_commands refuses to skip a coretasks handler")
+
+            try:
+                rule.execute(sopel, trigger)
+            except KeyboardInterrupt:
+                raise
+            except Exception as error:
+                sopel.error(trigger, exception=error)
 
     def call(
         self,
         func: Any,
-        sopel: 'SopelWrapper',
         trigger: Trigger,
     ) -> None:
         """Call a function, applying any rate limits or other restrictions.
 
         :param func: the function to call
         :type func: :term:`function`
-        :param sopel: a SopelWrapper instance
-        :type sopel: :class:`SopelWrapper`
         :param Trigger trigger: the Trigger object for the line from the server
                                 that triggered this call
         """
@@ -750,11 +952,12 @@ class Sopel(irc.AbstractBot):
                         )
                         return
 
-        try:
-            exit_code = func(sopel, trigger)
-        except Exception as error:  # TODO: Be specific
-            exit_code = None
-            self.error(trigger, exception=error)
+        with self.sopel_wrapper(trigger, func) as sopel:
+            try:
+                exit_code = func(sopel, trigger)
+            except Exception as error:  # TODO: Be specific
+                exit_code = None
+                self.error(trigger, exception=error)
 
         if exit_code != plugin.NOLIMIT:
             self._times[nick][func] = current_time
@@ -796,7 +999,7 @@ class Sopel(irc.AbstractBot):
 
         """
         # list of commands running in separate threads for this dispatch
-        running_triggers = []
+        running_triggers: List[threading.Thread] = []
         # nickname/hostname blocking
         nick_blocked, host_blocked = self._is_pretrigger_blocked(pretrigger)
         blocked = bool(nick_blocked or host_blocked)
@@ -820,12 +1023,9 @@ class Sopel(irc.AbstractBot):
                 list_of_blocked_rules.add(str(rule))
                 continue
 
-            wrapper = SopelWrapper(
-                self, trigger, output_prefix=rule.get_output_prefix())
-
             if rule.is_threaded():
                 # run in a separate thread
-                targs = (rule, wrapper, trigger)
+                targs = (rule, trigger)
                 t = threading.Thread(target=self.call_rule, args=targs)
                 plugin_name = rule.get_plugin_name()
                 rule_label = rule.get_rule_label()
@@ -834,7 +1034,7 @@ class Sopel(irc.AbstractBot):
                 running_triggers.append(t)
             else:
                 # direct call
-                self.call_rule(rule, wrapper, trigger)
+                self.call_rule(rule, trigger)
 
         # update currently running triggers
         self._update_running_triggers(running_triggers)
@@ -865,7 +1065,10 @@ class Sopel(irc.AbstractBot):
         with self._running_triggers_lock:
             return [t for t in self._running_triggers if t.is_alive()]
 
-    def _update_running_triggers(self, running_triggers: list) -> None:
+    def _update_running_triggers(
+        self,
+        running_triggers: List[threading.Thread],
+    ) -> None:
         """Update list of running triggers.
 
         :param list running_triggers: newly started threads
@@ -1218,6 +1421,206 @@ class Sopel(irc.AbstractBot):
             if match:
                 yield function, match
 
+    # IRC methods
+
+    def say(
+        self,
+        message: str,
+        destination: Optional[str] = None,
+        max_messages: int = 1,
+        truncation: str = '',
+        trailing: str = '',
+    ) -> None:
+        """Send a ``message`` to ``destination``.
+
+        :param str message: message to say
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :param int max_messages: split ``message`` into at most this many
+                                 messages if it is too long to fit into one
+                                 line (optional)
+        :param str truncation: string to indicate that the ``message`` was
+                               truncated (optional)
+        :param str trailing: string that should always appear at the end of
+                             ``message`` (optional)
+        :raise RuntimeError: when the bot cannot found a ``destination`` for
+                             the message
+
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
+
+        .. seealso::
+
+            For more details about the optional arguments to this wrapper
+            method, consult the documentation for
+            :meth:`sopel.irc.AbstractBot.say`.
+
+        .. warning::
+
+            If the bot is not bound to a trigger, then this methods requires
+            a ``destination`` or it will raise an exception.
+
+        """
+        if destination is None:
+            destination = self.default_destination
+
+        if destination is None:
+            raise RuntimeError('bot.say requires a destination.')
+
+        super().say(
+            self.output_prefix + message,
+            destination,
+            max_messages,
+            truncation,
+            trailing,
+        )
+
+    def action(self, message: str, destination: Optional[str] = None) -> None:
+        """Send a ``message`` as an action to ``destination``.
+
+        :param str message: action message
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :raise RuntimeError: when the bot cannot found a ``destination`` for
+                             the message
+
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
+
+        .. seealso::
+
+            :meth:`sopel.irc.AbstractBot.action`
+
+        .. warning::
+
+            If the bot is not bound to a trigger, then this methods requires
+            a ``destination`` or it will raise an exception.
+
+        """
+        if destination is None:
+            destination = self.default_destination
+
+        if destination is None:
+            raise RuntimeError('bot.action requires a destination.')
+
+        super().action(message, destination)
+
+    def notice(self, message: str, destination: Optional[str] = None) -> None:
+        """Send a ``message`` as a notice to ``destination``.
+
+        :param str message: notice message
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :raise RuntimeError: when the bot cannot found a ``destination`` for
+                             the message
+
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
+
+        .. seealso::
+
+            :meth:`sopel.irc.AbstractBot.notice`
+
+        .. warning::
+
+            If the bot is not bound to a trigger, then this methods requires
+            a ``destination`` or it will raise an exception.
+
+        """
+        if destination is None:
+            destination = self.default_destination
+
+        if destination is None:
+            raise RuntimeError('bot.notice requires a destination.')
+
+        super().notice(self.output_prefix + message, destination)
+
+    def reply(
+        self,
+        message: str,
+        destination: Optional[str] = None,
+        reply_to: Optional[str] = None,
+        notice: bool = False,
+    ) -> None:
+        """Reply with a ``message`` to the ``reply_to`` nick.
+
+        :param str message: reply message
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :param str reply_to: person to reply to; defaults to
+            :attr:`trigger.nick <sopel.trigger.Trigger.nick>`
+        :param bool notice: reply as an IRC notice or with a simple message
+        :raise RuntimeError: when the bot cannot found a ``destination`` or
+                             a nick (``reply_to``) for the message
+
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
+
+        ``reply_to`` will default to the nickname who sent the trigger.
+
+        .. seealso::
+
+            :meth:`sopel.irc.AbstractBot.reply`
+
+        .. warning::
+
+            If the bot is not bound to a trigger, then this methods requires
+            a ``destination`` and a ``reply_to``, or it will raise an
+            exception.
+
+        """
+        if destination is None:
+            destination = self.default_destination
+
+        if destination is None:
+            raise RuntimeError('bot.action requires a destination.')
+
+        if reply_to is None:
+            if self.trigger is None:
+                raise RuntimeError('Error: reply requires a nick.')
+            reply_to = self.trigger.nick
+
+        super().reply(message, destination, reply_to, notice)
+
+    def kick(
+        self,
+        nick: str,
+        channel: Optional[str] = None,
+        message: Optional[str] = None,
+    ) -> None:
+        """Override ``Sopel.kick`` to kick in a channel
+
+        :param str nick: nick to kick out of the ``channel``
+        :param str channel: optional channel to kick ``nick`` from
+        :param str message: optional message for the kick
+        :raise RuntimeError: when the bot cannot found a ``channel`` for the
+                             message
+
+        The ``channel`` will default to the channel in which the call was
+        triggered. If triggered from a private message, ``channel`` is
+        required.
+
+        .. seealso::
+
+            :meth:`sopel.irc.AbstractBot.kick`
+
+        .. warning::
+
+            If the bot is not bound to a trigger, then this methods requires
+            a ``channel``, or it will raise an exception.
+
+        """
+        if channel is None:
+            if self.trigger is None or self.trigger.is_privmsg:
+                raise RuntimeError('Error: KICK requires a channel.')
+            else:
+                channel = self.trigger.sender
+
+        if not nick:
+            raise RuntimeError('Error: KICK requires a nick.')
+
+        super().kick(nick, channel, message)
+
 
 class SopelWrapper:
     """Wrapper around a Sopel instance and a Trigger.
@@ -1233,8 +1636,23 @@ class SopelWrapper:
     their ``bot`` argument. It acts as a proxy, providing the ``trigger``'s
     ``sender`` (source channel or private message) as the default
     ``destination`` argument for overridden methods.
+
+    .. deprecated:: 8.0
+
+        This class is deprecated since Sopel 8.0 and is no longer used by
+        Sopel. With Python 3.7, Sopel takes advantage of the :mod:`contextvars`
+        built-in module to manipulate a context specific trigger and rule.
+
+        This class will be removed in Sopel 9.0 and must not be used anymore.
+
     """
-    def __init__(self, sopel, trigger, output_prefix=''):
+    @deprecated('Obsolete, see sopel.bot.Sopel.sopel_wrapper', '8.0', '9.0')
+    def __init__(
+        self,
+        sopel: Sopel,
+        trigger: Trigger,
+        output_prefix: str = '',
+    ):
         if not output_prefix:
             # Just in case someone passes in False, None, etc.
             output_prefix = ''
@@ -1250,10 +1668,10 @@ class SopelWrapper:
                       if not attr.startswith('__')]
         return list(self.__dict__) + classattrs + dir(self._bot)
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
         return getattr(self._bot, attr)
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: Any):
         return setattr(self._bot, attr, value)
 
     @property

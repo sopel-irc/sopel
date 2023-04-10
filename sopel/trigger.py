@@ -335,11 +335,8 @@ class Trigger(str):
         does not include the status prefix. Be sure to use the
         :attr:`status_prefix` when replying.
 
-        Note that the ``bot`` argument passed to plugin callables is a
-        :class:`~sopel.bot.SopelWrapper` that handles this for the default
-        ``destination`` of the methods it overrides (most importantly,
-        :meth:`~sopel.bot.SopelWrapper.say` &
-        :meth:`~sopel.bot.SopelWrapper.reply`).
+        Note that the ``bot`` argument passed to plugin callables handles this
+        by using its :attr:`~sopel.bot.Sopel.default_destination` attribute.
 
     .. warning::
 

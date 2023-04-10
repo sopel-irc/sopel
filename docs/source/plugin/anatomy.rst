@@ -204,12 +204,12 @@ the same interface:
 .. py:function:: plugin_callable(bot, trigger)
 
    :param bot: wrapped bot instance
-   :type bot: :class:`sopel.bot.SopelWrapper`
+   :type bot: :class:`sopel.bot.Sopel`
    :param trigger: the object that triggered the call
    :type trigger: :class:`sopel.trigger.Trigger`
 
 A callable must accept two positional arguments: a
-:class:`bot <sopel.bot.SopelWrapper>` object, and a
+:class:`bot <sopel.bot.Sopel>` object, and a
 :class:`trigger <sopel.trigger.Trigger>` object. Both are tied to the specific
 message that matches the rule.
 

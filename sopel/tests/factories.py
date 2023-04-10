@@ -97,9 +97,10 @@ class TriggerFactory:
         mockbot: bot.Sopel,
         raw: str,
         pattern: Optional[str] = None,
-    ) -> bot.SopelWrapper:
+    ) -> bot.Sopel:
         trigger = self(mockbot, raw, pattern=pattern)
-        return bot.SopelWrapper(mockbot, trigger)
+        mockbot.bind_trigger(trigger)
+        return mockbot
 
     def __call__(
         self,
