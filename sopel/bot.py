@@ -630,6 +630,8 @@ class Sopel(irc.AbstractBot):
         next_time = metrics.last_time + rate_limit
         time_left = next_time - at_time
 
+        message: Optional[str] = None
+
         if template:
             message = template.format(
                 nick=trigger.nick,
@@ -643,8 +645,6 @@ class Sopel(irc.AbstractBot):
                 rate_limit_sec=rate_limit.total_seconds(),
                 rate_limit_type=rate_limit_type,
             )
-        else:
-            message = None
 
         return True, message
 
