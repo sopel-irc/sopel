@@ -5,6 +5,7 @@ import datetime
 import re
 
 import pytest
+import pytz
 
 from sopel import bot, loader, plugin, trigger
 from sopel.plugins import rules
@@ -468,7 +469,7 @@ def test_manager_has_action_command_aliases():
 # tests for :class:`Manager`
 
 def test_rulemetrics():
-    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    now = pytz.utc.localize(datetime.datetime.utcnow())
     time_window = datetime.timedelta(seconds=3600)
     metrics = rules.RuleMetrics()
 
