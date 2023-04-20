@@ -1256,6 +1256,35 @@ class SopelWrapper:
     def __setattr__(self, attr, value):
         return setattr(self._bot, attr, value)
 
+    @property
+    def default_destination(self) -> Optional[str]:
+        """Default say/reply destination for the associated Trigger.
+
+        :return: the channel (with status prefix) or nick to send messages to
+
+        This property returns the :class:`str` version of the destination that
+        will be used by default by these methods:
+
+        * :meth:`say`
+        * :meth:`reply`
+        * :meth:`action`
+        * :meth:`notice`
+
+        For a channel, it also ensures that the status-specific prefix is added
+        to the result, so the bot replies with the same status.
+        """
+        if not self._trigger.sender:
+            return None
+
+        # ensure str and not Identifier
+        destination = str(self._trigger.sender)
+
+        # prepend status prefix if it exists
+        if self._trigger.status_prefix:
+            destination = self._trigger.status_prefix + destination
+
+        return destination
+
     def say(self, message, destination=None, max_messages=1, truncation='', trailing=''):
         """Override ``Sopel.say`` to use trigger source by default.
 
@@ -1280,8 +1309,15 @@ class SopelWrapper:
 
         """
         if destination is None:
-            destination = self._trigger.sender
-        self._bot.say(self._out_pfx + message, destination, max_messages, truncation, trailing)
+            destination = self.default_destination
+
+        self._bot.say(
+            self._out_pfx + message,
+            destination,
+            max_messages,
+            truncation,
+            trailing,
+        )
 
     def action(self, message, destination=None):
         """Override ``Sopel.action`` to use trigger source by default.
@@ -1298,7 +1334,8 @@ class SopelWrapper:
             :meth:`sopel.bot.Sopel.action`
         """
         if destination is None:
-            destination = self._trigger.sender
+            destination = self.default_destination
+
         self._bot.action(message, destination)
 
     def notice(self, message, destination=None):
@@ -1316,7 +1353,8 @@ class SopelWrapper:
             :meth:`sopel.bot.Sopel.notice`
         """
         if destination is None:
-            destination = self._trigger.sender
+            destination = self.default_destination
+
         self._bot.notice(self._out_pfx + message, destination)
 
     def reply(self, message, destination=None, reply_to=None, notice=False):
@@ -1339,9 +1377,11 @@ class SopelWrapper:
             :meth:`sopel.bot.Sopel.reply`
         """
         if destination is None:
-            destination = self._trigger.sender
+            destination = self.default_destination
+
         if reply_to is None:
             reply_to = self._trigger.nick
+
         self._bot.reply(message, destination, reply_to, notice)
 
     def kick(self, nick, channel=None, message=None):
@@ -1364,6 +1404,8 @@ class SopelWrapper:
                 raise RuntimeError('Error: KICK requires a channel.')
             else:
                 channel = self._trigger.sender
+
         if nick is None:
             raise RuntimeError('Error: KICK requires a nick.')
+
         self._bot.kick(nick, channel, message)

@@ -329,6 +329,18 @@ class Trigger(str):
         else:
             # message sent from a channel
 
+    .. important::
+
+        If the message was sent to a `specific status prefix`__, the ``sender``
+        does not include the status prefix. Be sure to use the
+        :attr:`status_prefix` when replying.
+
+        Note that the ``bot`` argument passed to plugin callables is a
+        :class:`~sopel.bot.SopelWrapper` that handles this for the default
+        ``destination`` of the methods it overrides (most importantly,
+        :meth:`~sopel.bot.SopelWrapper.say` &
+        :meth:`~sopel.bot.SopelWrapper.reply`).
+
     .. warning::
 
         The ``sender`` Will be ``None`` for commands that have no implicit
@@ -337,6 +349,7 @@ class Trigger(str):
         The :attr:`COMMANDS_WITH_CONTEXT` attribute lists IRC commands for
         which ``sender`` can be relied upon.
 
+    .. __: https://modern.ircdocs.horse/#statusmsg-parameter
     """
     status_prefix = property(lambda self: self._pretrigger.status_prefix)
     """The prefix used for the :attr:`sender` for status-specific messages.
