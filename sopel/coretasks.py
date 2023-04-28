@@ -1489,12 +1489,17 @@ def recv_whox(bot, trigger):
             "While populating `bot.accounts` a WHO response was malformed.")
         return
     _, _, channel, user, host, nick, status, account, realname = trigger.args
+    botmode = bot.isupport.get('BOT')
     away = 'G' in status
+    is_bot = (botmode in status) if botmode else None
     modes = ''.join([c for c in status if c in '~&@%+!'])
-    _record_who(bot, channel, user, host, nick, realname, account, away, modes)
+    _record_who(bot, channel, user, host, nick, realname, account, away, is_bot, modes)
 
 
-def _record_who(bot, channel, user, host, nick, realname=None, account=None, away=None, modes=None):
+def _record_who(
+    bot, channel, user, host, nick, realname=None,
+    account=None, away=None, is_bot=None, modes=None,
+):
     nick = bot.make_identifier(nick)
     channel = bot.make_identifier(channel)
     if nick not in bot.users:
@@ -1515,6 +1520,8 @@ def _record_who(bot, channel, user, host, nick, realname=None, account=None, awa
         usr.account = account
     if away is not None:
         usr.away = away
+    if is_bot is not None:
+        usr.is_bot = is_bot
     priv = 0
     if modes:
         mapping = {
@@ -1543,10 +1550,15 @@ def _record_who(bot, channel, user, host, nick, realname=None, account=None, awa
 def recv_who(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is not enabled."""
     channel, user, host, _, nick, status = trigger.args[1:7]
+    botmode = bot.isupport.get('BOT')
     realname = trigger.args[-1].partition(' ')[-1]
     away = 'G' in status
+    is_bot = (botmode in status) if botmode else None
     modes = ''.join([c for c in status if c in '~&@%+!'])
-    _record_who(bot, channel, user, host, nick, realname, away=away, modes=modes)
+    _record_who(
+        bot, channel, user, host, nick, realname,
+        away=away, is_bot=is_bot, modes=modes,
+    )
 
 
 @plugin.event('AWAY')
