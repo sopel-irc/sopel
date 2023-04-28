@@ -23,7 +23,7 @@ class User:
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
     __slots__ = (
-        'nick', 'user', 'host', 'realname', 'channels', 'account', 'away',
+        'nick', 'user', 'host', 'realname', 'channels', 'account', 'away', 'is_bot',
     )
 
     def __init__(
@@ -57,6 +57,12 @@ class User:
         """
         self.away = None
         """Whether the user is marked as away."""
+        self.is_bot: Optional[bool] = None
+        """Whether the user is flagged as a bot.
+
+        Will be ``None`` if the user hasn't yet been WHOed, or if the IRC
+        server does not support a 'bot' user mode.
+        """
 
     hostmask = property(lambda self: '{}!{}@{}'.format(self.nick, self.user,
                                                        self.host))
