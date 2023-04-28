@@ -33,13 +33,13 @@ class User:
         host: Optional[str],
     ) -> None:
         assert isinstance(nick, identifiers.Identifier)
-        self.nick = nick
+        self.nick: identifiers.Identifier = nick
         """The user's nickname."""
-        self.user = user
+        self.user: Optional[str] = user
         """The user's local username."""
-        self.host = host
+        self.host: Optional[str] = host
         """The user's hostname."""
-        self.realname = None
+        self.realname: Optional[str] = None
         """The user's realname.
 
         Will be ``None`` if not received from the server yet.
@@ -50,12 +50,12 @@ class User:
         This maps channel name :class:`~sopel.tools.identifiers.Identifier`\\s
         to :class:`Channel` objects.
         """
-        self.account = None
+        self.account: Optional[str] = None
         """The IRC services account of the user.
 
         This relies on IRCv3 account tracking being enabled.
         """
-        self.away = None
+        self.away: Optional[bool] = None
         """Whether the user is marked as away."""
         self.is_bot: Optional[bool] = None
         """Whether the user is flagged as a bot.
@@ -64,9 +64,15 @@ class User:
         server does not support a 'bot' user mode.
         """
 
-    hostmask = property(lambda self: '{}!{}@{}'.format(self.nick, self.user,
-                                                       self.host))
-    """The user's full hostmask."""
+    @property
+    def hostmask(self) -> str:
+        """The user's full hostmask (``nick!user@host``)."""
+        # TODO: this won't work as expected if `user`/`host` is still `None`
+        return '{}!{}@{}'.format(
+            self.nick,
+            self.user,
+            self.host,
+        )
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, User):
@@ -105,7 +111,7 @@ class Channel:
         identifier_factory: IdentifierFactory = identifiers.Identifier,
     ) -> None:
         assert isinstance(name, identifiers.Identifier)
-        self.name = name
+        self.name: identifiers.Identifier = name
         """The name of the channel."""
 
         self.make_identifier: IdentifierFactory = identifier_factory
@@ -139,7 +145,7 @@ class Channel:
         bitwise integer values. This can be compared to appropriate constants
         from :mod:`sopel.privileges`.
         """
-        self.topic = ''
+        self.topic: str = ''
         """The topic of the channel."""
 
         self.modes: Dict[str, Union[Set, str, bool]] = {}
