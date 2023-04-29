@@ -147,7 +147,7 @@ def kick_cleanup(bot, trigger):
              (?P<new>         # Group 4 is what to replace with
                (?:\\\||[^|])* # One or more non-pipe or escaped pipe
              )
-             (?:|             # Optional separator followed by group 5 (flags)
+             (?:\|            # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
              )?
             """)
