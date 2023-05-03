@@ -38,6 +38,7 @@ from sopel.tools import events, jobs, SopelMemory, target
 
 if TYPE_CHECKING:
     from sopel.bot import Sopel, SopelWrapper
+    from sopel.tools import Identifier
     from sopel.trigger import Trigger
 
 
@@ -1497,8 +1498,16 @@ def recv_whox(bot, trigger):
 
 
 def _record_who(
-    bot, channel, user, host, nick, realname=None,
-    account=None, away=None, is_bot=None, modes=None,
+    bot: Sopel,
+    channel: Identifier,
+    user: str,
+    host: str,
+    nick: str,
+    realname: Optional[str] = None,
+    account: Optional[str] = None,
+    away: Optional[bool] = None,
+    is_bot: Optional[bool] = None,
+    modes: Optional[str] = None,
 ):
     nick = bot.make_identifier(nick)
     channel = bot.make_identifier(channel)
