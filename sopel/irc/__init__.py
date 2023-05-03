@@ -771,26 +771,29 @@ class AbstractBot(abc.ABC):
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
 
         excess = ''
-        safe_length = self.safe_text_length(recipient)
 
         if not isinstance(text, str):
             # Make sure we are dealing with a Unicode string
             text = text.decode('utf-8')
 
-        if max_messages > 1 or truncation or trailing:
-            if max_messages == 1 and trailing:
-                safe_length -= len(trailing.encode('utf-8'))
-            text, excess = tools.get_sendable_message(text, safe_length)
+        safe_length = self.safe_text_length(recipient)
+        if trailing and max_messages == 1:
+            # last message needs to leave room for `trailing`
+            safe_length -= len(trailing.encode('utf-8'))
 
-        if max_messages == 1:
-            if excess and truncation:
-                # only append `truncation` if this is the last message AND it's still too long
+        # only think about `truncation` if we need to
+        if safe_length < len(text.encode('utf-8')):
+            if max_messages == 1:
+                # last message needs to leave room for `truncation`
+                # if it's still too long to fit in the line
                 safe_length -= len(truncation.encode('utf-8'))
-                text, excess = tools.get_sendable_message(text, safe_length)
+            text, excess = tools.get_sendable_message(text, safe_length)
+            if max_messages == 1:
                 text += truncation
 
-            # ALWAYS append `trailing`;
-            # its length is included when determining if truncation happened above
+        if max_messages == 1:
+            # ALWAYS append `trailing` to the last message;
+            # its size is included in the initial `safe_length` check
             text += trailing
 
         flood_max_wait = self.settings.core.flood_max_wait
