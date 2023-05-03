@@ -36,13 +36,22 @@ class User:
         self.nick: identifiers.Identifier = nick
         """The user's nickname."""
         self.user: Optional[str] = user
-        """The user's local username."""
+        """The user's local username.
+
+        Will be ``None`` if Sopel has not yet received complete user
+        information from the IRC server.
+        """
         self.host: Optional[str] = host
-        """The user's hostname."""
+        """The user's hostname.
+
+        Will be ``None`` if Sopel has not yet received complete user
+        information from the IRC server.
+        """
         self.realname: Optional[str] = None
         """The user's realname.
 
-        Will be ``None`` if not received from the server yet.
+        Will be ``None`` if Sopel has not yet received complete user
+        information from the IRC server.
         """
         self.channels: Dict[identifiers.Identifier, 'Channel'] = {}
         """The channels the user is in.
@@ -54,9 +63,16 @@ class User:
         """The IRC services account of the user.
 
         This relies on IRCv3 account tracking being enabled.
+
+        Will be ``None`` if the user is not logged into an account (including
+        when account tracking is not supported by the IRC server.)
         """
         self.away: Optional[bool] = None
-        """Whether the user is marked as away."""
+        """Whether the user is marked as away.
+
+        Will be ``None`` if the user's current away state hasn't been
+        established yet (via WHO or other means such as ``away-notify``).
+        """
         self.is_bot: Optional[bool] = None
         """Whether the user is flagged as a bot.
 
