@@ -571,3 +571,77 @@ def test_handle_rpl_namreply_with_malformed_uhnames(mockbot, caplog):
 
     assert len(caplog.messages) == 1
     assert 'RPL_NAMREPLY item without a hostmask' in caplog.messages[0]
+
+
+def test_handle_who_reply(mockbot):
+    """Make sure Sopel correctly updates user info from WHO replies"""
+    # verify we start with no users/channels
+    assert len(mockbot.users) == 0
+    assert 'Internets' not in mockbot.users
+    assert len(mockbot.channels) == 0
+    assert '#channel' not in mockbot.channels
+
+    # add one user, who is Here
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel #channel '
+        'internets services.irc.network * Internets Hr* '
+        ':0 Network Services Bot')
+    mockbot.on_message(
+        ':some.irc.network 315 Sopel #channel '
+        ':End of /WHO list.')
+
+    assert len(mockbot.users) == 1
+    assert 'Internets' in mockbot.users
+    assert mockbot.users['Internets'].nick == 'Internets'
+    assert mockbot.users['Internets'].user == 'internets'
+    assert mockbot.users['Internets'].host == 'services.irc.network'
+    assert mockbot.users['Internets'].realname == 'Network Services Bot'
+    assert mockbot.users['Internets'].away is False
+    assert mockbot.users['Internets'].is_bot is None
+
+    assert '#channel' in mockbot.channels
+    assert mockbot.channels['#channel']
+    assert len(mockbot.channels['#channel'].users) == 1
+    assert 'Internets' in mockbot.channels['#channel'].users
+    assert (
+        mockbot.users['Internets'] is mockbot.channels['#channel'].users['Internets']
+    )
+
+    # on next WHO, user has been marked as Gone
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel #channel '
+        'internets services.irc.network * Internets Gr* '
+        ':0 Network Services Bot')
+    mockbot.on_message(
+        ':some.irc.network 315 Sopel #channel '
+        ':End of /WHO list.')
+
+    assert mockbot.users['Internets'].away is True
+    assert mockbot.users['Internets'].is_bot is None
+
+
+def test_handle_who_reply_botmode(mockbot):
+    """Make sure Sopel correctly tracks users' bot status from WHO replies"""
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'BOT=B '
+        ':are supported by this server')
+
+    # non-bot user
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel #channel '
+        'human somewhere.in.the.world * E_R_Bradshaw H* '
+        ':0 E. R. Bradshaw')
+
+    assert mockbot.users['E_R_Bradshaw'].is_bot is False
+
+    # bot user
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel #channel '
+        'internets services.irc.network * Internets HBr* '
+        ':0 Network Services Bot')
+    mockbot.on_message(
+        ':some.irc.network 315 Sopel #channel '
+        ':End of /WHO list.')
+
+    assert mockbot.users['Internets'].is_bot is True
