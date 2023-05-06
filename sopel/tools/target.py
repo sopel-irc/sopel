@@ -430,7 +430,7 @@ class Channel:
         self,
         old: identifiers.Identifier,
         new: identifiers.Identifier,
-    ):
+    ) -> None:
         """Rename a user.
 
         :param old: the user's old nickname
@@ -444,12 +444,12 @@ class Channel:
         if old in self.privileges:
             self.privileges[new] = self.privileges.pop(old)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Channel):
             return NotImplemented
         return self.name == other.name
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, Channel):
             return NotImplemented
         return self.name < other.name
