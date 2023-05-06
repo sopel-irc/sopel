@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional, overload, Tuple, TYPE_CHECKING, Union
+from typing import cast, Optional, Tuple, TYPE_CHECKING, Union
 
 import pytz
 
@@ -27,22 +27,13 @@ MONTHS = int(30.5 * DAYS)
 YEARS = 365 * DAYS
 
 
-@overload
-def validate_timezone(zone: None) -> None:
-    ...
-
-
-@overload
-def validate_timezone(zone: str) -> str:
-    ...
-
-
-def validate_timezone(zone):
+def validate_timezone(zone: Optional[str]) -> str:
     """Return an IETF timezone from the given IETF zone or common abbreviation.
 
     :param zone: in a strict or a human-friendly format
     :return: the valid IETF timezone properly formatted
     :raise ValueError: when ``zone`` is not a valid timezone
+                       (including empty string and ``None`` value)
 
     Prior to checking timezones, two transformations are made to make the zone
     names more human-friendly:
@@ -58,16 +49,23 @@ def validate_timezone(zone):
     If the zone is not valid, :exc:`ValueError` will be raised.
 
     .. versionadded:: 6.0
+
+    .. versionchanged:: 8.0
+
+        If ``zone`` is ``None``, raises a :exc:`ValueError` as if it was an
+        empty string or an invalid timezone instead of returning ``None``.
+
     """
     if zone is None:
-        return None
+        raise ValueError('Invalid time zone.')
 
     zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
     try:
         tz = pytz.timezone(zone)
     except pytz.exceptions.UnknownTimeZoneError:
         raise ValueError('Invalid time zone.')
-    return tz.zone
+
+    return cast(str, tz.zone)
 
 
 def validate_format(tformat: str) -> str:

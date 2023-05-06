@@ -42,11 +42,10 @@ def test_validate_timezone():
     assert time.validate_timezone('Israel') == 'Israel'
 
 
-def test_validate_timezone_none():
-    assert time.validate_timezone(None) is None
-
-
 def test_validate_timezone_invalid():
+    with pytest.raises(ValueError):
+        time.validate_timezone(None)
+
     with pytest.raises(ValueError):
         time.validate_timezone('Invalid/Timezone')
 
