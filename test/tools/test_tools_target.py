@@ -1,6 +1,8 @@
 """Tests for targets: Channel & User"""
 from __future__ import annotations
 
+import pytest
+
 from sopel import plugin
 from sopel.tools import Identifier, target
 
@@ -8,7 +10,7 @@ from sopel.tools import Identifier, target
 def test_user():
     nick = Identifier('River')
     username = 'tamr'
-    host = 'good.ship.serenity'
+    host = 'good.ship.serenity.example.com'
     user = target.User(nick, username, host)
 
     assert user.nick == nick
@@ -19,6 +21,33 @@ def test_user():
     assert user.account is None
     assert user.away is None
     assert user.is_bot is None
+    assert user.hostmask == '%s!%s@%s' % (nick, username, host)
+
+
+def test_user_eq():
+    nick = Identifier('Brian')
+    username = 'brian'
+    host = 'example.com'
+    user = target.User(nick, username, host)
+
+    assert user != nick
+    assert user == target.User(nick, None, None)
+    assert user == target.User(nick, username, None)
+    assert user == target.User(nick, None, host)
+    assert user == target.User(nick, username, host)
+    assert user != target.User(Identifier('Mandy'), username, host)
+
+
+def test_user_comparison():
+    brian = target.User(Identifier('Brian'), None, None)
+    mandy = target.User(Identifier('Mandy'), None, None)
+    reg = target.User(Identifier('Reg'), None, None)
+
+    assert brian < mandy < reg
+
+    arthur = Identifier('Arthur')
+    with pytest.raises(TypeError):
+        arthur < brian
 
 
 def test_channel():
@@ -30,6 +59,27 @@ def test_channel():
     assert not channel.privileges
     assert channel.topic == ''
     assert channel.last_who is None
+
+
+def test_channel_eq():
+    name = Identifier('#chan')
+    channel = target.Channel(name)
+
+    assert channel != name
+    assert channel == target.Channel(name)
+    assert channel != target.Channel(Identifier('#not_chan'))
+
+
+def test_channel_comparison():
+    channel = target.Channel(Identifier('#chan'))
+    support = target.Channel(Identifier('#support'))
+    love = target.Channel(Identifier('#love'))
+
+    assert channel < love < support
+
+    blasphemy = Identifier('#blasphemy')
+    with pytest.raises(TypeError):
+        blasphemy < channel
 
 
 def test_channel_add_user():
@@ -227,3 +277,59 @@ def test_channel_is_priv_level_oper_user():
     assert not channel.is_op(user.nick)
     assert not channel.is_halfop(user.nick)
     assert not channel.is_voiced(user.nick)
+
+
+def test_channel_clear_user():
+    channel = target.Channel(Identifier('#chan'))
+    brian = target.User(Identifier('Brian'), 'brian', 'example.com')
+
+    channel.add_user(brian, plugin.OP)
+    assert brian.nick in channel.users
+    assert channel.is_op(brian.nick)
+    assert channel.name in brian.channels
+
+    channel.clear_user(brian.nick)
+    assert brian.nick not in channel.users
+    assert not channel.is_op(brian.nick)
+    assert channel.name not in brian.channels
+
+
+def test_channel_clear_user_unknown():
+    channel = target.Channel(Identifier('#chan'))
+    brian = target.User(Identifier('Brian'), 'brian', 'example.com')
+    mandy = target.User(Identifier('Mandy'), 'brian', 'example.com')
+
+    channel.add_user(brian, plugin.OP)
+    channel.clear_user(mandy.nick)
+
+    assert brian.nick in channel.users
+    assert mandy.nick not in channel.users
+
+
+def test_channel_rename_user():
+    old_name = Identifier('Brian')
+    new_name = Identifier('Messiah')
+    channel = target.Channel(Identifier('#chan'))
+    brian = target.User(old_name, 'brian', 'example.com')
+
+    channel.add_user(brian, plugin.OP)
+    channel.rename_user(old_name, new_name)
+
+    assert brian.nick == new_name
+    assert new_name in channel.users
+    assert old_name not in channel.users
+    assert channel.is_op(new_name)
+    assert not channel.is_op(old_name)
+
+
+def test_channel_rename_unknown_user():
+    old_name = Identifier('Brian')
+    new_name = Identifier('Messiah')
+    channel = target.Channel(Identifier('#chan'))
+
+    channel.rename_user(old_name, new_name)
+
+    assert old_name not in channel.users
+    assert new_name not in channel.users
+    assert not channel.is_op(old_name)
+    assert not channel.is_op(new_name)
