@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import cast, Optional, Tuple, TYPE_CHECKING, Union
+from typing import cast, NamedTuple, Optional, Tuple, TYPE_CHECKING, Union
 
 import pytz
 
@@ -25,6 +25,35 @@ HOURS = 60 * MINUTES
 DAYS = 24 * HOURS
 MONTHS = int(30.5 * DAYS)
 YEARS = 365 * DAYS
+
+
+class Duration(NamedTuple):
+    """Named tuple representation of a duration.
+
+    This can be used as a tuple as well as an object::
+
+        >>> d = Duration(minutes=12, seconds=34)
+        >>> d.minutes
+        12
+        >>> d.seconds
+        34
+        >>> years, months, days, hours, minutes, seconds = d
+        >>> (years, months, days, hours, minutes, seconds)
+        (0, 0, 0, 0, 12, 34)
+
+    """
+    years: int = 0
+    """Years spent."""
+    months: int = 0
+    """Months spent."""
+    days: int = 0
+    """Days spent."""
+    hours: int = 0
+    """Hours spent."""
+    minutes: int = 0
+    """Minutes spent."""
+    seconds: int = 0
+    """Seconds spent."""
 
 
 def validate_timezone(zone: Optional[str]) -> str:
@@ -255,21 +284,26 @@ def format_time(
     return time.astimezone(target_tz).strftime(tformat)
 
 
-def seconds_to_split(seconds: int) -> Tuple[int, int, int, int, int, int]:
+def seconds_to_split(seconds: int) -> Duration:
     """Split an amount of ``seconds`` into years, months, days, etc.
 
     :param seconds: amount of time in seconds
-    :return: the time split into a tuple of years, months, days, hours,
+    :return: the time split into a named tuple of years, months, days, hours,
              minutes, and seconds
 
     Examples::
 
         >>> seconds_to_split(7800)
-        (0, 0, 0, 2, 10, 0)
+        Duration(years=0, months=0, days=0, hours=2, minutes=10, seconds=0)
         >>> seconds_to_split(143659)
-        (0, 0, 1, 15, 54, 19)
+        Duration(years=0, months=0, days=1, hours=15, minutes=54, seconds=19)
 
     .. versionadded:: 7.1
+
+    .. versionchanged:: 8.0
+
+        This function returns a :class:`Duration` named tuple.
+
     """
     years, seconds_left = divmod(int(seconds), YEARS)
     months, seconds_left = divmod(seconds_left, MONTHS)
@@ -277,7 +311,7 @@ def seconds_to_split(seconds: int) -> Tuple[int, int, int, int, int, int]:
     hours, seconds_left = divmod(seconds_left, HOURS)
     minutes, seconds_left = divmod(seconds_left, MINUTES)
 
-    return years, months, days, hours, minutes, seconds_left
+    return Duration(years, months, days, hours, minutes, seconds_left)
 
 
 def get_time_unit(

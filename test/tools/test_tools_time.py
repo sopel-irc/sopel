@@ -308,6 +308,17 @@ def test_seconds_to_split():
     assert time.seconds_to_split(143659) == (0, 0, 1, 15, 54, 19)
     assert time.seconds_to_split(128000) == (0, 0, 1, 11, 33, 20)
     assert time.seconds_to_split(3000000) == (0, 1, 4, 5, 20, 0)
+    assert time.seconds_to_split(0) == (0, 0, 0, 0, 0, 0)
+
+
+def test_seconds_to_split_duration():
+    duration = time.seconds_to_split(364465915)
+    assert duration.years == 11
+    assert duration.months == 6
+    assert duration.days == 20
+    assert duration.hours == 8
+    assert duration.minutes == 31
+    assert duration.seconds == 55
 
 
 def test_get_time_unit():
