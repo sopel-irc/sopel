@@ -675,7 +675,26 @@ def test_register_urls(tmpconfig):
 # -----------------------------------------------------------------------------
 # call_rule
 
-def test_call_rule(mockbot):
+@pytest.fixture
+def match_hello_rule(mockbot, triggerfactory):
+    """Helper for generating matches to each `Rule` in the following tests"""
+    def _factory(rule_hello):
+        # trigger
+        line = ':Test!test@example.com PRIVMSG #channel :hello'
+
+        trigger = triggerfactory(mockbot, line)
+        pretrigger = trigger._pretrigger
+
+        matches = list(rule_hello.match(mockbot, pretrigger))
+        match = matches[0]
+
+        wrapper = bot.SopelWrapper(mockbot, trigger)
+
+        return match, trigger, wrapper
+    return _factory
+
+
+def test_call_rule(mockbot, match_hello_rule):
     # setup
     items = []
 
@@ -690,19 +709,7 @@ def test_call_rule(mockbot):
         label='testrule',
         handler=testrule)
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    assert len(matches) == 1
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -718,6 +725,8 @@ def test_call_rule(mockbot):
     assert not rule_hello.is_channel_rate_limited('#channel')
     assert not rule_hello.is_global_rate_limited()
 
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
 
@@ -729,7 +738,7 @@ def test_call_rule(mockbot):
     assert items == [1, 1]
 
 
-def test_call_rule_rate_limited_user(mockbot):
+def test_call_rule_rate_limited_user(mockbot, match_hello_rule):
     items = []
 
     # setup
@@ -746,18 +755,7 @@ def test_call_rule_rate_limited_user(mockbot):
         user_rate_limit=100,
     )
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -773,6 +771,8 @@ def test_call_rule_rate_limited_user(mockbot):
     assert not rule_hello.is_channel_rate_limited('#channel')
     assert not rule_hello.is_global_rate_limited()
 
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
 
@@ -783,7 +783,7 @@ def test_call_rule_rate_limited_user(mockbot):
     assert items == [1], 'There must not be any new item'
 
 
-def test_call_rule_rate_limited_user_with_message(mockbot):
+def test_call_rule_rate_limited_user_with_message(mockbot, match_hello_rule):
     items = []
 
     # setup
@@ -800,18 +800,7 @@ def test_call_rule_rate_limited_user_with_message(mockbot):
         user_rate_limit=100,
         user_rate_message='You reached the rate limit.')
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -821,6 +810,8 @@ def test_call_rule_rate_limited_user_with_message(mockbot):
         'PRIVMSG #channel :hi'
     )
     assert items == [1]
+
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -833,7 +824,7 @@ def test_call_rule_rate_limited_user_with_message(mockbot):
     assert items == [1], 'There must not be any new item'
 
 
-def test_call_rule_rate_limited_channel(mockbot):
+def test_call_rule_rate_limited_channel(mockbot, match_hello_rule):
     items = []
 
     # setup
@@ -849,18 +840,7 @@ def test_call_rule_rate_limited_channel(mockbot):
         handler=testrule,
         channel_rate_limit=100)
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -876,6 +856,8 @@ def test_call_rule_rate_limited_channel(mockbot):
     assert rule_hello.is_channel_rate_limited('#channel')
     assert not rule_hello.is_global_rate_limited()
 
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
 
@@ -886,7 +868,7 @@ def test_call_rule_rate_limited_channel(mockbot):
     assert items == [1], 'There must not be any new item'
 
 
-def test_call_rule_rate_limited_channel_with_message(mockbot):
+def test_call_rule_rate_limited_channel_with_message(mockbot, match_hello_rule):
     items = []
 
     # setup
@@ -903,18 +885,7 @@ def test_call_rule_rate_limited_channel_with_message(mockbot):
         channel_rate_limit=100,
         channel_rate_message='You reached the channel rate limit.')
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -930,6 +901,8 @@ def test_call_rule_rate_limited_channel_with_message(mockbot):
     assert rule_hello.is_channel_rate_limited('#channel')
     assert not rule_hello.is_global_rate_limited()
 
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
 
@@ -941,7 +914,7 @@ def test_call_rule_rate_limited_channel_with_message(mockbot):
     assert items == [1], 'There must not be any new item'
 
 
-def test_call_rule_rate_limited_global(mockbot):
+def test_call_rule_rate_limited_global(mockbot, match_hello_rule):
     items = []
 
     # setup
@@ -957,18 +930,7 @@ def test_call_rule_rate_limited_global(mockbot):
         handler=testrule,
         global_rate_limit=100)
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -984,6 +946,8 @@ def test_call_rule_rate_limited_global(mockbot):
     assert not rule_hello.is_channel_rate_limited('#channel')
     assert rule_hello.is_global_rate_limited()
 
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
 
@@ -994,7 +958,7 @@ def test_call_rule_rate_limited_global(mockbot):
     assert items == [1], 'There must not be any new item'
 
 
-def test_call_rule_rate_limited_global_with_message(mockbot):
+def test_call_rule_rate_limited_global_with_message(mockbot, match_hello_rule):
     items = []
 
     # setup
@@ -1011,18 +975,7 @@ def test_call_rule_rate_limited_global_with_message(mockbot):
         global_rate_limit=100,
         global_rate_message='You reached the server rate limit.')
 
-    # trigger
-    line = ':Test!test@example.com PRIVMSG #channel :hello'
-    pretrigger = trigger.PreTrigger(mockbot.nick, line)
-
-    # match
-    matches = list(rule_hello.match(mockbot, pretrigger))
-    match = matches[0]
-
-    # trigger and wrapper
-    rule_trigger = trigger.Trigger(
-        mockbot.settings, pretrigger, match, account=None)
-    wrapper = bot.SopelWrapper(mockbot, rule_trigger)
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
     # call rule
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
@@ -1038,6 +991,8 @@ def test_call_rule_rate_limited_global_with_message(mockbot):
     assert not rule_hello.is_channel_rate_limited('#channel')
     assert rule_hello.is_global_rate_limited()
 
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
     # call rule again
     mockbot.call_rule(rule_hello, wrapper, rule_trigger)
 
@@ -1047,6 +1002,125 @@ def test_call_rule_rate_limited_global_with_message(mockbot):
         'NOTICE Test :You reached the server rate limit.',
     ), 'A NOTICE should appear here.'
     assert items == [1], 'There must not be any new item'
+
+
+# -----------------------------------------------------------------------------
+# rate limit response templating
+
+@pytest.mark.parametrize("limit_type", ("user", "channel", "global"))
+@pytest.mark.parametrize("msg_fmt, expected_notice", (
+    ("{nick}", "NOTICE Test :Test"),
+    ("{channel}", "NOTICE Test :#channel"),
+    ("{sender}", "NOTICE Test :#channel"),
+    ("{plugin}", "NOTICE Test :testplugin"),
+    ("{label}", "NOTICE Test :testrule"),
+    ("{rate_limit}", "NOTICE Test :0:01:40"),
+    ("{rate_limit_sec}", "NOTICE Test :100.0"),
+))
+def test_rate_limit_fixed_fields(
+    mockbot,
+    match_hello_rule,
+    limit_type,
+    msg_fmt,
+    expected_notice,
+):
+    def testrule(bot, trigger):
+        return "Return Value"
+
+    limit_type_params = {
+        "{limit_type}_rate_limit".format(limit_type=limit_type): 100,
+        "{limit_type}_rate_message".format(limit_type=limit_type): msg_fmt,
+    }
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        **limit_type_params,
+    )
+
+    # call rule
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # call rule again
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert there is now a NOTICE which contains templated rate-limit information
+    assert mockbot.backend.message_sent == rawlist(
+        expected_notice,
+    )
+
+
+@pytest.mark.parametrize("limit_type", ("user", "channel", "global"))
+def test_rate_limit_type_field(mockbot, match_hello_rule, limit_type):
+    def testrule(bot, trigger):
+        return "Return Value"
+
+    msg_fmt = "{rate_limit_type}"
+
+    limit_type_params = {
+        "{limit_type}_rate_limit".format(limit_type=limit_type): 100,
+        "{limit_type}_rate_message".format(limit_type=limit_type): msg_fmt,
+    }
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        **limit_type_params,
+    )
+
+    # call rule
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # call rule again
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert there is now a NOTICE which contains templated rate-limit information
+    assert mockbot.backend.message_sent == rawlist(
+        "NOTICE Test :{limit_type}".format(limit_type=limit_type),
+    )
+
+
+@pytest.mark.parametrize("limit_type", ("user", "channel", "global"))
+def test_rate_limit_time_left_field(mockbot, match_hello_rule, limit_type):
+    def testrule(bot, trigger):
+        return "Return Value"
+
+    msg_fmt = "time_left={time_left} time_left_sec={time_left_sec}"
+    limit_type_params = {
+        "{limit_type}_rate_limit".format(limit_type=limit_type): 100,
+        "{limit_type}_rate_message".format(limit_type=limit_type): msg_fmt,
+    }
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        **limit_type_params,
+    )
+
+    # call rule
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # call rule again
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert there is now a NOTICE which contains templated time left information
+    assert mockbot.backend.message_sent
+    patt = (br"NOTICE Test :"
+            br"time_left=\d+:\d+:\d+(\.\d+)? "
+            br"time_left_sec=\d+(\.\d+)?")
+    assert re.match(patt, mockbot.backend.message_sent[0])
 
 
 # -----------------------------------------------------------------------------
