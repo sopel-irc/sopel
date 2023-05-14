@@ -142,16 +142,16 @@ def tr(bot, trigger):
 @plugin.command('translate', 'tr')
 @plugin.example('.tr :en :fr my dog',
                 '"mon chien" (en to fr, translate.google.com)',
-                online=True, vcr=True)
+                online=True, vcr=True, user_help=True)
 @plugin.example('.tr מחשב',
                 '"computer" (iw to en, translate.google.com)',
                 online=True, vcr=True)
 @plugin.example('.tr mon chien',
                 '"my dog" (fr to en, translate.google.com)',
-                online=True, vcr=True)
+                online=True, vcr=True, user_help=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def tr2(bot, trigger):
-    """Translates a phrase, with an optional language hint."""
+    """Translates a phrase, with an optional language :hint."""
     command = trigger.group(2)
 
     if not command:
