@@ -448,13 +448,19 @@ class AbstractBot(abc.ABC):
             )
             self.dispatch(pretrigger)
 
+    @deprecated(
+        'This method was used to log errors with asynchat; '
+        'use logging.getLogger("sopel.exception") instead.',
+        version='8.0',
+        removed_in='9.0',
+    )
     def on_error(self) -> None:
         """Handle any uncaptured error in the bot itself."""
         LOGGER.error('Fatal error in core, please review exceptions log.')
 
         err_log = logging.getLogger('sopel.exceptions')
         err_log.error(
-            'Fatal error in core, handle_error() was called.\n'
+            'Fatal error in core, bot.on_error() was called.\n'
             'Last Line:\n%s',
             self.last_raw_line,
         )

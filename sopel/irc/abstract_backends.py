@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import abc
+import logging
 from typing import Optional, TYPE_CHECKING
 
 from .utils import safe
@@ -40,6 +41,17 @@ class AbstractIRCBackend(abc.ABC):
     @abc.abstractmethod
     def is_connected(self) -> bool:
         """Tell if the backend is connected or not."""
+
+    def log_exception(self) -> None:
+        """Log an exception to ``sopel.exceptions``.
+
+        The IRC backend must use this method to log any exception that isn't
+        caught by the bot itself (i.e. while handling messages), such as
+        connection errors, SSL errors, etc.
+        """
+        err_log = logging.getLogger('sopel.exceptions')
+        err_log.exception('Exception in core')
+        err_log.error('----------------------------------------')
 
     @abc.abstractmethod
     def on_irc_error(self, pretrigger: PreTrigger) -> None:
