@@ -93,32 +93,53 @@ def test_get_channel_timezone(db: SopelDB):
     assert time.get_channel_timezone(db, channel) is None
 
 
-def test_get_timezone(db: SopelDB, tmpconfig: Config):
+def test_get_timezone_config_only(db: SopelDB, tmpconfig: Config):
     zone = 'Europe/Paris'
-    zone_nick = 'America/New_York'
-    zone_channel = 'Asia/Tokyo'
-    nick = 'IronMan'
-    channel = '#test'
 
     assert time.get_timezone(db) is None
     assert time.get_timezone(db, tmpconfig) == 'UTC', (
         'Must use default timezone from config'
     )
     assert time.get_timezone(db, tmpconfig, zone) == zone
-    assert time.get_timezone(db, tmpconfig, zone, nick, channel) == zone
 
-    # channel tz when no tz and no nick tz (or tz is invalid)
+
+def test_get_timezone_only_nick_data(db: SopelDB, tmpconfig: Config):
+    zone_nick = 'America/New_York'
+    nick = 'IronMan'
+    channel = '#test'
+
+    db.set_nick_value(nick, 'timezone', zone_nick)
+
+    assert time.get_timezone(db, tmpconfig, None, nick, channel) == zone_nick
+
+
+def test_get_timezone_only_channel_data(db: SopelDB, tmpconfig: Config):
+    zone_channel = 'Asia/Tokyo'
+    nick = 'IronMan'
+    channel = '#test'
+
     db.set_channel_value(channel, 'timezone', zone_channel)
+
     assert time.get_timezone(
         db, tmpconfig, None, nick, channel
-    ) == zone_channel, 'Channel '
+    ) == zone_channel
     assert time.get_timezone(
         db, tmpconfig, 'Invalid/Tz', nick, channel
-    ) == zone_channel
+    ) == zone_channel, 'Expected channel timezone'
 
-    # nick tz has priority
+
+def test_get_timezone_nick_and_channel_data(db: SopelDB, tmpconfig: Config):
+    zone_nick = 'America/New_York'
+    zone_channel = 'Asia/Tokyo'
+    nick = 'IronMan'
+    channel = '#test'
+
     db.set_nick_value(nick, 'timezone', zone_nick)
-    assert time.get_timezone(db, tmpconfig, None, nick, channel) == zone_nick
+    db.set_channel_value(channel, 'timezone', zone_channel)
+
+    assert time.get_timezone(db, tmpconfig, None, nick, channel) == zone_nick, (
+        'Nick timezone must take priority'
+    )
 
 
 def test_get_timezone_zone_nick_or_channel(db: SopelDB, tmpconfig):
