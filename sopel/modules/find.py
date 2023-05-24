@@ -122,32 +122,32 @@ def kick_cleanup(bot, trigger):
 # If you want to search for an actual slash AND a pipe in the same message,
 # you can escape your separator, in old and/or new.
 @plugin.rule(r"""(?:
-             (?P<nick>\S+)    # Catch a nick in group 1
-             [:,]\s+)?        # Followed by optional colon/comma and whitespace
-             s(?P<sep>/)      # The literal s and a separator / as group 2
-             (?P<old>         # Group 3 is the thing to find
-               (?:\\/|[^/])+  # One or more non-slashes or escaped slashes
+             (?P<nick>\S+)     # Catch a nick in group 1
+             [:,]\s+)?         # Followed by optional colon/comma and whitespace
+             s(?P<sep>/)       # The literal s and a separator / as group 2
+             (?P<old>          # Group 3 is the thing to find
+               (?:\\/|[^/])+   # One or more non-slashes or escaped slashes
              )
-             /                # The separator again
-             (?P<new>         # Group 4 is what to replace with
-               (?:\\/|[^/])*  # One or more non-slashes or escaped slashes
+             /                 # The separator again
+             (?P<new>          # Group 4 is what to replace with
+               (?:\\/|[^/])*   # One or more non-slashes or escaped slashes
              )
-             (?:/             # Optional separator followed by group 5 (flags)
+             (?:/              # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
              )?
             """)
 @plugin.rule(r"""(?:
-             (?P<nick>\S+)    # Catch a nick in group 1
-             [:,]\s+)?        # Followed by optional colon/comma and whitespace
-             s(?P<sep>\|)     # The literal s and a separator | as group 2
-             (?P<old>         # Group 3 is the thing to find
+             (?P<nick>\S+)     # Catch a nick in group 1
+             [:,]\s+)?         # Followed by optional colon/comma and whitespace
+             s(?P<sep>\|)      # The literal s and a separator | as group 2
+             (?P<old>          # Group 3 is the thing to find
                (?:\\\||[^|])+  # One or more non-pipe or escaped pipe
              )
-             \|               # The separator again
-             (?P<new>         # Group 4 is what to replace with
-               (?:\\\||[^|])* # One or more non-pipe or escaped pipe
+             \|                # The separator again
+             (?P<new>          # Group 4 is what to replace with
+               (?:\\\||[^|])*  # One or more non-pipe or escaped pipe
              )
-             (?:|             # Optional separator followed by group 5 (flags)
+             (?:\|             # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
              )?
             """)
