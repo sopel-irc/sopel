@@ -103,15 +103,15 @@ To have Sopel set additional user modes upon connection, use the
 :attr:`~CoreSection.modes` setting::
 
     [core]
-    modes = BpR
+    modes = pR
 
 In this example, upon connection to the IRC server, Sopel will send this::
 
-    MODE Sopel +BpR
+    MODE Sopel +pR
 
-Which means: this is a Bot (B), don't show channels it is in (p), and only
-registered users (R) can send it messages. The list of supported modes depends
-on the IRC server the bot connects to.
+Which means: don't show channels this user is in (p), and only registered
+users (R) can send it messages. The list of supported modes depends on the IRC
+server the bot connects to.
 
 .. important::
 
@@ -123,6 +123,17 @@ on the IRC server the bot connects to.
 
    .. __: https://libera.chat/guides/usermodes
    .. __: https://www.unrealircd.org/docs/User_modes
+
+.. note::
+
+   As of version 8.0, Sopel automatically informs networks that it is a bot if
+   `the BOT feature flag`__ is advertised.
+
+   On nonstandard networks that *have* a "bot" mode character but *do not*
+   advertise it in ISUPPORT, the ``modes`` setting can be used to disclose
+   that your Sopel instance is a bot.
+
+   .. __: https://ircv3.net/specs/extensions/bot-mode#the-bot-isupport-token
 
 Owner & Admins
 --------------

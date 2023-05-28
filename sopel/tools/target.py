@@ -23,7 +23,7 @@ class User:
     :param str host: the user's hostname ("host.name" in `user@host.name`)
     """
     __slots__ = (
-        'nick', 'user', 'host', 'realname', 'channels', 'account', 'away',
+        'nick', 'user', 'host', 'realname', 'channels', 'account', 'away', 'is_bot',
     )
 
     def __init__(
@@ -33,16 +33,25 @@ class User:
         host: Optional[str],
     ) -> None:
         assert isinstance(nick, identifiers.Identifier)
-        self.nick = nick
+        self.nick: identifiers.Identifier = nick
         """The user's nickname."""
-        self.user = user
-        """The user's local username."""
-        self.host = host
-        """The user's hostname."""
-        self.realname = None
+        self.user: Optional[str] = user
+        """The user's local username.
+
+        Will be ``None`` if Sopel has not yet received complete user
+        information from the IRC server.
+        """
+        self.host: Optional[str] = host
+        """The user's hostname.
+
+        Will be ``None`` if Sopel has not yet received complete user
+        information from the IRC server.
+        """
+        self.realname: Optional[str] = None
         """The user's realname.
 
-        Will be ``None`` if not received from the server yet.
+        Will be ``None`` if Sopel has not yet received complete user
+        information from the IRC server.
         """
         self.channels: Dict[identifiers.Identifier, 'Channel'] = {}
         """The channels the user is in.
@@ -50,17 +59,36 @@ class User:
         This maps channel name :class:`~sopel.tools.identifiers.Identifier`\\s
         to :class:`Channel` objects.
         """
-        self.account = None
+        self.account: Optional[str] = None
         """The IRC services account of the user.
 
         This relies on IRCv3 account tracking being enabled.
-        """
-        self.away = None
-        """Whether the user is marked as away."""
 
-    hostmask = property(lambda self: '{}!{}@{}'.format(self.nick, self.user,
-                                                       self.host))
-    """The user's full hostmask."""
+        Will be ``None`` if the user is not logged into an account (including
+        when account tracking is not supported by the IRC server.)
+        """
+        self.away: Optional[bool] = None
+        """Whether the user is marked as away.
+
+        Will be ``None`` if the user's current away state hasn't been
+        established yet (via WHO or other means such as ``away-notify``).
+        """
+        self.is_bot: Optional[bool] = None
+        """Whether the user is flagged as a bot.
+
+        Will be ``None`` if the user hasn't yet been WHOed, or if the IRC
+        server does not support a 'bot' user mode.
+        """
+
+    @property
+    def hostmask(self) -> str:
+        """The user's full hostmask (``nick!user@host``)."""
+        # TODO: this won't work as expected if `user`/`host` is still `None`
+        return '{}!{}@{}'.format(
+            self.nick,
+            self.user,
+            self.host,
+        )
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, User):
@@ -99,7 +127,7 @@ class Channel:
         identifier_factory: IdentifierFactory = identifiers.Identifier,
     ) -> None:
         assert isinstance(name, identifiers.Identifier)
-        self.name = name
+        self.name: identifiers.Identifier = name
         """The name of the channel."""
 
         self.make_identifier: IdentifierFactory = identifier_factory
@@ -133,7 +161,7 @@ class Channel:
         bitwise integer values. This can be compared to appropriate constants
         from :mod:`sopel.privileges`.
         """
-        self.topic = ''
+        self.topic: str = ''
         """The topic of the channel."""
 
         self.modes: Dict[str, Union[Set, str, bool]] = {}

@@ -5,6 +5,22 @@ from sopel import plugin
 from sopel.tools import Identifier, target
 
 
+def test_user():
+    nick = Identifier('River')
+    username = 'tamr'
+    host = 'good.ship.serenity'
+    user = target.User(nick, username, host)
+
+    assert user.nick == nick
+    assert user.user == username
+    assert user.host == host
+    assert user.realname is None
+    assert user.channels == {}
+    assert user.account is None
+    assert user.away is None
+    assert user.is_bot is None
+
+
 def test_channel():
     name = Identifier('#chan')
     channel = target.Channel(name)

@@ -949,13 +949,19 @@ class CoreSection(StaticSection):
 
     """
 
-    modes = ValidatedAttribute('modes', default='B')
+    modes = ValidatedAttribute('modes')
     """User modes to be set on connection.
-
-    :default: ``B``
 
     Include only the mode letters; this value is automatically prefixed with
     ``+`` before Sopel sends the MODE command to IRC.
+
+    .. versionchanged:: 8.0.0
+
+        Now empty by default. Previous default was ``B``, which has been
+        dropped in favor of the formal `bot mode specification`__.
+
+        .. __: https://ircv3.net/specs/extensions/bot-mode
+
     """
 
     name = ValidatedAttribute('name', default='Sopel: https://sopel.chat/')
