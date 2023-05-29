@@ -251,7 +251,7 @@ def test_say_safe(bot):
 
 def test_say_long_fit(bot):
     """Test a long message that fits into the 512 bytes limit."""
-    text = 'a' * (512 - len('PRIVMSG #sopel :\r\n'))
+    text = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n'))
     bot.say(text, '#sopel')
 
     assert bot.backend.message_sent == rawlist(
@@ -261,7 +261,7 @@ def test_say_long_fit(bot):
 
 def test_say_long_extra(bot):
     """Test a long message that doesn't fit into the 512 bytes limit."""
-    text = 'a' * (512 - len('PRIVMSG #sopel :\r\n'))
+    text = 'a' * (512 - prefix_length(bot) - len('PRIVMSG #sopel :\r\n'))
     bot.say(text + 'b', '#sopel')
 
     assert bot.backend.message_sent == rawlist(
