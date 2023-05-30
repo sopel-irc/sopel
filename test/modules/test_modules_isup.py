@@ -122,7 +122,7 @@ def test_isup_command_unparseable(irc, bot, user, requests_mock):
     assert len(bot.backend.message_sent) == 1, (
         '.isup command should output exactly one line')
     assert bot.backend.message_sent == rawlist(
-        'PRIVMSG User :User: "http://.foo" is not a valid URL.'
+        'PRIVMSG User :[isup] User: "http://.foo" is not a valid URL.'
     )
 
 

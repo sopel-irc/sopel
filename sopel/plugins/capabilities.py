@@ -30,7 +30,7 @@ from typing import (
 
 
 if TYPE_CHECKING:
-    from sopel.bot import Sopel, SopelWrapper
+    from sopel.bot import Sopel
     from sopel.plugin import capability, CapabilityNegotiation
 
 
@@ -360,7 +360,7 @@ class Manager:
 
     def acknowledge(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         cap_req: Tuple[str, ...],
     ) -> Optional[List[Tuple[bool, Optional[CapabilityNegotiation]]]]:
         """Acknowledge a capability request and execute handlers.
@@ -395,7 +395,7 @@ class Manager:
 
     def deny(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         cap_req: Tuple[str, ...],
     ) -> Optional[List[Tuple[bool, Optional[CapabilityNegotiation]]]]:
         """Deny a capability request and execute handlers.
@@ -429,7 +429,7 @@ class Manager:
 
     def _callbacks(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         cap_req: Tuple[str, ...],
         acknowledged: bool,
     ) -> List[Tuple[bool, Optional[CapabilityNegotiation]]]:
@@ -446,7 +446,7 @@ class Manager:
         self,
         plugin_name: str,
         handler_info: Tuple[capability, bool],
-        bot: SopelWrapper,
+        bot: Sopel,
         acknowledged: bool,
     ) -> Tuple[bool, Optional[CapabilityNegotiation]]:
         handler = handler_info[0]

@@ -30,7 +30,7 @@ from typing import (
 
 
 if TYPE_CHECKING:
-    from sopel.bot import SopelWrapper
+    from sopel.bot import Sopel
     from sopel.trigger import Trigger
 
 
@@ -135,7 +135,7 @@ class Capabilities:
         """Tell if the capability ``name`` is enabled on the server."""
         return name in self._enabled
 
-    def handle_ls(self, bot: SopelWrapper, trigger: Trigger) -> bool:
+    def handle_ls(self, bot: Sopel, trigger: Trigger) -> bool:
         """Handle a ``CAP LS`` command.
 
         This method behaves as a plugin callable with its ``bot`` and
@@ -160,7 +160,7 @@ class Capabilities:
 
     def handle_ack(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         trigger: Trigger,
     ) -> Tuple[str, ...]:
         """Handle a ``CAP ACK`` command.
@@ -195,7 +195,7 @@ class Capabilities:
 
     def handle_nak(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         trigger: Trigger,
     ) -> Tuple[str, ...]:
         """Handle a ``CAP NAK`` command.
@@ -218,7 +218,7 @@ class Capabilities:
 
     def handle_new(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         trigger: Trigger,
     ) -> Tuple[str, ...]:
         """Handle a ``CAP NEW`` command.
@@ -245,7 +245,7 @@ class Capabilities:
 
     def handle_del(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         trigger: Trigger,
     ) -> Tuple[str, ...]:
         """Handle a ``CAP DEL`` command.

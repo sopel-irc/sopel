@@ -31,12 +31,11 @@ def bot(configfactory, botfactory, triggerfactory, ircfactory):
     settings = configfactory('default.cfg', TMP_CONFIG)
     mockbot = botfactory.preloaded(settings)
     mockserver = ircfactory(mockbot)
-
-    bot = triggerfactory.wrapper(mockbot, FOO_MESSAGE)
     mockserver.channel_joined('#Sopel')
     mockserver.join('Foo', '#Sopel')
     mockserver.mode_set('#Sopel', '+v', ['Foo'])
 
+    bot = triggerfactory.wrapper(mockbot, FOO_MESSAGE)
     return bot
 
 

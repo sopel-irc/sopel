@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, plugin, trigger
+from sopel import loader, plugin, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 
@@ -881,8 +881,8 @@ def test_rule_execute(mockbot):
     match = matches[0]
     match_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapped = bot.SopelWrapper(mockbot, match_trigger)
-    result = rule.execute(wrapped, match_trigger)
+    with mockbot.sopel_wrapper(match_trigger, rule) as wrapped:
+        result = rule.execute(wrapped, match_trigger)
 
     assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
     assert result == 'The return value'
@@ -1556,7 +1556,7 @@ def test_rule_rate_limit(mockbot, triggerfactory):
 
     wrapper = triggerfactory.wrapper(
         mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
+    mocktrigger = wrapper.trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1582,7 +1582,7 @@ def test_rule_rate_limit_no_limit(mockbot, triggerfactory):
 
     wrapper = triggerfactory.wrapper(
         mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
+    mocktrigger = wrapper.trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1608,7 +1608,7 @@ def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
 
     wrapper = triggerfactory.wrapper(
         mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
+    mocktrigger = wrapper.trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1635,7 +1635,7 @@ def test_rule_rate_limit_messages(mockbot, triggerfactory):
 
     wrapper = triggerfactory.wrapper(
         mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
+    mocktrigger = wrapper.trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1664,7 +1664,7 @@ def test_rule_rate_limit_messages_default(mockbot, triggerfactory):
 
     wrapper = triggerfactory.wrapper(
         mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
+    mocktrigger = wrapper.trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -1687,7 +1687,7 @@ def test_rule_rate_limit_messages_default_mixed(mockbot, triggerfactory):
 
     wrapper = triggerfactory.wrapper(
         mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
-    mocktrigger = wrapper._trigger
+    mocktrigger = wrapper.trigger
 
     regex = re.compile(r'.*')
     rule = rules.Rule(
@@ -2927,8 +2927,8 @@ def test_url_callback_execute(mockbot):
     match = matches[0]
     match_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, match, account=None)
-    wrapped = bot.SopelWrapper(mockbot, match_trigger)
-    result = rule.execute(wrapped, match_trigger)
+    with mockbot.sopel_wrapper(match_trigger, rule) as wrapped:
+        result = rule.execute(wrapped, match_trigger)
 
     assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
     assert result == 'The return value: https://example.com/test'
@@ -3034,8 +3034,8 @@ def test_url_callback_from_callable(mockbot):
     # execute based on the match
     match_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, results[0], account=None)
-    wrapped = bot.SopelWrapper(mockbot, match_trigger)
-    result = rule.execute(wrapped, match_trigger)
+    with mockbot.sopel_wrapper(match_trigger, rule) as wrapped:
+        result = rule.execute(wrapped, match_trigger)
 
     assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
     assert result == 'The return value: https://example.com/test'
@@ -3070,8 +3070,8 @@ def test_url_callback_from_callable_no_match_parameter(mockbot):
 
     match_trigger = trigger.Trigger(
         mockbot.settings, pretrigger, results[0], account=None)
-    wrapped = bot.SopelWrapper(mockbot, match_trigger)
-    result = rule.execute(wrapped, match_trigger)
+    with mockbot.sopel_wrapper(match_trigger, rule) as wrapped:
+        result = rule.execute(wrapped, match_trigger)
 
     assert mockbot.backend.message_sent == rawlist('PRIVMSG #sopel :Hi!')
     assert result == 'The return value: https://example.com/test'

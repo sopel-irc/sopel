@@ -52,7 +52,7 @@ def handle_isup(bot, trigger, secure=True):
     """Handle the ``bot`` command from ``trigger``
 
     :param bot: Sopel instance
-    :type bot: :class:`sopel.bot.SopelWrapper`
+    :type bot: :class:`sopel.bot.Sopel`
     :param trigger: Command's trigger instance
     :type trigger: :class:`sopel.trigger.Trigger`
     :param bool secure: Check SSL error if ``True`` (the default)

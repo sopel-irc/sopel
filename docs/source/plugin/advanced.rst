@@ -237,7 +237,7 @@ automatically:
     @plugin.thread(False)
     @plugin.unblockable
     @plugin.priority('medium')
-    def sasl_success(bot: SopelWrapper, trigger: Trigger):
+    def sasl_success(bot: Sopel, trigger: Trigger):
         """Resume capability negotiation on successful SASL auth."""
         LOGGER.info("Successful SASL Auth.")
         bot.resume_capability_negotiation(

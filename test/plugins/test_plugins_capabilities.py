@@ -5,6 +5,7 @@ import pytest
 
 from sopel import plugin
 from sopel.plugins.capabilities import Manager
+from sopel.plugins.rules import Rule
 from sopel.tests import rawlist
 
 
@@ -24,6 +25,11 @@ def tmpconfig(configfactory):
 @pytest.fixture
 def mockbot(tmpconfig, botfactory):
     return botfactory(tmpconfig)
+
+
+@pytest.fixture
+def mockrule():
+    return Rule(regexes=['*'], plugin='test_plugin')
 
 
 def test_manager_empty():
@@ -175,7 +181,7 @@ def test_manager_ack_unknown_request(mockbot, triggerfactory):
     assert results is None
 
 
-def test_manager_ack_nak_request(mockbot, triggerfactory):
+def test_manager_ack_nak_request(mockbot, triggerfactory, mockrule):
     manager = Manager()
     req_example = ('example/cap',)
     cap_example = plugin.capability(*req_example)
@@ -183,13 +189,18 @@ def test_manager_ack_nak_request(mockbot, triggerfactory):
     manager.request_available(mockbot, req_example)
 
     raw = 'CAP * ACK :example/cap'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
 
-    manager.acknowledge(wrapped, req_example)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.acknowledge(wrapped, req_example)
 
     raw = 'CAP * NAK :example/cap'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.deny(wrapped, req_example)
+
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.deny(wrapped, req_example)
 
     # reversed set
     assert not manager.acknowledged
@@ -232,7 +243,7 @@ def test_manager_nak_unknown_request(mockbot, triggerfactory):
     assert results is None
 
 
-def test_manager_nak_ack_request(mockbot, triggerfactory):
+def test_manager_nak_ack_request(mockbot, triggerfactory, mockrule):
     manager = Manager()
     req_example = ('example/cap',)
     cap_example = plugin.capability(*req_example)
@@ -240,19 +251,23 @@ def test_manager_nak_ack_request(mockbot, triggerfactory):
     manager.request_available(mockbot, req_example)
 
     raw = 'CAP * NAK :example/cap'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.deny(wrapped, req_example)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.deny(wrapped, req_example)
 
     raw = 'CAP * ACK :example/cap'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.acknowledge(wrapped, req_example)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.acknowledge(wrapped, req_example)
 
     # reversed set
     assert manager.acknowledged == {req_example}
     assert not manager.denied
 
 
-def test_manager_complete_requests(mockbot, triggerfactory):
+def test_manager_complete_requests(mockbot, triggerfactory, mockrule):
     manager = Manager()
     req_example = ('example/cap',)
     req_example_2 = ('example/cap2', 'example/cap3')
@@ -264,12 +279,16 @@ def test_manager_complete_requests(mockbot, triggerfactory):
     manager.request_available(mockbot, req_example + req_example_2)
 
     raw = 'CAP * ACK :example/cap'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.acknowledge(wrapped, req_example)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.acknowledge(wrapped, req_example)
 
     raw = 'CAP * NAK :example/cap2 example/cap3'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.deny(wrapped, req_example_2)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.deny(wrapped, req_example_2)
 
     assert manager.acknowledged == {req_example}
     assert manager.denied == {req_example_2}
@@ -279,7 +298,7 @@ def test_manager_complete_requests(mockbot, triggerfactory):
     assert manager.resume(req_example, 'example') == (True, True)
 
 
-def test_manager_resume_requests(mockbot, triggerfactory):
+def test_manager_resume_requests(mockbot, triggerfactory, mockrule):
     manager = Manager()
     req_example = ('example/cap',)
     req_example_2 = ('example/cap2', 'example/cap3')
@@ -295,12 +314,16 @@ def test_manager_resume_requests(mockbot, triggerfactory):
     manager.request_available(mockbot, req_example + req_example_2)
 
     raw = 'CAP * ACK :example/cap'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.acknowledge(wrapped, req_example)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.acknowledge(wrapped, req_example)
 
     raw = 'CAP * NAK :example/cap2 example/cap3'
-    wrapped = triggerfactory.wrapper(mockbot, raw)
-    manager.deny(wrapped, req_example_2)
+    with mockbot.sopel_wrapper(
+        triggerfactory(mockbot, raw), mockrule
+    ) as wrapped:
+        manager.deny(wrapped, req_example_2)
 
     assert manager.acknowledged == {req_example}
     assert manager.denied == {req_example_2}

@@ -28,7 +28,7 @@ from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
 
 
 if TYPE_CHECKING:
-    from sopel.bot import SopelWrapper
+    from sopel.bot import Sopel
 
 __all__ = [
     # constants
@@ -122,7 +122,7 @@ class CapabilityNegotiation(enum.Enum):
 
 if TYPE_CHECKING:
     CapabilityHandler = Callable[
-        [Tuple[str, ...], SopelWrapper, bool],
+        [Tuple[str, ...], Sopel, bool],
         CapabilityNegotiation,
     ]
 
@@ -146,12 +146,12 @@ class capability:
     The handler must follow this interface::
 
         from sopel import plugin
-        from sopel.bot import SopelWrapper
+        from sopel.bot import Sopel
 
         @plugin.capability('example/cap-name')
         def capability_handler(
             cap_req: Tuple[str, ...],
-            bot: SopelWrapper,
+            bot: Sopel,
             acknowledged: bool,
         ) -> plugin.CapabilityNegotiation:
             if acknowledged:
@@ -253,7 +253,7 @@ class capability:
 
     def callback(
         self,
-        bot: SopelWrapper,
+        bot: Sopel,
         acknowledged: bool,
     ) -> Tuple[bool, Optional[CapabilityNegotiation]]:
         """Execute the acknowlegement callback of a capability request.
@@ -1596,7 +1596,7 @@ def url(*url_rules: str) -> Callable:
         def handle_example_bugs(bot, trigger):
             bot.reply('Found bug ID #%s' % trigger.group(1))
 
-    The ``bot`` is an instance of :class:`~sopel.bot.SopelWrapper`, and
+    The ``bot`` is an instance of :class:`~sopel.bot.Sopel`, and
     ``trigger`` is the usual :class:`~sopel.trigger.Trigger` object.
 
     Under the hood, when Sopel collects the decorated handler it uses an
@@ -1840,8 +1840,8 @@ def output_prefix(prefix: str) -> Callable:
 
     Prefix will be added to text sent through:
 
-    * :meth:`bot.say <sopel.bot.SopelWrapper.say>`
-    * :meth:`bot.notice <sopel.bot.SopelWrapper.notice>`
+    * :meth:`bot.say <sopel.bot.Sopel.say>`
+    * :meth:`bot.notice <sopel.bot.Sopel.notice>`
 
     """
     def add_attribute(function):

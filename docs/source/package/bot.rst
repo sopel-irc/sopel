@@ -6,3 +6,4 @@ The bot and its state
    :members:
    :inherited-members:
    :show-inheritance:
+   :exclude-members: SopelWrapper
