@@ -219,7 +219,7 @@ class Sopel(irc.AbstractBot):
             return None
         user: Optional[User] = self.users.get(self.nick)
 
-        if not user:
+        if user is None:
             return None
 
         return user.hostmask
