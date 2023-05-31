@@ -250,7 +250,7 @@ def test_sasl_plain_no_password(
     assert mockbot.backend.message_sent[n:] == rawlist(
         'CAP END',
         'QUIT :Configuration error.',
-    ), 'No password is a configuration error and must the bot must quit.'
+    ), 'No password is a configuration error and the bot must quit.'
 
 
 def test_sasl_plain_bad_password(botfactory: BotFactory, tmpconfig) -> None:
@@ -291,6 +291,33 @@ def test_sasl_plain_not_supported(botfactory: BotFactory, tmpconfig) -> None:
         'CAP END',
         'QUIT :Configuration error.',
     ), 'SASL mech is not available so we must stop here.'
+
+
+def test_sasl_plain_nonempty_server_message(
+    botfactory: BotFactory,
+    tmpconfig,
+) -> None:
+    mockbot = botfactory.preloaded(tmpconfig, preloads=['coretasks'])
+    mockbot.backend.connected = True
+
+    # connect and capability negotiation
+    mockbot.on_connect()
+    mockbot.on_message(':irc.example.com CAP * LS :sasl=PLAIN,EXTERNAL')
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(':irc.example.com CAP * ACK :sasl')
+
+    # sanity check
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE PLAIN',
+    )
+
+    # server acknowledges PLAIN auth request in an unexpected way
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(':irc.example.com AUTHENTICATE VGVzdEJvdABUZXN0Qm90AG')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE *',
+    ), ('Bot must abort SASL PLAIN auth if server reply to starting '
+        'AUTHENTICATE PLAIN is not as expected per SASL spec')
 
 
 def test_sasl_nak(botfactory: BotFactory, tmpconfig) -> None:
