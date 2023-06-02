@@ -24,6 +24,7 @@ from typing import (
     Optional,
     Tuple,
     TYPE_CHECKING,
+    TypeVar,
     Union,
 )
 
@@ -45,6 +46,8 @@ if TYPE_CHECKING:
 __all__ = ['Sopel', 'SopelWrapper']
 
 LOGGER = logging.getLogger(__name__)
+
+AbstractRuleType = TypeVar('AbstractRuleType', bound=plugin_rules.AbstractRule)
 
 
 class Sopel(irc.AbstractBot):
@@ -594,7 +597,7 @@ class Sopel(irc.AbstractBot):
 
     def rate_limit_info(
         self,
-        rule: plugin_rules.Rule,
+        rule: AbstractRuleType,
         trigger: Trigger,
     ) -> Tuple[bool, Optional[str]]:
         if trigger.admin or rule.is_unblockable():
@@ -625,6 +628,11 @@ class Sopel(irc.AbstractBot):
             rate_limit = rule.global_rate_limit
             metrics = global_metrics
         else:
+            return False, None
+
+        if not metrics.last_time:
+            # you and I know that is_limited() will never return True if
+            # last_time is None, but the type-checker doesn't
             return False, None
 
         next_time = metrics.last_time + rate_limit
