@@ -469,7 +469,7 @@ def process_urls(
         if (shorten_url_length > 0) and (len(url) > shorten_url_length):
             tinyurl = get_or_create_shorturl(bot, url)
 
-        yield (url, title, parsed_url.hostname, tinyurl, False)
+        yield URLInfo(url, title, parsed_url.hostname, tinyurl, False)
 
 
 def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> bool:
