@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import abc
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
 import threading
@@ -471,7 +471,7 @@ class AbstractBot(abc.ABC):
             # quit if too many errors
             dt_seconds: float = 0.0
             if self.last_error_timestamp is not None:
-                dt = datetime.utcnow() - self.last_error_timestamp
+                dt = datetime.now(timezone.utc) - self.last_error_timestamp
                 dt_seconds = dt.total_seconds()
 
             if dt_seconds < 5:
@@ -480,7 +480,7 @@ class AbstractBot(abc.ABC):
             # remove 1 error per full 5s that passed since last error
             self.error_count = int(max(0, self.error_count - dt_seconds // 5))
 
-        self.last_error_timestamp = datetime.utcnow()
+        self.last_error_timestamp = datetime.now(timezone.utc)
         self.error_count = self.error_count + 1
 
     def rebuild_nick(self) -> None:
