@@ -14,8 +14,6 @@ Here is a full example of that, adapted from the built-in ``.t`` command::
 
     import datetime
 
-    import pytz
-
     from sopel import plugin
     from sopel.tools.time import format_time, get_timezone
 
@@ -24,7 +22,7 @@ Here is a full example of that, adapted from the built-in ``.t`` command::
     @plugin.require_chanmsg
     def my_command(bot, trigger):
         """Give time in a channel."""
-        time = pytz.UTC.localize(datetime.datetime.utcnow())
+        time = datetime.datetime.now(datetime.timezone.utc)
         timezone = get_timezone(
             bot.db,
             bot.settings,
