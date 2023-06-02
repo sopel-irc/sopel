@@ -57,10 +57,10 @@ class Duration(NamedTuple):
 
 
 def validate_timezone(zone: Optional[str]) -> str:
-    """Return an IETF timezone from the given IETF zone or common abbreviation.
+    """Normalize and validate an IANA timezone name.
 
     :param zone: in a strict or a human-friendly format
-    :return: the valid IETF timezone properly formatted
+    :return: the valid IANA timezone properly formatted
     :raise ValueError: when ``zone`` is not a valid timezone
                        (including empty string and ``None`` value)
 
@@ -107,7 +107,7 @@ def validate_format(tformat: str) -> str:
     .. versionadded:: 6.0
     """
     try:
-        time = datetime.datetime.utcnow()
+        time = datetime.datetime.now(datetime.timezone.utc)
         time.strftime(tformat)
     except (ValueError, TypeError):
         raise ValueError('Invalid time format.')
@@ -232,7 +232,7 @@ def format_time(
     :param channel: channel whose time format to use, if set (optional)
     :param time: the time value to format (optional)
 
-    ``time``, if given, should be a ``datetime.datetime`` object, and will be
+    ``time``, if given, should be a ``~datetime.datetime`` object, and will be
     treated as being in the UTC timezone if it is :ref:`naïve
     <datetime-naive-aware>`. If ``time`` is not given, the current time will
     be used.
@@ -257,7 +257,7 @@ def format_time(
 
     # get an aware datetime
     if not time:
-        time = pytz.utc.localize(datetime.datetime.utcnow())
+        time = datetime.datetime.now(datetime.timezone.utc)
     elif not time.tzinfo:
         time = pytz.utc.localize(time)
 
