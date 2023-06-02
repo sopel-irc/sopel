@@ -741,6 +741,33 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
+    def get_user_metrics(self, nick: Identifier) -> RuleMetrics:
+        """Get the rule's usage metrics for the given user."""
+
+    @abc.abstractmethod
+    def get_channel_metrics(self, channel: Identifier) -> RuleMetrics:
+        """Get the rule's usage metrics for the given channel."""
+
+    @abc.abstractmethod
+    def get_global_metrics(self) -> RuleMetrics:
+        """Get the rule's global usage metrics."""
+
+    @property
+    @abc.abstractmethod
+    def user_rate_limit(self) -> datetime.timedelta:
+        """The rule's user rate limit."""
+
+    @property
+    @abc.abstractmethod
+    def channel_rate_limit(self) -> datetime.timedelta:
+        """The rule's channel rate limit."""
+
+    @property
+    @abc.abstractmethod
+    def global_rate_limit(self) -> datetime.timedelta:
+        """The rule's global rate limit."""
+
+    @abc.abstractmethod
     def is_user_rate_limited(
         self,
         nick: Identifier,
@@ -799,7 +826,7 @@ class AbstractRule(abc.ABC):
         :return: A formatted string, or ``None`` if no message is set.
 
         This method is called by the bot when a trigger hits the channel rate
-        limit (i.e. for the specificed ``channel``).
+        limit (i.e. for the specified ``channel``).
         """
 
     @property
