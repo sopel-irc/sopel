@@ -319,6 +319,16 @@ def test_sasl_plain_nonempty_server_message(
     ), ('Bot must abort SASL PLAIN auth if server reply to starting '
         'AUTHENTICATE PLAIN is not as expected per SASL spec')
 
+    # per spec, server should send ERR_SASLABORTED
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(
+        ':irc.example.com 906 TestBot :SASL authentication aborted')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'CAP END',
+        'QUIT :SASL Auth Failed',
+    ), ('Sopel must finish capability negotiation after SASL even if aborted, '
+        'and then QUIT because auth failed')
+
 
 def test_sasl_nak(botfactory: BotFactory, tmpconfig) -> None:
     mockbot = botfactory.preloaded(tmpconfig, preloads=['coretasks'])
