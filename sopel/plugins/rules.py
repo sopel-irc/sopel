@@ -36,6 +36,8 @@ from typing import (
 )
 from urllib.parse import urlparse
 
+import pytz
+
 from sopel import tools
 from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
@@ -465,15 +467,25 @@ class RuleMetrics:
 
     def start(self) -> None:
         """Record a starting time (before execution)."""
-        self.started_at = datetime.datetime.utcnow()
+        self.started_at = pytz.utc.localize(datetime.datetime.utcnow())
 
     def end(self) -> None:
         """Record a ending time (after execution)."""
-        self.ended_at = datetime.datetime.utcnow()
+        self.ended_at = pytz.utc.localize(datetime.datetime.utcnow())
 
     def set_return_value(self, value: Any) -> None:
         """Set the last return value of a rule."""
         self.last_return_value = value
+
+    @property
+    def last_time(self) -> Optional[datetime.datetime]:
+        """Last recorded start/end time for the associated rule"""
+        # detect if we just started something or if it ended
+        last_time = self.started_at
+        if self.ended_at and self.started_at < self.ended_at:
+            last_time = self.ended_at
+
+        return last_time
 
     def is_limited(
         self,
@@ -484,15 +496,12 @@ class RuleMetrics:
             # not even started, so not limited
             return False
 
-        # detect if we just started something or if it ended
-        last_time = self.started_at
         if self.ended_at and self.started_at < self.ended_at:
-            last_time = self.ended_at
             # since it ended, check the return value
             if self.last_return_value == IGNORE_RATE_LIMIT:
                 return False
 
-        return last_time > time_limit
+        return self.last_time > time_limit
 
     def __enter__(self) -> RuleMetrics:
         self.start()
@@ -732,58 +741,72 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def is_user_rate_limited(self, nick: Identifier) -> bool:
+    def is_user_rate_limited(
+        self,
+        nick: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
-        :return: ``True`` when the rule reached the limit, ``False`` otherwise
+        :param nick: the nick associated with this check
+        :param at_time: optional aware datetime for the rate limit check;
+                        if not given, ``utcnow`` will be used
+        :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
     @abc.abstractmethod
-    def is_channel_rate_limited(self, channel: Identifier) -> bool:
+    def is_channel_rate_limited(
+        self,
+        channel: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
-        :return: ``True`` when the rule reached the limit, ``False`` otherwise
+        :param channel: the channel associated with this check
+        :param at_time: optional aware datetime for the rate limit check;
+                        if not given, ``utcnow`` will be used
+        :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
     @abc.abstractmethod
-    def is_global_rate_limited(self) -> bool:
+    def is_global_rate_limited(
+        self,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
         """Tell when the rule reached the global rate limit.
 
-        :return: ``True`` when the rule reached the limit, ``False`` otherwise
+        :param at_time: optional aware datetime for the rate limit check;
+                        if not given, ``utcnow`` will be used
+        :return: ``True`` when the rule reached the limit, ``False`` otherwise.
         """
 
+    @property
     @abc.abstractmethod
-    def get_user_rate_message(self, nick: Identifier) -> Optional[str]:
-        """Give the message to send with a NOTICE to ``nick``.
+    def user_rate_template(self) -> Optional[str]:
+        """Give the message template to send with a NOTICE to ``nick``.
 
-        :param nick: the nick that is rate limited
         :return: A formatted string, or ``None`` if no message is set.
 
-        This method is called by the bot when a trigger hits the user rate
+        This property is accessed by the bot when a trigger hits the user rate
         limit (i.e. for the specificed ``nick``).
         """
 
+    @property
     @abc.abstractmethod
-    def get_channel_rate_message(
-        self,
-        nick: Identifier,
-        channel: Identifier,
-    ) -> Optional[str]:
-        """Give the message to send with a NOTICE to ``nick``.
+    def channel_rate_template(self) -> Optional[str]:
+        """Give the message template to send with a NOTICE to ``nick``.
 
-        :param nick: the nick that reached the channel's rate limit
-        :param channel: the channel that is rate limited
         :return: A formatted string, or ``None`` if no message is set.
 
         This method is called by the bot when a trigger hits the channel rate
         limit (i.e. for the specificed ``channel``).
         """
 
+    @property
     @abc.abstractmethod
-    def get_global_rate_message(self, nick: Identifier) -> Optional[str]:
+    def global_rate_template(self) -> Optional[str]:
         """Give the message to send with a NOTICE to ``nick``.
 
-        :param nick: the nick that reached the global rate limit
         :return: A formatted string, or ``None`` if no message is set.
 
         This method is called by the bot when a trigger hits the global rate
@@ -1141,53 +1164,70 @@ class Rule(AbstractRule):
     def is_unblockable(self):
         return self._unblockable
 
-    def is_user_rate_limited(self, nick):
-        metrics: RuleMetrics = self._metrics_nick.get(nick, RuleMetrics())
-        now = datetime.datetime.utcnow()
-        rate_limit = datetime.timedelta(seconds=self._user_rate_limit)
-        return metrics.is_limited(now - rate_limit)
+    def get_user_metrics(self, nick: Identifier) -> RuleMetrics:
+        return self._metrics_nick.get(nick, RuleMetrics())
 
-    def is_channel_rate_limited(self, channel):
-        metrics: RuleMetrics = self._metrics_sender.get(channel, RuleMetrics())
-        now = datetime.datetime.utcnow()
-        rate_limit = datetime.timedelta(seconds=self._channel_rate_limit)
-        return metrics.is_limited(now - rate_limit)
+    def get_channel_metrics(self, channel: Identifier) -> RuleMetrics:
+        return self._metrics_sender.get(channel, RuleMetrics())
 
-    def is_global_rate_limited(self):
-        now = datetime.datetime.utcnow()
-        rate_limit = datetime.timedelta(seconds=self._global_rate_limit)
-        return self._metrics_global.is_limited(now - rate_limit)
+    def get_global_metrics(self) -> RuleMetrics:
+        return self._metrics_global
 
-    def get_user_rate_message(self, nick):
+    @property
+    def user_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._user_rate_limit)
+
+    @property
+    def channel_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._channel_rate_limit)
+
+    @property
+    def global_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._global_rate_limit)
+
+    def is_user_rate_limited(
+        self,
+        nick: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
+        if at_time is None:
+            at_time = pytz.utc.localize(datetime.datetime.utcnow())
+        metrics = self.get_user_metrics(nick)
+        return metrics.is_limited(at_time - self.user_rate_limit)
+
+    def is_channel_rate_limited(
+        self,
+        channel: Identifier,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
+        if at_time is None:
+            at_time = pytz.utc.localize(datetime.datetime.utcnow())
+        metrics = self.get_channel_metrics(channel)
+        return metrics.is_limited(at_time - self.channel_rate_limit)
+
+    def is_global_rate_limited(
+        self,
+        at_time: Optional[datetime.datetime] = None,
+    ) -> bool:
+        if at_time is None:
+            at_time = pytz.utc.localize(datetime.datetime.utcnow())
+        metrics = self.get_global_metrics()
+        return metrics.is_limited(at_time - self.global_rate_limit)
+
+    @property
+    def user_rate_template(self) -> Optional[str]:
         template = self._user_rate_message or self._default_rate_message
+        return template
 
-        if not template:
-            return None
-
-        return template.format(
-            nick=nick,
-        )
-
-    def get_channel_rate_message(self, nick, channel):
+    @property
+    def channel_rate_template(self) -> Optional[str]:
         template = self._channel_rate_message or self._default_rate_message
+        return template
 
-        if not template:
-            return None
-
-        return template.format(
-            nick=nick,
-            channel=channel,
-        )
-
-    def get_global_rate_message(self, nick):
+    @property
+    def global_rate_template(self) -> Optional[str]:
         template = self._global_rate_message or self._default_rate_message
-
-        if not template:
-            return None
-
-        return template.format(
-            nick=nick,
-        )
+        return template
 
     def execute(self, bot, trigger):
         if not self._handler:

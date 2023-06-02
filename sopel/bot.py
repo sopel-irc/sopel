@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from ast import literal_eval
-from datetime import datetime
+import datetime
 import inspect
 import itertools
 import logging
@@ -592,6 +592,62 @@ class Sopel(irc.AbstractBot):
                 except plugins.exceptions.PluginError as err:
                     LOGGER.error("Cannot register URL callback: %s", err)
 
+    def rate_limit_info(
+        self,
+        rule: plugin_rules.Rule,
+        trigger: Trigger,
+    ) -> Tuple[bool, Optional[str]]:
+        if trigger.admin or rule.is_unblockable():
+            return False, None
+
+        is_channel = trigger.sender and not trigger.sender.is_nick()
+        channel = trigger.sender if is_channel else None
+
+        at_time = trigger.time
+
+        user_metrics = rule.get_user_metrics(trigger.nick)
+        channel_metrics = rule.get_channel_metrics(channel)
+        global_metrics = rule.get_global_metrics()
+
+        if user_metrics.is_limited(at_time - rule.user_rate_limit):
+            template = rule.user_rate_template
+            rate_limit_type = "user"
+            rate_limit = rule.user_rate_limit
+            metrics = user_metrics
+        elif is_channel and channel_metrics.is_limited(at_time - rule.channel_rate_limit):
+            template = rule.channel_rate_template
+            rate_limit_type = "channel"
+            rate_limit = rule.channel_rate_limit
+            metrics = channel_metrics
+        elif global_metrics.is_limited(at_time - rule.global_rate_limit):
+            template = rule.global_rate_template
+            rate_limit_type = "global"
+            rate_limit = rule.global_rate_limit
+            metrics = global_metrics
+        else:
+            return False, None
+
+        next_time = metrics.last_time + rate_limit
+        time_left = next_time - at_time
+
+        message: Optional[str] = None
+
+        if template:
+            message = template.format(
+                nick=trigger.nick,
+                channel=channel or 'private message',
+                sender=trigger.sender,
+                plugin=rule.get_plugin_name(),
+                label=rule.get_rule_label(),
+                time_left=time_left,
+                time_left_sec=time_left.total_seconds(),
+                rate_limit=rate_limit,
+                rate_limit_sec=rate_limit.total_seconds(),
+                rate_limit_type=rate_limit_type,
+            )
+
+        return True, message
+
     # message dispatch
 
     def call_rule(
@@ -604,25 +660,11 @@ class Sopel(irc.AbstractBot):
         context = trigger.sender
         is_channel = context and not context.is_nick()
 
-        # rate limiting
-        if not trigger.admin and not rule.is_unblockable():
-            if rule.is_user_rate_limited(nick):
-                message = rule.get_user_rate_message(nick)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
-
-            if is_channel and rule.is_channel_rate_limited(context):
-                message = rule.get_channel_rate_message(nick, context)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
-
-            if rule.is_global_rate_limited():
-                message = rule.get_global_rate_message(nick)
-                if message:
-                    sopel.notice(message, destination=nick)
-                return
+        limited, limit_msg = self.rate_limit_info(rule, trigger)
+        if limit_msg:
+            sopel.notice(limit_msg, destination=nick)
+        if limited:
+            return
 
         # channel config
         if is_channel and context in self.config:
@@ -1003,7 +1045,7 @@ class Sopel(irc.AbstractBot):
 
         if trigger:
             message = '{} from {} at {}. Message was: {}'.format(
-                message, trigger.nick, str(datetime.utcnow()), trigger.group(0)
+                message, trigger.nick, str(datetime.datetime.utcnow()), trigger.group(0)
             )
 
         LOGGER.exception(message)
