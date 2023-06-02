@@ -482,7 +482,7 @@ class RuleMetrics:
         """Last recorded start/end time for the associated rule"""
         # detect if we just started something or if it ended
         last_time = self.started_at
-        if self.ended_at and self.started_at < self.ended_at:
+        if self.ended_at and (self.started_at and self.started_at < self.ended_at):
             last_time = self.ended_at
 
         return last_time
@@ -501,7 +501,7 @@ class RuleMetrics:
             if self.last_return_value == IGNORE_RATE_LIMIT:
                 return False
 
-        return self.last_time > time_limit
+        return self.last_time > time_limit if self.last_time else False
 
     def __enter__(self) -> RuleMetrics:
         self.start()
