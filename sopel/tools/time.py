@@ -9,8 +9,13 @@
 from __future__ import annotations
 
 import datetime
+from typing import cast, NamedTuple, Optional, Tuple, TYPE_CHECKING, Union
 
 import pytz
+
+if TYPE_CHECKING:
+    from sopel.config import Config
+    from sopel.db import SopelDB
 
 
 # various time units measured in seconds; approximated for months and years
@@ -22,12 +27,42 @@ MONTHS = int(30.5 * DAYS)
 YEARS = 365 * DAYS
 
 
-def validate_timezone(zone):
+class Duration(NamedTuple):
+    """Named tuple representation of a duration.
+
+    This can be used as a tuple as well as an object::
+
+        >>> d = Duration(minutes=12, seconds=34)
+        >>> d.minutes
+        12
+        >>> d.seconds
+        34
+        >>> years, months, days, hours, minutes, seconds = d
+        >>> (years, months, days, hours, minutes, seconds)
+        (0, 0, 0, 0, 12, 34)
+
+    """
+    years: int = 0
+    """Years spent."""
+    months: int = 0
+    """Months spent."""
+    days: int = 0
+    """Days spent."""
+    hours: int = 0
+    """Hours spent."""
+    minutes: int = 0
+    """Minutes spent."""
+    seconds: int = 0
+    """Seconds spent."""
+
+
+def validate_timezone(zone: Optional[str]) -> str:
     """Return an IETF timezone from the given IETF zone or common abbreviation.
 
-    :param str zone: in a strict or a human-friendly format
+    :param zone: in a strict or a human-friendly format
     :return: the valid IETF timezone properly formatted
     :raise ValueError: when ``zone`` is not a valid timezone
+                       (including empty string and ``None`` value)
 
     Prior to checking timezones, two transformations are made to make the zone
     names more human-friendly:
@@ -40,25 +75,32 @@ def validate_timezone(zone):
     becomes ``UTC``. In the majority of user-facing interactions, such
     case-insensitivity will be expected.
 
-    If the zone is not valid, ``ValueError`` will be raised.
+    If the zone is not valid, :exc:`ValueError` will be raised.
 
     .. versionadded:: 6.0
+
+    .. versionchanged:: 8.0
+
+        If ``zone`` is ``None``, raises a :exc:`ValueError` as if it was an
+        empty string or an invalid timezone instead of returning ``None``.
+
     """
     if zone is None:
-        return None
+        raise ValueError('Invalid time zone.')
 
     zone = '/'.join(reversed(zone.split(', '))).replace(' ', '_')
     try:
         tz = pytz.timezone(zone)
     except pytz.exceptions.UnknownTimeZoneError:
         raise ValueError('Invalid time zone.')
-    return tz.zone
+
+    return cast(str, tz.zone)
 
 
-def validate_format(tformat):
+def validate_format(tformat: str) -> str:
     """Validate a time format string.
 
-    :param str tformat: the format string to validate
+    :param tformat: the format string to validate
     :return: the format string, if valid
     :raise ValueError: when ``tformat`` is not a valid time format string
 
@@ -72,13 +114,11 @@ def validate_format(tformat):
     return tformat
 
 
-def get_nick_timezone(db, nick):
+def get_nick_timezone(db: SopelDB, nick: str) -> Optional[str]:
     """Get a nick's timezone from database.
 
     :param db: Bot's database handler (usually ``bot.db``)
-    :type db: :class:`~sopel.db.SopelDB`
     :param nick: IRC nickname
-    :type nick: :class:`~sopel.tools.identifiers.Identifier`
     :return: the timezone associated with the ``nick``
 
     If a timezone cannot be found for ``nick``, or if it is invalid, ``None``
@@ -92,13 +132,11 @@ def get_nick_timezone(db, nick):
         return None
 
 
-def get_channel_timezone(db, channel):
+def get_channel_timezone(db: SopelDB, channel: str) -> Optional[str]:
     """Get a channel's timezone from database.
 
     :param db: Bot's database handler (usually ``bot.db``)
-    :type db: :class:`~sopel.db.SopelDB`
     :param channel: IRC channel name
-    :type channel: :class:`~sopel.tools.identifiers.Identifier`
     :return: the timezone associated with the ``channel``
 
     If a timezone cannot be found for ``channel``, or if it is invalid,
@@ -112,16 +150,20 @@ def get_channel_timezone(db, channel):
         return None
 
 
-def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
+def get_timezone(
+    db: Optional[SopelDB] = None,
+    config: Optional[Config] = None,
+    zone: Optional[str] = None,
+    nick: Optional[str] = None,
+    channel: Optional[str] = None,
+) -> Optional[str]:
     """Find, and return, the appropriate timezone.
 
     :param db: bot database object (optional)
-    :type db: :class:`~.db.SopelDB`
     :param config: bot config object (optional)
-    :type config: :class:`~.config.Config`
-    :param str zone: preferred timezone name (optional)
-    :param str nick: nick whose timezone to use, if set (optional)
-    :param str channel: channel whose timezone to use, if set (optional)
+    :param zone: preferred timezone name (optional)
+    :param nick: nick whose timezone to use, if set (optional)
+    :param channel: channel whose timezone to use, if set (optional)
 
     Timezone is pulled in the following priority:
 
@@ -145,40 +187,50 @@ def get_timezone(db=None, config=None, zone=None, nick=None, channel=None):
        formatting of the timezone.
 
     """
-    def _check(zone):
+    def _check(zone: Optional[str]) -> Optional[str]:
         try:
             return validate_timezone(zone)
         except ValueError:
             return None
 
-    tz = None
+    tz: Optional[str] = None
 
     if zone:
         tz = _check(zone)
-        if not tz:
+        # zone might be a nick or a channel
+        if not tz and db is not None:
             tz = _check(db.get_nick_or_channel_value(zone, 'timezone'))
-    if not tz and nick:
-        tz = _check(db.get_nick_value(nick, 'timezone'))
-    if not tz and channel:
-        tz = _check(db.get_channel_value(channel, 'timezone'))
-    if not tz and config and config.core.default_timezone:
+
+    # get nick's timezone, and if none, get channel's timezone instead
+    if not tz and db is not None:
+        if nick:
+            tz = _check(db.get_nick_value(nick, 'timezone'))
+        if not tz and channel:
+            tz = _check(db.get_channel_value(channel, 'timezone'))
+
+    # if still not found, default to core configuration
+    if not tz and config is not None and config.core.default_timezone:
         tz = _check(config.core.default_timezone)
+
     return tz
 
 
-def format_time(db=None, config=None, zone=None, nick=None, channel=None,
-                time=None):
+def format_time(
+    db: Optional[SopelDB] = None,
+    config: Optional[Config] = None,
+    zone: Optional[str] = None,
+    nick: Optional[str] = None,
+    channel: Optional[str] = None,
+    time: Optional[datetime.datetime] = None,
+) -> str:
     """Return a formatted string of the given time in the given zone.
 
     :param db: bot database object (optional)
-    :type db: :class:`~.db.SopelDB`
     :param config: bot config object (optional)
-    :type config: :class:`~.config.Config`
-    :param str zone: name of timezone to use for output (optional)
-    :param str nick: nick whose time format to use, if set (optional)
-    :param str channel: channel whose time format to use, if set (optional)
+    :param zone: name of timezone to use for output (optional)
+    :param nick: nick whose time format to use, if set (optional)
+    :param channel: channel whose time format to use, if set (optional)
     :param time: the time value to format (optional)
-    :type time: :class:`~datetime.datetime`
 
     ``time``, if given, should be a ``datetime.datetime`` object, and will be
     treated as being in the UTC timezone if it is :ref:`naïve
@@ -200,47 +252,58 @@ def format_time(db=None, config=None, zone=None, nick=None, channel=None,
     If ``db`` is not given or is not set up, steps 1 and 2 are skipped. If
     ``config`` is not given, step 3 will be skipped.
     """
-    utc = pytz.timezone('UTC')
-    tformat = None
+    target_tz: datetime.tzinfo = pytz.utc
+    tformat: Optional[str] = None
+
+    # get an aware datetime
+    if not time:
+        time = pytz.utc.localize(datetime.datetime.utcnow())
+    elif not time.tzinfo:
+        time = pytz.utc.localize(time)
+
+    # get target timezone
+    if zone:
+        target_tz = pytz.timezone(zone)
+
+    # get format for nick or channel
     if db:
         if nick:
             tformat = db.get_nick_value(nick, 'time_format')
         if not tformat and channel:
             tformat = db.get_channel_value(channel, 'time_format')
+
+    # get format from configuration
     if not tformat and config and config.core.default_time_format:
         tformat = config.core.default_time_format
+
+    # or default to hard-coded format
     if not tformat:
         tformat = '%Y-%m-%d - %T %z'
 
-    if not time:
-        time = datetime.datetime.now(tz=utc)
-    elif not time.tzinfo:
-        time = utc.localize(time)
-
-    if not zone:
-        zone = utc
-    else:
-        zone = pytz.timezone(zone)
-
-    return time.astimezone(zone).strftime(tformat)
+    # format local time with format
+    return time.astimezone(target_tz).strftime(tformat)
 
 
-def seconds_to_split(seconds):
+def seconds_to_split(seconds: int) -> Duration:
     """Split an amount of ``seconds`` into years, months, days, etc.
 
-    :param int seconds: amount of time in seconds
-    :return: the time split into a tuple of years, months, days, hours,
+    :param seconds: amount of time in seconds
+    :return: the time split into a named tuple of years, months, days, hours,
              minutes, and seconds
-    :rtype: :class:`tuple`
 
     Examples::
 
         >>> seconds_to_split(7800)
-        (0, 0, 0, 2, 10, 0)
+        Duration(years=0, months=0, days=0, hours=2, minutes=10, seconds=0)
         >>> seconds_to_split(143659)
-        (0, 0, 1, 15, 54, 19)
+        Duration(years=0, months=0, days=1, hours=15, minutes=54, seconds=19)
 
     .. versionadded:: 7.1
+
+    .. versionchanged:: 8.0
+
+        This function returns a :class:`Duration` named tuple.
+
     """
     years, seconds_left = divmod(int(seconds), YEARS)
     months, seconds_left = divmod(seconds_left, MONTHS)
@@ -248,20 +311,33 @@ def seconds_to_split(seconds):
     hours, seconds_left = divmod(seconds_left, HOURS)
     minutes, seconds_left = divmod(seconds_left, MINUTES)
 
-    return years, months, days, hours, minutes, seconds_left
+    return Duration(years, months, days, hours, minutes, seconds_left)
 
 
-def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
+def get_time_unit(
+    years: int = 0,
+    months: int = 0,
+    days: int = 0,
+    hours: int = 0,
+    minutes: int = 0,
+    seconds: int = 0,
+) -> Tuple[
+    Tuple[int, str],
+    Tuple[int, str],
+    Tuple[int, str],
+    Tuple[int, str],
+    Tuple[int, str],
+    Tuple[int, str],
+]:
     """Map a time in (y, m, d, h, min, s) to its labels.
 
-    :param int years: number of years
-    :param int months: number of months
-    :param int days: number of days
-    :param int hours: number of hours
-    :param int minutes: number of minutes
-    :param int seconds: number of seconds
+    :param years: number of years
+    :param months: number of months
+    :param days: number of days
+    :param hours: number of hours
+    :param minutes: number of minutes
+    :param seconds: number of seconds
     :return: a tuple of 2-value tuples, each for a time amount and its label
-    :rtype: :class:`tuple`
 
     This helper function takes a time split into years, months, days, hours,
     minutes, and seconds to return a tuple with the correct label for each
@@ -308,12 +384,14 @@ def get_time_unit(years=0, months=0, days=0, hours=0, minutes=0, seconds=0):
     )
 
 
-def seconds_to_human(secs, granularity=2):
+def seconds_to_human(
+    secs: Union[datetime.timedelta, float, int],
+    granularity: int = 2,
+) -> str:
     """Format :class:`~datetime.timedelta` as a human-readable relative time.
 
     :param secs: time difference to format
-    :type secs: :class:`~datetime.timedelta` or integer
-    :param int granularity: number of time units to return (default to 2)
+    :param granularity: number of time units to return (default to 2)
 
     Inspiration for function structure from:
     https://gist.github.com/Highstaker/280a09591df4a5fb1363b0bbaf858f0d

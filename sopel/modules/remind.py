@@ -427,10 +427,7 @@ def parse_regex_match(match, default_timezone=None):
     :rtype: :class:`TimeReminder`
     """
     try:
-        # Removing the `or` clause will BREAK the fallback to default_timezone!
-        # We need some invalid value other than None to trigger the ValueError.
-        # validate_timezone(None) excepting would be easier, but it doesn't.
-        timezone = validate_timezone(match.group('tz') or '')
+        timezone = validate_timezone(match.group('tz'))
     except ValueError:
         timezone = default_timezone or 'UTC'
 
