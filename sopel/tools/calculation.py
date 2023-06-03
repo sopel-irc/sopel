@@ -57,8 +57,11 @@ class ExpressionEvaluator:
         A subclass could overwrite this to handle more nodes, calling it only
         for nodes it does not implement itself.
         """
-        if isinstance(node, ast.Num):
-            return node.n
+        if (
+            isinstance(node, ast.Constant) and
+            isinstance(node.value, (int, float))
+        ):
+            return node.value
 
         elif (isinstance(node, ast.BinOp) and
                 type(node.op) in self.binary_ops):
@@ -78,7 +81,7 @@ class ExpressionEvaluator:
             return self.unary_ops[type(node.op)](operand)
 
         raise ExpressionEvaluator.Error(
-            "Ast.Node '%s' not implemented." % (type(node).__name__,))
+            "ast.Node '%s' not implemented." % (type(node).__name__,))
 
 
 def guarded_mul(left, right):
