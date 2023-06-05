@@ -1,4 +1,4 @@
-"""Test behavior of SASL by ``sopel.coretasks``"""
+"""Test behavior of CAP management by ``sopel.coretasks``"""
 from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING

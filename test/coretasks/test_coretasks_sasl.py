@@ -31,6 +31,26 @@ auth_password = secret
 """
 
 
+TMP_CONFIG_SASL_DEFAULT_EXACTLY_400 = """
+[core]
+owner = Uowner
+nick = TestBot
+enable = coretasks
+auth_method = sasl
+auth_password = {}
+""".format('a' * 282)
+
+
+TMP_CONFIG_SASL_DEFAULT_OVER_400 = """
+[core]
+owner = Uowner
+nick = TestBot
+enable = coretasks
+auth_method = sasl
+auth_password = {}
+""".format('a' * 286)
+
+
 TMP_CONFIG_SASL_NO_PASSWORD = """
 [core]
 owner = Uowner
@@ -120,6 +140,100 @@ def test_sasl_plain(botfactory: BotFactory, tmpconfig) -> None:
     )
 
 
+def test_sasl_plain_split_exactly_400(
+    botfactory: BotFactory,
+    configfactory: ConfigFactory,
+) -> None:
+    tmpconfig = configfactory('conf.ini', TMP_CONFIG_SASL_DEFAULT_EXACTLY_400)
+    mockbot = botfactory.preloaded(tmpconfig, preloads=['coretasks'])
+    mockbot.backend.connected = True
+
+    # connect
+    mockbot.on_connect()
+    expected = 3
+    assert len(mockbot.backend.message_sent) == expected, 'Sanity check failed'
+
+    # list capabilities
+    mockbot.on_message(':irc.example.com CAP * LS :sasl=PLAIN,EXTERNAL')
+    assert mockbot.backend.message_sent[expected:] == rawlist(
+        'CAP REQ :sasl'
+    ), 'Only SASL was listed, only SASL must be requested.'
+    n = len(mockbot.backend.message_sent)
+
+    # ACK sasl capability
+    mockbot.on_message(':irc.example.com CAP * ACK :sasl')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE PLAIN',
+    )
+    n = len(mockbot.backend.message_sent)
+
+    # Server waiting for authentication
+    mockbot.on_message(':irc.example.com AUTHENTICATE +')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE VGVzdEJvdABUZXN0Qm90AG' +
+        ('FhYW' * 93) +
+        'FhYQ==',
+        'AUTHENTICATE +',
+    )
+    n = len(mockbot.backend.message_sent)
+
+    # Server accept authentication
+    mockbot.on_message(
+        ':irc.example.com 900 TestBot TestBot!sopel@example.com sopel '
+        ':You are now logged in as TestBot')
+    mockbot.on_message(
+        ':irc.example.com 903 TestBot :SASL authentication successful')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'CAP END',
+    )
+
+
+def test_sasl_plain_split_over_400(
+    botfactory: BotFactory,
+    configfactory: ConfigFactory,
+) -> None:
+    tmpconfig = configfactory('conf.ini', TMP_CONFIG_SASL_DEFAULT_OVER_400)
+    mockbot = botfactory.preloaded(tmpconfig, preloads=['coretasks'])
+    mockbot.backend.connected = True
+
+    # connect
+    mockbot.on_connect()
+    expected = 3
+    assert len(mockbot.backend.message_sent) == expected, 'Sanity check failed'
+
+    # list capabilities
+    mockbot.on_message(':irc.example.com CAP * LS :sasl=PLAIN,EXTERNAL')
+    assert mockbot.backend.message_sent[expected:] == rawlist(
+        'CAP REQ :sasl'
+    ), 'Only SASL was listed, only SASL must be requested.'
+    n = len(mockbot.backend.message_sent)
+
+    # ACK sasl capability
+    mockbot.on_message(':irc.example.com CAP * ACK :sasl')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE PLAIN',
+    )
+    n = len(mockbot.backend.message_sent)
+
+    # Server waiting for authentication
+    mockbot.on_message(':irc.example.com AUTHENTICATE +')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE VGVzdEJvdABUZXN0Qm90AGFh' + ('YWFh' * 94),
+        'AUTHENTICATE YWE=',
+    )
+    n = len(mockbot.backend.message_sent)
+
+    # Server accept authentication
+    mockbot.on_message(
+        ':irc.example.com 900 TestBot TestBot!sopel@example.com sopel '
+        ':You are now logged in as TestBot')
+    mockbot.on_message(
+        ':irc.example.com 903 TestBot :SASL authentication successful')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'CAP END',
+    )
+
+
 def test_sasl_plain_no_password(
     botfactory: BotFactory,
     configfactory: ConfigFactory,
@@ -136,7 +250,7 @@ def test_sasl_plain_no_password(
     assert mockbot.backend.message_sent[n:] == rawlist(
         'CAP END',
         'QUIT :Configuration error.',
-    ), 'No password is a configuration error and must the bot must quit.'
+    ), 'No password is a configuration error and the bot must quit.'
 
 
 def test_sasl_plain_bad_password(botfactory: BotFactory, tmpconfig) -> None:
@@ -177,6 +291,43 @@ def test_sasl_plain_not_supported(botfactory: BotFactory, tmpconfig) -> None:
         'CAP END',
         'QUIT :Configuration error.',
     ), 'SASL mech is not available so we must stop here.'
+
+
+def test_sasl_plain_nonempty_server_message(
+    botfactory: BotFactory,
+    tmpconfig,
+) -> None:
+    mockbot = botfactory.preloaded(tmpconfig, preloads=['coretasks'])
+    mockbot.backend.connected = True
+
+    # connect and capability negotiation
+    mockbot.on_connect()
+    mockbot.on_message(':irc.example.com CAP * LS :sasl=PLAIN,EXTERNAL')
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(':irc.example.com CAP * ACK :sasl')
+
+    # sanity check
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE PLAIN',
+    )
+
+    # server acknowledges PLAIN auth request in an unexpected way
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(':irc.example.com AUTHENTICATE VGVzdEJvdABUZXN0Qm90AG')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'AUTHENTICATE *',
+    ), ('Bot must abort SASL PLAIN auth if server reply to starting '
+        'AUTHENTICATE PLAIN is not as expected per SASL spec')
+
+    # per spec, server should send ERR_SASLABORTED
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(
+        ':irc.example.com 906 TestBot :SASL authentication aborted')
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'CAP END',
+        'QUIT :SASL Auth Failed',
+    ), ('Sopel must finish capability negotiation after SASL even if aborted, '
+        'and then QUIT because auth failed')
 
 
 def test_sasl_nak(botfactory: BotFactory, tmpconfig) -> None:
