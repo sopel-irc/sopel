@@ -14,7 +14,6 @@ import itertools
 import logging
 import re
 import threading
-import time
 from types import MappingProxyType
 from typing import (
     Any,
@@ -27,9 +26,8 @@ from typing import (
     Union,
 )
 
-from sopel import db, irc, logger, plugin, plugins, tools
+from sopel import db, irc, logger, plugins, tools
 from sopel.irc import modes
-from sopel.lifecycle import deprecated
 from sopel.plugins import (
     capabilities as plugin_capabilities,
     jobs as plugin_jobs,
@@ -57,21 +55,6 @@ class Sopel(irc.AbstractBot):
         self._rules_manager = plugin_rules.Manager()
         self._cap_requests_manager = plugin_capabilities.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
-
-        self._url_callbacks = tools.SopelMemory()
-        """Tracking of manually registered URL callbacks.
-
-        Should be manipulated only by use of :meth:`register_url_callback` and
-        :meth:`unregister_url_callback` methods, which are deprecated.
-
-        Remove in Sopel 9, along with the above related methods.
-        """
-
-        self._times = {}
-        """
-        A dictionary mapping lowercased nicks to dictionaries which map
-        function names to the time which they were last used by that nick.
-        """
 
         self.modeparser = modes.ModeParser()
         """A mode parser used to parse ``MODE`` messages and modestrings."""
@@ -698,112 +681,6 @@ class Sopel(irc.AbstractBot):
         except Exception as error:
             self.error(trigger, exception=error)
 
-    def call(
-        self,
-        func: Any,
-        sopel: 'SopelWrapper',
-        trigger: Trigger,
-    ) -> None:
-        """Call a function, applying any rate limits or other restrictions.
-
-        :param func: the function to call
-        :type func: :term:`function`
-        :param sopel: a SopelWrapper instance
-        :type sopel: :class:`SopelWrapper`
-        :param Trigger trigger: the Trigger object for the line from the server
-                                that triggered this call
-        """
-        nick = trigger.nick
-        current_time = time.time()
-        if nick not in self._times:
-            self._times[nick] = dict()
-        if self.nick not in self._times:
-            self._times[self.nick] = dict()
-        if not trigger.is_privmsg and trigger.sender not in self._times:
-            self._times[trigger.sender] = dict()
-
-        if not trigger.admin and not func.unblockable:
-            if func in self._times[nick]:
-                usertimediff = current_time - self._times[nick][func]
-                if func.user_rate > 0 and usertimediff < func.user_rate:
-                    LOGGER.info(
-                        "%s prevented from using %s in %s due to user limit: %d < %d",
-                        trigger.nick, func.__name__, trigger.sender, usertimediff,
-                        func.user_rate
-                    )
-                    return
-            if func in self._times[self.nick]:
-                globaltimediff = current_time - self._times[self.nick][func]
-                if func.global_rate > 0 and globaltimediff < func.global_rate:
-                    LOGGER.info(
-                        "%s prevented from using %s in %s due to global limit: %d < %d",
-                        trigger.nick, func.__name__, trigger.sender, globaltimediff,
-                        func.global_rate
-                    )
-                    return
-
-            if not trigger.is_privmsg and func in self._times[trigger.sender]:
-                chantimediff = current_time - self._times[trigger.sender][func]
-                if func.channel_rate > 0 and chantimediff < func.channel_rate:
-                    LOGGER.info(
-                        "%s prevented from using %s in %s due to channel limit: %d < %d",
-                        trigger.nick, func.__name__, trigger.sender, chantimediff,
-                        func.channel_rate
-                    )
-                    return
-
-        # if channel has its own config section, check for excluded plugins/plugin methods,
-        # but only if the source plugin is NOT coretasks, because we NEED those handlers.
-        # Normal, whole-bot configuration will not let you disable coretasks either.
-        if trigger.sender in self.config and func.plugin_name != 'coretasks':
-            channel_config = self.config[trigger.sender]
-            LOGGER.debug(
-                "Evaluating configuration for %s.%s in channel %s",
-                func.plugin_name, func.__name__, trigger.sender
-            )
-
-            # disable listed plugins completely on provided channel
-            if 'disable_plugins' in channel_config:
-                disabled_plugins = channel_config.disable_plugins.split(',')
-
-                # if "*" is used, we are disabling all plugins on provided channel
-                if '*' in disabled_plugins:
-                    LOGGER.debug(
-                        "All plugins disabled in %s; skipping execution of %s.%s",
-                        trigger.sender, func.plugin_name, func.__name__
-                    )
-                    return
-                if func.plugin_name in disabled_plugins:
-                    LOGGER.debug(
-                        "Plugin %s is disabled in %s; skipping execution of %s",
-                        func.plugin_name, trigger.sender, func.__name__
-                    )
-                    return
-
-            # disable chosen methods from plugins
-            if 'disable_commands' in channel_config:
-                disabled_commands = literal_eval(channel_config.disable_commands)
-
-                if func.plugin_name in disabled_commands:
-                    if func.__name__ in disabled_commands[func.plugin_name]:
-                        LOGGER.debug(
-                            "Skipping execution of %s.%s in %s: disabled_commands matched",
-                            func.plugin_name, func.__name__, trigger.sender
-                        )
-                        return
-
-        try:
-            exit_code = func(sopel, trigger)
-        except Exception as error:  # TODO: Be specific
-            exit_code = None
-            self.error(trigger, exception=error)
-
-        if exit_code != plugin.NOLIMIT:
-            self._times[nick][func] = current_time
-            self._times[self.nick][func] = current_time
-            if not trigger.is_privmsg:
-                self._times[trigger.sender][func] = current_time
-
     def _is_pretrigger_blocked(
         self,
         pretrigger: PreTrigger,
@@ -1117,148 +994,6 @@ class Sopel(irc.AbstractBot):
 
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
-
-    # URL callbacks management
-
-    @deprecated(
-        reason='Issues with @url decorator have been fixed. Simply use that.',
-        version='7.1',
-        warning_in='8.0',
-        removed_in='9.0',
-    )
-    def register_url_callback(self, pattern, callback):
-        """Register a ``callback`` for URLs matching the regex ``pattern``.
-
-        :param pattern: compiled regex pattern to register
-        :type pattern: :ref:`re.Pattern <python:re-objects>`
-        :param callback: callable object to handle matching URLs
-        :type callback: :term:`function`
-
-        .. versionadded:: 7.0
-
-            This method replaces manual management of ``url_callbacks`` in
-            Sopel's plugins, so instead of doing this in ``setup()``::
-
-                if 'url_callbacks' not in bot.memory:
-                    bot.memory['url_callbacks'] = tools.SopelMemory()
-
-                regex = re.compile(r'http://example.com/path/.*')
-                bot.memory['url_callbacks'][regex] = callback
-
-            use this much more concise pattern::
-
-                regex = re.compile(r'http://example.com/path/.*')
-                bot.register_url_callback(regex, callback)
-
-        It's recommended you completely avoid manual management of URL
-        callbacks through the use of :func:`sopel.plugin.url`.
-
-        .. deprecated:: 7.1
-
-            Made obsolete by fixes to the behavior of
-            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
-
-        .. versionchanged:: 8.0
-
-            Stores registered callbacks in an internal property instead of
-            ``bot.memory['url_callbacks']``.
-
-        """
-        if isinstance(pattern, str):
-            pattern = re.compile(pattern)
-
-        self._url_callbacks[pattern] = callback
-
-    @deprecated(
-        reason='Issues with @url decorator have been fixed. Simply use that.',
-        version='7.1',
-        warning_in='8.0',
-        removed_in='9.0',
-    )
-    def unregister_url_callback(self, pattern, callback):
-        """Unregister the callback for URLs matching the regex ``pattern``.
-
-        :param pattern: compiled regex pattern to unregister callback
-        :type pattern: :ref:`re.Pattern <python:re-objects>`
-        :param callback: callable object to remove
-        :type callback: :term:`function`
-
-        .. versionadded:: 7.0
-
-            This method replaces manual management of ``url_callbacks`` in
-            Sopel's plugins, so instead of doing this in ``shutdown()``::
-
-                regex = re.compile(r'http://example.com/path/.*')
-                try:
-                    del bot.memory['url_callbacks'][regex]
-                except KeyError:
-                    pass
-
-            use this much more concise pattern::
-
-                regex = re.compile(r'http://example.com/path/.*')
-                bot.unregister_url_callback(regex, callback)
-
-        It's recommended you completely avoid manual management of URL
-        callbacks through the use of :func:`sopel.plugin.url`.
-
-        .. deprecated:: 7.1
-
-            Made obsolete by fixes to the behavior of
-            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
-
-        .. versionchanged:: 8.0
-
-            Deletes registered callbacks from an internal property instead of
-            ``bot.memory['url_callbacks']``.
-
-        """
-        if isinstance(pattern, str):
-            pattern = re.compile(pattern)
-
-        try:
-            del self._url_callbacks[pattern]
-        except KeyError:
-            pass
-
-    def search_url_callbacks(self, url):
-        """Yield callbacks whose regex pattern matches the ``url``.
-
-        :param str url: URL found in a trigger
-        :return: yield 2-value tuples of ``(callback, match)``
-
-        For each pattern that matches the ``url`` parameter, it yields a
-        2-value tuple of ``(callable, match)`` for that pattern.
-
-        The ``callable`` is the one registered with
-        :meth:`register_url_callback`, and the ``match`` is the result of
-        the regex pattern's ``search`` method.
-
-        .. versionadded:: 7.0
-
-        .. versionchanged:: 8.0
-
-            Searches for registered callbacks in an internal property instead
-            of ``bot.memory['url_callbacks']``.
-
-        .. deprecated:: 8.0
-
-            Made obsolete by fixes to the behavior of
-            :func:`sopel.plugin.url`. Will be removed in Sopel 9.
-
-        .. seealso::
-
-            The Python documentation for the `re.search`__ function and
-            the `match object`__.
-
-        .. __: https://docs.python.org/3.7/library/re.html#re.search
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
-
-        """
-        for regex, function in self._url_callbacks.items():
-            match = regex.search(url)
-            if match:
-                yield function, match
 
 
 class SopelWrapper:

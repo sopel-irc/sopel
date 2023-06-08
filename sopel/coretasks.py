@@ -26,7 +26,6 @@ import base64
 import collections
 import copy
 import datetime
-import functools
 import logging
 import re
 import time
@@ -1600,24 +1599,3 @@ def track_topic(bot, trigger):
         return
     bot.channels[channel].topic = trigger.args[-1]
     LOGGER.info("Channel's topic updated: %s", channel)
-
-
-@plugin.rule(r'(?u).*(.+://\S+).*')
-def handle_url_callbacks(bot, trigger):
-    """Dispatch callbacks on URLs
-
-    For each URL found in the trigger, trigger the URL callback registered by
-    the ``@url`` decorator.
-    """
-    # find URLs in the trigger
-    for url in trigger.urls:
-        # find callbacks for said URL
-        for function, match in bot.search_url_callbacks(url):
-            # trigger callback defined by the `@url` decorator
-            if hasattr(function, 'url_regex'):
-                # bake the `match` argument in before passing the callback on
-                @functools.wraps(function)
-                def decorated(bot, trigger):
-                    return function(bot, trigger, match=match)
-
-                bot.call(decorated, bot, trigger)
