@@ -313,10 +313,10 @@ class AsyncioBackend(AbstractIRCBackend):
         while not self._reader.at_eof():
             try:
                 line: bytes = await self._reader.readuntil(separator=b'\r\n')
-            except asyncio.exceptions.IncompleteReadError as err:
+            except asyncio.IncompleteReadError as err:
                 LOGGER.warning('Receiving partial message from IRC.')
                 line = err.partial
-            except asyncio.exceptions.LimitOverrunError:
+            except asyncio.LimitOverrunError:
                 LOGGER.exception('Unable to read from IRC server.')
                 break
 
