@@ -481,11 +481,10 @@ class RuleMetrics:
     def last_time(self) -> Optional[datetime.datetime]:
         """Last recorded start/end time for the associated rule"""
         # detect if we just started something or if it ended
-        last_time = self.started_at
-        if self.ended_at and (self.started_at and self.started_at < self.ended_at):
-            last_time = self.ended_at
+        if (self.started_at and self.ended_at) and (self.started_at < self.ended_at):
+            return self.ended_at
 
-        return last_time
+        return self.started_at
 
     def is_limited(
         self,
