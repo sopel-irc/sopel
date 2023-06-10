@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from ast import literal_eval
-import datetime
+from datetime import datetime, timezone
 import inspect
 import itertools
 import logging
@@ -1045,7 +1045,7 @@ class Sopel(irc.AbstractBot):
 
         if trigger:
             message = '{} from {} at {}. Message was: {}'.format(
-                message, trigger.nick, str(datetime.datetime.utcnow()), trigger.group(0)
+                message, trigger.nick, str(datetime.now(timezone.utc)), trigger.group(0)
             )
 
         LOGGER.exception(message)

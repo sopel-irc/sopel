@@ -9,7 +9,7 @@ https://sopel.chat
 from __future__ import annotations
 
 import collections
-from datetime import datetime
+from datetime import datetime, timezone
 import io  # don't use `codecs` for loading the DB; it will split lines on some IRC formatting
 import logging
 import os
@@ -263,7 +263,7 @@ def remind_in(bot, trigger):
             timezone,
             trigger.nick,
             trigger.sender,
-            datetime.utcfromtimestamp(timestamp))
+            datetime.fromtimestamp(timestamp, timezone.utc))
         bot.reply('Okay, will remind at %s' % human_time)
     else:
         bot.reply('Okay, will remind in %s secs' % duration)
@@ -495,7 +495,7 @@ def remind_at(bot, trigger):
             reminder.timezone.zone,
             trigger.nick,
             trigger.sender,
-            datetime.utcfromtimestamp(timestamp))
+            datetime.fromtimestamp(timestamp, timezone.utc))
         bot.reply('Okay, will remind at %s' % human_time)
     else:
         bot.reply('Okay, will remind in %s secs' % duration)

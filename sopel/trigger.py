@@ -9,7 +9,7 @@ aid of Sopel's core development.
 """
 from __future__ import annotations
 
-import datetime
+from datetime import datetime, timezone
 import re
 from typing import (
     Callable,
@@ -190,17 +190,15 @@ class PreTrigger:
                     self.tags[tag[0]] = None
 
         # Client time or server time
-        self.time = datetime.datetime.utcnow().replace(
-            tzinfo=datetime.timezone.utc
-        )
+        self.time = datetime.now(timezone.utc)
         if 'time' in self.tags:
             # ensure "time" is a string (typecheck)
             tag_time = self.tags['time'] or ''
             try:
-                self.time = datetime.datetime.strptime(
+                self.time = datetime.strptime(
                     tag_time,
                     "%Y-%m-%dT%H:%M:%S.%fZ",
-                ).replace(tzinfo=datetime.timezone.utc)
+                ).replace(tzinfo=timezone.utc)
             except ValueError:
                 pass  # Server isn't conforming to spec, ignore the server-time
 

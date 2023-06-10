@@ -25,7 +25,7 @@ from __future__ import annotations
 import base64
 import collections
 import copy
-import datetime
+from datetime import datetime, timedelta, timezone
 import functools
 import logging
 import re
@@ -906,7 +906,7 @@ def _send_who(bot, mask):
 
     target_id = bot.make_identifier(mask)
     if not target_id.is_nick():
-        bot.channels[target_id].last_who = datetime.datetime.utcnow()
+        bot.channels[target_id].last_who = datetime.now(timezone.utc)
 
 
 @plugin.interval(30)
@@ -916,10 +916,10 @@ def _periodic_send_who(bot):
         # WHO not needed to update 'away' status
         return
 
-    # Loops through the channels to find the one that has the longest time since the last WHO
-    # request, and issues a WHO request only if the last request for the channel was more than
+    # Loop through the channels to find the one that has the longest time since the last WHO
+    # request, and issue a WHO request only if the last request for the channel was more than
     # 120 seconds ago.
-    who_trigger_time = datetime.datetime.utcnow() - datetime.timedelta(seconds=120)
+    who_trigger_time = datetime.now(timezone.utc) - timedelta(seconds=120)
     selected_channel = None
     for channel_name, channel in bot.channels.items():
         if channel.last_who is None:

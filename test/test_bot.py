@@ -1556,7 +1556,7 @@ def test_user_quit(
 
     assert 'MrPraline' in mockbot.channels['#test'].users
 
-    servertime = datetime.utcnow() + timedelta(seconds=10)
+    servertime = datetime.now(timezone.utc) + timedelta(seconds=10)
     mockbot.on_message(
         "@time={servertime} :{user} QUIT :Ping timeout: 246 seconds".format(
             servertime=servertime.strftime('%Y-%m-%dT%H:%M:%SZ'),
