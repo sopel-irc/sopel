@@ -751,17 +751,17 @@ class AbstractRule(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def user_rate_limit(self) -> datetime.timedelta:
+    def user_rate_limit(self) -> timedelta:
         """The rule's user rate limit."""
 
     @property
     @abc.abstractmethod
-    def channel_rate_limit(self) -> datetime.timedelta:
+    def channel_rate_limit(self) -> timedelta:
         """The rule's channel rate limit."""
 
     @property
     @abc.abstractmethod
-    def global_rate_limit(self) -> datetime.timedelta:
+    def global_rate_limit(self) -> timedelta:
         """The rule's global rate limit."""
 
     @abc.abstractmethod
