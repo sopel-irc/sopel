@@ -81,7 +81,7 @@ VALID_MATCH_LINES = (
             13, 37, 0, 'Europe/Paris', None, None, None, 'message'
         ),
     ),
-    # These should not pass but we are very tolerant a the moment
+    # These should not pass but we are very tolerant at the moment
     ('1:7 message',
      remind.TimeReminder(1, 7, 0, 'UTC', None, None, None, 'message')),
     ('13:7 message',
