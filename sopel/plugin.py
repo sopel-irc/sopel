@@ -28,6 +28,7 @@ from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
 
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from sopel.bot import SopelWrapper
 
 __all__ = [
@@ -1706,30 +1707,30 @@ def url_lazy(*loaders: Callable) -> Callable:
 class example:
     """Decorate a function with an example, and optionally test output.
 
-    :param str msg: the example command (required; see below)
-    :param str result: the command's expected output (optional; see below)
-    :param bool privmsg: if ``True``, the example will be tested as if it was
-                         received in a private message to the bot; otherwise,
-                         in a channel (optional; default ``False``)
-    :param bool admin: whether to treat the test message as having come from a
-                       bot admin (optional; default ``False``)
-    :param bool owner: whether to treat the test message as having come from
-                       the bot's owner (optional; default ``False``)
-    :param int repeat: how many times to repeat the test; useful for commands
-                       that return random results (optional; default ``1``)
-    :param bool re: if ``True``, the ``result`` is interpreted as a regular
-                    expression and used to match the command's output
-                    (optional; see below)
-    :param list ignore: :class:`list` of regular expression patterns to match
-                        ignored output (optional; see below)
-    :param bool user_help: whether this example should be included in
-                           user-facing help output such as `.help command`
-                           (optional; default ``False``; see below)
-    :param bool online: if ``True``, |pytest|_ will mark this example as
-                        "online" (optional; default ``False``; see below)
-    :param bool vcr: if ``True``, this example's HTTP requests & responses will
-                     be recorded for later reuse (optional; default ``False``;
-                     see below)
+    :param msg: the example command (required; see below)
+    :param result: the command's expected output (optional; see below)
+    :param privmsg: if ``True``, the example will be tested as if it was
+                    received in a private message to the bot; otherwise,
+                    in a channel (optional; default ``False``)
+    :param admin: whether to treat the test message as having come from a
+                  bot admin (optional; default ``False``)
+    :param owner: whether to treat the test message as having come from
+                  the bot's owner (optional; default ``False``)
+    :param repeat: how many times to repeat the test; useful for commands
+                   that return random results (optional; default ``1``)
+    :param re: if ``True``, the ``result`` is interpreted as a regular
+               expression and used to match the command's output
+               (optional; see below)
+    :param ignore: list of regular expression patterns to match ignored
+                   output (optional; see below)
+    :param user_help: whether this example should be included in
+                      user-facing help output such as `.help command`
+                      (optional; default ``False``; see below)
+    :param online: if ``True``, |pytest|_ will mark this example as "online"
+                   (optional; default ``False``; see below)
+    :param vcr: if ``True``, this example's HTTP requests & responses will
+                be recorded for later reuse (optional; default ``False``;
+                see below)
 
     .. |pytest| replace:: ``pytest``
     .. _pytest: https://pypi.org/project/pytest/
@@ -1769,16 +1770,27 @@ class example:
     `VCR.py <https://github.com/kevin1024/vcrpy>`_ & `pytest-vcr
     <https://github.com/ktosiek/pytest-vcr>`_)
     """
-    def __init__(self, msg, result=None, privmsg=False, admin=False,
-                 owner=False, repeat=1, re=False, ignore=None,
-                 user_help=False, online=False, vcr=False):
+    def __init__(
+        self,
+        msg: str,
+        result: Optional[Union[str, Iterable[str]]] = None,
+        privmsg: bool = False,
+        admin: bool = False,
+        owner: bool = False,
+        repeat: int = 1,
+        re: bool = False,
+        ignore: Optional[Union[str, Iterable[str]]] = None,
+        user_help: bool = False,
+        online: bool = False,
+        vcr: bool = False,
+    ):
         # Wrap result into a list for get_example_test
-        if isinstance(result, list):
-            self.result = result
-        elif result is not None:
+        self.result: Optional[list[str]] = None
+        if isinstance(result, str):
             self.result = [result]
-        else:
-            self.result = None
+        elif result is not None:
+            self.result = list(result)
+
         self.use_re = re
         self.msg = msg
         self.privmsg = privmsg
@@ -1788,16 +1800,21 @@ class example:
         self.online = online
         self.vcr = vcr
 
-        if isinstance(ignore, list):
-            self.ignore = ignore
-        elif ignore is not None:
+        self.ignore: list[str] = []
+        if isinstance(ignore, str):
             self.ignore = [ignore]
-        else:
-            self.ignore = []
+        elif ignore is not None:
+            self.ignore = list(ignore)
 
         self.user_help = user_help
 
     def __call__(self, func):
+        # mypy (as of v1.4) doesn't recognize the below check as adding an
+        # "example" attribute to `func` if it's missing, so the `func`
+        # argument isn't typed yet.
+        # When we're ready to type-hint `loader`, we can make a TypeVar like
+        # `Callable[[SopelWrapper, Trigger], Any]` (but with the attributes
+        # the loader adds) for use in places like this.
         if not hasattr(func, "example"):
             func.example = []
 
