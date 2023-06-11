@@ -479,11 +479,10 @@ class RuleMetrics:
     def last_time(self) -> Optional[datetime]:
         """Last recorded start/end time for the associated rule."""
         # detect if we just started something or if it ended
-        last_time = self.started_at
-        if self.ended_at and self.started_at < self.ended_at:
-            last_time = self.ended_at
+        if (self.started_at and self.ended_at) and (self.started_at < self.ended_at):
+            return self.ended_at
 
-        return last_time
+        return self.started_at
 
     def is_limited(
         self,
@@ -499,7 +498,7 @@ class RuleMetrics:
             if self.last_return_value == IGNORE_RATE_LIMIT:
                 return False
 
-        return self.last_time > time_limit
+        return self.last_time > time_limit if self.last_time else False
 
     def __enter__(self) -> RuleMetrics:
         self.start()
@@ -739,6 +738,33 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
+    def get_user_metrics(self, nick: Identifier) -> RuleMetrics:
+        """Get the rule's usage metrics for the given user."""
+
+    @abc.abstractmethod
+    def get_channel_metrics(self, channel: Identifier) -> RuleMetrics:
+        """Get the rule's usage metrics for the given channel."""
+
+    @abc.abstractmethod
+    def get_global_metrics(self) -> RuleMetrics:
+        """Get the rule's global usage metrics."""
+
+    @property
+    @abc.abstractmethod
+    def user_rate_limit(self) -> datetime.timedelta:
+        """The rule's user rate limit."""
+
+    @property
+    @abc.abstractmethod
+    def channel_rate_limit(self) -> datetime.timedelta:
+        """The rule's channel rate limit."""
+
+    @property
+    @abc.abstractmethod
+    def global_rate_limit(self) -> datetime.timedelta:
+        """The rule's global rate limit."""
+
+    @abc.abstractmethod
     def is_user_rate_limited(
         self,
         nick: Identifier,
@@ -797,7 +823,7 @@ class AbstractRule(abc.ABC):
         :return: A formatted string, or ``None`` if no message is set.
 
         This method is called by the bot when a trigger hits the channel rate
-        limit (i.e. for the specificed ``channel``).
+        limit (i.e. for the specified ``channel``).
         """
 
     @property
