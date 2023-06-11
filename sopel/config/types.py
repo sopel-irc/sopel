@@ -30,6 +30,7 @@ import getpass
 import logging
 import os.path
 import re
+from typing import List
 
 from sopel.lifecycle import deprecated
 
@@ -309,8 +310,10 @@ class ValidatedAttribute(BaseValidated):
         if parse == bool:
             parse, serialize = _deprecated_special_bool_handling(serialize)
 
-        self.parse = parse or self.parse
-        self.serialize = serialize or self.serialize
+        # ignore typing errors on these monkeypatches for now
+        # TODO: more dedicated subtypes; deprecate `parse`/`serialize` args
+        self.parse = parse or self.parse  # type: ignore
+        self.serialize = serialize or self.serialize  # type: ignore
 
     def serialize(self, value):
         """Return the ``value`` as a Unicode string.
@@ -605,7 +608,7 @@ class ListAttribute(BaseValidated):
         else:
             default = []
         print(prompt)
-        values = []
+        values: List[str] = []
         value = input(each_prompt + ' ') or default
         if (value == default) and not default:
             value = ''
