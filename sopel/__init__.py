@@ -48,7 +48,12 @@ __version__ = importlib_metadata.version('sopel')
 
 def _version_info(version=__version__):
     regex = re.compile(r'(\d+)\.(\d+)\.(\d+)(?:[\-\.]?(a|b|rc)(\d+))?.*')
-    version_groups = regex.match(version).groups()
+    version_match = regex.match(version)
+
+    if version_match is None:
+        raise RuntimeError("Can't parse version number!")
+
+    version_groups = version_match.groups()
     major, minor, micro = (int(piece) for piece in version_groups[0:3])
     level = version_groups[3]
     serial = int(version_groups[4] or 0)
@@ -62,9 +67,10 @@ def _version_info(version=__version__):
         level = 'final'
     else:
         level = 'alpha'
-    version_type = namedtuple('version_info',
-                              'major, minor, micro, releaselevel, serial')
-    return version_type(major, minor, micro, level, serial)
+
+    VersionInfo = namedtuple('VersionInfo',
+                             'major, minor, micro, releaselevel, serial')
+    return VersionInfo(major, minor, micro, level, serial)
 
 
 version_info = _version_info()
