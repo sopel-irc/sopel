@@ -190,7 +190,7 @@ def ip(bot, trigger):
         parts.append("City: %s" % city)
 
     isp = "ISP: AS" + str(asn_response.autonomous_system_number) + \
-          " " + asn_response.autonomous_system_organization
+          " " + str(asn_response.autonomous_system_organization)
     parts.append(isp)
 
     bot.say(' | '.join(parts))
