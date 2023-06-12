@@ -25,12 +25,8 @@ def _chunks(items, size):
     # This approach is safer than slicing with non-subscriptable types,
     # for example `dict_keys` objects
     iterator = iter(items)
-    # TODO: Simplify to assignment expression (`while cond := expr`)
-    # when dropping Python 3.7
-    chunk = tuple(itertools.islice(iterator, size))
-    while chunk:
+    while (chunk := tuple(itertools.islice(iterator, size))):
         yield chunk
-        chunk = tuple(itertools.islice(iterator, size))
 
 
 @plugin.command('announce')
