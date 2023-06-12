@@ -58,7 +58,7 @@ def temperature(bot, trigger):
         return plugin.NOLIMIT
     unit = source[1].upper()
     numeric = float(source[0])
-    celsius = 0
+    celsius = 0.0
     if unit == 'C':
         celsius = numeric
     elif unit == 'F':
@@ -101,7 +101,7 @@ def distance(bot, trigger):
         return plugin.NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
-    meter = 0
+    meter = 0.0
     if unit in ("meters", "meter", "m"):
         meter = numeric
     elif unit in ("millimeters", "millimeter", "mm"):
@@ -172,7 +172,7 @@ def mass(bot, trigger):
         return plugin.NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
-    metric = 0
+    metric = 0.0
     if unit in ("gram", "grams", "gramme", "grammes", "g"):
         metric = numeric
     elif unit in ("kilogram", "kilograms", "kilogramme", "kilogrammes", "kg"):
