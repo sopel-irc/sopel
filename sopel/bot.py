@@ -1255,8 +1255,8 @@ class Sopel(irc.AbstractBot):
             The Python documentation for the `re.search`__ function and
             the `match object`__.
 
-        .. __: https://docs.python.org/3.7/library/re.html#re.search
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
+        .. __: https://docs.python.org/3.11/library/re.html#re.search
+        .. __: https://docs.python.org/3.11/library/re.html#match-objects
 
         """
         for regex, function in self._url_callbacks.items():

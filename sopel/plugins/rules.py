@@ -671,7 +671,7 @@ class AbstractRule(abc.ABC):
 
         This method must return a list of `match objects`__.
 
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
+        .. __: https://docs.python.org/3.11/library/re.html#match-objects
         """
 
     @abc.abstractmethod
@@ -842,7 +842,7 @@ class AbstractRule(abc.ABC):
         :return: yield a list of match object
         :rtype: generator of `re.match`__
 
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
+        .. __: https://docs.python.org/3.11/library/re.html#match-objects
         """
 
     @abc.abstractmethod
