@@ -13,7 +13,7 @@ from encodings import idna
 from html.parser import HTMLParser
 import logging
 import re
-from typing import Dict
+from typing import Dict, Union
 
 import pytz
 import requests
@@ -38,6 +38,13 @@ WIKI_PAGE_NAMES = [
     'List_of_Internet_top-level_domains',
     'Country_code_top-level_domain',
 ]
+WIKI_API_PARAMS: Dict[str, Union[str, int]] = {
+    "action": "parse",
+    "format": "json",
+    "prop": "text",
+    "utf8": 1,
+    "formatversion": 2,
+}
 r_tld = re.compile(r'^\.(\S+)')
 r_idn = re.compile(r'^(xn--[A-Za-z0-9]+)')
 
@@ -257,14 +264,7 @@ def _update_tld_data(bot, which, force=False):
                 # https://www.mediawiki.org/wiki/Special:MyLanguage/API:Get_the_contents_of_a_page
                 tld_response = requests.get(
                     "https://en.wikipedia.org/w/api.php",
-                    params={
-                        "action": "parse",
-                        "format": "json",
-                        "prop": "text",
-                        "utf8": 1,
-                        "formatversion": 2,
-                        "page": title,
-                    },
+                    params=WIKI_API_PARAMS.copy().update({"page": title}),
                 ).json()
                 data_pages.append(tld_response["parse"]["text"])
             # py <3.5 needs ValueError instead of more specific json.decoder.JSONDecodeError
