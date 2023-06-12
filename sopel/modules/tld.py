@@ -13,6 +13,7 @@ from encodings import idna
 from html.parser import HTMLParser
 import logging
 import re
+from typing import Dict
 
 import pytz
 import requests
@@ -100,6 +101,7 @@ class WikipediaTLDListParser(HTMLParser):
         self.current_cell = ''
         self.rows = []
         self.tables = []
+        self.parsed: Dict[str, Dict[str, str]] = {}
         self.finished = False
 
     def handle_starttag(self, tag, attrs):
@@ -158,7 +160,7 @@ class WikipediaTLDListParser(HTMLParser):
         LOGGER.debug("Processed TLD data requested.")
         if self.finished:
             LOGGER.debug("Returning stored previously-processed data.")
-            return self.tables
+            return self.parsed
 
         LOGGER.debug("Ensuring all buffered data has been parsed.")
         self.close()
@@ -202,8 +204,12 @@ class WikipediaTLDListParser(HTMLParser):
                     tld_list[idn_key] = zipped
 
         LOGGER.debug("Finished processing TLD data; returning it.")
-        self.tables = tld_list
         self.finished = True
+        # clear working data
+        del self.tables
+        # cache parsed data for future requests to this parser
+        self.parsed = tld_list
+
         return self.tables
 
 
