@@ -280,7 +280,8 @@ class PyModulePlugin(AbstractPluginHandler):
         if not self.is_loaded() or not hasattr(self.module, '__doc__'):
             return default_label
 
-        lines = inspect.cleandoc(self.module.__doc__).splitlines()
+        module_doc = getattr(self.module, '__doc__', "")
+        lines = inspect.cleandoc(module_doc).splitlines()
         return default_label if not lines else lines[0]
 
     def get_meta_description(self):
