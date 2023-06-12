@@ -234,7 +234,7 @@ def _update_tld_data(bot, which, force=False):
 
     if which == 'list':
         try:
-            tld_list = requests.get(IANA_LIST_URI).text
+            tld_raw = requests.get(IANA_LIST_URI).text
         except requests.exceptions.RequestException:
             # Probably a transient error; log it and continue life
             LOGGER.warning(
@@ -244,7 +244,7 @@ def _update_tld_data(bot, which, force=False):
 
         tld_list = [
             line.lower()
-            for line in tld_list.splitlines()
+            for line in tld_raw.splitlines()
             if not line.startswith('#')
         ]
 
