@@ -13,7 +13,6 @@ When a server wants to advertise its features and settings, it can use the
 # Licensed under the Eiffel Forum License 2.
 from __future__ import annotations
 
-from collections import OrderedDict
 import functools
 import itertools
 import re
@@ -392,10 +391,7 @@ class ISupport:
         if 'PREFIX' not in self:
             raise AttributeError('PREFIX')
 
-        # This can use a normal dict once we drop python 3.6, as 3.7 promises
-        # `dict` maintains insertion order. Since `OrderedDict` subclasses
-        # `dict`, we'll not promise to always return the former.
-        return OrderedDict(self['PREFIX'])
+        return dict(self['PREFIX'])
 
     @property
     def TARGMAX(self):
