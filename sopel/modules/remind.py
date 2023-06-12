@@ -235,7 +235,7 @@ def remind_in(bot, trigger):
     if trigger.group(3) and not trigger.group(4):
         bot.reply("No message given for reminder.")
         return plugin.NOLIMIT
-    duration = 0
+    duration = 0.0
     message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + PERIODS + ')) ?',
                                     trigger.group(2))[1:])
     reminder = ''
