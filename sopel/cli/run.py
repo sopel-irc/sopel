@@ -22,8 +22,8 @@ from . import utils
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
 # from source on an unsupported version of Python.
-if sys.version_info < (3, 7):
-    utils.stderr('Error: Sopel requires Python 3.7+.')
+if sys.version_info < (3, 8):
+    utils.stderr('Error: Sopel requires Python 3.8+.')
     sys.exit(1)
 
 LOGGER = logging.getLogger(__name__)
