@@ -91,8 +91,7 @@ def _compile_pattern(pattern, nick, aliases=None):
     if aliases:
         nicks = list(aliases)  # alias_nicks.copy() doesn't work in py2
         nicks.append(nick)
-        nicks = map(re.escape, nicks)
-        nick = '(?:%s)' % '|'.join(nicks)
+        nick = '(?:%s)' % '|'.join(re.escape(n) for n in nicks)
     else:
         nick = re.escape(nick)
 
