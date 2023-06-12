@@ -14,7 +14,7 @@ import os
 import re
 from string import punctuation, whitespace
 import time
-from typing import Dict
+from typing import Dict, List
 
 from sopel import formatting, plugin, tools
 from sopel.config import types
@@ -87,7 +87,7 @@ meeting_log_baseurl = ""
 
 # A dict of channels to the actions that have been created in them. This way
 # we can have .listactions spit them back out later on.
-meeting_actions = {}
+meeting_actions: Dict[str, List[str]] = {}
 
 
 # Get the logfile name for the meeting in the requested channel
