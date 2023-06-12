@@ -58,7 +58,7 @@ def wikt(word):
 
     mode = None
     etymology = None
-    definitions = {}
+    definitions: dict[str, list[str]] = {}
     for line in bytes.splitlines():
         is_new_mode = False
         if 'id="Etymology' in line:
