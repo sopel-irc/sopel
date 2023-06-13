@@ -343,7 +343,8 @@ def title_auto(bot: SopelWrapper, trigger: Trigger):
         # Avoid fetching known malicious links
         if url in safety_cache and safety_cache[url]["positives"] > 0:
             continue
-        if urlparse(url).hostname.lower() in safety_cache_local:
+        parsed = urlparse(url)
+        if not parsed.hostname or parsed.hostname.lower() in safety_cache_local:
             continue
         urls.append(url)
 
