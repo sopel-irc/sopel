@@ -231,7 +231,7 @@ def url_handler(bot: SopelWrapper, trigger: Trigger):
 
         try:
             hostname = urlparse(url).hostname.lower()
-        except ValueError:
+        except (ValueError, AttributeError):
             pass  # Invalid address
         else:
             if any(regex.search(hostname) for regex in known_good):
