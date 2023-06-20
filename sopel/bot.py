@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 from ast import literal_eval
-from datetime import datetime, timezone
 import inspect
 import itertools
 import logging
@@ -1052,8 +1051,8 @@ class Sopel(irc.AbstractBot):
             message = 'Unexpected {}{}'.format(type(exception).__name__, detail)
 
         if trigger:
-            message = '{} from {} at {}. Message was: {}'.format(
-                message, trigger.nick, str(datetime.now(timezone.utc)), trigger.group(0)
+            message = '{} from {}. Message was: {}'.format(
+                message, trigger.nick, trigger.group(0)
             )
 
         LOGGER.exception(message)
