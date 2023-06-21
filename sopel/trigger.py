@@ -14,11 +14,9 @@ import re
 from typing import (
     Callable,
     cast,
-    Dict,
     Match,
     Optional,
     Sequence,
-    Tuple,
     TYPE_CHECKING,
 )
 
@@ -169,17 +167,17 @@ class PreTrigger:
         line: str,
         url_schemes: Optional[Sequence] = None,
         identifier_factory: IdentifierFactory = identifiers.Identifier,
-        statusmsg_prefixes: Tuple[str, ...] = tuple(),
+        statusmsg_prefixes: tuple[str, ...] = tuple(),
     ):
         self.make_identifier = identifier_factory
         line = line.strip('\r\n')
         self.line: str = line
-        self.urls: Tuple[str, ...] = tuple()
+        self.urls: tuple[str, ...] = tuple()
         self.plain: str = ''
         self.ctcp: Optional[str] = None
 
         # Break off IRCv3 message tags, if present
-        self.tags: Dict[str, Optional[str]] = {}
+        self.tags: dict[str, Optional[str]] = {}
         if line.startswith('@'):
             tagstring, line = line.split(' ', 1)
             for raw_tag in tagstring[1:].split(';'):
