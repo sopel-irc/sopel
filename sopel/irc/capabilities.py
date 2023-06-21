@@ -19,12 +19,8 @@ state of available and enabled capabilities.
 from __future__ import annotations
 
 from typing import (
-    Dict,
-    FrozenSet,
     NamedTuple,
     Optional,
-    Set,
-    Tuple,
     TYPE_CHECKING,
 )
 
@@ -86,8 +82,8 @@ class Capabilities:
     * :meth:`handle_del` for ``CAP ADD``
     """
     def __init__(self) -> None:
-        self._available: Dict[str, Optional[str]] = {}
-        self._enabled: Set[str] = set()
+        self._available: dict[str, Optional[str]] = {}
+        self._enabled: set[str] = set()
 
     def get_capability_info(self, name: str) -> CapabilityInfo:
         """Retrieve metadata about a capability.
@@ -108,7 +104,7 @@ class Capabilities:
         )
 
     @property
-    def available(self) -> Dict[str, Optional[str]]:
+    def available(self) -> dict[str, Optional[str]]:
         """Dict of available server capabilities.
 
         Each key is the name of a capability advertised by the server, and each
@@ -120,7 +116,7 @@ class Capabilities:
         return dict(self._available.items())  # return a copy
 
     @property
-    def enabled(self) -> FrozenSet[str]:
+    def enabled(self) -> frozenset[str]:
         """Set of enabled server capabilities.
 
         Each element is the name of a capability that is enabled on the server.
@@ -162,7 +158,7 @@ class Capabilities:
         self,
         bot: SopelWrapper,
         trigger: Trigger,
-    ) -> Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         """Handle a ``CAP ACK`` command.
 
         This method behaves as a plugin callable with its ``bot`` and
@@ -197,7 +193,7 @@ class Capabilities:
         self,
         bot: SopelWrapper,
         trigger: Trigger,
-    ) -> Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         """Handle a ``CAP NAK`` command.
 
         This method behaves as a plugin callable with its ``bot`` and
@@ -220,7 +216,7 @@ class Capabilities:
         self,
         bot: SopelWrapper,
         trigger: Trigger,
-    ) -> Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         """Handle a ``CAP NEW`` command.
 
         This method behaves as a plugin callable with its ``bot`` and
@@ -235,7 +231,7 @@ class Capabilities:
         assert trigger.args[1] == 'NEW'
 
         # extracting capabilities
-        cap_new: Set[str] = set()
+        cap_new: set[str] = set()
         for available_capability in trigger.split():
             name, *params = available_capability.split('=', maxsplit=1)
             self._available[name] = params[0] if params else None
@@ -247,7 +243,7 @@ class Capabilities:
         self,
         bot: SopelWrapper,
         trigger: Trigger,
-    ) -> Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         """Handle a ``CAP DEL`` command.
 
         This method behaves as a plugin callable with its ``bot`` and
@@ -262,7 +258,7 @@ class Capabilities:
         assert trigger.args[1] == 'DEL'
 
         # extracting capabilities
-        cap_del: Set[str] = set()
+        cap_del: set[str] = set()
         for name in trigger.split():
             if name in self._available:
                 del self._available[name]
