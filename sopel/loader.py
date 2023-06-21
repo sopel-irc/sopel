@@ -14,7 +14,6 @@ from __future__ import annotations
 import inspect
 import logging
 import re
-from typing import List
 
 from sopel.config.core_section import COMMAND_DEFAULT_HELP_PREFIX
 
@@ -89,7 +88,7 @@ def clean_callable(func, config):
                         COMMAND_DEFAULT_HELP_PREFIX, help_prefix, 1)
                 examples[i] = example
         if doc or examples:
-            cmds: List[str] = []
+            cmds: list[str] = []
             cmds.extend(getattr(func, 'commands', []))
             cmds.extend(getattr(func, 'nickname_commands', []))
             for command in cmds:
