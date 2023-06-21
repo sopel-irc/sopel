@@ -14,7 +14,6 @@ import os
 import re
 from string import punctuation, whitespace
 import time
-from typing import Dict, List
 
 from sopel import formatting, plugin, tools
 from sopel.config import types
@@ -63,7 +62,7 @@ def setup(bot):
     bot.config.define_section("meetbot", MeetbotSection)
 
 
-meetings_dict: Dict[str, dict] = collections.defaultdict(dict)  # Saves metadata about currently running meetings
+meetings_dict: dict[str, dict] = collections.defaultdict(dict)  # Saves metadata about currently running meetings
 """
 meetings_dict is a 2D dict.
 
@@ -87,7 +86,7 @@ meeting_log_baseurl = ""
 
 # A dict of channels to the actions that have been created in them. This way
 # we can have .listactions spit them back out later on.
-meeting_actions: Dict[str, List[str]] = {}
+meeting_actions: dict[str, list[str]] = {}
 
 
 # Get the logfile name for the meeting in the requested channel
