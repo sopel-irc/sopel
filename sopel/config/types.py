@@ -30,7 +30,6 @@ import getpass
 import logging
 import os.path
 import re
-from typing import List
 
 from sopel.lifecycle import deprecated
 
@@ -608,7 +607,7 @@ class ListAttribute(BaseValidated):
         else:
             default = []
         print(prompt)
-        values: List[str] = []
+        values: list[str] = []
         value = input(each_prompt + ' ') or default
         if (value == default) and not default:
             value = ''
