@@ -18,7 +18,7 @@ sphinxcontrib-autoprogram==0.1.8
 sphinx-rfcsection~=0.1.1
 vcrpy<3.0.0
 # type check
-mypy>=0.920,<1
+mypy>=1.3,<2
 sqlalchemy[mypy]>=1.4,<1.5
 types-pkg-resources~=0.1.3
 types-pytz

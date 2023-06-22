@@ -15,6 +15,7 @@ import logging
 import os
 import re
 import time
+from typing import Dict, List, Tuple
 
 import pytz
 
@@ -38,6 +39,10 @@ def get_filename(bot):
     """
     name = bot.config.basename + '.reminders.db'
     return os.path.join(bot.config.core.homedir, name)
+
+
+REMIND_RECORD_T = Tuple[str, str, str]
+REMIND_DB_T = Dict[int, List[REMIND_RECORD_T]]
 
 
 def load_database(filename):
@@ -68,7 +73,7 @@ def load_database(filename):
         # no file to read
         return {}
 
-    data = {}
+    data: REMIND_DB_T = {}
     with io.open(filename, 'r', encoding='utf-8') as database:
         for line in database:
             unixtime, channel, nick, message = line.split('\t', 3)
@@ -230,7 +235,7 @@ def remind_in(bot, trigger):
     if trigger.group(3) and not trigger.group(4):
         bot.reply("No message given for reminder.")
         return plugin.NOLIMIT
-    duration = 0
+    duration = 0.0
     message = filter(None, re.split(r'(\d+(?:\.\d+)? ?(?:(?i)' + PERIODS + ')) ?',
                                     trigger.group(2))[1:])
     reminder = ''

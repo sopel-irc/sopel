@@ -455,7 +455,7 @@ def main(argv=None):
         check_not_root()
 
         # Select command
-        action = getattr(opts, 'action', None)
+        action = getattr(opts, 'action')
         command = {
             'start': command_start,
             'configure': command_configure,

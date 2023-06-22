@@ -195,7 +195,7 @@ class Sopel(irc.AbstractBot):
             # bot must be connected and in at least one channel
             return None
 
-        return self.users.get(self.nick).hostmask
+        return self.users[self.nick].hostmask
 
     @property
     def plugins(self) -> Mapping[str, plugins.handlers.AbstractPluginHandler]:

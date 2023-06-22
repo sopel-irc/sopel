@@ -26,6 +26,15 @@ def plugin_tmpfile(tmpdir):
     return mod_file
 
 
+@pytest.fixture
+def plugin_tmpfile_nodoc(tmpdir):
+    root = tmpdir.mkdir('loader_mods')
+    mod_file = root.join('file_mod_nodoc.py')
+    mod_file.write("")
+
+    return mod_file
+
+
 def test_get_label_pymodule():
     plugin = handlers.PyModulePlugin('coretasks', 'sopel')
     meta = plugin.get_meta_description()
@@ -60,6 +69,17 @@ def test_get_label_pyfile_loaded(plugin_tmpfile):
     assert meta['label'] == 'plugin label'
     assert meta['type'] == handlers.PyFilePlugin.PLUGIN_TYPE
     assert meta['source'] == plugin_tmpfile.strpath
+
+
+def test_get_label_pyfile_loaded_nodoc(plugin_tmpfile_nodoc):
+    plugin = handlers.PyFilePlugin(plugin_tmpfile_nodoc.strpath)
+    plugin.load()
+    meta = plugin.get_meta_description()
+
+    assert meta['name'] == 'file_mod_nodoc'
+    assert meta['label'] == 'file_mod_nodoc plugin', 'Expecting default label'
+    assert meta['type'] == handlers.PyFilePlugin.PLUGIN_TYPE
+    assert meta['source'] == plugin_tmpfile_nodoc.strpath
 
 
 def test_get_label_entrypoint(plugin_tmpfile):

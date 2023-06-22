@@ -13,6 +13,7 @@ from encodings import idna
 from html.parser import HTMLParser
 import logging
 import re
+from typing import Dict, Union
 
 import pytz
 import requests
@@ -37,6 +38,13 @@ WIKI_PAGE_NAMES = [
     'List_of_Internet_top-level_domains',
     'Country_code_top-level_domain',
 ]
+WIKI_API_PARAMS: Dict[str, Union[str, int]] = {
+    "action": "parse",
+    "format": "json",
+    "prop": "text",
+    "utf8": 1,
+    "formatversion": 2,
+}
 r_tld = re.compile(r'^\.(\S+)')
 r_idn = re.compile(r'^(xn--[A-Za-z0-9]+)')
 
@@ -100,6 +108,7 @@ class WikipediaTLDListParser(HTMLParser):
         self.current_cell = ''
         self.rows = []
         self.tables = []
+        self.parsed: Dict[str, Dict[str, str]] = {}
         self.finished = False
 
     def handle_starttag(self, tag, attrs):
@@ -158,7 +167,7 @@ class WikipediaTLDListParser(HTMLParser):
         LOGGER.debug("Processed TLD data requested.")
         if self.finished:
             LOGGER.debug("Returning stored previously-processed data.")
-            return self.tables
+            return self.parsed
 
         LOGGER.debug("Ensuring all buffered data has been parsed.")
         self.close()
@@ -202,8 +211,12 @@ class WikipediaTLDListParser(HTMLParser):
                     tld_list[idn_key] = zipped
 
         LOGGER.debug("Finished processing TLD data; returning it.")
-        self.tables = tld_list
         self.finished = True
+        # clear working data
+        del self.tables
+        # cache parsed data for future requests to this parser
+        self.parsed = tld_list
+
         return self.tables
 
 
@@ -228,7 +241,7 @@ def _update_tld_data(bot, which, force=False):
 
     if which == 'list':
         try:
-            tld_list = requests.get(IANA_LIST_URI).text
+            tld_raw = requests.get(IANA_LIST_URI).text
         except requests.exceptions.RequestException:
             # Probably a transient error; log it and continue life
             LOGGER.warning(
@@ -238,7 +251,7 @@ def _update_tld_data(bot, which, force=False):
 
         tld_list = [
             line.lower()
-            for line in tld_list.splitlines()
+            for line in tld_raw.splitlines()
             if not line.startswith('#')
         ]
 
@@ -251,14 +264,7 @@ def _update_tld_data(bot, which, force=False):
                 # https://www.mediawiki.org/wiki/Special:MyLanguage/API:Get_the_contents_of_a_page
                 tld_response = requests.get(
                     "https://en.wikipedia.org/w/api.php",
-                    params={
-                        "action": "parse",
-                        "format": "json",
-                        "prop": "text",
-                        "utf8": 1,
-                        "formatversion": 2,
-                        "page": title,
-                    },
+                    params=WIKI_API_PARAMS.copy().update({"page": title}),
                 ).json()
                 data_pages.append(tld_response["parse"]["text"])
             # py <3.5 needs ValueError instead of more specific json.decoder.JSONDecodeError

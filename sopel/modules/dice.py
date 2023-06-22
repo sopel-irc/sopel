@@ -132,6 +132,9 @@ def _roll_dice(bot, dice_expression):
         dice_expression,
         re.IGNORECASE | re.VERBOSE)
 
+    if result is None:
+        raise ValueError("Invalid dice expression: %r" % dice_expression)
+
     dice_num = int(result.group('dice_num') or 1)
     dice_type = int(result.group('dice_type'))
 

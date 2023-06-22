@@ -191,9 +191,9 @@ def handle_list(options):
             if not is_enabled
         )
     # sort plugins
-    items = sorted(items, key=operator.itemgetter(0))
+    sorted_plugins = sorted(items, key=operator.itemgetter(0))
 
-    for name, plugin, is_enabled in items:
+    for name, plugin, is_enabled in sorted_plugins:
         description = {
             'name': name,
             'status': 'enabled' if is_enabled else 'disabled',
@@ -402,7 +402,6 @@ def handle_disable(options):
     ensure_remove = options.remove
     settings = utils.load_settings(options)
     usable_plugins = plugins.get_usable_plugins(settings)
-    actually_disabled = []
 
     # coretasks is sacred
     if 'coretasks' in plugin_names:

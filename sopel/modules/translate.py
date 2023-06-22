@@ -241,12 +241,13 @@ def get_random_lang(long_list, short_list):
 def mangle(bot, trigger):
     """Repeatedly translate the input until it makes absolutely no sense."""
     long_lang_list = ['fr', 'de', 'es', 'it', 'no', 'he', 'la', 'ja', 'cy', 'ar', 'yi', 'zh', 'nl', 'ru', 'fi', 'hi', 'af', 'jw', 'mr', 'ceb', 'cs', 'ga', 'sv', 'eo', 'el', 'ms', 'lv']
-    lang_list = []
+    lang_list: list[str] = []
 
     for __ in range(0, 8):
         lang_list = get_random_lang(long_lang_list, lang_list)
     random.shuffle(lang_list)
 
+    phrase: tuple[str, ...] = ()
     if trigger.group(2) is None:
         try:
             phrase = (bot.memory['mangle_lines'][trigger.sender], '')
@@ -265,7 +266,7 @@ def mangle(bot, trigger):
         try:
             phrase = translate(phrase[0], 'en', lang)
         except Exception:  # TODO: Be specific
-            phrase = False
+            phrase = ()
         if not phrase:
             phrase = backup
             break

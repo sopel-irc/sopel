@@ -51,7 +51,8 @@ class Scheduler(jobs.Scheduler):
     """
     def __init__(self, manager):
         super().__init__(manager)
-        self._jobs = tools.SopelMemoryWithDefault(list)
+        # NOTE:the annotation and type-ignore here resolves conflict with the same attribute on the base class
+        self._jobs: tools.SopelMemoryWithDefault = tools.SopelMemoryWithDefault(list)  # type: ignore[assignment]
 
     def register(self, job):
         with self._mutex:

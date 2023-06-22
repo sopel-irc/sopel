@@ -182,7 +182,7 @@ def quote_query(string):
 
 def urlencode_non_ascii(b):
     """Safely encodes non-ASCII characters in a URL."""
-    return re.sub(b'[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
+    return re.sub(b'[\x80-\xFF]', lambda c: b'%%%02x' % ord(c.group(0)), b)
 
 
 def iri_to_uri(iri):
@@ -259,7 +259,7 @@ def search_urls(text, exclusion_char=None, clean=False, schemes=None):
 
     urls = re.findall(r, text)
     if clean:
-        urls = (trim_url(url) for url in urls)
+        urls = [trim_url(url) for url in urls]
 
     # yield unique URLs in their order of appearance
     seen = set()

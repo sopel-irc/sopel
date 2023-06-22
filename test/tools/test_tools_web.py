@@ -3,7 +3,23 @@ from __future__ import annotations
 
 import pytest
 
-from sopel.tools.web import quote, search_urls, trim_url, unquote
+from sopel.tools.web import iri_to_uri, quote, search_urls, trim_url, unquote
+
+
+IDN_PAIRS = [
+    ('https://δοκιμή.com/some/path/to/a/file.pdf',
+     'https://xn--jxalpdlp.com/some/path/to/a/file.pdf'),
+    ('https://deeply.nested.subdomain.δοκιμή.com/some/file',
+     'https://deeply.nested.subdomain.xn--jxalpdlp.com/some/file'),
+    ('https://www.example.com/',
+     'https://www.example.com/'),
+]
+
+
+@pytest.mark.parametrize('raw, parsed', IDN_PAIRS)
+def test_iri_to_uri(raw, parsed):
+    """Test that IDN conversion works as expected."""
+    assert iri_to_uri(raw) == parsed
 
 
 QUOTED_STRINGS = [

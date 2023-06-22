@@ -61,6 +61,7 @@ from . import exceptions
 
 if TYPE_CHECKING:
     from sopel.bot import Sopel
+    from types import ModuleType
 
 
 class AbstractPluginHandler(abc.ABC):
@@ -259,6 +260,12 @@ class PyModulePlugin(AbstractPluginHandler):
 
         self._module = None
 
+    @property
+    def module(self) -> ModuleType:
+        if self._module is None:
+            raise RuntimeError('No module for plugin %s' % self.name)
+        return self._module
+
     def get_label(self):
         """Retrieve a display label for the plugin.
 
@@ -269,11 +276,11 @@ class PyModulePlugin(AbstractPluginHandler):
         docstring, its first line is used as the plugin's label.
         """
         default_label = '%s plugin' % self.name
-        module_doc = getattr(self._module, '__doc__', None)
 
-        if not self.is_loaded() or not module_doc:
+        if not self.is_loaded() or not hasattr(self.module, '__doc__'):
             return default_label
 
+        module_doc = self.module.__doc__ or ""
         lines = inspect.cleandoc(module_doc).splitlines()
         return default_label if not lines else lines[0]
 
@@ -317,8 +324,8 @@ class PyModulePlugin(AbstractPluginHandler):
         :rtype: Optional[str]
         """
         version: Optional[str] = None
-        if hasattr(self._module, "__version__"):
-            version = str(self._module.__version__)
+        if self.is_loaded() and hasattr(self.module, "__version__"):
+            version = str(self.module.__version__)
         elif self.module_name.startswith("sopel."):
             version = release
 
@@ -336,14 +343,14 @@ class PyModulePlugin(AbstractPluginHandler):
 
         This method assumes the plugin is already loaded.
         """
-        self._module = importlib.reload(self._module)
+        self._module = importlib.reload(self.module)
 
     def is_loaded(self):
         return self._module is not None
 
     def setup(self, bot):
         if self.has_setup():
-            self._module.setup(bot)
+            self.module.setup(bot)
 
     def has_setup(self):
         """Tell if the plugin has a setup action.
@@ -354,12 +361,12 @@ class PyModulePlugin(AbstractPluginHandler):
         The plugin has a setup action if its module has a ``setup`` attribute.
         This attribute is expected to be a callable.
         """
-        return hasattr(self._module, 'setup')
+        return hasattr(self.module, 'setup')
 
     def get_capability_requests(self) -> List[plugin_decorators.capability]:
         return [
             module_attribute
-            for module_attribute in vars(self._module).values()
+            for module_attribute in vars(self.module).values()
             if isinstance(module_attribute, plugin_decorators.capability)
         ]
 
@@ -369,7 +376,7 @@ class PyModulePlugin(AbstractPluginHandler):
             bot.cap_requests.register(self.name, cap_request)
 
         # plugin callables go through ``bot.add_plugin``
-        relevant_parts = loader.clean_module(self._module, bot.config)
+        relevant_parts = loader.clean_module(self.module, bot.config)
         for part in itertools.chain(*relevant_parts):
             # annotate all callables in relevant_parts with `plugin_name`
             # attribute to make per-channel config work; see #1839
@@ -379,12 +386,12 @@ class PyModulePlugin(AbstractPluginHandler):
         bot.add_plugin(self, *relevant_parts)
 
     def unregister(self, bot):
-        relevant_parts = loader.clean_module(self._module, bot.config)
+        relevant_parts = loader.clean_module(self.module, bot.config)
         bot.remove_plugin(self, *relevant_parts)
 
     def shutdown(self, bot):
         if self.has_shutdown():
-            self._module.shutdown(bot)
+            self.module.shutdown(bot)
 
     def has_shutdown(self):
         """Tell if the plugin has a shutdown action.
@@ -396,11 +403,11 @@ class PyModulePlugin(AbstractPluginHandler):
         The plugin has a shutdown action if its module has a ``shutdown``
         attribute. This attribute is expected to be a callable.
         """
-        return hasattr(self._module, 'shutdown')
+        return hasattr(self.module, 'shutdown')
 
     def configure(self, settings):
         if self.has_configure():
-            self._module.configure(settings)
+            self.module.configure(settings)
 
     def has_configure(self):
         """Tell if the plugin has a configure action.
@@ -412,7 +419,7 @@ class PyModulePlugin(AbstractPluginHandler):
         The plugin has a configure action if its module has a ``configure``
         attribute. This attribute is expected to be a callable.
         """
-        return hasattr(self._module, 'configure')
+        return hasattr(self.module, 'configure')
 
 
 class PyFilePlugin(PyModulePlugin):
@@ -465,6 +472,9 @@ class PyFilePlugin(PyModulePlugin):
         else:
             raise exceptions.PluginError('Invalid Sopel plugin: %s' % filename)
 
+        if spec is None:
+            raise exceptions.PluginError('Could not determine spec for plugin: %s' % filename)
+
         self.filename = filename
         self.path = filename
         self.module_spec = spec
@@ -474,6 +484,8 @@ class PyFilePlugin(PyModulePlugin):
     def _load(self):
         module = importlib.util.module_from_spec(self.module_spec)
         sys.modules[self.name] = module
+        if not self.module_spec.loader:
+            raise exceptions.PluginError('Could not determine loader for plugin: %s' % self.filename)
         self.module_spec.loader.exec_module(module)
         return module
 
@@ -595,9 +607,9 @@ class EntryPointPlugin(PyModulePlugin):
         """
         version: Optional[str] = super().get_version()
 
-        if version is None and hasattr(self._module, "__package__"):
+        if version is None and hasattr(self.module, "__package__"):
             try:
-                version = importlib_metadata.version(self._module.__package__)
+                version = importlib_metadata.version(self.module.__package__)
             except ValueError:
                 # package name is probably empty-string; just give up
                 pass

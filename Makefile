@@ -6,7 +6,7 @@ quality:
 	flake8
 
 mypy:
-	mypy sopel
+	mypy --check-untyped-defs sopel
 
 .PHONY: test test_norecord test_novcr vcr_rerecord
 test:

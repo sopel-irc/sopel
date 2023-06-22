@@ -68,6 +68,8 @@ def find_internal_plugins():
     include the ``coretasks`` plugin.
     """
     modules = importlib.util.find_spec('sopel.modules')
+    if modules is None or modules.submodule_search_locations is None:
+        raise RuntimeError('Cannot resolve internal plugins')
     plugin_list = itertools.chain.from_iterable(
         _list_plugin_filenames(path)
         for path in modules.submodule_search_locations

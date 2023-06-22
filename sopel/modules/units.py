@@ -36,6 +36,14 @@ def k_to_c(temp):
     return temp - 273.15
 
 
+def _extract_source(pattern, trigger) -> tuple[str, ...]:
+    match = pattern.match(trigger.group(2))
+    if match:
+        return match.groups()
+    else:
+        raise ValueError("Pattern does not match")
+
+
 @plugin.command('temp')
 @plugin.example('.temp 100F', '37.78°C = 100.00°F = 310.93K')
 @plugin.example('.temp 100C', '100.00°C = 212.00°F = 373.15K')
@@ -44,13 +52,13 @@ def k_to_c(temp):
 def temperature(bot, trigger):
     """Convert temperatures"""
     try:
-        source = find_temp.match(trigger.group(2)).groups()
-    except (AttributeError, TypeError):
+        source = _extract_source(find_temp, trigger)
+    except (ValueError, TypeError):
         bot.reply("That's not a valid temperature.")
         return plugin.NOLIMIT
     unit = source[1].upper()
     numeric = float(source[0])
-    celsius = 0
+    celsius = 0.0
     if unit == 'C':
         celsius = numeric
     elif unit == 'F':
@@ -87,13 +95,13 @@ def temperature(bot, trigger):
 def distance(bot, trigger):
     """Convert distances"""
     try:
-        source = find_length.match(trigger.group(2)).groups()
-    except (AttributeError, TypeError):
+        source = _extract_source(find_length, trigger)
+    except (ValueError, TypeError):
         bot.reply("That's not a valid length unit.")
         return plugin.NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
-    meter = 0
+    meter = 0.0
     if unit in ("meters", "meter", "m"):
         meter = numeric
     elif unit in ("millimeters", "millimeter", "mm"):
@@ -158,13 +166,13 @@ def distance(bot, trigger):
 def mass(bot, trigger):
     """Convert mass"""
     try:
-        source = find_mass.match(trigger.group(2)).groups()
-    except (AttributeError, TypeError):
+        source = _extract_source(find_mass, trigger)
+    except (ValueError, TypeError):
         bot.reply("That's not a valid mass unit.")
         return plugin.NOLIMIT
     unit = source[1].lower()
     numeric = float(source[0])
-    metric = 0
+    metric = 0.0
     if unit in ("gram", "grams", "gramme", "grammes", "g"):
         metric = numeric
     elif unit in ("kilogram", "kilograms", "kilogramme", "kilogrammes", "kg"):

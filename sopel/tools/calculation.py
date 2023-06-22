@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import ast
-import numbers
 import operator
 import time
 
@@ -91,9 +90,7 @@ def guarded_mul(left, right):
     :raise ValueError: if the inputs are too large to handle safely
     """
     # Only handle ints because floats will overflow anyway.
-    if not isinstance(left, numbers.Integral):
-        pass
-    elif not isinstance(right, numbers.Integral):
+    if not isinstance(left, int) or not isinstance(right, int):
         pass
     elif left in (0, 1) or right in (0, 1):
         # Ignore trivial cases.
@@ -186,9 +183,7 @@ def guarded_pow(num, exp):
     :raise ValueError: if the inputs are too large to handle safely
     """
     # Only handle ints because floats will overflow anyway.
-    if not isinstance(num, numbers.Integral):
-        pass
-    elif not isinstance(exp, numbers.Integral):
+    if not isinstance(num, int) or not isinstance(exp, int):
         pass
     elif pow_complexity(num, exp) < 0.5:
         # Value 0.5 is arbitrary and based on an estimated runtime of 0.5s
