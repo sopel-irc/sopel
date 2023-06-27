@@ -26,7 +26,6 @@ import re
 import threading
 from typing import (
     Any,
-    Generator,
     Optional,
     Type,
     TYPE_CHECKING,
@@ -39,7 +38,7 @@ from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Generator, Iterable
     from sopel.tools.identifiers import Identifier
 
 
