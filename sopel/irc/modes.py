@@ -33,11 +33,14 @@ from __future__ import annotations
 import enum
 import logging
 from typing import (
-    Iterator,
     NamedTuple,
     Optional,
     Tuple,
+    TYPE_CHECKING,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 ModeTuple = Tuple[str, bool]
