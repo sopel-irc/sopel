@@ -18,7 +18,6 @@ import time
 from types import MappingProxyType
 from typing import (
     Any,
-    Mapping,
     Optional,
     TYPE_CHECKING,
     TypeVar,
@@ -37,7 +36,7 @@ from sopel.tools import jobs as tools_jobs
 from sopel.trigger import Trigger
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Mapping
     from sopel.trigger import PreTrigger
 
 
