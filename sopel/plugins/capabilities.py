@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import logging
 from typing import (
-    Generator,
     Optional,
     TYPE_CHECKING,
     Union,
@@ -24,7 +23,7 @@ from typing import (
 
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Generator, Iterable
     from sopel.bot import Sopel, SopelWrapper
     from sopel.plugin import capability, CapabilityNegotiation
 
