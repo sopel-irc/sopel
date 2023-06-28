@@ -16,20 +16,14 @@ from __future__ import annotations
 
 import logging
 from typing import (
-    Dict,
-    FrozenSet,
-    Generator,
-    Iterable,
-    List,
     Optional,
-    Set,
-    Tuple,
     TYPE_CHECKING,
     Union,
 )
 
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable
     from sopel.bot import Sopel, SopelWrapper
     from sopel.plugin import capability, CapabilityNegotiation
 
@@ -61,20 +55,20 @@ class Manager:
        capability negotiation
     """
     def __init__(self):
-        self._registered: Dict[
+        self._registered: dict[
             # CAP REQ :<text>
-            Tuple[str, ...],
+            tuple[str, ...],
             # mapping (plugin, request + status)
-            Dict[str, Tuple[capability, bool]],
+            dict[str, tuple[capability, bool]],
         ] = {}
-        self._requested: Set[Tuple[str, ...]] = set()
-        self._acknowledged: Set[Tuple[str, ...]] = set()
-        self._denied: Set[Tuple[str, ...]] = set()
+        self._requested: set[tuple[str, ...]] = set()
+        self._acknowledged: set[tuple[str, ...]] = set()
+        self._denied: set[tuple[str, ...]] = set()
 
     # properties
 
     @property
-    def registered(self) -> FrozenSet[Tuple[str, ...]]:
+    def registered(self) -> frozenset[tuple[str, ...]]:
         """Set of registered capability requests.
 
         Each element is a capability request as a tuple of capability names::
@@ -88,7 +82,7 @@ class Manager:
         return frozenset(self._registered.keys())
 
     @property
-    def requested(self) -> FrozenSet[Tuple[str, ...]]:
+    def requested(self) -> frozenset[tuple[str, ...]]:
         """Set of requested capability requests.
 
         Each element is a capability request as a tuple of capability names::
@@ -105,7 +99,7 @@ class Manager:
         return frozenset(self._requested)
 
     @property
-    def acknowledged(self) -> FrozenSet[Tuple[str, ...]]:
+    def acknowledged(self) -> frozenset[tuple[str, ...]]:
         """Set of acknowledged capability requests.
 
         Each element is a capability request as a tuple of capability names::
@@ -121,7 +115,7 @@ class Manager:
         return frozenset(self._acknowledged)
 
     @property
-    def denied(self) -> FrozenSet[Tuple[str, ...]]:
+    def denied(self) -> frozenset[tuple[str, ...]]:
         """Set of denied capability requests.
 
         Each element is a capability request as a tuple of capability names::
@@ -313,7 +307,7 @@ class Manager:
         self,
         request: Iterable[str],
         plugin_name: str,
-    ) -> Tuple[bool, bool]:
+    ) -> tuple[bool, bool]:
         """Resume the registered plugin capability request.
 
         :return: a 2-value tuple with (was completed, is completed)
@@ -346,7 +340,7 @@ class Manager:
         if cap_req not in self._requested:
             return was_completed, was_completed
 
-        handler_info: Optional[Tuple[capability, bool]] = self._registered.get(
+        handler_info: Optional[tuple[capability, bool]] = self._registered.get(
             cap_req, {},
         ).get(
             plugin_name, None,
@@ -361,8 +355,8 @@ class Manager:
     def acknowledge(
         self,
         bot: SopelWrapper,
-        cap_req: Tuple[str, ...],
-    ) -> Optional[List[Tuple[bool, Optional[CapabilityNegotiation]]]]:
+        cap_req: tuple[str, ...],
+    ) -> Optional[list[tuple[bool, Optional[CapabilityNegotiation]]]]:
         """Acknowledge a capability request and execute handlers.
 
         :param bot: bot instance to manage the capabilities for
@@ -396,8 +390,8 @@ class Manager:
     def deny(
         self,
         bot: SopelWrapper,
-        cap_req: Tuple[str, ...],
-    ) -> Optional[List[Tuple[bool, Optional[CapabilityNegotiation]]]]:
+        cap_req: tuple[str, ...],
+    ) -> Optional[list[tuple[bool, Optional[CapabilityNegotiation]]]]:
         """Deny a capability request and execute handlers.
 
         :param bot: bot instance to manage the capabilities for
@@ -430,11 +424,11 @@ class Manager:
     def _callbacks(
         self,
         bot: SopelWrapper,
-        cap_req: Tuple[str, ...],
+        cap_req: tuple[str, ...],
         acknowledged: bool,
-    ) -> List[Tuple[bool, Optional[CapabilityNegotiation]]]:
+    ) -> list[tuple[bool, Optional[CapabilityNegotiation]]]:
         # call back request handlers
-        plugin_requests: Dict[str, Tuple[capability, bool]] = self._registered.get(
+        plugin_requests: dict[str, tuple[capability, bool]] = self._registered.get(
             cap_req, {},
         )
         return [
@@ -445,10 +439,10 @@ class Manager:
     def _callback(
         self,
         plugin_name: str,
-        handler_info: Tuple[capability, bool],
+        handler_info: tuple[capability, bool],
         bot: SopelWrapper,
         acknowledged: bool,
-    ) -> Tuple[bool, Optional[CapabilityNegotiation]]:
+    ) -> tuple[bool, Optional[CapabilityNegotiation]]:
         handler = handler_info[0]
         is_done, result = handler.callback(bot, acknowledged)
         # update done status in registered
@@ -457,10 +451,10 @@ class Manager:
 
     def get(
         self,
-        cap_req: Tuple[str, ...],
+        cap_req: tuple[str, ...],
         *,
-        plugins: Union[List[str], Tuple[str, ...], Set[str]] = (),
-    ) -> Generator[Tuple[str, capability], None, None]:
+        plugins: Union[list[str], tuple[str, ...], set[str]] = (),
+    ) -> Generator[tuple[str, capability], None, None]:
         """Retrieve the registered request handlers for a capability request.
 
         :param cap_req: the capability request to retrieve handlers for

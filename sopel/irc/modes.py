@@ -33,14 +33,14 @@ from __future__ import annotations
 import enum
 import logging
 from typing import (
-    Dict,
-    Iterator,
-    List,
     NamedTuple,
     Optional,
-    Set,
     Tuple,
+    TYPE_CHECKING,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 ModeTuple = Tuple[str, bool]
@@ -123,28 +123,28 @@ def parse_modestring(modestring: str) -> Iterator[ModeTuple]:
 
 class ModeMessage(NamedTuple):
     """Mode message with channel's modes and channel's privileges."""
-    modes: Tuple[ModeDetails, ...]
+    modes: tuple[ModeDetails, ...]
     """Tuple of added and removed modes.
 
     Each item is a :class:`ModeDetails`.
     """
-    privileges: Tuple[PrivilegeDetails, ...]
+    privileges: tuple[PrivilegeDetails, ...]
     """Tuple of added and removed privileges.
 
     Each item is a :class:`PrivilegeDetails`.
     """
-    ignored_modes: Tuple[ModeTuple, ...]
+    ignored_modes: tuple[ModeTuple, ...]
     """Ignored modes when they are unknown or there is a missing parameter.
 
     Each item is a :class:`ModeTuple`.
     """
-    leftover_params: Tuple[str, ...]
+    leftover_params: tuple[str, ...]
     """Parameters not used by any valid mode or privilege."""
 
 
 class ModeParser:
     """ModeMessage parser for IRC's ``MODE`` messages for channel modes."""
-    PRIVILEGES: Set[str] = {
+    PRIVILEGES: set[str] = {
         "v",  # VOICE
         "h",  # HALFOP
         "o",  # OP
@@ -177,11 +177,11 @@ class ModeParser:
 
     def __init__(
         self,
-        chanmodes: Dict[str, Tuple[str, ...]] = CHANMODES,
-        type_params: Dict[str, ParamRequired] = DEFAULT_MODETYPE_PARAM_CONFIG,
-        privileges: Set[str] = PRIVILEGES,
+        chanmodes: dict[str, tuple[str, ...]] = CHANMODES,
+        type_params: dict[str, ParamRequired] = DEFAULT_MODETYPE_PARAM_CONFIG,
+        privileges: set[str] = PRIVILEGES,
     ) -> None:
-        self.chanmodes: Dict[str, Tuple[str, ...]] = dict(chanmodes)
+        self.chanmodes: dict[str, tuple[str, ...]] = dict(chanmodes)
         """Map of mode types (``str``) to their lists of modes (``tuple``).
 
         This map should come from ``ISUPPORT``, usually through
@@ -225,7 +225,7 @@ class ModeParser:
                 return letter
         raise ModeTypeUnknown(mode)
 
-    def get_mode_info(self, mode: str, is_added: bool) -> Tuple[str, bool]:
+    def get_mode_info(self, mode: str, is_added: bool) -> tuple[str, bool]:
         """Retrieve ``mode``'s information when added or removed.
 
         :raise ModeTypeUnknown: when the mode's type is unknown
@@ -271,7 +271,7 @@ class ModeParser:
             or type_param == ParamRequired.REMOVED and not is_added
         )
 
-    def parse(self, modestring: str, params: Tuple[str, ...]) -> ModeMessage:
+    def parse(self, modestring: str, params: tuple[str, ...]) -> ModeMessage:
         """Parse a ``modestring`` for a channel with its ``params``.
 
         :param modestring: suite of modes with +/- sign, such as ``+b-v``
@@ -315,8 +315,8 @@ class ModeParser:
         """
         imodes = iter(parse_modestring(modestring))
         iparams = iter(params)
-        modes: List[ModeDetails] = []
-        privileges: List[PrivilegeDetails] = []
+        modes: list[ModeDetails] = []
+        privileges: list[PrivilegeDetails] = []
 
         for mode, is_added in imodes:
             required = False

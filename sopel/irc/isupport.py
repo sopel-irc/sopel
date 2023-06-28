@@ -17,7 +17,6 @@ from collections import OrderedDict
 import functools
 import itertools
 import re
-from typing import Dict
 
 
 def _optional(parser, default=None):
@@ -364,7 +363,7 @@ class ISupport:
         return dict(self['MAXLIST'])
 
     @property
-    def PREFIX(self) -> Dict[str, str]:
+    def PREFIX(self) -> dict[str, str]:
         """Expose ``PREFIX`` as a dict, if advertised by the server.
 
         This exposes information about the modes and nick prefixes used for

@@ -5,10 +5,13 @@
 from __future__ import annotations
 
 import re
-from typing import Iterable, Optional
+from typing import Optional, TYPE_CHECKING
 
 from sopel import bot, config, plugins, trigger
 from .mocks import MockIRCBackend, MockIRCServer, MockUser
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class BotFactory:

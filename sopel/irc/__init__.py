@@ -39,11 +39,7 @@ import threading
 import time
 from typing import (
     Any,
-    Dict,
-    Iterable,
     Optional,
-    Set,
-    Tuple,
     TYPE_CHECKING,
 )
 
@@ -55,6 +51,7 @@ from .capabilities import Capabilities
 from .isupport import ISupport
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from sopel.config import Config
     from .abstract_backends import AbstractIRCBackend
     from .utils import MyInfo
@@ -89,7 +86,7 @@ class AbstractBot(abc.ABC):
         self.sending = threading.RLock()
         self.last_error_timestamp: Optional[datetime] = None
         self.error_count = 0
-        self.stack: Dict[identifiers.Identifier, Dict[str, Any]] = {}
+        self.stack: dict[identifiers.Identifier, dict[str, Any]] = {}
         self.hasquit = False
         self.wantsrestart = False
         self.last_raw_line = ''  # last raw line received
@@ -150,7 +147,7 @@ class AbstractBot(abc.ABC):
         warning_in='8.1',
         removed_in='9.0',
     )
-    def enabled_capabilities(self) -> Set[str]:
+    def enabled_capabilities(self) -> set[str]:
         """A set containing the IRCv3 capabilities that the bot has enabled.
 
         .. deprecated:: 8.0
@@ -177,7 +174,7 @@ class AbstractBot(abc.ABC):
         warning_in='8.1',
         removed_in='9.0',
     )
-    def server_capabilities(self) -> Dict[str, Optional[str]]:
+    def server_capabilities(self) -> dict[str, Optional[str]]:
         """A dict mapping supported IRCv3 capabilities to their options.
 
         For example, if the server specifies the capability ``sasl=EXTERNAL``,
@@ -307,7 +304,7 @@ class AbstractBot(abc.ABC):
         self,
         host: str,
         port: int,
-        source_address: Optional[Tuple[str, int]],
+        source_address: Optional[tuple[str, int]],
     ) -> AbstractIRCBackend:
         """Set up the IRC backend based on the bot's settings.
 

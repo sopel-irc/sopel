@@ -151,7 +151,7 @@ class capability:
 
         @plugin.capability('example/cap-name')
         def capability_handler(
-            cap_req: Tuple[str, ...],
+            cap_req: tuple[str, ...],
             bot: SopelWrapper,
             acknowledged: bool,
         ) -> plugin.CapabilityNegotiation:
@@ -237,11 +237,11 @@ class capability:
             # single REQ.
             raise ValueError('Capability request too long: %s' % cap_req_text)
 
-        self._cap_req: Tuple[str, ...] = tuple(sorted(cap_req))
+        self._cap_req: tuple[str, ...] = tuple(sorted(cap_req))
         self._handler: Optional[CapabilityHandler] = handler
 
     @property
-    def cap_req(self) -> Tuple[str, ...]:
+    def cap_req(self) -> tuple[str, ...]:
         """Capability request as a sorted tuple.
 
         This is the capability request that will be sent to the server as is.
@@ -256,7 +256,7 @@ class capability:
         self,
         bot: SopelWrapper,
         acknowledged: bool,
-    ) -> Tuple[bool, Optional[CapabilityNegotiation]]:
+    ) -> tuple[bool, Optional[CapabilityNegotiation]]:
         """Execute the acknowlegement callback of a capability request.
 
         :param bot: a Sopel instance

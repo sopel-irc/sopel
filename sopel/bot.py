@@ -17,11 +17,7 @@ import time
 from types import MappingProxyType
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    Mapping,
     Optional,
-    Tuple,
     TYPE_CHECKING,
     TypeVar,
     Union,
@@ -39,6 +35,7 @@ from sopel.tools import jobs as tools_jobs
 from sopel.trigger import Trigger
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
     from sopel.trigger import PreTrigger
 
 
@@ -55,7 +52,7 @@ class Sopel(irc.AbstractBot):
         self._daemon = daemon  # Used for iPython. TODO something saner here
         self._running_triggers = []
         self._running_triggers_lock = threading.Lock()
-        self._plugins: Dict[str, Any] = {}
+        self._plugins: dict[str, Any] = {}
         self._rules_manager = plugin_rules.Manager()
         self._cap_requests_manager = plugin_capabilities.Manager()
         self._scheduler = plugin_jobs.Scheduler(self)
@@ -127,7 +124,7 @@ class Sopel(irc.AbstractBot):
         return self._scheduler
 
     @property
-    def command_groups(self) -> Dict[str, list]:
+    def command_groups(self) -> dict[str, list]:
         """A mapping of plugin names to lists of their commands.
 
         .. versionchanged:: 7.1
@@ -152,7 +149,7 @@ class Sopel(irc.AbstractBot):
         return result
 
     @property
-    def doc(self) -> Dict[str, tuple]:
+    def doc(self) -> dict[str, tuple]:
         """A dictionary of command names to their documentation.
 
         Each command is mapped to its docstring and any available examples, if
@@ -598,7 +595,7 @@ class Sopel(irc.AbstractBot):
         self,
         rule: AbstractRuleType,
         trigger: Trigger,
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, Optional[str]]:
         if trigger.admin or rule.is_unblockable():
             return False, None
 
@@ -814,7 +811,7 @@ class Sopel(irc.AbstractBot):
     def _is_pretrigger_blocked(
         self,
         pretrigger: PreTrigger,
-    ) -> Union[Tuple[bool, bool], Tuple[None, None]]:
+    ) -> Union[tuple[bool, bool], tuple[None, None]]:
         if not (
             self.settings.core.nick_blocks
             or self.settings.core.host_blocks
@@ -965,7 +962,7 @@ class Sopel(irc.AbstractBot):
 
     def resume_capability_negotiation(
         self,
-        cap_req: Tuple[str, ...],
+        cap_req: tuple[str, ...],
         plugin_name: str,
     ) -> None:
         """Resume capability negotiation and close when necessary.

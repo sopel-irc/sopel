@@ -13,7 +13,7 @@ from encodings import idna
 from html.parser import HTMLParser
 import logging
 import re
-from typing import Dict, Union
+from typing import Union
 
 import pytz
 import requests
@@ -38,7 +38,7 @@ WIKI_PAGE_NAMES = [
     'List_of_Internet_top-level_domains',
     'Country_code_top-level_domain',
 ]
-WIKI_API_PARAMS: Dict[str, Union[str, int]] = {
+WIKI_API_PARAMS: dict[str, Union[str, int]] = {
     "action": "parse",
     "format": "json",
     "prop": "text",
@@ -108,7 +108,7 @@ class WikipediaTLDListParser(HTMLParser):
         self.current_cell = ''
         self.rows = []
         self.tables = []
-        self.parsed: Dict[str, Dict[str, str]] = {}
+        self.parsed: dict[str, dict[str, str]] = {}
         self.finished = False
 
     def handle_starttag(self, tag, attrs):

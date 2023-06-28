@@ -25,7 +25,7 @@ from sopel.config import types
 from sopel.formatting import bold, color, colors
 
 if TYPE_CHECKING:
-    from typing import Dict, Optional
+    from typing import Optional
 
     from sopel.bot import Sopel, SopelWrapper
     from sopel.config import Config
@@ -275,7 +275,7 @@ def virustotal_lookup(
     url: str,
     local_only: bool = False,
     max_cache_age: Optional[timedelta] = None,
-) -> Optional[Dict]:
+) -> Optional[dict]:
     """Check VirusTotal for flags on a URL as malicious.
 
     :param url: The URL to look up

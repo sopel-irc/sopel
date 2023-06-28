@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import cast, NamedTuple, Optional, Tuple, TYPE_CHECKING, Union
+from typing import cast, NamedTuple, Optional, TYPE_CHECKING, Union
 
 import pytz
 
@@ -321,13 +321,13 @@ def get_time_unit(
     hours: int = 0,
     minutes: int = 0,
     seconds: int = 0,
-) -> Tuple[
-    Tuple[int, str],
-    Tuple[int, str],
-    Tuple[int, str],
-    Tuple[int, str],
-    Tuple[int, str],
-    Tuple[int, str],
+) -> tuple[
+    tuple[int, str],
+    tuple[int, str],
+    tuple[int, str],
+    tuple[int, str],
+    tuple[int, str],
+    tuple[int, str],
 ]:
     """Map a time in (y, m, d, h, min, s) to its labels.
 

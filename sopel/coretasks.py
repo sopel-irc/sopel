@@ -30,7 +30,7 @@ import functools
 import logging
 import re
 import time
-from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Callable, Optional, TYPE_CHECKING
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
@@ -64,7 +64,7 @@ MODE_PREFIX_PRIVILEGES = {
 
 
 def _handle_account_and_extjoin_capabilities(
-    cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
+    cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
     if acknowledged:
         return plugin.CapabilityNegotiation.DONE
@@ -89,7 +89,7 @@ def _handle_account_and_extjoin_capabilities(
 
 
 def _handle_sasl_capability(
-    cap_req: Tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
+    cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
 ) -> plugin.CapabilityNegotiation:
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
@@ -1026,8 +1026,8 @@ def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
 
 def _handle_cap_acknowledgement(
     bot: SopelWrapper,
-    cap_req: Tuple[str, ...],
-    results: List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]],
+    cap_req: tuple[str, ...],
+    results: list[tuple[bool, Optional[plugin.CapabilityNegotiation]]],
     was_completed: bool,
 ) -> None:
     if any(
@@ -1050,11 +1050,11 @@ def _handle_cap_acknowledgement(
 
 def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
     was_completed = bot.cap_requests.is_complete
-    cap_ack: Tuple[str, ...] = bot.capabilities.handle_ack(bot, trigger)
+    cap_ack: tuple[str, ...] = bot.capabilities.handle_ack(bot, trigger)
 
     try:
         result: Optional[
-            List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]]
+            list[tuple[bool, Optional[plugin.CapabilityNegotiation]]]
         ] = bot.cap_requests.acknowledge(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
@@ -1089,7 +1089,7 @@ def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
 
     try:
         result: Optional[
-            List[Tuple[bool, Optional[plugin.CapabilityNegotiation]]]
+            list[tuple[bool, Optional[plugin.CapabilityNegotiation]]]
         ] = bot.cap_requests.deny(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
@@ -1130,7 +1130,7 @@ def _receive_cap_del(bot: SopelWrapper, trigger: Trigger) -> None:
     # TODO: what to do when a CAP is removed? NAK callbacks?
 
 
-CAP_HANDLERS: Dict[str, Callable[[SopelWrapper, Trigger], None]] = {
+CAP_HANDLERS: dict[str, Callable[[SopelWrapper, Trigger], None]] = {
     'LS': _receive_cap_ls_reply,  # Server is listing capabilities
     'ACK': _receive_cap_ack,  # Server is acknowledging a capability
     'NAK': _receive_cap_nak,  # Server is denying a capability

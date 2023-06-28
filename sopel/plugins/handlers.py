@@ -50,7 +50,7 @@ import inspect
 import itertools
 import os
 import sys
-from typing import List, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 # TODO: refactor along with usage in sopel.__init__ in py3.8+ world
 import importlib_metadata
@@ -161,7 +161,7 @@ class AbstractPluginHandler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_capability_requests(self) -> List[plugin_decorators.capability]:
+    def get_capability_requests(self) -> list[plugin_decorators.capability]:
         """Retrieve the plugin's list of capability requests."""
 
     @abc.abstractmethod
@@ -363,7 +363,7 @@ class PyModulePlugin(AbstractPluginHandler):
         """
         return hasattr(self.module, 'setup')
 
-    def get_capability_requests(self) -> List[plugin_decorators.capability]:
+    def get_capability_requests(self) -> list[plugin_decorators.capability]:
         return [
             module_attribute
             for module_attribute in vars(self.module).values()

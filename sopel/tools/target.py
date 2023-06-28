@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import functools
-from typing import Any, Callable, Dict, Optional, Set, TYPE_CHECKING, Union
+from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 
 from sopel import privileges
 from sopel.tools import identifiers, memories
@@ -53,7 +53,7 @@ class User:
         Will be ``None`` if Sopel has not yet received complete user
         information from the IRC server.
         """
-        self.channels: Dict[identifiers.Identifier, 'Channel'] = {}
+        self.channels: dict[identifiers.Identifier, 'Channel'] = {}
         """The channels the user is in.
 
         This maps channel name :class:`~sopel.tools.identifiers.Identifier`\\s
@@ -138,7 +138,7 @@ class Channel:
         manipulating data associated to a user by its nickname.
         """
 
-        self.users: Dict[
+        self.users: dict[
             identifiers.Identifier,
             User,
         ] = memories.SopelIdentifierMemory(
@@ -149,7 +149,7 @@ class Channel:
         This maps nickname :class:`~sopel.tools.identifiers.Identifier`\\s to
         :class:`User` objects.
         """
-        self.privileges: Dict[
+        self.privileges: dict[
             identifiers.Identifier,
             int,
         ] = memories.SopelIdentifierMemory(
@@ -164,7 +164,7 @@ class Channel:
         self.topic: str = ''
         """The topic of the channel."""
 
-        self.modes: Dict[str, Union[Set, str, bool]] = {}
+        self.modes: dict[str, Union[set, str, bool]] = {}
         """The channel's modes.
 
         For type A modes (nick/address list), the value is a set. For type B

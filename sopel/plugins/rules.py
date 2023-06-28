@@ -26,9 +26,6 @@ import re
 import threading
 from typing import (
     Any,
-    Dict,
-    Generator,
-    Iterable,
     Optional,
     Type,
     TYPE_CHECKING,
@@ -41,6 +38,7 @@ from sopel.config.core_section import (
     COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterable
     from sopel.tools.identifiers import Identifier
 
 
@@ -1058,8 +1056,8 @@ class Rule(AbstractRule):
         self._default_rate_message = default_rate_message
 
         # metrics
-        self._metrics_nick: Dict[Identifier, RuleMetrics] = {}
-        self._metrics_sender: Dict[Identifier, RuleMetrics] = {}
+        self._metrics_nick: dict[Identifier, RuleMetrics] = {}
+        self._metrics_sender: dict[Identifier, RuleMetrics] = {}
         self._metrics_global = RuleMetrics()
 
         # docs & tests

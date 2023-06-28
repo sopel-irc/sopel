@@ -31,6 +31,9 @@ from sqlalchemy.sql import delete, func, select, update
 from sopel.lifecycle import deprecated
 from sopel.tools.identifiers import Identifier
 
+if typing.TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 LOGGER = logging.getLogger(__name__)
 IdentifierFactory = typing.Callable[[str], Identifier]
@@ -1016,7 +1019,7 @@ class SopelDB:
 
     def get_preferred_value(
         self,
-        names: typing.Iterable[str],
+        names: Iterable[str],
         key: str,
     ) -> typing.Optional[typing.Any]:
         """Get a value for the first name which has it set.

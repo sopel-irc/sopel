@@ -20,7 +20,7 @@ import signal
 import socket
 import ssl
 import threading
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from .abstract_backends import AbstractIRCBackend
 
@@ -148,7 +148,7 @@ class AsyncioBackend(AbstractIRCBackend):
         bot: AbstractBot,
         host: str,
         port: int,
-        source_address: Optional[Tuple[str, int]],
+        source_address: Optional[tuple[str, int]],
         server_timeout: Optional[int] = None,
         ping_interval: Optional[int] = None,
         use_ssl: bool = False,
@@ -156,7 +156,7 @@ class AsyncioBackend(AbstractIRCBackend):
         keyfile: Optional[str] = None,
         verify_ssl: bool = True,
         ca_certs: Optional[str] = None,
-        ssl_ciphers: Optional[List[str]] = None,
+        ssl_ciphers: Optional[list[str]] = None,
         ssl_minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_2,
         **kwargs,
     ):
@@ -164,7 +164,7 @@ class AsyncioBackend(AbstractIRCBackend):
         # connection parameters
         self._host: str = host
         self._port: int = port
-        self._source_address: Optional[Tuple[str, int]] = source_address
+        self._source_address: Optional[tuple[str, int]] = source_address
         self._use_ssl: bool = use_ssl
         self._certfile: Optional[str] = certfile
         self._keyfile: Optional[str] = keyfile
@@ -349,7 +349,7 @@ class AsyncioBackend(AbstractIRCBackend):
 
     # run & connection
 
-    def get_connection_kwargs(self) -> Dict:
+    def get_connection_kwargs(self) -> dict:
         """Return the keyword arguments required to initiate connection."""
         ssl_context: Optional[ssl.SSLContext] = None
 
@@ -380,7 +380,7 @@ class AsyncioBackend(AbstractIRCBackend):
 
     async def _connect_to_server(
         self, **connection_kwargs
-    ) -> Tuple[
+    ) -> tuple[
         Optional[asyncio.StreamReader],
         Optional[asyncio.StreamWriter],
     ]:
