@@ -260,11 +260,15 @@ def _update_tld_data(bot, which, force=False):
     elif which == 'data':
         data_pages = []
         for title in WIKI_PAGE_NAMES:
+            # don't one-liner this; dict.update() returns None, not the updated dict
+            parameters = WIKI_API_PARAMS.copy()
+            parameters.update({"page": title})
+
             try:
                 # https://www.mediawiki.org/wiki/Special:MyLanguage/API:Get_the_contents_of_a_page
                 tld_response = requests.get(
                     "https://en.wikipedia.org/w/api.php",
-                    params=WIKI_API_PARAMS.copy().update({"page": title}),
+                    params=parameters,
                 ).json()
                 data_pages.append(tld_response["parse"]["text"])
             # py <3.5 needs ValueError instead of more specific json.decoder.JSONDecodeError
