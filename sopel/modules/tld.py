@@ -217,7 +217,7 @@ class WikipediaTLDListParser(HTMLParser):
         # cache parsed data for future requests to this parser
         self.parsed = tld_list
 
-        return self.tables
+        return self.parsed
 
 
 def _update_tld_data(bot, which, force=False):
