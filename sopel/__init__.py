@@ -3,11 +3,7 @@ Sopel is a simple, easy-to-use, open-source IRC utility bot, written in Python.
 
 It’s designed to be easy to use, easy to run, and easy to extend.
 """
-# ASCII ONLY IN THIS FILE THOUGH!!!!!!!
-# Python does some stupid bullshit of respecting LC_ALL over the encoding on the
-# file, so in order to undo Python's ridiculous fucking idiocy, we have to have
-# our own check.
-
+#
 # Copyright 2008, Sean B. Palmer, inamidst.com
 # Copyright 2012, Elsie Powell, http://embolalia.com
 # Copyright 2012, Elad Alfassa <elad@fedoraproject.org>
@@ -42,9 +38,8 @@ __all__ = [
 
 loc = locale.getlocale()
 if not loc[1] or ('UTF-8' not in loc[1] and 'utf8' not in loc[1]):
-    print('WARNING!!! You are running with a non-UTF8 locale environment '
-          'variable (e.g. LC_ALL is set to "C"), which makes Python 3 do '
-          'stupid things. If you get strange errors, please set it to '
+    print('Warning: Running with a non-UTF8 locale. If you see strange '
+          'encoding errors, try setting the LC_ALL environment variable to '
           'something like "en_US.UTF-8".', file=sys.stderr)
 
 
