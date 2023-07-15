@@ -1,3 +1,8 @@
+"""
+Sopel is a simple, easy-to-use, open-source IRC utility bot, written in Python.
+
+It’s designed to be easy to use, easy to run, and easy to extend.
+"""
 # ASCII ONLY IN THIS FILE THOUGH!!!!!!!
 # Python does some stupid bullshit of respecting LC_ALL over the encoding on the
 # file, so in order to undo Python's ridiculous fucking idiocy, we have to have
