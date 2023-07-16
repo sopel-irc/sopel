@@ -121,6 +121,37 @@ Note that you don't specifically need to use ``@plugin.thread(False)``, but
 it is still recommended to prevent any race condition.
 
 
+Re-using commands from other plugins
+====================================
+
+.. TODO: this example should be updated when the Wikipedia plugin is removed
+.. as part of https://github.com/sopel-irc/sopel/issues/1291
+
+Because plugins are just Python modules it is possible to import functionality
+from other plugins, including commands. For example, this can be used to add
+an alias for an existing command::
+
+    from sopel import plugin
+    from sopel.modules import wikipedia as wp
+
+    @plugin.command("wiki")
+    @plugin.output_prefix(wp.wikipedia.output_prefix)
+    def wiki_alias(bot, trigger):
+        wp.wikipedia(bot, trigger)
+
+.. warning::
+
+    Any callables imported from other plugins will be treated as if they were
+    exposed in the current plugin. This can lead to duplication of plugin
+    rules. For the most predictable results, import the other plugin as a
+    module rather than unpacking its callables using a ``from`` import.
+
+.. warning::
+
+    While this example shows off loading a built-in plugin, some plugins may
+    not be as easy to import. For example, a :term:`Single file plugin` may
+    not be available on ``sys.path`` without extra handling not shown here.
+
 Managing Capability negotiation
 ===============================
 
