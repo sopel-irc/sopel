@@ -12,7 +12,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import re
 from typing import (
-    Callable,
     cast,
     Match,
     Optional,
@@ -21,7 +20,8 @@ from typing import (
 )
 
 from sopel import formatting, tools
-from sopel.tools import identifiers, web
+from sopel.tools import web
+from sopel.tools.identifiers import Identifier, IdentifierFactory
 
 if TYPE_CHECKING:
     from sopel import config
@@ -31,10 +31,6 @@ __all__ = [
     'PreTrigger',
     'Trigger',
 ]
-
-
-IdentifierFactory = Callable[[str], identifiers.Identifier]
-
 
 COMMANDS_WITH_CONTEXT = frozenset({
     'INVITE',
@@ -163,13 +159,13 @@ class PreTrigger:
 
     def __init__(
         self,
-        own_nick: identifiers.Identifier,
+        own_nick: Identifier,
         line: str,
         url_schemes: Optional[Sequence] = None,
-        identifier_factory: IdentifierFactory = identifiers.Identifier,
+        identifier_factory: IdentifierFactory = Identifier,
         statusmsg_prefixes: tuple[str, ...] = tuple(),
     ):
-        self.make_identifier = identifier_factory
+        self.make_identifier: IdentifierFactory = identifier_factory
         line = line.strip('\r\n')
         self.line: str = line
         self.urls: tuple[str, ...] = tuple()
@@ -235,11 +231,11 @@ class PreTrigger:
         components_match = cast(
             Match, PreTrigger.component_regex.match(self.hostmask or ''))
         nick, self.user, self.host = components_match.groups()
-        self.nick: identifiers.Identifier = self.make_identifier(nick)
+        self.nick: Identifier = self.make_identifier(nick)
 
         # If we have arguments, the first one is *usually* the sender,
         # most numerics and certain general events (e.g. QUIT) excepted
-        target: Optional[identifiers.Identifier] = None
+        target: Optional[Identifier] = None
         status_prefix: Optional[str] = None
 
         if self.args and self.event in COMMANDS_WITH_CONTEXT:

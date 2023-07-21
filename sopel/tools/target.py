@@ -1,16 +1,15 @@
+"""User and channel objects used in state tracking."""
 from __future__ import annotations
 
 import functools
-from typing import Any, Callable, Optional, TYPE_CHECKING, Union
+from typing import Any, Optional, TYPE_CHECKING, Union
 
 from sopel import privileges
-from sopel.tools import identifiers, memories
+from sopel.tools import memories
+from sopel.tools.identifiers import Identifier, IdentifierFactory
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
-
-IdentifierFactory = Callable[[str], identifiers.Identifier]
+    import datetime
 
 
 @functools.total_ordering
@@ -28,12 +27,12 @@ class User:
 
     def __init__(
         self,
-        nick: identifiers.Identifier,
+        nick: Identifier,
         user: Optional[str],
         host: Optional[str],
     ) -> None:
-        assert isinstance(nick, identifiers.Identifier)
-        self.nick: identifiers.Identifier = nick
+        assert isinstance(nick, Identifier)
+        self.nick: Identifier = nick
         """The user's nickname."""
         self.user: Optional[str] = user
         """The user's local username.
@@ -53,7 +52,7 @@ class User:
         Will be ``None`` if Sopel has not yet received complete user
         information from the IRC server.
         """
-        self.channels: dict[identifiers.Identifier, 'Channel'] = {}
+        self.channels: dict[Identifier, 'Channel'] = {}
         """The channels the user is in.
 
         This maps channel name :class:`~sopel.tools.identifiers.Identifier`\\s
@@ -123,11 +122,11 @@ class Channel:
 
     def __init__(
         self,
-        name: identifiers.Identifier,
-        identifier_factory: IdentifierFactory = identifiers.Identifier,
+        name: Identifier,
+        identifier_factory: IdentifierFactory = Identifier,
     ) -> None:
-        assert isinstance(name, identifiers.Identifier)
-        self.name: identifiers.Identifier = name
+        assert isinstance(name, Identifier)
+        self.name: Identifier = name
         """The name of the channel."""
 
         self.make_identifier: IdentifierFactory = identifier_factory
@@ -139,7 +138,7 @@ class Channel:
         """
 
         self.users: dict[
-            identifiers.Identifier,
+            Identifier,
             User,
         ] = memories.SopelIdentifierMemory(
             identifier_factory=self.make_identifier,
@@ -150,7 +149,7 @@ class Channel:
         :class:`User` objects.
         """
         self.privileges: dict[
-            identifiers.Identifier,
+            Identifier,
             int,
         ] = memories.SopelIdentifierMemory(
             identifier_factory=self.make_identifier,
@@ -177,17 +176,17 @@ class Channel:
             does not automatically populate all modes and lists.
         """
 
-        self.last_who: Optional[datetime] = None
+        self.last_who: Optional[datetime.datetime] = None
         """The last time a WHO was requested for the channel."""
 
-        self.join_time: Optional[datetime] = None
+        self.join_time: Optional[datetime.datetime] = None
         """The time the server acknowledged our JOIN message.
 
         Based on server-reported time if the ``server-time`` IRCv3 capability
         is available, otherwise the time Sopel received it.
         """
 
-    def clear_user(self, nick: identifiers.Identifier) -> None:
+    def clear_user(self, nick: Identifier) -> None:
         """Remove ``nick`` from this channel.
 
         :param nick: the nickname of the user to remove
@@ -426,11 +425,7 @@ class Channel:
         identifier = self.make_identifier(nick)
         return bool(self.privileges.get(identifier, 0) & privileges.VOICE)
 
-    def rename_user(
-        self,
-        old: identifiers.Identifier,
-        new: identifiers.Identifier,
-    ) -> None:
+    def rename_user(self, old: Identifier, new: Identifier) -> None:
         """Rename a user.
 
         :param old: the user's old nickname

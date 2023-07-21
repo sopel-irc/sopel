@@ -124,10 +124,10 @@ class CapabilityNegotiation(enum.Enum):
 class CapabilityHandler(Protocol):
     """:class:`~typing.Protocol` definition for capability handler.
 
-    When a plugin requests a capability using the :class:`capability`, it can
-    define a callback handler for that request, that will be called upon
-    Sopel receiving either an ``ACK`` (capability enabled) or a ``NAK``
-    (capability denied) CAP message.
+    When a plugin requests a capability, it can define a callback handler for
+    that request using :class:`capability` as a decorator. That handler will be
+    called upon Sopel receiving either an ``ACK`` (capability enabled) or a
+    ``NAK`` (capability denied) CAP message.
 
     Example::
 
@@ -157,8 +157,9 @@ class CapabilityHandler(Protocol):
 
     .. note::
 
-        This protocol class is used for type checking and documentation purpose
-        only. It should not be used for other purposes.
+        This protocol class should be used for type checking and documentation
+        purposes only.
+
     """
     def __call__(
         self,

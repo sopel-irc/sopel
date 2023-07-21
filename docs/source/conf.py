@@ -112,6 +112,17 @@ pygments_dark_style = 'monokai'
 modindex_common_prefix = ['sopel.']
 
 
+# -- Options for autodoc -------------------------------------------------------
+
+autodoc_type_aliases = {
+    'Casemapping': 'sopel.tools.identifiers.Casemapping',
+    'IdentifierFactory': 'sopel.tools.identifiers.IdentifierFactory',
+    'ModeTuple': 'sopel.irc.modes.ModeTuple',
+    'ModeDetails': 'sopel.irc.modes.ModeDetails',
+    'PrivilegeDetails': 'sopel.irc.modes.PrivilegeDetails',
+}
+
+
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

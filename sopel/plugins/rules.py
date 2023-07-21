@@ -64,6 +64,7 @@ a different subclass of ``AbstractRule``.
 
     This ``TypeVar`` was added as part of a goal to start type-checking
     Sopel and is not used at runtime.
+
 """
 
 LOGGER = logging.getLogger(__name__)
