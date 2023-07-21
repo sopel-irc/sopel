@@ -18,7 +18,7 @@ from typing import (
     Callable,
     Optional,
     Pattern,
-    Tuple,
+    Protocol,
     TYPE_CHECKING,
     Union,
 )
@@ -121,30 +121,15 @@ class CapabilityNegotiation(enum.Enum):
     """
 
 
-if TYPE_CHECKING:
-    CapabilityHandler = Callable[
-        [Tuple[str, ...], SopelWrapper, bool],
-        CapabilityNegotiation,
-    ]
+class CapabilityHandler(Protocol):
+    """:class:`~typing.Protocol` definition for capability handler.
 
+    When a plugin requests a capability using the :class:`capability`, it can
+    define a callback handler for that request, that will be called upon
+    Sopel receiving either an ``ACK`` (capability enabled) or a ``NAK``
+    (capability denied) CAP message.
 
-class capability:
-    """Decorate a function to request a capability and handle the result.
-
-    :param name: name of the capability to negotiate with the server; this
-                 positional argument can be used multiple times to form a
-                 single ``CAP REQ``
-    :param handler: optional keyword argument, acknowledgement handler
-
-    The Client Capability Negotiation is a feature of IRCv3 that exposes a
-    mechanism for a server to advertise a list of features and for clients to
-    request them when they are available.
-
-    This decorator will register a capability request, allowing the bot to
-    request capabilities if they are available. You can request more than one
-    at a time, which will make for one single request.
-
-    The handler must follow this interface::
+    Example::
 
         from sopel import plugin
         from sopel.bot import SopelWrapper
@@ -168,7 +153,47 @@ class capability:
 
             # always return if Sopel can send "CAP END" (DONE)
             # or if the plugin must notify the bot for that later (CONTINUE)
-            return CapabilityNegotiation.DONE
+            return plugin.CapabilityNegotiation.DONE
+
+    .. note::
+
+        This protocol class is used for type checking and documentation purpose
+        only. It should not be used for other purposes.
+    """
+    def __call__(
+        self,
+        cap_req: tuple[str, ...],
+        bot: SopelWrapper,
+        acknowledged: bool,
+    ) -> CapabilityNegotiation:
+        """A capability handler must be a callable with this signature.
+
+        :param cap_req: the capability request, as a tuple of string
+        :param bot: the bot instance
+        :param acknowledged: that flag that tells if the capability is enabled
+                             or denied
+        :return: the return value indicates if the capability negotiation is
+                 complete for this request or not
+        """
+
+
+class capability:
+    """Decorate a function to request a capability and handle the result.
+
+    :param name: name of the capability to negotiate with the server; this
+                 positional argument can be used multiple times to form a
+                 single ``CAP REQ``
+    :param handler: optional keyword argument, acknowledgement handler
+
+    The Client Capability Negotiation is a feature of IRCv3 that exposes a
+    mechanism for a server to advertise a list of features and for clients to
+    request them when they are available.
+
+    This decorator will register a capability request, allowing the bot to
+    request capabilities if they are available. You can request more than one
+    at a time, which will make for one single request.
+
+    The handler must follow the :class:`CapabilityHandler` protocol.
 
     .. note::
 
