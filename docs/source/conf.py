@@ -109,7 +109,7 @@ pygments_style = 'friendly'
 pygments_dark_style = 'monokai'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['sopel.']
 
 
 # -- Options for HTML output ---------------------------------------------------

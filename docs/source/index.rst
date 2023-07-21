@@ -25,6 +25,8 @@ Documentation
     plugin
     package
     tests
+    genindex
+    modindex
 
 .. toctree::
     :caption: Donate
