@@ -11,9 +11,7 @@ from __future__ import generator_stop
 # serve to show the default.
 
 from datetime import date
-import sys, os
-parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.sys.path.insert(0,parentdir)
+
 from sopel import __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -24,7 +22,7 @@ from sopel import __version__
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '4.0'
+needs_sphinx = '7.1'  # todo: upgrade when Py3.8 reaches EOL
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
