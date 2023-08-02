@@ -52,9 +52,6 @@ import os
 import sys
 from typing import Optional, TYPE_CHECKING, TypedDict
 
-# TODO: refactor along with usage in sopel.__init__ in py3.8+ world
-import importlib_metadata
-
 from sopel import __version__ as release, loader, plugin as plugin_decorators
 from . import exceptions
 
@@ -614,9 +611,13 @@ class EntryPointPlugin(PyModulePlugin):
         """
         version: Optional[str] = super().get_version()
 
-        if version is None and hasattr(self.module, "__package__"):
+        if (
+            version is None
+            and hasattr(self.module, "__package__")
+            and self.module.__package__ is not None
+        ):
             try:
-                version = importlib_metadata.version(self.module.__package__)
+                version = importlib.metadata.version(self.module.__package__)
             except ValueError:
                 # package name is probably empty-string; just give up
                 pass
