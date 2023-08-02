@@ -87,9 +87,7 @@ def _clean_rules(rules, nick, aliases):
 
 def _compile_pattern(pattern, nick, aliases=None):
     if aliases:
-        nicks = list(aliases)  # alias_nicks.copy() doesn't work in py2
-        nicks.append(nick)
-        nick = '(?:%s)' % '|'.join(re.escape(n) for n in nicks)
+        nick = '(?:%s)' % '|'.join(re.escape(n) for n in (nick, *aliases))
     else:
         nick = re.escape(nick)
 
