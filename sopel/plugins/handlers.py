@@ -50,7 +50,7 @@ import inspect
 import itertools
 import os
 import sys
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, TypedDict
 
 # TODO: refactor along with usage in sopel.__init__ in py3.8+ world
 import importlib_metadata
@@ -62,6 +62,26 @@ from . import exceptions
 if TYPE_CHECKING:
     from sopel.bot import Sopel
     from types import ModuleType
+
+
+class PluginMetaDescription(TypedDict):
+    """Meta description of a plugin, as a dictionary.
+
+    This dictionary is expected to contain specific keys:
+
+    * name: a short name for the plugin
+    * label: a descriptive label for the plugin; see
+      :meth:`~sopel.plugins.handlers.AbstractPluginHandler.get_label`
+    * type: the plugin's type
+    * source: the plugin's source
+      (filesystem path, python module/import path, etc.)
+    * version: the plugin's version string if available, otherwise ``None``
+    """
+    name: str
+    label: str
+    type: str
+    source: str
+    version: Optional[str]
 
 
 class AbstractPluginHandler(abc.ABC):
@@ -107,22 +127,14 @@ class AbstractPluginHandler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_meta_description(self) -> dict:
+    def get_meta_description(self) -> PluginMetaDescription:
         """Retrieve a meta description for the plugin.
 
-        :return: meta description information
+        :return: Metadata about the plugin
         :rtype: :class:`dict`
 
-        The expected keys are:
-
-        * name: a short name for the plugin
-        * label: a descriptive label for the plugin
-        * type: the plugin's type
-        * source: the plugin's source
-          (filesystem path, python import path, etc.)
-        * version: the plugin's version string if available, otherwise ``None``
+        The expected keys are detailed in :class:`PluginMetaDescription`.
         """
-        # TODO: change return type to a TypedDict when dropping py3.7
 
     @abc.abstractmethod
     def get_version(self):
@@ -284,26 +296,21 @@ class PyModulePlugin(AbstractPluginHandler):
         lines = inspect.cleandoc(module_doc).splitlines()
         return default_label if not lines else lines[0]
 
-    def get_meta_description(self):
+    def get_meta_description(self) -> PluginMetaDescription:
         """Retrieve a meta description for the plugin.
 
-        :return: meta description information
+        :return: Metadata about the plugin
         :rtype: :class:`dict`
 
-        The keys are:
+        The expected keys are detailed in :class:`PluginMetaDescription`.
 
-        * name: the plugin's name
-        * label: see :meth:`~sopel.plugins.handlers.PyModulePlugin.get_label`
-        * type: see :attr:`PLUGIN_TYPE`
-        * source: the name of the plugin's module
-        * version: the version string of the plugin if available, otherwise ``None``
-
-        Example::
+        This implementation uses its module's dotted import path as the
+        ``source`` value::
 
             {
                 'name': 'example',
-                'type: 'python-module',
-                'label: 'example plugin',
+                'type': 'python-module',
+                'label': 'example plugin',
                 'source': 'sopel_modules.example',
                 'version': '3.1.2',
             }
@@ -489,21 +496,21 @@ class PyFilePlugin(PyModulePlugin):
         self.module_spec.loader.exec_module(module)
         return module
 
-    def get_meta_description(self):
+    def get_meta_description(self) -> PluginMetaDescription:
         """Retrieve a meta description for the plugin.
 
-        :return: meta description information
+        :return: Metadata about the plugin
         :rtype: :class:`dict`
 
-        This returns the same keys as
-        :meth:`PyModulePlugin.get_meta_description`; the ``source`` key is
-        modified to contain the source file's path instead of its Python module
-        dotted path::
+        The expected keys are detailed in :class:`PluginMetaDescription`.
+
+        This implementation uses its source file's path as the ``source``
+        value::
 
             {
                 'name': 'example',
-                'type: 'python-file',
-                'label: 'example plugin',
+                'type': 'python-file',
+                'label': 'example plugin',
                 'source': '/home/username/.sopel/plugins/example.py',
                 'version': '3.1.2',
             }
@@ -616,19 +623,21 @@ class EntryPointPlugin(PyModulePlugin):
 
         return version
 
-    def get_meta_description(self):
+    def get_meta_description(self) -> PluginMetaDescription:
         """Retrieve a meta description for the plugin.
 
-        :return: meta description information
+        :return: Metadata about the plugin
         :rtype: :class:`dict`
 
-        This returns the output of :meth:`PyModulePlugin.get_meta_description`
-        but with the ``source`` key modified to reference the entry point::
+        The expected keys are detailed in :class:`PluginMetaDescription`.
+
+        This implementation uses its entry point definition as the ``source``
+        value::
 
             {
                 'name': 'example',
-                'type: 'setup-entrypoint',
-                'label: 'example plugin',
+                'type': 'setup-entrypoint',
+                'label': 'example plugin',
                 'source': 'example = my_plugin.example',
                 'version': '3.1.2',
             }
