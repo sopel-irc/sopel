@@ -1760,7 +1760,6 @@ class URLCallback(Rule):
 
     @classmethod
     def from_callable(cls, settings, handler):
-        execute_handler = handler
         regexes = cls.regex_from_callable(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
 
@@ -1772,12 +1771,18 @@ class URLCallback(Rule):
             # account for the 'self' parameter when the handler is a method
             match_count = 4
 
+        execute_handler = handler
         argspec = inspect.getfullargspec(handler)
 
         if len(argspec.args) >= match_count:
             @functools.wraps(handler)
-            def execute_handler(bot, trigger):
+            def handler_match_wrapper(bot, trigger):
                 return handler(bot, trigger, match=trigger)
+
+            # don't directly `def execute_handler` to override it;
+            # doing incurs the wrath of pyflakes in the form of
+            # "F811: Redefinition of unused name"
+            execute_handler = handler_match_wrapper
 
         kwargs.update({
             'handler': execute_handler,
