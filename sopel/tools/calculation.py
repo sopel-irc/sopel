@@ -57,14 +57,24 @@ class ExpressionEvaluator:
         A subclass could overwrite this to handle more nodes, calling it only
         for nodes it does not implement itself.
         """
-        if (
-            isinstance(node, ast.Constant) and
-            isinstance(node.value, (int, float))
-        ):
+        if isinstance(node, ast.Constant):
+            if not isinstance(node.value, (int, float)):
+                raise ExpressionEvaluator.Error(
+                    "'{}' values are not supported".format(
+                        type(node.value).__name__,
+                    )
+                )
+
             return node.value
 
-        elif (isinstance(node, ast.BinOp) and
-                type(node.op) in self.binary_ops):
+        elif isinstance(node, ast.BinOp):
+            if type(node.op) not in self.binary_ops:
+                raise ExpressionEvaluator.Error(
+                    "Unsupported binary operator '{}'".format(
+                        type(node.op).__name__,
+                    )
+                )
+
             left = self._eval_node(node.left, timeout)
             right = self._eval_node(node.right, timeout)
             if time.time() > timeout:
@@ -72,8 +82,14 @@ class ExpressionEvaluator:
                     "Time for evaluating expression ran out.")
             return self.binary_ops[type(node.op)](left, right)
 
-        elif (isinstance(node, ast.UnaryOp) and
-                type(node.op) in self.unary_ops):
+        elif isinstance(node, ast.UnaryOp):
+            if type(node.op) not in self.unary_ops:
+                raise ExpressionEvaluator.Error(
+                    "Unsupported unary operator '{}'".format(
+                        type(node.op).__name__,
+                    )
+                )
+
             operand = self._eval_node(node.operand, timeout)
             if time.time() > timeout:
                 raise ExpressionEvaluator.Error(
@@ -81,7 +97,10 @@ class ExpressionEvaluator:
             return self.unary_ops[type(node.op)](operand)
 
         raise ExpressionEvaluator.Error(
-            "ast.Node '%s' not implemented." % (type(node).__name__,))
+            "Node type '{}' is not supported.".format(
+                type(node).__name__,
+            )
+        )
 
 
 def guarded_mul(left, right):
