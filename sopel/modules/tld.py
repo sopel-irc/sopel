@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from encodings import idna
 from html.parser import HTMLParser
+from json import JSONDecodeError
 import logging
 import re
 from typing import Union
@@ -271,8 +272,7 @@ def _update_tld_data(bot, which, force=False):
                     params=parameters,
                 ).json()
                 data_pages.append(tld_response["parse"]["text"])
-            # py <3.5 needs ValueError instead of more specific json.decoder.JSONDecodeError
-            except (requests.exceptions.RequestException, ValueError, KeyError):
+            except (requests.exceptions.RequestException, JSONDecodeError, KeyError):
                 # Log error and continue life; it'll be fine
                 LOGGER.warning(
                     'Error fetching TLD data from "%s" on Wikipedia; will try again later.',

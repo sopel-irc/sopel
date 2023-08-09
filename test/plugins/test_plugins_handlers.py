@@ -1,11 +1,10 @@
 """Tests for the ``sopel.plugins.handlers`` module."""
 from __future__ import annotations
 
+import importlib.metadata
 import os
 import sys
 
-# TODO: use stdlib importlib.metadata when dropping py3.9
-import importlib_metadata
 import pytest
 
 from sopel.plugins import handlers
@@ -89,7 +88,7 @@ def test_get_label_entrypoint(plugin_tmpfile):
 
     # load the entry point
     try:
-        entry_point = importlib_metadata.EntryPoint(
+        entry_point = importlib.metadata.EntryPoint(
             'test_plugin', 'file_mod', 'sopel.plugins')
         plugin = handlers.EntryPointPlugin(entry_point)
         plugin.load()

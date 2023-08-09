@@ -13,13 +13,11 @@ It’s designed to be easy to use, easy to run, and easy to extend.
 from __future__ import annotations
 
 from collections import namedtuple
+import importlib.metadata
 import locale
 import re
 import sys
 
-# TODO: replace with stdlib importlib.metadata when dropping py3.7
-# version info used in this module works from py3.8+
-import importlib_metadata
 
 __all__ = [
     'bot',
@@ -43,7 +41,7 @@ if not loc[1] or ('UTF-8' not in loc[1] and 'utf8' not in loc[1]):
           'something like "en_US.UTF-8".', file=sys.stderr)
 
 
-__version__ = importlib_metadata.version('sopel')
+__version__ = importlib.metadata.version('sopel')
 
 
 def _version_info(version=__version__):

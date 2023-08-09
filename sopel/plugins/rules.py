@@ -87,9 +87,7 @@ def _clean_rules(rules, nick, aliases):
 
 def _compile_pattern(pattern, nick, aliases=None):
     if aliases:
-        nicks = list(aliases)  # alias_nicks.copy() doesn't work in py2
-        nicks.append(nick)
-        nick = '(?:%s)' % '|'.join(re.escape(n) for n in nicks)
+        nick = '(?:%s)' % '|'.join(re.escape(n) for n in (nick, *aliases))
     else:
         nick = re.escape(nick)
 
@@ -671,7 +669,7 @@ class AbstractRule(abc.ABC):
 
         This method must return a list of `match objects`__.
 
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
+        .. __: https://docs.python.org/3.11/library/re.html#match-objects
         """
 
     @abc.abstractmethod
@@ -842,7 +840,7 @@ class AbstractRule(abc.ABC):
         :return: yield a list of match object
         :rtype: generator of `re.match`__
 
-        .. __: https://docs.python.org/3.7/library/re.html#match-objects
+        .. __: https://docs.python.org/3.11/library/re.html#match-objects
         """
 
     @abc.abstractmethod
@@ -1762,7 +1760,6 @@ class URLCallback(Rule):
 
     @classmethod
     def from_callable(cls, settings, handler):
-        execute_handler = handler
         regexes = cls.regex_from_callable(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
 
@@ -1774,12 +1771,18 @@ class URLCallback(Rule):
             # account for the 'self' parameter when the handler is a method
             match_count = 4
 
+        execute_handler = handler
         argspec = inspect.getfullargspec(handler)
 
         if len(argspec.args) >= match_count:
             @functools.wraps(handler)
-            def execute_handler(bot, trigger):
+            def handler_match_wrapper(bot, trigger):
                 return handler(bot, trigger, match=trigger)
+
+            # don't directly `def execute_handler` to override it;
+            # doing incurs the wrath of pyflakes in the form of
+            # "F811: Redefinition of unused name"
+            execute_handler = handler_match_wrapper
 
         kwargs.update({
             'handler': execute_handler,
