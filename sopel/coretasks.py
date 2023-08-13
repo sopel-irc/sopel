@@ -98,8 +98,10 @@ def _handle_sasl_capability(
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
     server_auth_method = bot.settings.core.server_auth_method
+    auth_target = bot.settings.core.auth_target
     is_required = 'sasl' in (auth_method, server_auth_method)
 
+    LOGGER.critical("FOO. BAR!")
     if not is_required:
         # not required: we are fine, available or not
         return plugin.CapabilityNegotiation.DONE
@@ -108,6 +110,12 @@ def _handle_sasl_capability(
         LOGGER.error(
             'SASL capability is not enabled; '
             'cannot authenticate with SASL.',
+        )
+        return plugin.CapabilityNegotiation.ERROR
+    elif auth_target not in ["PLAIN", "EXTERNAL", "SCRAM-SHA-256"]:
+        LOGGER.error(
+            'Configured SASL method %r is not supported by Sopel.',
+            auth_target,
         )
         return plugin.CapabilityNegotiation.ERROR
 
