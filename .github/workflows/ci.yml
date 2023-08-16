@@ -36,8 +36,8 @@ jobs:
           python -m pip install --upgrade wheel
           python -m pip install --upgrade -r dev-requirements.txt
           python -m pip install -e .
-      - name: Check code style
-        run: make quality
+      - name: Run linters (code style and type check)
+        run: make lint
       - name: Run pytest
         run: make test_norecord
       - name: Upload coverage data to coveralls.io

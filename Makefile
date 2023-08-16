@@ -1,11 +1,13 @@
 .PHONY: qa
-qa: quality test coverages
+qa: lint test coverages
 
-.PHONY: quality mypy
-quality:
+.PHONY: lint lint-style lint-type
+lint: lint-style lint-type
+
+lint-style:
 	flake8
 
-mypy:
+lint-type:
 	mypy --check-untyped-defs sopel
 
 .PHONY: test test_norecord test_novcr vcr_rerecord
