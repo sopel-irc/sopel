@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 import requests.exceptions
 
-from sopel.modules import find_updates
+from sopel.builtins import find_updates
 
 
 TMP_CONFIG = """

@@ -17,7 +17,7 @@ import re
 import requests
 
 from sopel import plugin
-from sopel.modules.search import duck_search
+from sopel.builtins.search import duck_search
 
 LOGGER = logging.getLogger(__name__)
 PLUGIN_OUTPUT_PREFIX = '[xkcd] '

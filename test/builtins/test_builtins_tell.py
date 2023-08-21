@@ -8,7 +8,7 @@ import os
 import pytest
 
 from sopel import formatting
-from sopel.modules import tell
+from sopel.builtins import tell
 
 
 def test_load_reminders_empty(tmpdir):

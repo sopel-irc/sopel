@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 import requests.exceptions
 
-from sopel.modules import isup
+from sopel.builtins import isup
 from sopel.tests import rawlist
 
 

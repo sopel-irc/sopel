@@ -6,7 +6,7 @@ import re
 import pytest
 
 from sopel import bot, loader, plugin, plugins, trigger
-from sopel.modules import url
+from sopel.builtins import url
 
 
 TMP_CONFIG = """
@@ -27,7 +27,7 @@ INVALID_URLS = (
 @pytest.fixture
 def mockbot(configfactory):
     tmpconfig = configfactory('test.cfg', TMP_CONFIG)
-    url_plugin = plugins.handlers.PyModulePlugin('url', 'sopel.modules')
+    url_plugin = plugins.handlers.PyModulePlugin('url', 'sopel.builtins')
 
     # setup the bot
     sopel = bot.Sopel(tmpconfig)
