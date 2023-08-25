@@ -111,6 +111,10 @@ pygments_dark_style = 'monokai'
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['sopel.']
 
+# If a signature’s length in characters exceeds the number set, each parameter
+# within the signature will be displayed on an individual logical line.
+maximum_signature_line_length = 80
+
 
 # -- Options for autodoc -------------------------------------------------------
 
