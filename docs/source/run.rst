@@ -3,5 +3,5 @@ Running the bot
 
 .. toctree::
 
-    cli
-    configuration
+    run/cli
+    run/configuration
