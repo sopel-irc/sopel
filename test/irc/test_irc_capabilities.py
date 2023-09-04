@@ -221,7 +221,7 @@ def test_capabilities_nak_trailing_space(mockbot, triggerfactory):
     assert not manager.enabled
 
 
-def test_capabilities_nack_multiple(mockbot, triggerfactory):
+def test_capabilities_nak_multiple(mockbot, triggerfactory):
     raw = 'CAP * NAK :away-notify account-tag'
     wrapped = triggerfactory.wrapper(mockbot, raw)
     manager = Capabilities()
@@ -246,7 +246,7 @@ def test_capabilities_nack_multiple(mockbot, triggerfactory):
     assert not manager.enabled
 
 
-def test_capabilities_ack_and_nack(mockbot, triggerfactory):
+def test_capabilities_ack_and_nak(mockbot, triggerfactory):
     manager = Capabilities()
 
     # ACK a single CAP
