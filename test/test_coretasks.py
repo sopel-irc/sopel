@@ -361,7 +361,7 @@ def test_handle_isupport_chantypes(mockbot):
     assert mockbot.make_identifier('!channel').is_nick()
 
 
-@pytest.mark.parametrize('modes', ['', 'Rw'])
+@pytest.mark.parametrize('modes', [None, '', 'Rw'])
 def test_handle_isupport_bot_mode(mockbot, modes):
     mockbot.config.core.modes = modes
 
