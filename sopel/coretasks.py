@@ -463,8 +463,11 @@ def handle_isupport(bot, trigger):
     if not botmode_support and 'BOT' in bot.isupport:
         # yes it was! set our mode unless the config overrides it
         botmode = bot.isupport['BOT']
-        if botmode not in bot.config.core.modes:
+        modes_setting = bot.config.core.modes
+
+        if not modes_setting or botmode not in bot.config.core.modes:
             bot.write(('MODE', bot.nick, '+' + botmode))
+
     # was NAMESX support status updated?
     if not namesx_support and 'NAMESX' in bot.isupport:
         # yes it was!
@@ -472,6 +475,7 @@ def handle_isupport(bot, trigger):
             # and the multi-prefix capability is not enabled
             # so we can ask the server to use the NAMESX feature
             bot.write(('PROTOCTL', 'NAMESX'))
+
     # was UHNAMES support status updated?
     if not uhnames_support and 'UHNAMES' in bot.isupport:
         # yes it was!
