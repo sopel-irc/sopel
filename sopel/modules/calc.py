@@ -30,6 +30,9 @@ def c(bot, trigger):
     try:
         result = eval_equation(eqn)
         result = "{:.10g}".format(result)
+    except eval_equation.Error as err:
+        bot.reply("Can't process expression: {}".format(str(err)))
+        return
     except ZeroDivisionError:
         bot.reply('Division by zero is not supported in this universe.')
         return
