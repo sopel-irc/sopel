@@ -58,6 +58,7 @@ def web_search(query):
     match = re.match(r'(?:https?://)?(?:m\.)?xkcd\.com/(\d+)/?', url)
     if match:
         return match.group(1)
+    return None
 
 
 def searchxkcd_search(query):
