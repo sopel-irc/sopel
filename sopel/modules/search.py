@@ -213,9 +213,18 @@ def suggest(bot, trigger):
     answer = xmltodict.parse(response.text)['toplevel']
 
     try:
-        answer = answer['CompleteSuggestion'][0]['suggestion']['@data']
+        answer = answer['CompleteSuggestion']
+
+        try:
+            answer = answer[0]
+        except KeyError:
+            # only one suggestion; don't need to extract first item
+            pass
+
+        answer = answer['suggestion']['@data']
     except TypeError:
         answer = None
+
     if answer:
         bot.say(answer)
     else:
