@@ -11,12 +11,13 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=sopel+irc
+    uri: https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=wikip
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAC/7Oxr8jNUShLLSrOzM+zVTLUM1Cyt7MpyS/ISS1LzbGzcc7PBTJLUoNL09NTi0uA
-        iuxsiuFshZTEkkRbpeL8gtQchcyiZCV9Oxt9bFr04SYCAKTyHI5xAAAA
+        H4sIAAAAAAAC/63TPQrDMAwF4KsYH6Bpd8cZeoSeQMQPR8R/2E6a4zdTpnYoaHuD9METyExHDGpH
+        bZzTqB+3u56s6bkE7AjWPHM8Y8dr8x6tn0PWtCsrR51G/eaVCxyTHqwZvq38x6gGqvMipSH5wE2M
+        8xQhVrQArm5J9nCKk3TpXArSAo6oUqSjuqqYndgxKyWXo6LaeQ7C6k9tuH7lA1+7OeZLAwAA
     headers:
       Alt-Svc:
       - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
@@ -25,24 +26,24 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Security-Policy:
-      - 'object-src ''none'';base-uri ''self'';script-src ''nonce-0QjS0PS1bkaLNV-ZwUrXtw''
+      - 'object-src ''none'';base-uri ''self'';script-src ''nonce-tweQn7Ss8hox9zQe-xYVHA''
         ''strict-dynamic'' ''report-sample'' ''unsafe-eval'' ''unsafe-inline'' https:
         http:;report-uri https://csp.withgoogle.com/csp/gws/xsrp'
       Content-Type:
       - text/xml; charset=ISO-8859-1
       Date:
-      - Sun, 01 Oct 2023 22:08:13 GMT
+      - Sun, 01 Oct 2023 22:08:12 GMT
       Expires:
-      - Sun, 01 Oct 2023 22:08:13 GMT
+      - Sun, 01 Oct 2023 22:08:12 GMT
       P3P:
       - CP="This is not a P3P policy! See g.co/p3phelp for more info."
       Server:
       - gws
       Set-Cookie:
-      - 1P_JAR=2023-10-01-22; expires=Tue, 31-Oct-2023 22:08:13 GMT; path=/; domain=.google.com;
+      - 1P_JAR=2023-10-01-22; expires=Tue, 31-Oct-2023 22:08:12 GMT; path=/; domain=.google.com;
         Secure
-      - NID=511=R9yxS4Vqfw-TpuqZFOmLmSnTAI9dE_3a_3kI-t4dINKpdeJb12NLhoIAA9S5O8uE1Lz1Qj00FYzA1bVuMEASytLNDl920QJDA8u7Yp-YiskoGG9T0FRMK4-QzMSAy4gBwmY-e2MT_5uYFM_FgFY7EoaeWpo6hotXXbbopRdg9Co;
-        expires=Mon, 01-Apr-2024 22:08:13 GMT; path=/; domain=.google.com; HttpOnly
+      - NID=511=GKP1S5d2fEPy67A69aYS0ZwYbNd_e7leYIAx6IRB4HxNWKE6YG-6ydKKf73w7khkbQ_LvVsrCodezyg_WiNpixCKw22_O0v3YtaiBlEGJ5tjKg7xQgW2wdGhVXo_svbIoz-SXgCyIsf-iMIGrKeUYQzTybvG5Jpc3PmvYcn62VQ;
+        expires=Mon, 01-Apr-2024 22:08:12 GMT; path=/; domain=.google.com; HttpOnly
       Transfer-Encoding:
       - chunked
       X-Frame-Options:
