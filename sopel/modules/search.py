@@ -186,8 +186,9 @@ def search(bot, trigger):
 
 
 @plugin.command('suggest')
-@plugin.example('.suggest wikip', 'wikipedia', online=True, vcr=True)
 @plugin.example('.suggest', '.suggest what?')
+@plugin.example('.suggest sopel irc', 'sopel irc', online=True, vcr=True)
+@plugin.example('.suggest wikip', 'wikipedia', online=True, vcr=True, user_help=True)
 @plugin.example('.suggest lkashdfiauwgaef', 'Sorry, no result.', online=True, vcr=True)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def suggest(bot, trigger):
@@ -213,9 +214,18 @@ def suggest(bot, trigger):
     answer = xmltodict.parse(response.text)['toplevel']
 
     try:
-        answer = answer['CompleteSuggestion'][0]['suggestion']['@data']
+        answer = answer['CompleteSuggestion']
+
+        try:
+            answer = answer[0]
+        except KeyError:
+            # only one suggestion; don't need to extract first item
+            pass
+
+        answer = answer['suggestion']['@data']
     except TypeError:
         answer = None
+
     if answer:
         bot.say(answer)
     else:
