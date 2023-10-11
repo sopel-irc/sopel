@@ -21,7 +21,7 @@ from sopel.tools import web
 
 PLUGIN_OUTPUT_PREFIX = '[currency] '
 FIAT_PROVIDERS = {
-    'exchangerate.host': 'https://api.exchangerate.host/latest?base=EUR',
+    'open.er-api.com': 'https://open.er-api.com/v6/latest/EUR',
     'fixer.io': '//data.fixer.io/api/latest?base=EUR&access_key={}',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
@@ -43,7 +43,7 @@ class CurrencySection(types.StaticSection):
     fiat_provider = types.ChoiceAttribute(
         'fiat_provider',
         list(FIAT_PROVIDERS.keys()),
-        default='exchangerate.host',
+        default='open.er-api.com',
     )
     """Which data provider to use (some of which require no API key)"""
     fixer_io_key = types.ValidatedAttribute('fixer_io_key', default=None)
