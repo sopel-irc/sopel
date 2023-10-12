@@ -2,249 +2,719 @@ interactions:
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: [python-requests/2.24.0]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
     method: GET
     uri: https://api.duckduckgo.com/?format=json&no_html=1&no_redirect=1&q=sopel.chat+irc+bot
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1WOwQqDMBBE/2XPfoE3oQUFT9bSQ+khmjUuxESSlSql/14wseptd2b3zXygMJ1t
-        7AwpQAIDsoDUTFonUAxC4YMk98GrlxHDVKEWjLK2I7Ue0ucrgath4iXYWePZiZbPW41zVCr0k+b4
-        uB3f7OTaP1+Sww1wwY4MMVlzvFnbhYQchSSjYpzxb3R712zdg7eTztXuVRmEFVr40ip7EHIk1cfu
-        OyI+fX8OlDgvQgEAAA==
+      string: '{"Abstract":"","AbstractSource":"","AbstractText":"","AbstractURL":"","Answer":"","AnswerType":"","Definition":"","DefinitionSource":"","DefinitionURL":"","Entity":"","Heading":"","Image":"","ImageHeight":"","ImageIsLogo":"","ImageWidth":"","Infobox":"","Redirect":"","RelatedTopics":[],"Results":[],"Type":"","meta":{"attribution":null,"blockgroup":null,"created_date":"2021-03-24","description":"testing","designer":null,"dev_date":"2021-03-24","dev_milestone":"development","developer":[{"name":"zt","type":"duck.co","url":"https://duck.co/user/zt"}],"example_query":"","id":"just_another_test","is_stackexchange":0,"js_callback_name":"another_test","live_date":null,"maintainer":{"github":""},"name":"Just
+        Another Test","perl_module":"DDG::Lontail::AnotherTest","producer":null,"production_state":"offline","repo":"fathead","signal_from":"just_another_test","src_domain":"how
+        about there","src_id":null,"src_name":"hi there","src_options":{"directory":"","is_fanon":0,"is_mediawiki":0,"is_wikipedia":0,"language":"","min_abstract_length":null,"skip_abstract":0,"skip_abstract_paren":0,"skip_icon":0,"skip_image_name":0,"skip_qr":"","src_info":"","src_skip":""},"src_url":"Hello
+        there","status":null,"tab":"is this source","topic":[],"unsafe":null}}'
     headers:
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: [max-age=1]
-      Connection: [keep-alive]
-      Content-Encoding: [gzip]
-      Content-Security-Policy: ['default-src https: blob: data: ''unsafe-inline''
-          ''unsafe-eval''; frame-ancestors ''self''']
-      Content-Type: [application/x-javascript]
-      Date: ['Fri, 09 Oct 2020 04:40:42 GMT']
-      Expect-CT: [max-age=0]
-      Expires: ['Fri, 09 Oct 2020 04:40:43 GMT']
-      Referrer-Policy: [origin]
-      Server: [nginx]
-      Server-Timing: [total;dur=15;desc="Backend Total"]
-      Strict-Transport-Security: [max-age=31536000]
-      Transfer-Encoding: [chunked]
-      Vary: [Accept-Encoding]
-      X-Content-Type-Options: [nosniff]
-      X-DuckDuckGo-Locale: [en_US]
-      X-DuckDuckGo-Results: ['1']
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1;mode=block]
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=1
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - br
+      Content-Security-Policy:
+      - 'default-src ''none'' ; connect-src  https://duckduckgo.com https://*.duckduckgo.com
+        https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ ;
+        manifest-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; media-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; script-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ''unsafe-inline'' ''unsafe-eval'' ; font-src data:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; img-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; style-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ''unsafe-inline'' ; object-src ''none'' ; worker-src blob: ; child-src blob:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; form-action  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-ancestors ''self'' ; base-uri ''self'' ; block-all-mixed-content ;'
+      Content-Type:
+      - application/x-javascript
+      Date:
+      - Thu, 12 Oct 2023 04:39:27 GMT
+      Expect-CT:
+      - max-age=0
+      Expires:
+      - Thu, 12 Oct 2023 04:39:28 GMT
+      Permissions-Policy:
+      - interest-cohort=()
+      Referrer-Policy:
+      - origin
+      Server:
+      - nginx
+      Server-Timing:
+      - total;dur=39;desc="Backend Total"
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-DuckDuckGo-Locale:
+      - en_US
+      X-DuckDuckGo-Results:
+      - '1'
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1;mode=block
+    status:
+      code: 200
+      message: OK
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
-          like Gecko) Chrome/55.0.2883.87 Safari/537.36']
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
+        Gecko) Chrome/55.0.2883.87 Safari/537.36
     method: GET
     uri: https://duckduckgo.com/html/?kl=us-en&q=sopel.chat+irc+bot
   response:
-    body: {string: "<html>\r\n<head><title>302 Found</title></head>\r\n<body>\r\n<center><h1>302
-        Found</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"}
+    body:
+      string: "<html>\r\n<head><title>302 Found</title></head>\r\n<body>\r\n<center><h1>302
+        Found</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
     headers:
-      Cache-Control: [max-age=1]
-      Connection: [keep-alive]
-      Content-Length: ['138']
-      Content-Security-Policy: ['default-src https: blob: data: ''unsafe-inline''
-          ''unsafe-eval''; frame-ancestors ''self''']
-      Content-Type: [text/html]
-      Date: ['Fri, 09 Oct 2020 04:40:42 GMT']
-      Expect-CT: [max-age=0]
-      Expires: ['Fri, 09 Oct 2020 04:40:43 GMT']
-      Location: ['https://html.duckduckgo.com/html/?kl=us-en&q=sopel.chat+irc+bot']
-      Referrer-Policy: [origin]
-      Server: [nginx]
-      Strict-Transport-Security: [max-age=31536000]
-      X-Content-Type-Options: [nosniff]
-      X-DuckDuckGo-Locale: [en_US]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1;mode=block]
-    status: {code: 302, message: Moved Temporarily}
+      Cache-Control:
+      - max-age=1
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '138'
+      Content-Security-Policy:
+      - 'default-src ''none'' ; connect-src  https://duckduckgo.com https://*.duckduckgo.com
+        https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ ;
+        manifest-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; media-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; script-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; font-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; img-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; style-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; object-src ''none'' ; worker-src blob: ; child-src blob:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-ancestors ''self'' ; base-uri ''self'' ; block-all-mixed-content ;'
+      Content-Type:
+      - text/html
+      Date:
+      - Thu, 12 Oct 2023 04:39:27 GMT
+      Expect-CT:
+      - max-age=0
+      Expires:
+      - Thu, 12 Oct 2023 04:39:28 GMT
+      Location:
+      - https://html.duckduckgo.com/html/?kl=us-en&q=sopel.chat+irc+bot
+      Permissions-Policy:
+      - interest-cohort=()
+      Referrer-Policy:
+      - origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      X-Content-Type-Options:
+      - nosniff
+      X-DuckDuckGo-Locale:
+      - en_US
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1;mode=block
+    status:
+      code: 302
+      message: Moved Temporarily
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
-          like Gecko) Chrome/55.0.2883.87 Safari/537.36']
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
+        Gecko) Chrome/55.0.2883.87 Safari/537.36
     method: GET
     uri: https://html.duckduckgo.com/html/?kl=us-en&q=sopel.chat+irc+bot
   response:
     body:
-      string: !!binary |
-        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
-        4P8AHvqeim7AAAA=
+      string: "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\n<!--[if
+        IE 6]><html class=\"ie6\" xmlns=\"http://www.w3.org/1999/xhtml\"><![endif]-->\n<!--[if
+        IE 7]><html class=\"lt-ie8 lt-ie9\" xmlns=\"http://www.w3.org/1999/xhtml\"><![endif]-->\n<!--[if
+        IE 8]><html class=\"lt-ie9\" xmlns=\"http://www.w3.org/1999/xhtml\"><![endif]-->\n<!--[if
+        gt IE 8]><!--><html xmlns=\"http://www.w3.org/1999/xhtml\"><!--<![endif]-->\n<head>\n
+        \ <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n
+        \ <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0,
+        maximum-scale=3.0, user-scalable=1\" />\n  <meta name=\"referrer\" content=\"origin\"
+        />\n  <meta name=\"HandheldFriendly\" content=\"true\" />\n  <meta name=\"robots\"
+        content=\"noindex, nofollow\" />\n  <title>sopel.chat irc bot at DuckDuckGo</title>\n
+        \ <link title=\"DuckDuckGo (HTML)\" type=\"application/opensearchdescription+xml\"
+        rel=\"search\" href=\"//duckduckgo.com/opensearch_html_v2.xml\" />\n  <link
+        href=\"//duckduckgo.com/favicon.ico\" rel=\"shortcut icon\" />\n  <link rel=\"icon\"
+        href=\"//duckduckgo.com/favicon.ico\" type=\"image/x-icon\" />\n  <link rel=\"apple-touch-icon\"
+        href=\"//duckduckgo.com/assets/logo_icon128.v101.png\"/>\n  <link rel=\"image_src\"
+        href=\"//duckduckgo.com/assets/logo_homepage.normal.v101.png\"/>\n  <link
+        rel=\"stylesheet\" media=\"handheld, all\" href=\"//duckduckgo.com/h.5b5f458716a629130ff9.css\"
+        type=\"text/css\"/>\n</head>\n\n<body class=\"body--html\">\n  <a name=\"top\"
+        id=\"top\"></a>\n\n  <form action=\"/html/\" method=\"post\">\n    <input
+        type=\"text\" name=\"state_hidden\" id=\"state_hidden\" />\n  </form>\n\n
+        \ <div>\n    <div class=\"site-wrapper-border\"></div>\n\n    <div id=\"header\"
+        class=\"header cw header--html\">\n        <a title=\"DuckDuckGo\" href=\"/html/\"
+        class=\"header__logo-wrap\"></a>\n\n\n    <form name=\"x\" class=\"header__form\"
+        action=\"/html/\" method=\"post\">\n\n      <div class=\"search search--header\">\n
+        \         <input name=\"q\" autocomplete=\"off\" class=\"search__input\" id=\"search_form_input_homepage\"
+        type=\"text\" value=\"sopel.chat irc bot\" />\n          <input name=\"b\"
+        id=\"search_button_homepage\" class=\"search__button search__button--html\"
+        value=\"\" title=\"Search\" alt=\"Search\" type=\"submit\" />\n      </div>\n\n\n
+        \   \n    \n    \n    \n\n    <div class=\"frm__select\">\n      <select name=\"kl\">\n
+        \     \n        <option value=\"\" >All Regions</option>\n      \n        <option
+        value=\"ar-es\" >Argentina</option>\n      \n        <option value=\"au-en\"
+        >Australia</option>\n      \n        <option value=\"at-de\" >Austria</option>\n
+        \     \n        <option value=\"be-fr\" >Belgium (fr)</option>\n      \n        <option
+        value=\"be-nl\" >Belgium (nl)</option>\n      \n        <option value=\"br-pt\"
+        >Brazil</option>\n      \n        <option value=\"bg-bg\" >Bulgaria</option>\n
+        \     \n        <option value=\"ca-en\" >Canada (en)</option>\n      \n        <option
+        value=\"ca-fr\" >Canada (fr)</option>\n      \n        <option value=\"ct-ca\"
+        >Catalonia</option>\n      \n        <option value=\"cl-es\" >Chile</option>\n
+        \     \n        <option value=\"cn-zh\" >China</option>\n      \n        <option
+        value=\"co-es\" >Colombia</option>\n      \n        <option value=\"hr-hr\"
+        >Croatia</option>\n      \n        <option value=\"cz-cs\" >Czech Republic</option>\n
+        \     \n        <option value=\"dk-da\" >Denmark</option>\n      \n        <option
+        value=\"ee-et\" >Estonia</option>\n      \n        <option value=\"fi-fi\"
+        >Finland</option>\n      \n        <option value=\"fr-fr\" >France</option>\n
+        \     \n        <option value=\"de-de\" >Germany</option>\n      \n        <option
+        value=\"gr-el\" >Greece</option>\n      \n        <option value=\"hk-tzh\"
+        >Hong Kong</option>\n      \n        <option value=\"hu-hu\" >Hungary</option>\n
+        \     \n        <option value=\"is-is\" >Iceland</option>\n      \n        <option
+        value=\"in-en\" >India (en)</option>\n      \n        <option value=\"id-en\"
+        >Indonesia (en)</option>\n      \n        <option value=\"ie-en\" >Ireland</option>\n
+        \     \n        <option value=\"il-en\" >Israel (en)</option>\n      \n        <option
+        value=\"it-it\" >Italy</option>\n      \n        <option value=\"jp-jp\" >Japan</option>\n
+        \     \n        <option value=\"kr-kr\" >Korea</option>\n      \n        <option
+        value=\"lv-lv\" >Latvia</option>\n      \n        <option value=\"lt-lt\"
+        >Lithuania</option>\n      \n        <option value=\"my-en\" >Malaysia (en)</option>\n
+        \     \n        <option value=\"mx-es\" >Mexico</option>\n      \n        <option
+        value=\"nl-nl\" >Netherlands</option>\n      \n        <option value=\"nz-en\"
+        >New Zealand</option>\n      \n        <option value=\"no-no\" >Norway</option>\n
+        \     \n        <option value=\"pk-en\" >Pakistan (en)</option>\n      \n
+        \       <option value=\"pe-es\" >Peru</option>\n      \n        <option value=\"ph-en\"
+        >Philippines (en)</option>\n      \n        <option value=\"pl-pl\" >Poland</option>\n
+        \     \n        <option value=\"pt-pt\" >Portugal</option>\n      \n        <option
+        value=\"ro-ro\" >Romania</option>\n      \n        <option value=\"ru-ru\"
+        >Russia</option>\n      \n        <option value=\"xa-ar\" >Saudi Arabia</option>\n
+        \     \n        <option value=\"sg-en\" >Singapore</option>\n      \n        <option
+        value=\"sk-sk\" >Slovakia</option>\n      \n        <option value=\"sl-sl\"
+        >Slovenia</option>\n      \n        <option value=\"za-en\" >South Africa</option>\n
+        \     \n        <option value=\"es-ca\" >Spain (ca)</option>\n      \n        <option
+        value=\"es-es\" >Spain (es)</option>\n      \n        <option value=\"se-sv\"
+        >Sweden</option>\n      \n        <option value=\"ch-de\" >Switzerland (de)</option>\n
+        \     \n        <option value=\"ch-fr\" >Switzerland (fr)</option>\n      \n
+        \       <option value=\"tw-tzh\" >Taiwan</option>\n      \n        <option
+        value=\"th-en\" >Thailand (en)</option>\n      \n        <option value=\"tr-tr\"
+        >Turkey</option>\n      \n        <option value=\"us-en\" selected>US (English)</option>\n
+        \     \n        <option value=\"us-es\" >US (Spanish)</option>\n      \n        <option
+        value=\"ua-uk\" >Ukraine</option>\n      \n        <option value=\"uk-en\"
+        >United Kingdom</option>\n      \n        <option value=\"vn-en\" >Vietnam
+        (en)</option>\n      \n      </select>\n    </div>\n\n    <div class=\"frm__select
+        frm__select--last\">\n      <select class=\"\" name=\"df\">\n      \n        <option
+        value=\"\" selected>Any Time</option>\n      \n        <option value=\"d\"
+        >Past Day</option>\n      \n        <option value=\"w\" >Past Week</option>\n
+        \     \n        <option value=\"m\" >Past Month</option>\n      \n        <option
+        value=\"y\" >Past Year</option>\n      \n      </select>\n    </div>\n\n    </form>\n\n
+        \   </div>\n\n\n\n\n\n<!-- Web results are present -->\n\n  <div>\n  <div
+        class=\"serp__results\">\n  <div id=\"links\" class=\"results\">\n\n      \n\n\n\n
+        \ \n\n\n            <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://sopel.chat/\">Sopel
+        - The Python IRC Bot - Sopel</a>\n          \n          </h2>\n\n      \n\n
+        \           <div class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://sopel.chat/\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/sopel.chat.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://sopel.chat/\">\n
+        \                 sopel.chat\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://sopel.chat/\">Sopel is a simple,
+        easy-to-use, open-source <b>IRC</b> utility <b>bot</b>, written in Python.
+        It&#x27;s designed to be easy to use, easy to run, and easy to extend. Sopel
+        comes with a ton of ready-made features for you to use. It can leave notes
+        for people, give you reminders, and much more.</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://sopel.chat/docs/irc\">IRC
+        Backends \u2014 Sopel 7.1.9 documentation - sopel.chat</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://sopel.chat/docs/irc\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/sopel.chat.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://sopel.chat/docs/irc\">\n
+        \                 sopel.chat/docs/irc\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://sopel.chat/docs/irc\">sopel.<b>irc</b>
+        is the core <b>IRC</b> module for Sopel. This sub-package contains everything
+        that is related to the <b>IRC</b> protocol (connection, commands, abstract
+        client, etc.) and that can be used to implement the Sopel <b>bot</b>.</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://sopel.chat/docs/bot\">The
+        bot and its state \u2014 Sopel 7.1.9 documentation - sopel.chat</a>\n          \n
+        \         </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://sopel.chat/docs/bot\">\n                        <img class=\"result__icon__img\"
+        width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/sopel.chat.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://sopel.chat/docs/bot\">\n
+        \                 sopel.chat/docs/bot\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://sopel.chat/docs/bot\">Bases: sopel.<b>irc</b>.AbstractBot
+        action(text, dest) \xB6 Send a CTCP ACTION PRIVMSG to a user or channel. Parameters
+        text ( str) - the text to send in the CTCP ACTION dest ( str) - the destination
+        of the CTCP ACTION The same loop detection and length restrictions apply as
+        with say (), though automatic message splitting is not available.</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://sopel.chat/usage/commands/\">Plugin
+        commands - Sopel</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://sopel.chat/usage/commands/\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/sopel.chat.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://sopel.chat/usage/commands/\">\n
+        \                 sopel.chat/usage/commands/\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://sopel.chat/usage/commands/\">Plugin
+        commands - Sopel Per-channel configuration This page contains a list of all
+        commands from plugins within Sopel&#x27;s main plugins directory. If you have
+        added plugins without rebuilding the documentation, or are using a secondary
+        plugins directory, those plugins will not be shown here. Command (s) .chanlist
+        .channels Show channels Sopel is in.</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://github.com/sopel-irc/sopel\">GitHub
+        - sopel-irc/sopel: :robot::speech_balloon: An easy-to-use and ...</a>\n          \n
+        \         </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://github.com/sopel-irc/sopel\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/github.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://github.com/sopel-irc/sopel\">\n
+        \                 github.com/sopel-irc/sopel\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://github.com/sopel-irc/sopel\">Sopel
+        is a simple, lightweight, open source, easy-to-use <b>IRC</b> Utility <b>bot</b>,
+        written in Python. It&#x27;s designed to be easy to use, run and extend. Installation
+        Latest stable release. On most systems where you can run Python, the best
+        way to install Sopel is to install pip and then pip install sopel.</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://pypi.org/project/sopel/\">sopel
+        \xB7 PyPI</a>\n          \n          </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://pypi.org/project/sopel/\">\n                        <img class=\"result__icon__img\"
+        width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/pypi.org.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://pypi.org/project/sopel/\">\n
+        \                 pypi.org/project/sopel/\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://pypi.org/project/sopel/\">Sopel is
+        a simple, lightweight, open source, easy-to-use <b>IRC</b> Utility <b>bot</b>,
+        written in Python. It&#x27;s designed to be easy to use, run and extend. Installation
+        Latest stable release On most systems where you can run Python, the best way
+        to install Sopel is to install pip and then pip install sopel.</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://github.com/sopel-irc\">Sopel
+        \xB7 GitHub</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://github.com/sopel-irc\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/github.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://github.com/sopel-irc\">\n
+        \                 github.com/sopel-irc\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://github.com/sopel-irc\">A Python <b>IRC</b>
+        <b>bot</b> 2 followers https://sopel.chat/ @SopelIRC Verified Sponsor Overview
+        Repositories Projects Packages People Pinned sopel Public \U0001F916\U0001F4AC
+        An easy-to-use and highly extensible <b>IRC</b> <b>Bot</b> framework. Formerly
+        Willie. Python 938 413 Repositories sopel-twitter Public A Twitter plugin
+        for Sopel Python 2 5 0 1 Updated 15 minutes ago sopel Public</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://github.com/sopel-irc/sopel/releases\">Releases
+        \xB7 sopel-irc/sopel \xB7 GitHub</a>\n          \n          </h2>\n\n      \n\n
+        \           <div class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://github.com/sopel-irc/sopel/releases\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/github.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://github.com/sopel-irc/sopel/releases\">\n
+        \                 github.com/sopel-irc/sopel/releases\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://github.com/sopel-irc/sopel/releases\">Sopel&#x27;s
+        settings object (<b>bot</b>.config) <b>bot</b>.say now allows even more control
+        over variable-length content via optional truncation and trailing parameters
+        [[], []] <b>bot</b>.trigger now has a plain attribute, containing the received
+        line with formatting stripped [[]] Channel objects now contain information
+        about channel modes [[]]</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://forge.puppet.com/modules/savoirfaire/sopel/readme\">savoirfaire/sopel
+        \xB7 Install and configure the sopel IRC client \xB7 Puppet ...</a>\n          \n
+        \         </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://forge.puppet.com/modules/savoirfaire/sopel/readme\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/forge.puppet.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://forge.puppet.com/modules/savoirfaire/sopel/readme\">\n
+        \                 forge.puppet.com/modules/savoirfaire/sopel/readme\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://forge.puppet.com/modules/savoirfaire/sopel/readme\">The
+        home directory of the sopel user to create. This is where it stores its database
+        and configuration files. The method the sopel <b>irc</b> <b>bot</b> should
+        use to connect to the host. Can either be nil for no auth, or nickserv for
+        nickserv authentication. The password the sopel <b>irc</b> <b>bot</b> should
+        use to connect to the host.</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://github.com/sopel-irc/sopel.chat/blob/master/index.md\">sopel.chat/index.md
+        at master \xB7 sopel-irc/sopel.chat</a>\n          \n          </h2>\n\n      \n\n
+        \           <div class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://github.com/sopel-irc/sopel.chat/blob/master/index.md\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/github.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://github.com/sopel-irc/sopel.chat/blob/master/index.md\">\n
+        \                 github.com/sopel-irc/sopel.chat/blob/master/index.md\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://github.com/sopel-irc/sopel.chat/blob/master/index.md\">Website
+        for Sopel. Contribute to sopel-<b>irc</b>/sopel.chat development by creating
+        an account on GitHub.</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://stackoverflow.com/questions/34419265/how-to-set-and-later-change-a-rule-in-a-sopel-irc-bot-module-python\">How
+        to set, and later change, a @rule in a Sopel IRC bot module ...</a>\n          \n
+        \         </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://stackoverflow.com/questions/34419265/how-to-set-and-later-change-a-rule-in-a-sopel-irc-bot-module-python\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/stackoverflow.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://stackoverflow.com/questions/34419265/how-to-set-and-later-change-a-rule-in-a-sopel-irc-bot-module-python\">\n
+        \                 stackoverflow.com/questions/34419265/how-to-set-and-later-change-a-rule-in-a-sopel-irc-bot-module-python\n
+        \                 </a>\n\n                  \n\n                </div>\n            </div>\n\n
+        \           \n                  <a class=\"result__snippet\" href=\"https://stackoverflow.com/questions/34419265/how-to-set-and-later-change-a-rule-in-a-sopel-irc-bot-module-python\">I&#x27;m
+        working with the Sopel (previously Willie and before that, Jenni/Phenny) python
+        <b>IRC</b> <b>bot</b> as I&#x27;d like to set up a trivia quiz for our <b>IRC</b>
+        channel.. With Sopel, the @rule decorator lets you set a string that the <b>bot</b>
+        will listen out for and which triggers a corresponding function when encountered.</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://en.wikipedia.org/wiki/IRC_bot\">IRC
+        bot - Wikipedia</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://en.wikipedia.org/wiki/IRC_bot\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/en.wikipedia.org.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://en.wikipedia.org/wiki/IRC_bot\">\n
+        \                 en.wikipedia.org/wiki/IRC_bot\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://en.wikipedia.org/wiki/IRC_bot\">An
+        <b>IRC</b> <b>bot</b> is a set of scripts or an independent program that connects
+        to Internet Relay Chat as a client, and so appears to other <b>IRC</b> users
+        as another user. An <b>IRC</b> <b>bot</b> differs from a regular client in
+        that instead of providing interactive access to <b>IRC</b> for a human user,
+        it performs automated functions. Function</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://github.com/tkimnguyen/sopel-irc-bot\">GitHub
+        - tkimnguyen/sopel-irc-bot: Sopel bot https://sopel.chat for ...</a>\n          \n
+        \         </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://github.com/tkimnguyen/sopel-irc-bot\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/github.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://github.com/tkimnguyen/sopel-irc-bot\">\n
+        \                 github.com/tkimnguyen/sopel-irc-bot\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://github.com/tkimnguyen/sopel-irc-bot\">Sopel
+        <b>bot</b> https://sopel.chat for Plone <b>IRC</b> . Contribute to tkimnguyen/sopel-<b>irc</b>-<b>bot</b>
+        development by creating an account on GitHub.</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.freshports.org/irc/py-sopel/\">FreshPorts
+        -- irc/py-sopel: Easy-to-use and highly extensible IRC Bot ...</a>\n          \n
+        \         </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://www.freshports.org/irc/py-sopel/\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.freshports.org.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.freshports.org/irc/py-sopel/\">\n
+        \                 www.freshports.org/irc/py-sopel/\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.freshports.org/irc/py-sopel/\">Description:
+        Sopel is a simple, lightweight, open source, easy-to-use <b>IRC</b> Utility
+        <b>bot</b>, written in Python. It&#x27;s designed to be easy to use, run and
+        extend. \xA6 \xA6 \xA6 \xA6 pkg-plist: as obtained via: make generate-plist
+        There is no configure plist information for this port. Dependency lines: $
+        {PYTHON_PKGNAMEPREFIX}sopel&gt;0:irc/py-sopel@$ {PY_FLAVOR}</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://preview.sopel.chat/tutorials/part-2-config-wizard-and-setup-functions/\">Sopel
+        tutorial, Part 2: The config file, and the configure &amp; setup ...</a>\n
+        \         \n          </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://preview.sopel.chat/tutorials/part-2-config-wizard-and-setup-functions/\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/preview.sopel.chat.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://preview.sopel.chat/tutorials/part-2-config-wizard-and-setup-functions/\">\n
+        \                 preview.sopel.chat/tutorials/part-2-config-wizard-and-setup-functions/\n
+        \                 </a>\n\n                  \n\n                </div>\n            </div>\n\n
+        \           \n                  <a class=\"result__snippet\" href=\"https://preview.sopel.chat/tutorials/part-2-config-wizard-and-setup-functions/\">Here,
+        core, admin, and bugzilla are sections. As you may have guessed, core contains
+        attributes relevant to the <b>bot&#x27;s</b> core functionality - it&#x27;s
+        nick, the host to connect to, etc., and bugzilla and admin contain attributes
+        relevant to two of the <b>bot&#x27;s</b> plugins. In the context of your callable,
+        the config file is available as an attribute of the <b>bot</b> parameter.</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://sopel.pagaloo.com/d/chat\">Sopel
+        - Sopel - The Python IRC Bot sopel.chat</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://sopel.pagaloo.com/d/chat\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/sopel.pagaloo.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://sopel.pagaloo.com/d/chat\">\n
+        \                 sopel.pagaloo.com/d/chat\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://sopel.pagaloo.com/d/chat\">The Python
+        <b>IRC</b> <b>Bot</b>. A project of Nerdfighteria Network. Is a simple, easy-to-use,
+        open-source <b>IRC</b> utility <b>bot</b>, written in Python. ... We identified
+        that a single root page on <b>sopel.chat</b> took one thousand two hundred
+        and twelve milliseconds to stream. We could not find a SSL certificate, so
+        therefore our web crawlers consider this site not secure.</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://community.plone.org/t/sopel-bot-in-irc/5956\">Sopel
+        bot in IRC - Communications Team - Plone Community</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://community.plone.org/t/sopel-bot-in-irc/5956\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/community.plone.org.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://community.plone.org/t/sopel-bot-in-irc/5956\">\n
+        \                 community.plone.org/t/sopel-bot-in-irc/5956\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://community.plone.org/t/sopel-bot-in-irc/5956\">re:
+        Need a <b>bot</b> in Gitter or <b>IRC</b> to help with newcomer support Many
+        of you may have noticed the Sopel <b>IRC</b> <b>bot</b> responding to various
+        messages in <b>IRC</b> #plone Here&#x27;s what I&#x27;m trying to accomplish
+        with the <b>bot</b>: Newcomers in both <b>IRC</b> and Gitter ask for help,
+        but often no one responds to them. Other people then complain that based on
+        that lack of response that &quot;Plone is dead&quot; TM. I am on <b>IRC</b>
+        and ...</a>\n            \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.youtube.com/watch?v=ILSip3F_ylA\">Installing
+        Sopel irc bot in Linux inside Windows Virtualbox</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.youtube.com/watch?v=ILSip3F_ylA\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.youtube.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.youtube.com/watch?v=ILSip3F_ylA\">\n
+        \                 www.youtube.com/watch?v=ILSip3F_ylA\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.youtube.com/watch?v=ILSip3F_ylA\">Unedited
+        installation video with misstyping and doing unnecessary stuff. Maybe later
+        video about configuration?http://sopel.chat/Liquicity Youtube channelhtt...</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://opencollective.com/sopel\">Sopel
+        - Open Collective</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://opencollective.com/sopel\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/opencollective.com.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://opencollective.com/sopel\">\n
+        \                 opencollective.com/sopel\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://opencollective.com/sopel\">I&#x27;m
+        a Python <b>IRC</b> <b>bot</b>, designed to be easy to set up and customize.
+        Solutions. Product. Company. Help &amp; Support. Search. Sopel. COLLECTIVE.
+        <b>irc</b>. <b>irc-bot</b>. <b>irc</b>-<b>bot</b>-framework + 2 more. ...
+        This tier is intended for use by companies using Sopel in commercial applications.
+        Starts at $100 USD / year. Contribute. Latest activity by. Be the first one
+        to ...</a>\n            \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://preview.sopel.chat/appendix/phenny-compatibility/\">Phenny
+        compatibility - Sopel</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://preview.sopel.chat/appendix/phenny-compatibility/\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/preview.sopel.chat.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://preview.sopel.chat/appendix/phenny-compatibility/\">\n
+        \                 preview.sopel.chat/appendix/phenny-compatibility/\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://preview.sopel.chat/appendix/phenny-compatibility/\">Imports
+        of <b>bot</b> and <b>irc</b> are broken. There is not necessarily a simple
+        solution, but the only plugin this is likely to affect is reload , the functionality
+        of which is replaced and improved in Sopel. Callables that used the deprecated
+        function signature from phenny (e.g. def f_time(self, origin, match, args):
+        rather than def f_time(phenny, input ...</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n\n
+        \       \n        \n                <div class=\"nav-link\">\n        <form
+        action=\"/html/\" method=\"post\">\n          <input type=\"submit\" class='btn
+        btn--alt' value=\"Next\" />\n          <input type=\"hidden\" name=\"q\" value=\"sopel.chat
+        irc bot\" />\n          <input type=\"hidden\" name=\"s\" value=\"20\" />\n
+        \         <input type=\"hidden\" name=\"nextParams\" value=\"\" />\n          <input
+        type=\"hidden\" name=\"v\" value=\"l\" />\n          <input type=\"hidden\"
+        name=\"o\" value=\"json\" />\n          <input type=\"hidden\" name=\"dc\"
+        value=\"21\" />\n          <input type=\"hidden\" name=\"api\" value=\"d.js\"
+        />\n          <input type=\"hidden\" name=\"vqd\" value=\"4-8666177767714898481249428408921031710\"
+        />\n\n        \n        \n        \n          <input name=\"kl\" value=\"us-en\"
+        type=\"hidden\" />\n        \n        \n        \n        \n        </form>\n
+        \               </div>\n        \n\n\n\n        <div class=\" feedback-btn\">\n
+        \           <a rel=\"nofollow\" href=\"//duckduckgo.com/feedback.html\" target=\"_new\">Feedback</a>\n
+        \       </div>\n        <div class=\"clear\"></div>\n  </div>\n  </div> <!--
+        links wrapper //-->\n\n\n\n    </div>\n  </div>\n\n    <div id=\"bottom_spacing2\"></div>\n\n
+        \   \n      <img src=\"//duckduckgo.com/t/sl_h\"/>\n    \n</body>\n</html>\n"
     headers:
-      Cache-Control: [max-age=1]
-      Connection: [keep-alive]
-      Content-Encoding: [gzip]
-      Content-Security-Policy: ['default-src https: blob: data: ''unsafe-inline''
-          ''unsafe-eval''; frame-ancestors ''self''']
-      Content-Type: [text/html; charset=UTF-8]
-      Date: ['Fri, 09 Oct 2020 04:40:42 GMT']
-      Expect-CT: [max-age=0]
-      Expires: ['Fri, 09 Oct 2020 04:40:43 GMT']
-      Referrer-Policy: [origin]
-      Server: [nginx]
-      Server-Timing: [total;dur=167;desc="Backend Total"]
-      Set-Cookie: ['kl=us-en; Secure; HttpOnly; SameSite=Strict;Expires=Sat, 09 Oct
-          2021 04:40:42 GMT;']
-      Strict-Transport-Security: [max-age=0]
-      Transfer-Encoding: [chunked]
-      Vary: [Accept-Encoding]
-      X-Content-Type-Options: [nosniff]
-      X-DuckDuckGo-Locale: [en_US]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1;mode=block]
-    status: {code: 200, message: OK}
+      Cache-Control:
+      - max-age=1
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - br
+      Content-Security-Policy:
+      - 'default-src ''none'' ; connect-src  https://duckduckgo.com https://*.duckduckgo.com
+        https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ ;
+        manifest-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; media-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; script-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; font-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; img-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; style-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; object-src ''none'' ; worker-src blob: ; child-src blob:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-ancestors ''self'' ; base-uri ''self'' ; block-all-mixed-content ;'
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Thu, 12 Oct 2023 04:39:28 GMT
+      Expect-CT:
+      - max-age=0
+      Expires:
+      - Thu, 12 Oct 2023 04:39:29 GMT
+      Permissions-Policy:
+      - interest-cohort=()
+      Referrer-Policy:
+      - origin
+      Server:
+      - nginx
+      Server-Timing:
+      - total;dur=856;desc="Backend Total"
+      Set-Cookie:
+      - kl=us-en; Secure; HttpOnly; SameSite=Strict;Expires=Fri, 11 Oct 2024 04:39:27
+        GMT;
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-DuckDuckGo-Locale:
+      - en_US
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1;mode=block
+    status:
+      code: 200
+      message: OK
 version: 1
