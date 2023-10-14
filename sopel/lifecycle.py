@@ -141,8 +141,8 @@ def deprecated(
 
     @functools.wraps(func)
     def deprecated_func(*args, **kwargs):
-        warn_ver = warning_in and parse_version(warning_in)
-        this_ver = parse_version(__version__)
+        warn_ver = warning_in and parse_version(warning_in).release
+        this_ver = parse_version(__version__).release
 
         if not (warn_ver and warn_ver >= this_ver):
             original_frame = inspect.stack()[-stack_frame]
