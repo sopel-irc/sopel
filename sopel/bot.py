@@ -1279,6 +1279,14 @@ class SopelWrapper:
     their ``bot`` argument. It acts as a proxy, providing the ``trigger``'s
     ``sender`` (source channel or private message) as the default
     ``destination`` argument for overridden methods.
+
+    .. deprecated:: 8.0
+
+        ``SopelWrapper`` is being replaced with a ``contextvars`` based
+        alternative. For more information, see `#2460`__.
+
+    .. __: https://github.com/sopel-irc/sopel/issues/2460
+
     """
     def __init__(self, sopel, trigger, output_prefix=''):
         if not output_prefix:
