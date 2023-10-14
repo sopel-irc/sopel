@@ -141,8 +141,10 @@ def deprecated(
 
     @functools.wraps(func)
     def deprecated_func(*args, **kwargs):
-        if not (warning_in and
-                parse_version(warning_in) >= parse_version(__version__)):
+        warn_ver = warning_in and parse_version(warning_in)
+        this_ver = parse_version(__version__)
+
+        if not (warn_ver and warn_ver >= this_ver):
             original_frame = inspect.stack()[-stack_frame]
             mod = inspect.getmodule(original_frame[0])
             module_name = None
