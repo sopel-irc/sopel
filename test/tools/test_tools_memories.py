@@ -242,3 +242,28 @@ def test_sopel_identifier_memory_from_kwargs():
     # This is unsupported behavior, by design.
     with pytest.raises(TypeError):
         memories.SopelIdentifierMemory(CamelCaseKey=True, lowercasekey=False)
+
+
+def test_sopel_identifier_memory_clear():
+    memory = memories.SopelIdentifierMemory(
+        {'FooBar': 'foobar', 'BarFoo': 'barfoo'}
+    )
+    assert isinstance(memory, memories.SopelIdentifierMemory)
+    assert len(memory) == 2
+    assert 'FooBar' in memory
+    assert memory['FooBar'] == 'foobar'
+    assert 'BarFoo' in memory
+    assert memory['BarFoo'] == 'barfoo'
+
+    memory.clear()
+    assert isinstance(memory, memories.SopelIdentifierMemory)
+    assert len(memory) == 0
+    assert 'FooBar' not in memory
+    assert 'BarFoo' not in memory
+
+    memory['spameggs'] = 'spameggs'
+    assert len(memory) == 1
+    assert 'SpamEggs' in memory
+    assert memory['SpamEggs'] == 'spameggs'
+    assert memory['spaMeggS'] == 'spameggs'
+    assert memory['spameggs'] == memory['sPAmeGGs']
