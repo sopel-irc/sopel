@@ -62,6 +62,26 @@ def test_sopel_identifier_memory_channel_str():
     assert memory['#AdminChannel'] == test_value
 
 
+def test_sopel_identifier_memory_setdefault():
+    memory = memories.SopelIdentifierMemory()
+    assert 'foo' not in memory
+
+    memory.setdefault('Foo')
+    assert len(memory) == 1
+    assert 'foo' in memory
+    assert 'fOO' in memory
+    assert memory['fOo'] is None
+
+    memory.setdefault('bAr', 'DEFAULT')
+    assert len(memory) == 2
+    assert 'FoO' in memory
+    assert 'BaR' in memory
+    assert memory['Bar'] == 'DEFAULT'
+
+    assert memory.setdefault('baR', 'different') == 'DEFAULT'
+    assert len(memory) == 2
+
+
 def test_sopel_identifier_memory_del_key():
     memory = memories.SopelIdentifierMemory()
     memory['KeY'] = True

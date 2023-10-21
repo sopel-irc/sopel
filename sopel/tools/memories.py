@@ -228,6 +228,9 @@ class SopelIdentifierMemory(SopelMemory):
     def __setitem__(self, key: Optional[str], value):
         super().__setitem__(self._make_key(key), value)
 
+    def setdefault(self, key: str, default=None):
+        return super().setdefault(self._make_key(key), default)
+
     def __delitem__(self, key: str):
         super().__delitem__(self._make_key(key))
 
