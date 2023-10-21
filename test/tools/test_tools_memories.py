@@ -58,3 +58,16 @@ def test_sopel_identifier_memory_channel_str():
     assert memory[channel] == test_value
     assert memory['#adminchannel'] == test_value
     assert memory['#AdminChannel'] == test_value
+
+
+def test_sopel_identifier_memory_del_key():
+    memory = memories.SopelIdentifierMemory()
+    memory['KeY'] = True
+    assert 'KeY' in memory
+    del memory['KeY']
+    assert 'KeY' not in memory
+
+    memory['kEy'] = True
+    assert 'KeY' in memory
+    del memory['KeY']
+    assert 'KeY' not in memory
