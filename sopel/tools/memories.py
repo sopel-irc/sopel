@@ -246,3 +246,27 @@ class SopelIdentifierMemory(SopelMemory):
 
     def update(self, maybe_mapping=tuple()):
         super().update(self._convert_keys(maybe_mapping))
+
+    def __or__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+
+        # self on the left, so other's keys overwrite
+        new = self.copy()
+        new.update(other)
+        return new
+
+    def __ror__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+
+        # self on the right, so keep only new keys from other
+        new = self.copy()
+        new.update((k, v) for k, v in other.items() if k not in self)
+        return new
+
+    def __ior__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+        self.update(other)
+        return self

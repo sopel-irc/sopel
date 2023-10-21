@@ -316,3 +316,116 @@ def test_sopel_identifier_memory_update():
     assert memory['froMlisTpairS'] is False
     assert memory['froMdicT'] is False
     assert memory['froMseT'] is True
+
+
+def test_sopel_identifier_memory_or_op():
+    memory = memories.SopelIdentifierMemory({
+        'FromMemory': True,
+        'FromOther': False,
+    })
+    assert len(memory) == 2
+    assert memory['froMmemorY'] is True
+    assert memory['froMotheR'] is False
+
+    other_memory = memories.SopelIdentifierMemory({
+        'FromMemory': False,
+        'FromOther': True,
+    })
+    assert len(other_memory) == 2
+    assert 'FromOther' in other_memory
+    assert other_memory['FromOther'] is True
+    assert 'fromother' in other_memory
+
+    result = memory | other_memory
+    assert len(result) == 2
+    assert result['fROmMemorY'] is False
+    assert result['fROmoTHEr'] is True
+
+    result = other_memory | memory
+    assert len(result) == 2
+    assert result['FroMMemorY'] is True
+    assert result['FroMOtheR'] is False
+
+
+def test_sopel_identifier_memory_or_op_dict():
+    memory = memories.SopelIdentifierMemory({'FromMemory': True, 'FromDict': False})
+    assert len(memory) == 2
+    assert memory['froMmemorY'] is True
+    assert memory['froMdicT'] is False
+
+    dictionary = {'FromMemory': False, 'FromDict': True, 'AlsoFromDict': True}
+    assert len(dictionary) == 3
+    assert dictionary['FromDict'] is True
+    assert dictionary['FromMemory'] is False
+    assert dictionary['AlsoFromDict'] is True
+    assert 'alsofromdict' not in dictionary
+
+    # __or__
+    result = memory | dictionary
+    assert len(result) == 3
+    assert result['fROmMemorY'] is False
+    assert result['fROmDicT'] is True
+    assert result['alsOfroMdicT'] is True
+
+    # __ror__
+    result = dictionary | memory
+    assert len(result) == 3
+    assert result['fROmMemorY'] is True
+    assert result['fROmDicT'] is False
+    assert result['alsOfroMdicT'] is True
+
+
+def test_sopel_identifier_memory_or_op_other():
+    memory = memories.SopelIdentifierMemory()
+
+    with pytest.raises(TypeError):
+        # __or__
+        memory | 5
+    with pytest.raises(TypeError):
+        # __ror__
+        'str' | memory
+
+
+def test_sopel_identifier_memory_ior_op():
+    memory = memories.SopelIdentifierMemory({'FromMemory': True})
+    assert len(memory) == 1
+    assert memory['froMmemorY'] is True
+
+    other_memory = memories.SopelIdentifierMemory({
+        'FromMemory': False,
+        'FromOther': True,
+    })
+    assert len(other_memory) == 2
+    assert 'FromOther' in other_memory
+    assert other_memory['froMotheR'] is True
+
+    memory |= other_memory
+    assert len(memory) == 2
+    assert memory['fROmMemorY'] is False
+    assert memory['fROmoTHEr'] is True
+
+
+def test_sopel_identifier_memory_ior_op_dict():
+    memory = memories.SopelIdentifierMemory({'FromMemory': True})
+    assert len(memory) == 1
+    assert memory['froMmemorY'] is True
+
+    dictionary = {'FromDict': True}
+    assert len(dictionary) == 1
+    assert 'FromDict' in dictionary
+    assert dictionary['FromDict'] is True
+    assert 'fromdict' not in dictionary
+
+    memory |= dictionary
+    assert len(memory) == 2
+    assert memory['fROmMemorY'] is True
+    assert memory['fROmDicT'] is True
+
+
+def test_sopel_identifier_memory_ior_op_other():
+    memory = memories.SopelIdentifierMemory()
+
+    with pytest.raises(TypeError):
+        memory |= 5
+    with pytest.raises(TypeError):
+        memory |= 'str'
