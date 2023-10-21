@@ -164,3 +164,6 @@ class SopelIdentifierMemory(SopelMemory):
 
     def __delitem__(self, key: str):
         super().__delitem__(self._make_key(key))
+
+    def copy(self):
+        return type(self)(self, identifier_factory=self.make_identifier)

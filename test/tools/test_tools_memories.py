@@ -71,3 +71,25 @@ def test_sopel_identifier_memory_del_key():
     assert 'KeY' in memory
     del memory['KeY']
     assert 'KeY' not in memory
+
+
+def test_sopel_identifier_memory_copy():
+    memory = memories.SopelIdentifierMemory()
+    memory['SomeCamelCase'] = True
+    memory['loweronly'] = False
+    assert len(memory) == 2
+    assert isinstance(memory, memories.SopelIdentifierMemory)
+
+    copied = memory.copy()
+    assert len(copied) == 2
+    assert 'SomeCamelCase' in copied
+    assert 'loweronly' in copied
+    assert isinstance(memory, memories.SopelIdentifierMemory)
+
+    # be absolutely sure it's a new object
+    copied['newOnly'] = True
+    assert 'NewOnly' in copied
+    assert 'NewOnly' not in memory
+    del copied['LowerOnly']
+    assert 'LowerOnly' not in copied
+    assert 'LowerOnly' in memory
