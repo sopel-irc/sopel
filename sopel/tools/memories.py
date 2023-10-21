@@ -13,7 +13,10 @@ from typing import Any, Optional, TYPE_CHECKING, Union
 from .identifiers import Identifier, IdentifierFactory
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Mapping
+    from collections.abc import Iterable, Mapping
+    from typing import Tuple
+
+    MemoryConstructorInput = Union[Mapping[str, Any], Iterable[Tuple[str, Any]]]
 
 
 class _NO_DEFAULT:
@@ -179,26 +182,42 @@ class SopelIdentifierMemory(SopelMemory):
                 'SopelIdentifierMemory expected at most 1 argument, got {}'
                 .format(len(args))
             )
-        if len(args) == 1:
-            # help out mypy
-            mapping: Union[Mapping, Generator[tuple[Any, Any], None, None]]
-            # prepare keys
-            if hasattr(args[0], 'items'):
-                mapping = {identifier_factory(k): v for k, v in args[0].items()}
-            else:
-                mapping = ((identifier_factory(k), v) for k, v in args[0])
-
-            super().__init__(mapping)
-        else:
-            super().__init__()
 
         self.make_identifier = identifier_factory
         """A factory to transform keys into identifiers."""
+
+        if len(args) == 1:
+            super().__init__(self._convert_keys(args[0]))
+        else:
+            super().__init__()
 
     def _make_key(self, key: Optional[str]) -> Optional[Identifier]:
         if key is None:
             return None
         return self.make_identifier(key)
+
+    def _convert_keys(
+        self,
+        data: MemoryConstructorInput,
+    ) -> Iterable[tuple[Identifier, Any]]:
+        """Ensure input keys are converted to ``Identifer``.
+
+        :param data: the data passed to the memory at init or update
+        :return: a generator of key-value pairs with the keys converted
+                 to :class:`~.identifiers.Identifier`
+
+        This private method takes input of a mapping or an iterable of key-value
+        pairs and outputs a generator of key-value pairs ready for use in a new
+        or updated :class:`self` instance. It is designed to work with any of the
+        possible ways initial data can be passed to a :class:`dict`, except that
+        ``kwargs`` must be passed to this method as a dictionary.
+        """
+        # figure out what to generate from
+        if hasattr(data, 'items'):
+            data = data.items()
+
+        # return converted input data
+        return ((self.make_identifier(k), v) for k, v in data)
 
     def __getitem__(self, key: Optional[str]):
         return super().__getitem__(self._make_key(key))
@@ -224,3 +243,6 @@ class SopelIdentifierMemory(SopelMemory):
         if default is _NO_DEFAULT:
             return super().pop(self._make_key(key))
         return super().pop(self._make_key(key), default)
+
+    def update(self, maybe_mapping=tuple()):
+        super().update(self._convert_keys(maybe_mapping))

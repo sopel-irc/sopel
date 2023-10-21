@@ -267,3 +267,52 @@ def test_sopel_identifier_memory_clear():
     assert memory['SpamEggs'] == 'spameggs'
     assert memory['spaMeggS'] == 'spameggs'
     assert memory['spameggs'] == memory['sPAmeGGs']
+
+
+def test_sopel_identifier_memory_update():
+    memory = memories.SopelIdentifierMemory({
+        'FromIdentifierMemory': True,
+    })
+    tuple_ = (('FromTuplePairs', True), ('FromIdentifierMemory', False))
+    list_ = [('FromTuplePairs', False), ('FromListPairs', True)]
+    dict_ = {'FromDict': True, 'FromListPairs': False}
+    set_ = set((('FromDict', False), ('FromSet', True)))
+
+    assert len(memory) == 1
+    assert memory['froMidentifieRmemorY'] is True
+    assert 'froMtuplEpairS' not in memory
+    assert 'froMlisTpairS' not in memory
+    assert 'froMdicT' not in memory
+    assert 'froMseT' not in memory
+
+    memory.update(tuple_)
+    assert len(memory) == 2
+    assert memory['froMidentifieRmemorY'] is False
+    assert memory['froMtuplEpairS'] is True
+    assert 'froMlisTpairS' not in memory
+    assert 'froMdicT' not in memory
+    assert 'froMseT' not in memory
+
+    memory.update(list_)
+    assert len(memory) == 3
+    assert memory['froMidentifieRmemorY'] is False
+    assert memory['froMtuplEpairS'] is False
+    assert memory['froMlisTpairS'] is True
+    assert 'froMdicT' not in memory
+    assert 'froMseT' not in memory
+
+    memory.update(dict_)
+    assert len(memory) == 4
+    assert memory['froMidentifieRmemorY'] is False
+    assert memory['froMtuplEpairS'] is False
+    assert memory['froMlisTpairS'] is False
+    assert memory['froMdicT'] is True
+    assert 'froMseT' not in memory
+
+    memory.update(set_)
+    assert len(memory) == 5
+    assert memory['froMidentifieRmemorY'] is False
+    assert memory['froMtuplEpairS'] is False
+    assert memory['froMlisTpairS'] is False
+    assert memory['froMdicT'] is False
+    assert memory['froMseT'] is True
