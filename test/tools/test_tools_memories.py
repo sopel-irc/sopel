@@ -97,6 +97,43 @@ def test_sopel_identifier_memory_copy():
     assert 'LowerOnly' in memory
 
 
+def test_sopel_identifier_memory_get():
+    memory = memories.SopelIdentifierMemory()
+    memory['SomeCamelCase'] = True
+    memory['loweronly'] = False
+    assert len(memory) == 2
+
+    # verify key-exists behavior w/implicit default
+    assert memory.get('somecamelcase') == memory['somecamelcase']
+    assert memory.get('LowerOnly') == memory['LowerOnly']
+    assert len(memory) == 2
+
+    # verify key-exists behavior w/explicit default of None
+    assert memory.get('somecamelcase', None) == memory['somecamelcase']
+    assert memory.get('LowerOnly', None) == memory['LowerOnly']
+    assert len(memory) == 2
+
+    # verify key-exists behavior w/explicit "real" default value
+    assert memory.get('somecamelcase', 'DEFAULT') == memory['somecamelcase']
+    assert memory.get('LowerOnly', 'DEFAULT') == memory['LowerOnly']
+    assert len(memory) == 2
+
+    # verify key-missing behavior w/implicit default
+    assert 'missing_key' not in memory
+    assert memory.get('missing_key') is None
+    assert len(memory) == 2
+
+    # verify key-missing behavior w/explicit default of None
+    assert 'missing_key' not in memory
+    assert memory.get('missing_key', None) is None
+    assert len(memory) == 2
+
+    # verify key-missing behavior w/explicit "real" default value
+    assert 'missing_key' not in memory
+    assert memory.get('missing_key', 'DEFAULT') == 'DEFAULT'
+    assert len(memory) == 2
+
+
 def test_sopel_identifier_memory_pop():
     memory = memories.SopelIdentifierMemory()
     memory['SomeCamelCase'] = True

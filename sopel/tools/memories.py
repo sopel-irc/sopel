@@ -183,6 +183,11 @@ class SopelIdentifierMemory(SopelMemory):
     def copy(self):
         return type(self)(self, identifier_factory=self.make_identifier)
 
+    def get(self, key: str, default=_NO_DEFAULT):
+        if default is _NO_DEFAULT:
+            return super().get(self._make_key(key))
+        return super().get(self._make_key(key), default)
+
     def pop(self, key: str, default=_NO_DEFAULT):
         if default is _NO_DEFAULT:
             return super().pop(self._make_key(key))
