@@ -1,6 +1,8 @@
 """Tests for Sopel Memory data-structures"""
 from __future__ import annotations
 
+import pytest
+
 from sopel.tools import identifiers, memories
 
 
@@ -93,3 +95,46 @@ def test_sopel_identifier_memory_copy():
     del copied['LowerOnly']
     assert 'LowerOnly' not in copied
     assert 'LowerOnly' in memory
+
+
+def test_sopel_identifier_memory_pop():
+    memory = memories.SopelIdentifierMemory()
+    memory['SomeCamelCase'] = True
+    assert len(memory) == 1
+
+    # verify SopelIdentifierMemory.pop('key') behavior
+    pop_me = memory.copy()
+    assert len(pop_me) == 1
+    assert pop_me.pop('someCAMELcase') is True
+    assert len(memory) == 1  # sanity check
+    assert len(pop_me) == 0
+
+    # verify SopelIdentifierMemory.pop('key', None) behavior
+    pop_me = memory.copy()
+    assert len(pop_me) == 1
+    assert pop_me.pop('someCAMELcase', None) is True
+    assert len(pop_me) == 0
+
+    # verify SopelIdentifierMemory.pop('key', 'default_value') behavior
+    pop_me = memory.copy()
+    assert len(pop_me) == 1
+    assert pop_me.pop('someCAMELcase', 'DEFAULT') is True
+    assert len(pop_me) == 0
+
+    # verify SopelIdentifierMemory.pop('missing_key') behavior
+    pop_me = memory.copy()
+    assert len(pop_me) == 1
+    assert 'missing_key' not in pop_me
+    with pytest.raises(KeyError):
+        pop_me.pop('missing_key')
+    assert len(pop_me) == 1
+
+    # verify SopelIdentifierMemory.pop('missing_key', None) behavior
+    assert 'missing_key' not in pop_me
+    assert pop_me.pop('missing_key', None) is None
+    assert len(pop_me) == 1
+
+    # verify SopelIdentifierMemory.pop('missing_key', 'default_value') behavior
+    assert 'missing_key' not in pop_me
+    assert pop_me.pop('missing_key', 'DEFAULT') == 'DEFAULT'
+    assert len(pop_me) == 1

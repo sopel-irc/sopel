@@ -13,6 +13,21 @@ from typing import Optional
 from .identifiers import Identifier, IdentifierFactory
 
 
+class _NO_DEFAULT:
+    """Private class to help with overriding C methods like ``dict.pop()``.
+
+    Some Python standard library features are implemented in pure C, and can
+    have a ``null`` default value for certain parameters that is impossible to
+    emulate at the Python layer. This class is our workaround for that.
+
+    .. warning::
+
+        Plugin authors **SHOULD NOT** use this class. It is not part of Sopel's
+        public API.
+
+    """
+
+
 class SopelMemory(dict):
     """A simple thread-safe ``dict`` implementation.
 
@@ -167,3 +182,8 @@ class SopelIdentifierMemory(SopelMemory):
 
     def copy(self):
         return type(self)(self, identifier_factory=self.make_identifier)
+
+    def pop(self, key: str, default=_NO_DEFAULT):
+        if default is _NO_DEFAULT:
+            return super().pop(self._make_key(key))
+        return super().pop(self._make_key(key), default)
