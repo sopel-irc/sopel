@@ -449,3 +449,62 @@ def test_sopel_identifier_memory_ior_op_other():
         memory |= 5
     with pytest.raises(TypeError):
         memory |= 'str'
+
+
+def test_sopel_identifier_memory_eq():
+    """Test equality checks between two `SopelIdentifierMemory` instances."""
+    memory = memories.SopelIdentifierMemory({'Foo': 'bar', 'Baz': 'Luhrmann'})
+    other_memory = memories.SopelIdentifierMemory((('Foo', 'bar'), ('Baz', 'Luhrmann')))
+
+    assert memory == other_memory
+    assert other_memory == memory  # cover our bases vis-a-vis operand precedence
+
+    memory = memories.SopelIdentifierMemory({'fOO': 'bar', 'bAZ': 'Luhrmann'})
+
+    assert memory == other_memory
+    assert other_memory == memory  # cover our bases vis-a-vis operand precedence
+
+
+def test_sopel_identifier_memory_eq_dict_id():
+    """Test ``SopelIdentifierMemory`` comparison to ``dict[Identifier, Any]``.
+
+    These can be equivalent, just like two ``dict`` objects with identical
+    ``Identifier`` keys can be.
+    """
+    memory = memories.SopelIdentifierMemory({'Foo': 'bar', 'Baz': 'Luhrmann'})
+    dictionary = dict(memory)
+
+    assert dictionary == memory
+    assert memory == dictionary  # cover our bases vis-a-vis operand precedence
+
+
+def test_sopel_identifier_memory_eq_dict_str():
+    """Test ``SopelIdentifierMemory`` comparison to ``dict[str, Any]``.
+
+    These are intentionally not considered equivalent.
+    """
+    dictionary = {'Foo': 'bar', 'Baz': 'Luhrmann'}
+    memory = memories.SopelIdentifierMemory(dictionary)
+
+    assert dictionary != memory
+    assert memory != dictionary  # cover our bases vis-a-vis operand precedence
+
+    memory = memories.SopelIdentifierMemory((('Spam', 'eggs'), ('GreenEggs', 'ham')))
+
+    assert dictionary != memory
+    assert memory != dictionary  # cover our bases vis-a-vis operand precedence
+
+
+def test_sopel_identifier_memory_eq_other():
+    """Test ``SopelIdentifierMemory`` comparison to non-dict types.
+
+    Never equivalent (``NotImplemented``).
+    """
+    memory = memories.SopelIdentifierMemory({'Foo': 'bar', 'Baz': 'Luhrmann'})
+
+    assert memory != 'string'
+    assert memory != 5
+    assert memory != ('Foo', 'Bar')
+
+    # operator precedence ass-covering
+    assert 'string' != memory

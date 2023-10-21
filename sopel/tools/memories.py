@@ -273,3 +273,12 @@ class SopelIdentifierMemory(SopelMemory):
             return NotImplemented
         self.update(other)
         return self
+
+    def __eq__(self, other):
+        if not isinstance(other, dict):
+            return NotImplemented
+        return super().__eq__(other)
+
+    def __ne__(self, other):
+        ret = self.__eq__(other)
+        return ret if ret is NotImplemented else not ret
