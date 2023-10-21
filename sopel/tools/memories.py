@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
-from typing import Optional
+from typing import Any, Optional, TYPE_CHECKING, Union
 
 from .identifiers import Identifier, IdentifierFactory
+
+if TYPE_CHECKING:
+    from collections.abc import Generator, Mapping
 
 
 class _NO_DEFAULT:
@@ -159,8 +162,25 @@ class SopelIdentifierMemory(SopelMemory):
         *args,
         identifier_factory: IdentifierFactory = Identifier,
     ) -> None:
-        super().__init__(*args)
-        self.make_identifier: IdentifierFactory = identifier_factory
+        if len(args) > 1:
+            raise TypeError(
+                'SopelIdentifierMemory expected at most 1 argument, got {}'
+                .format(len(args))
+            )
+        if len(args) == 1:
+            # help out mypy
+            mapping: Union[Mapping, Generator[tuple[Any, Any], None, None]]
+            # prepare keys
+            if hasattr(args[0], 'items'):
+                mapping = {identifier_factory(k): v for k, v in args[0].items()}
+            else:
+                mapping = ((identifier_factory(k), v) for k, v in args[0])
+
+            super().__init__(mapping)
+        else:
+            super().__init__()
+
+        self.make_identifier = identifier_factory
         """A factory to transform keys into identifiers."""
 
     def _make_key(self, key: Optional[str]) -> Optional[Identifier]:

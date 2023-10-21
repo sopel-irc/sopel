@@ -175,3 +175,64 @@ def test_sopel_identifier_memory_pop():
     assert 'missing_key' not in pop_me
     assert pop_me.pop('missing_key', 'DEFAULT') == 'DEFAULT'
     assert len(pop_me) == 1
+
+
+def test_sopel_identifier_memory_from_dict():
+    dictionary = {'CamelCaseKey': True, 'lowercasekey': False}
+
+    memory = memories.SopelIdentifierMemory(dictionary)
+    assert 'CamelCaseKey' in memory
+    assert 'camelcasekey' in memory
+    assert memory['cameLcasEkeY'] == dictionary['CamelCaseKey']
+    assert 'lowercasekey' in memory
+    assert 'LowerCaseKey' in memory
+    assert memory['LoWeRcAsEkEy'] == dictionary['lowercasekey']
+
+
+def test_sopel_identifier_memory_from_identifier_memory():
+    original_memory = memories.SopelIdentifierMemory(
+        {'CamelCaseKey': True, 'lowercasekey': False}
+    )
+    assert 'CamelCaseKey' in original_memory
+    assert 'camelcasekey' in original_memory
+    assert 'lowercasekey' in original_memory
+    assert 'LowerCaseKey' in original_memory
+
+    memory = memories.SopelIdentifierMemory(original_memory)
+    assert 'CamelCaseKey' in memory
+    assert 'camelcasekey' in memory
+    assert memory['cameLcasEkeY'] is True
+    assert 'lowercasekey' in memory
+    assert 'LowerCaseKey' in memory
+    assert memory['LoWeRcAsEkEy'] is False
+
+    # be sure we really have a new object
+    memory['newOnly'] = True
+    assert 'NewOnly' in memory
+    assert 'NewOnly' not in original_memory
+    del memory['cameLcasEkeY']
+    assert 'cameLcasEkeY' not in memory
+    assert 'cameLcasEkeY' in original_memory
+
+
+def test_sopel_identifier_memory_from_list():
+    pairs_list = [('CamelCaseKey', True), ('lowercasekey', False)]
+    memory = memories.SopelIdentifierMemory(pairs_list)
+
+    assert 'CamelCaseKey' in memory
+    assert 'camelcasekey' in memory
+    assert memory['cameLcasEkeY'] is True
+    assert 'lowercasekey' in memory
+    assert 'LowerCaseKey' in memory
+    assert memory['LoWeRcAsEkEy'] is False
+
+
+def test_sopel_identifier_memory_from_tuple():
+    pairs_tuple = (('CamelCaseKey', True), ('lowercasekey', False))
+    memory = memories.SopelIdentifierMemory(pairs_tuple)
+    assert 'CamelCaseKey' in memory
+    assert 'camelcasekey' in memory
+    assert memory['cameLcasEkeY'] is True
+    assert 'lowercasekey' in memory
+    assert 'LowerCaseKey' in memory
+    assert memory['LoWeRcAsEkEy'] is False
