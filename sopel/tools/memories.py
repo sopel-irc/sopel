@@ -38,6 +38,12 @@ class SopelMemory(dict):
     them at the same time from different threads, we use a blocking lock in
     ``__setitem__`` and ``__contains__``.
 
+    .. note::
+
+        Unlike the :class:`dict` on which they are based, ``SopelMemory`` and
+        its derivative types do not accept key-value pairs as keyword arguments
+        at construction time.
+
     .. versionadded:: 3.1
         As ``Willie.WillieMemory``
     .. versionchanged:: 4.0
@@ -74,6 +80,12 @@ class SopelMemory(dict):
 
 class SopelMemoryWithDefault(defaultdict):
     """Same as SopelMemory, but subclasses from collections.defaultdict.
+
+    .. note::
+
+        Unlike the :class:`~collections.defaultdict` on which it is based,
+        ``SopelMemoryWithDefault`` does not accept key-value pairs as keyword
+        arguments at construction time.
 
     .. versionadded:: 4.3
         As ``WillieMemoryWithDefault``

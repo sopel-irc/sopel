@@ -236,3 +236,9 @@ def test_sopel_identifier_memory_from_tuple():
     assert 'lowercasekey' in memory
     assert 'LowerCaseKey' in memory
     assert memory['LoWeRcAsEkEy'] is False
+
+
+def test_sopel_identifier_memory_from_kwargs():
+    # This is unsupported behavior, by design.
+    with pytest.raises(TypeError):
+        memories.SopelIdentifierMemory(CamelCaseKey=True, lowercasekey=False)
