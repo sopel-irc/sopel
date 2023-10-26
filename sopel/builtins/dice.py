@@ -247,4 +247,10 @@ def roll(bot, trigger):
         )
         return
 
-    bot.say("%s: %s = %d" % (arg_str_raw, pretty_str, result))
+    try:
+        bot.say("%s: %s = %d" % (arg_str_raw, pretty_str, result))
+    except ValueError:
+        # Converting the result to a string can also raise ValueError if it has
+        # more than int_max_str_digits digits (4300 by default on CPython)
+        # See https://docs.python.org/3.12/library/stdtypes.html#int-max-str-digits
+        bot.reply("I can't display a number that big. =(")
