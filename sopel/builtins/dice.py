@@ -17,17 +17,15 @@ from sopel.tools.calculation import eval_equation
 
 
 class DicePouch:
-    def __init__(self, num_of_die, type_of_die, addition):
+    def __init__(self, num_of_die, type_of_die):
         """Initialize dice pouch and roll the dice.
 
         Args:
             num_of_die: number of dice in the pouch.
             type_of_die: how many faces the dice have.
-            addition: how much is added to the result of the dice.
         """
         self.num = num_of_die
         self.type = type_of_die
-        self.addition = addition
 
         self.dice = {}
         self.dropped = {}
@@ -70,7 +68,7 @@ class DicePouch:
                 del self.dice[i]
 
     def get_simple_string(self):
-        """Return the values of the dice like (2+2+2[+1+1])+1."""
+        """Return the values of the dice like (2+2+2[+1+1])."""
         dice = self.dice.items()
         faces = ("+".join([str(face)] * times) for face, times in dice)
         dice_str = "+".join(faces)
@@ -81,14 +79,10 @@ class DicePouch:
             dfaces = ("+".join([str(face)] * times) for face, times in dropped)
             dropped_str = "[+%s]" % ("+".join(dfaces),)
 
-        plus_str = ""
-        if self.addition:
-            plus_str = "{:+d}".format(self.addition)
-
-        return "(%s%s)%s" % (dice_str, dropped_str, plus_str)
+        return "(%s%s)" % (dice_str, dropped_str)
 
     def get_compressed_string(self):
-        """Return the values of the dice like (3x2[+2x1])+1."""
+        """Return the values of the dice like (3x2[+2x1])."""
         dice = self.dice.items()
         faces = ("%dx%d" % (times, face) for face, times in dice)
         dice_str = "+".join(faces)
@@ -99,15 +93,11 @@ class DicePouch:
             dfaces = ("%dx%d" % (times, face) for face, times in dropped)
             dropped_str = "[+%s]" % ("+".join(dfaces),)
 
-        plus_str = ""
-        if self.addition:
-            plus_str = "{:+d}".format(self.addition)
-
-        return "(%s%s)%s" % (dice_str, dropped_str, plus_str)
+        return "(%s%s)" % (dice_str, dropped_str)
 
     def get_sum(self):
-        """Get the sum of non-dropped dice and the addition."""
-        result = self.addition
+        """Get the sum of non-dropped dice."""
+        result = 0
         for face, times in self.dice.items():
             result += face * times
         return result
@@ -155,7 +145,7 @@ def _roll_dice(bot, dice_expression):
         bot.reply('I only have 1000 dice. =(')
         return None  # Signal there was a problem
 
-    dice = DicePouch(dice_num, dice_type, 0)
+    dice = DicePouch(dice_num, dice_type)
 
     if result.group('drop_lowest'):
         drop = int(result.group('drop_lowest'))
