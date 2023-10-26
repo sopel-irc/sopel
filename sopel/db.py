@@ -29,14 +29,13 @@ from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 from sqlalchemy.sql import delete, func, select, update
 
 from sopel.lifecycle import deprecated
-from sopel.tools.identifiers import Identifier
+from sopel.tools.identifiers import Identifier, IdentifierFactory
 
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable
 
 
 LOGGER = logging.getLogger(__name__)
-IdentifierFactory = typing.Callable[[str], Identifier]
 
 
 def _deserialize(value):
@@ -146,7 +145,7 @@ class SopelDB:
         config,
         identifier_factory: IdentifierFactory = Identifier,
     ) -> None:
-        self.make_identifier = identifier_factory
+        self.make_identifier: IdentifierFactory = identifier_factory
 
         if config.core.db_url is not None:
             self.url = make_url(config.core.db_url)

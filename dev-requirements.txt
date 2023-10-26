@@ -6,11 +6,12 @@ flake8-future-import
 flake8-import-order
 flake8-type-checking; python_version >= '3.8'
 # Sphinx theme
-furo==2022.4.7
+furo==2023.9.10
 pytest~=7.1.0
 pytest-vcr~=1.0.2
 requests-mock~=1.9.3
-sphinx>=4,<5
+sphinx>=7.1.0,<8; python_version <= '3.8'
+sphinx>=7.2.0,<8; python_version > '3.8'
 # specify exact autoprogram version because the new (in 2021) maintainer
 # showed that they will indeed make major changes in patch versions
 sphinxcontrib-autoprogram==0.1.8

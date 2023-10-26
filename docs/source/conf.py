@@ -11,9 +11,7 @@ from __future__ import generator_stop
 # serve to show the default.
 
 from datetime import date
-import sys, os
-parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.sys.path.insert(0,parentdir)
+
 from sopel import __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -24,7 +22,7 @@ from sopel import __version__
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '4.0'
+needs_sphinx = '7.1'  # todo: upgrade when Py3.8 reaches EOL
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -111,7 +109,22 @@ pygments_style = 'friendly'
 pygments_dark_style = 'monokai'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['sopel.']
+
+# If a signature’s length in characters exceeds the number set, each parameter
+# within the signature will be displayed on an individual logical line.
+maximum_signature_line_length = 80
+
+
+# -- Options for autodoc -------------------------------------------------------
+
+autodoc_type_aliases = {
+    'Casemapping': 'sopel.tools.identifiers.Casemapping',
+    'IdentifierFactory': 'sopel.tools.identifiers.IdentifierFactory',
+    'ModeTuple': 'sopel.irc.modes.ModeTuple',
+    'ModeDetails': 'sopel.irc.modes.ModeDetails',
+    'PrivilegeDetails': 'sopel.irc.modes.PrivilegeDetails',
+}
 
 
 # -- Options for HTML output ---------------------------------------------------

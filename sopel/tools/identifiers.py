@@ -38,6 +38,7 @@ import string
 from typing import Callable
 
 Casemapping = Callable[[str], str]
+"""Type definition of a casemapping callable."""
 
 ASCII_TABLE = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)
 RFC1459_TABLE = str.maketrans(
@@ -278,3 +279,7 @@ class Identifier(str):
 
         """
         return bool(self) and not self.startswith(self.chantypes)
+
+
+IdentifierFactory = Callable[[str], Identifier]
+"""Type definition of an identifier factory."""

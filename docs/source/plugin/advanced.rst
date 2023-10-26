@@ -206,6 +206,10 @@ handler to run after the capability is acknowledged or denied by the server::
 .. autoclass:: sopel.plugin.CapabilityNegotiation
    :members:
 
+.. autoclass:: sopel.plugin.CapabilityHandler
+   :members:
+   :special-members: __call__
+
 
 Working with capabilities
 -------------------------
