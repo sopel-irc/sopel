@@ -17,8 +17,6 @@ from sopel import plugin
 from sopel.tools.calculation import eval_equation
 
 if TYPE_CHECKING:
-    from typing import Optional
-
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
 
@@ -116,7 +114,7 @@ class DicePouch:
         return len(self.dice) + len(self.dropped)
 
 
-def _roll_dice(bot: SopelWrapper, dice_expression: str) -> Optional[DicePouch]:
+def _roll_dice(dice_expression: str) -> DicePouch:
     result = re.search(
         r"""
         (?P<dice_num>-?\d*)
@@ -135,20 +133,17 @@ def _roll_dice(bot: SopelWrapper, dice_expression: str) -> Optional[DicePouch]:
 
     # Dice can't have zero or a negative number of sides.
     if dice_type <= 0:
-        bot.reply("I don't have any dice with %d sides. =(" % dice_type)
-        return None  # Signal there was a problem
+        raise ValueError("I don't have any dice with %d sides. =(" % dice_type)
 
     # Can't roll a negative number of dice.
     if dice_num < 0:
-        bot.reply("I'd rather not roll a negative amount of dice. =(")
-        return None  # Signal there was a problem
+        raise ValueError("I'd rather not roll a negative amount of dice. =(")
 
     # Upper limit for dice should be at most a million. Creating a dict with
     # more than a million elements already takes a noticeable amount of time
     # on a fast computer and ~55kB of memory.
     if dice_num > 1000:
-        bot.reply('I only have 1000 dice. =(')
-        return None  # Signal there was a problem
+        raise ValueError("I only have 1000 dice. =(")
 
     dice = DicePouch(dice_num, dice_type)
 
@@ -157,8 +152,7 @@ def _roll_dice(bot: SopelWrapper, dice_expression: str) -> Optional[DicePouch]:
         if drop >= 0:
             dice.drop_lowest(drop)
         else:
-            bot.reply("I can't drop the lowest %d dice. =(" % drop)
-            return None  # Signal there was a problem
+            raise ValueError("I can't drop the lowest %d dice. =(" % drop)
 
     return dice
 
@@ -215,13 +209,12 @@ def roll(bot: SopelWrapper, trigger: Trigger):
     arg_str = arg_str_raw.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
-    results = [_roll_dice(bot, dice_expr) for dice_expr in dice_expressions]
-
-    if None in results:
+    try:
+        dice = [_roll_dice(dice_expr) for dice_expr in dice_expressions]
+    except ValueError as err:
         # Stop computing roll if there was a problem rolling dice.
+        bot.reply(str(err))
         return
-
-    dice: list[DicePouch] = [result for result in results if result]
 
     def _get_eval_str(dice: DicePouch) -> str:
         return "(%d)" % (dice.get_sum(),)
