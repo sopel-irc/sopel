@@ -12,6 +12,10 @@ from sopel.tools.calculation import eval_equation
 
 
 @plugin.command('c', 'calc')
+@plugin.example('.c', 'Nothing to calculate.')
+@plugin.example('.c foo * bar', "Can't process expression: Node type 'Name' is not supported.")
+@plugin.example('.c 10 / 0', 'Division by zero is not supported in this universe.')
+@plugin.example('.c 10\\2', 'Invalid syntax')
 @plugin.example('.c 5 + 3', '8')
 @plugin.example('.c 0.9*10', '9')
 @plugin.example('.c 10*0.9', '9')
