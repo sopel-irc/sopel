@@ -11,28 +11,34 @@ from __future__ import annotations
 import operator
 import random
 import re
+from typing import TYPE_CHECKING
 
 from sopel import plugin
 from sopel.tools.calculation import eval_equation
 
+if TYPE_CHECKING:
+    from typing import Optional
+
+    from sopel.bot import SopelWrapper
+    from sopel.trigger import Trigger
+
 
 class DicePouch:
-    def __init__(self, num_of_die, type_of_die):
+    def __init__(self, dice_count: int, dice_type: int) -> None:
         """Initialize dice pouch and roll the dice.
 
-        Args:
-            num_of_die: number of dice in the pouch.
-            type_of_die: how many faces the dice have.
+        :param dice_count: the number of dice in the pouch
+        :param dice_type: how many faces each die has
         """
-        self.num = num_of_die
-        self.type = type_of_die
+        self.num: int = dice_count
+        self.type: int = dice_type
 
-        self.dice = {}
-        self.dropped = {}
+        self.dice: dict[int, int] = {}
+        self.dropped: dict[int, int] = {}
 
         self.roll_dice()
 
-    def roll_dice(self):
+    def roll_dice(self) -> None:
         """Roll all the dice in the pouch."""
         self.dice = {}
         self.dropped = {}
@@ -41,11 +47,10 @@ class DicePouch:
             count = self.dice.setdefault(number, 0)
             self.dice[number] = count + 1
 
-    def drop_lowest(self, n):
-        """Drop n lowest dice from the result.
+    def drop_lowest(self, n: int) -> None:
+        """Drop ``n`` lowest dice from the result.
 
-        Args:
-            n: the number of dice to drop.
+        :param n: the number of dice to drop
         """
 
         sorted_x = sorted(self.dice.items(), key=operator.itemgetter(0))
@@ -67,7 +72,7 @@ class DicePouch:
             if self.dice[i] == 0:
                 del self.dice[i]
 
-    def get_simple_string(self):
+    def get_simple_string(self) -> str:
         """Return the values of the dice like (2+2+2[+1+1])."""
         dice = self.dice.items()
         faces = ("+".join([str(face)] * times) for face, times in dice)
@@ -81,7 +86,7 @@ class DicePouch:
 
         return "(%s%s)" % (dice_str, dropped_str)
 
-    def get_compressed_string(self):
+    def get_compressed_string(self) -> str:
         """Return the values of the dice like (3x2[+2x1])."""
         dice = self.dice.items()
         faces = ("%dx%d" % (times, face) for face, times in dice)
@@ -95,23 +100,23 @@ class DicePouch:
 
         return "(%s%s)" % (dice_str, dropped_str)
 
-    def get_sum(self):
+    def get_sum(self) -> int:
         """Get the sum of non-dropped dice."""
         result = 0
         for face, times in self.dice.items():
             result += face * times
         return result
 
-    def get_number_of_faces(self):
-        """Returns sum of different faces for dropped and not dropped dice
+    def get_number_of_faces(self) -> int:
+        """Returns sum of different faces for dropped and not dropped dice.
 
-        This can be used to estimate, whether the result can be shown in
-        compressed form in a reasonable amount of space.
+        This can be used to estimate whether the result can be shown (in
+        compressed form) in a reasonable amount of space.
         """
         return len(self.dice) + len(self.dropped)
 
 
-def _roll_dice(bot, dice_expression):
+def _roll_dice(bot: SopelWrapper, dice_expression: str) -> Optional[DicePouch]:
     result = re.search(
         r"""
         (?P<dice_num>-?\d*)
@@ -186,7 +191,7 @@ def _roll_dice(bot, dice_expression):
 @plugin.example(".roll 2d10+3", user_help=True)
 @plugin.example(".roll 1d6", user_help=True)
 @plugin.output_prefix('[dice] ')
-def roll(bot, trigger):
+def roll(bot: SopelWrapper, trigger: Trigger):
     """Rolls dice and reports the result.
 
     The dice roll follows this format: XdY[vZ][+N][#COMMENT]
@@ -210,16 +215,18 @@ def roll(bot, trigger):
     arg_str = arg_str_raw.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
-    dice = [_roll_dice(bot, dice_expr) for dice_expr in dice_expressions]
+    results = [_roll_dice(bot, dice_expr) for dice_expr in dice_expressions]
 
-    if None in dice:
+    if None in results:
         # Stop computing roll if there was a problem rolling dice.
         return
 
-    def _get_eval_str(dice):
+    dice: list[DicePouch] = [result for result in results if result]
+
+    def _get_eval_str(dice: DicePouch) -> str:
         return "(%d)" % (dice.get_sum(),)
 
-    def _get_pretty_str(dice):
+    def _get_pretty_str(dice: DicePouch) -> str:
         if dice.num <= 10:
             return dice.get_simple_string()
         elif dice.get_number_of_faces() <= 10:
@@ -227,8 +234,8 @@ def roll(bot, trigger):
         else:
             return "(...)"
 
-    eval_str = arg_str % (tuple(map(_get_eval_str, dice)))
-    pretty_str = arg_str % (tuple(map(_get_pretty_str, dice)))
+    eval_str: str = arg_str % (tuple(map(_get_eval_str, dice)))
+    pretty_str: str = arg_str % (tuple(map(_get_pretty_str, dice)))
 
     try:
         result = eval_equation(eval_str)
