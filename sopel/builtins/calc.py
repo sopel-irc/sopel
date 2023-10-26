@@ -19,10 +19,10 @@ from sopel.tools.calculation import eval_equation
 @plugin.example('.c 5 + 3', '8')
 @plugin.example('.c 0.9*10', '9')
 @plugin.example('.c 10*0.9', '9')
-@plugin.example('.c 2*(1+2)*3', '18')
-@plugin.example('.c 2**10', '1024')
-@plugin.example('.c 5 // 2', '2')
-@plugin.example('.c 5 / 2', '2.5')
+@plugin.example('.c 2*(1+2)*3', '18', user_help=True)
+@plugin.example('.c 2**10', '1024', user_help=True)
+@plugin.example('.c 5 // 2', '2', user_help=True)
+@plugin.example('.c 5 / 2', '2.5', user_help=True)
 @plugin.output_prefix('[calc] ')
 def c(bot, trigger):
     """Evaluate some calculation."""
