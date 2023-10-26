@@ -163,6 +163,7 @@ def _roll_dice(bot, dice_expression):
             dice.drop_lowest(drop)
         else:
             bot.reply("I can't drop the lowest %d dice. =(" % drop)
+            return None  # Signal there was a problem
 
     return dice
 
