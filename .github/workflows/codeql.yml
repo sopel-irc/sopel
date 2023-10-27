@@ -31,6 +31,9 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
+          config: |
+            paths:
+              - sopel
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
