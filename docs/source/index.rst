@@ -1,28 +1,30 @@
 .. title:: Sopel IRC Bot
 
+=============
 Sopel IRC Bot
 =============
 
 `Sopel <https://sopel.chat>`_ is a Python IRC bot framework. It is designed to
 enable easily writing new utilities and features for your IRC channels. 
 
+
 Quick links
------------
+===========
 
 * `Latest releases <https://github.com/sopel-irc/sopel/releases>`_
 * `Source code <https://github.com/sopel-irc/sopel>`_
+* :doc:`faq`
 
-..
-    Eventually, add installation instructions to Sphinx docs?
 
 Documentation
--------------
+=============
 
 .. toctree::
     :maxdepth: 2
     :titlesonly:
 
     run
+    faq
     plugin
     package
     tests

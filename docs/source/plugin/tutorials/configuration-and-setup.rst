@@ -5,7 +5,7 @@ Configuration and plugin setup
 Maybe you :doc:`played with commands <playing-with-commands>` for your
 plugin and now you want to make your plugin configurable. If you run an
 instance of Sopel yourself, you probably had to open and edit its
-:doc:`configuration</configuration>` file.
+:doc:`configuration</run/configuration>` file.
 
 Usually located in the ``.sopel/`` folder under your home directory, the
 configuration file is an INI file with sections defined by Sopel's core and by
@@ -107,7 +107,7 @@ declare and to setup your plugin configuration, and you can read more about
 :ref:`plugin configuration <plugin-anatomy-config>`,
 which includes a section about the configuration wizard as well. You can also
 see Sopel's own configuration in
-:doc:`the configuration chapter </configuration>`.
+:doc:`the configuration chapter </run/configuration>`.
 
 Once you are familiar with the concept, you can also read deeper into the
 reference documentation for the :mod:`sopel.config` module.
