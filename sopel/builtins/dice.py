@@ -21,6 +21,9 @@ if TYPE_CHECKING:
     from sopel.trigger import Trigger
 
 
+MAX_DICE = 1000
+
+
 class DicePouch:
     def __init__(self, dice_count: int, dice_type: int) -> None:
         """Initialize dice pouch and roll the dice.
@@ -114,6 +117,47 @@ class DicePouch:
         return len(self.dice) + len(self.dropped)
 
 
+class DiceError(Exception):
+    """Custom base exception type."""
+
+
+class InvalidDiceExpressionError(DiceError):
+    """Custom exception type for invalid dice expressions."""
+
+
+class InvalidDiceFacesError(DiceError):
+    """Custom exception type for invalid number of die faces."""
+
+
+class NegativeDiceCountError(DiceError):
+    """Custom exception type for invalid numbers of dice."""
+
+
+class TooManyDiceError(DiceError):
+    """Custom exception type for excessive numbers of dice."""
+
+
+class UnableToDropDiceError(DiceError):
+    """Custom exception type for failing to drop lowest N dice."""
+
+
+def _get_error_message(exc: DiceError) -> str:
+    data = str(exc)
+
+    if isinstance(exc, InvalidDiceExpressionError):
+        return "Invalid dice expression: {}".format(data)
+    if isinstance(exc, InvalidDiceFacesError):
+        return "I don't have any dice with {} sides.".format(data)
+    if isinstance(exc, NegativeDiceCountError):
+        return "I can't roll {} dice.".format(data)
+    if isinstance(exc, TooManyDiceError):
+        return "I only have {}/{} dice.".format(MAX_DICE, data)
+    if isinstance(exc, UnableToDropDiceError):
+        return "I can't drop the lowest {} dice.".format(data)
+
+    return "Unknown error. Please check your dice expression for errors."
+
+
 def _roll_dice(dice_expression: str) -> DicePouch:
     result = re.search(
         r"""
@@ -126,24 +170,24 @@ def _roll_dice(dice_expression: str) -> DicePouch:
         re.IGNORECASE | re.VERBOSE)
 
     if result is None:
-        raise ValueError("Invalid dice expression: %r" % dice_expression)
+        raise InvalidDiceExpressionError(dice_expression)
 
     dice_num = int(result.group('dice_num') or 1)
     dice_type = int(result.group('dice_type'))
 
     # Dice can't have zero or a negative number of sides.
     if dice_type <= 0:
-        raise ValueError("I don't have any dice with %d sides. =(" % dice_type)
+        raise InvalidDiceFacesError(dice_type)
 
     # Can't roll a negative number of dice.
     if dice_num < 0:
-        raise ValueError("I'd rather not roll a negative amount of dice. =(")
+        raise NegativeDiceCountError(dice_num)
 
     # Upper limit for dice should be at most a million. Creating a dict with
     # more than a million elements already takes a noticeable amount of time
     # on a fast computer and ~55kB of memory.
-    if dice_num > 1000:
-        raise ValueError("I only have 1000 dice. =(")
+    if dice_num > MAX_DICE:
+        raise TooManyDiceError(dice_num)
 
     dice = DicePouch(dice_num, dice_type)
 
@@ -152,7 +196,7 @@ def _roll_dice(dice_expression: str) -> DicePouch:
         if drop >= 0:
             dice.drop_lowest(drop)
         else:
-            raise ValueError("I can't drop the lowest %d dice. =(" % drop)
+            raise UnableToDropDiceError(drop)
 
     return dice
 
@@ -163,9 +207,9 @@ def _roll_dice(dice_expression: str) -> DicePouch:
 @plugin.example(".roll 65(2)",
                 "I don't know how to process that. "
                 "Are the dice as well as the algorithms correct?")
-@plugin.example(".roll 1d0", "I don't have any dice with 0 sides. =(")
-@plugin.example(".roll -1d6", "I'd rather not roll a negative amount of dice. =(")
-@plugin.example(".roll 3d6v-1", "I can't drop the lowest -1 dice. =(")
+@plugin.example(".roll 1d0", "I don't have any dice with 0 sides.")
+@plugin.example(".roll -1d6", "I can't roll -1 dice.")
+@plugin.example(".roll 3d6v-1", "I can't drop the lowest -1 dice.")
 @plugin.example(".roll 2d6v0", r'2d6v0: \(\d\+\d\) = \d+', re=True)
 @plugin.example(".roll 2d6v4", r'2d6v4: \(\[\+\d\+\d\]\) = 0', re=True)
 @plugin.example(".roll 2d6v1+8", r'2d6v1\+8: \(\d\[\+\d\]\)\+8 = \d+', re=True)
@@ -177,7 +221,8 @@ def _roll_dice(dice_expression: str) -> DicePouch:
 @plugin.example(".roll 100d100", r'100d100: \(\.{3}\) = \d+', re=True)
 @plugin.example(".roll 1000d999^1000d999", 'You roll 1000d999^1000d999: (...)^(...) = very big')
 @plugin.example(".roll 1000d999^1000d99", "I can't display a number that big. =(")
-@plugin.example(".roll 1001d1", 'I only have 1000 dice. =(')
+@plugin.example(
+    ".roll {}d1".format(MAX_DICE + 1), 'I only have {}/{} dice.'.format(MAX_DICE, MAX_DICE + 1))
 @plugin.example(".roll 1d1 + 1d1", '1d1 + 1d1: (1) + (1) = 2')
 @plugin.example(".roll 1d1+1d1", '1d1+1d1: (1)+(1) = 2')
 @plugin.example(".roll 1d6 # initiative", r'1d6: \(\d\) = \d', re=True)
@@ -204,6 +249,7 @@ def roll(bot: SopelWrapper, trigger: Trigger):
     if not trigger.group(2):
         bot.reply("No dice to roll.")
         return
+
     arg_str_raw = trigger.group(2).split("#", 1)[0].strip()
     dice_expressions = re.findall(dice_regexp, arg_str_raw)
     arg_str = arg_str_raw.replace("%", "%%")
@@ -211,9 +257,9 @@ def roll(bot: SopelWrapper, trigger: Trigger):
 
     try:
         dice = [_roll_dice(dice_expr) for dice_expr in dice_expressions]
-    except ValueError as err:
+    except DiceError as err:
         # Stop computing roll if there was a problem rolling dice.
-        bot.reply(str(err))
+        bot.reply(_get_error_message(err))
         return
 
     def _get_eval_str(dice: DicePouch) -> str:
