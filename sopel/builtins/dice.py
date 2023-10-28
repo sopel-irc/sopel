@@ -121,16 +121,6 @@ class DiceError(Exception):
     """Custom base exception type."""
 
 
-class InvalidDiceExpressionError(DiceError):
-    """Custom exception type for invalid dice expressions."""
-    def __init__(self, expression: str):
-        super().__init__(expression)
-
-    @property
-    def expression(self) -> str:
-        return self.args[0]
-
-
 class InvalidDiceFacesError(DiceError):
     """Custom exception type for invalid number of die faces."""
     def __init__(self, faces: int):
@@ -180,8 +170,6 @@ class UnableToDropDiceError(DiceError):
 
 
 def _get_error_message(exc: DiceError) -> str:
-    if isinstance(exc, InvalidDiceExpressionError):
-        return "Invalid dice expression: {}".format(exc.expression)
     if isinstance(exc, InvalidDiceFacesError):
         return "I don't have any dice with {} sides.".format(exc.faces)
     if isinstance(exc, NegativeDiceCountError):
@@ -195,22 +183,9 @@ def _get_error_message(exc: DiceError) -> str:
     return "Unknown error rolling dice: %r" % exc
 
 
-def _roll_dice(dice_expression: str) -> DicePouch:
-    result = re.search(
-        r"""
-        (?P<dice_num>-?\d*)
-        d
-        (?P<dice_type>-?\d+)
-        (v(?P<drop_lowest>-?\d+))?
-        $""",
-        dice_expression,
-        re.IGNORECASE | re.VERBOSE)
-
-    if result is None:
-        raise InvalidDiceExpressionError(dice_expression)
-
-    dice_num = int(result.group('dice_num') or 1)
-    dice_type = int(result.group('dice_type'))
+def _roll_dice(dice_match: re.Match[str]) -> DicePouch:
+    dice_num = int(dice_match.group('dice_num') or 1)
+    dice_type = int(dice_match.group('dice_type'))
 
     # Dice can't have zero or a negative number of sides.
     if dice_type <= 0:
@@ -228,8 +203,8 @@ def _roll_dice(dice_expression: str) -> DicePouch:
 
     dice = DicePouch(dice_num, dice_type)
 
-    if result.group('drop_lowest'):
-        drop = int(result.group('drop_lowest'))
+    if dice_match.group('drop_lowest'):
+        drop = int(dice_match.group('drop_lowest'))
         if drop >= 0:
             dice.drop_lowest(drop)
         else:
@@ -277,9 +252,12 @@ def roll(bot: SopelWrapper, trigger: Trigger):
     number of lowest dice to be dropped from the result. N is the constant to
     be applied to the end result. Comment is for easily noting the purpose.
     """
-    # This regexp is only allowed to have one capture group, because having
-    # more would alter the output of re.findall.
-    dice_regexp = r"-?\d*[dD]-?\d+(?:[vV]-?\d+)?"
+    dice_regexp = r"""
+        (?P<dice_num>-?\d*)
+        d
+        (?P<dice_type>-?\d+)
+        (v(?P<drop_lowest>-?\d+))?
+    """
 
     # Get a list of all dice expressions, evaluate them and then replace the
     # expressions in the original string with the results. Replacing is done
@@ -289,9 +267,13 @@ def roll(bot: SopelWrapper, trigger: Trigger):
         return
 
     arg_str_raw = trigger.group(2).split("#", 1)[0].strip()
-    dice_expressions = re.findall(dice_regexp, arg_str_raw)
     arg_str = arg_str_raw.replace("%", "%%")
-    arg_str = re.sub(dice_regexp, "%s", arg_str)
+    arg_str = re.sub(dice_regexp, "%s", arg_str, 0, re.IGNORECASE | re.VERBOSE)
+
+    dice_expressions = [
+        match for match in
+        re.finditer(dice_regexp, arg_str_raw, re.IGNORECASE | re.VERBOSE)
+    ]
 
     if not dice_expressions:
         bot.reply("I couldn't find any valid dice expressions.")
