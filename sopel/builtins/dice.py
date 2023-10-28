@@ -123,39 +123,76 @@ class DiceError(Exception):
 
 class InvalidDiceExpressionError(DiceError):
     """Custom exception type for invalid dice expressions."""
+    def __init__(self, expression: str):
+        super().__init__(expression)
+
+    @property
+    def expression(self) -> str:
+        return self.args[0]
 
 
 class InvalidDiceFacesError(DiceError):
     """Custom exception type for invalid number of die faces."""
+    def __init__(self, faces: int):
+        super().__init__(faces)
+
+    @property
+    def faces(self) -> int:
+        return self.args[0]
 
 
 class NegativeDiceCountError(DiceError):
     """Custom exception type for invalid numbers of dice."""
+    def __init__(self, count: int):
+        super().__init__(count)
+
+    @property
+    def count(self) -> int:
+        return self.args[0]
 
 
 class TooManyDiceError(DiceError):
     """Custom exception type for excessive numbers of dice."""
+    def __init__(self, requested: int, available: int):
+        super().__init__(requested, available)
+
+    @property
+    def available(self) -> int:
+        return self.args[1]
+
+    @property
+    def requested(self) -> int:
+        return self.args[0]
 
 
 class UnableToDropDiceError(DiceError):
     """Custom exception type for failing to drop lowest N dice."""
+    def __init__(self, dropped: int, total: int):
+        super().__init__(dropped, total)
+
+    @property
+    def dropped(self) -> int:
+        return self.args[0]
+
+    @property
+    def total(self) -> int:
+        return self.args[1]
 
 
 def _get_error_message(exc: DiceError) -> str:
-    data = str(exc)
-
     if isinstance(exc, InvalidDiceExpressionError):
-        return "Invalid dice expression: {}".format(data)
+        return "Invalid dice expression: {}".format(exc.expression)
     if isinstance(exc, InvalidDiceFacesError):
-        return "I don't have any dice with {} sides.".format(data)
+        return "I don't have any dice with {} sides.".format(exc.faces)
     if isinstance(exc, NegativeDiceCountError):
-        return "I can't roll {} dice.".format(data)
+        return "I can't roll {} dice.".format(exc.count)
     if isinstance(exc, TooManyDiceError):
-        return "I only have {}/{} dice.".format(MAX_DICE, data)
+        return "I only have {}/{} dice.".format(exc.available, exc.requested)
     if isinstance(exc, UnableToDropDiceError):
-        return "I can't drop the lowest {} dice.".format(data)
+        return "I can't drop the lowest {} of {} dice.".format(
+            exc.dropped, exc.total)
 
-    return "Unknown error. Please check your dice expression for errors."
+    return "Unknown error rolling dice: %r" % exc
 
 
 def _roll_dice(dice_expression: str) -> DicePouch:
@@ -187,7 +224,7 @@ def _roll_dice(dice_expression: str) -> DicePouch:
     # more than a million elements already takes a noticeable amount of time
     # on a fast computer and ~55kB of memory.
     if dice_num > MAX_DICE:
-        raise TooManyDiceError(dice_num)
+        raise TooManyDiceError(dice_num, MAX_DICE)
 
     dice = DicePouch(dice_num, dice_type)
 
@@ -196,7 +233,7 @@ def _roll_dice(dice_expression: str) -> DicePouch:
         if drop >= 0:
             dice.drop_lowest(drop)
         else:
-            raise UnableToDropDiceError(drop)
+            raise UnableToDropDiceError(drop, dice_num)
 
     return dice
 
@@ -209,7 +246,7 @@ def _roll_dice(dice_expression: str) -> DicePouch:
                 "Are the dice as well as the algorithms correct?")
 @plugin.example(".roll 1d0", "I don't have any dice with 0 sides.")
 @plugin.example(".roll -1d6", "I can't roll -1 dice.")
-@plugin.example(".roll 3d6v-1", "I can't drop the lowest -1 dice.")
+@plugin.example(".roll 3d6v-1", "I can't drop the lowest -1 of 3 dice.")
 @plugin.example(".roll 2d6v0", r'2d6v0: \(\d\+\d\) = \d+', re=True)
 @plugin.example(".roll 2d6v4", r'2d6v4: \(\[\+\d\+\d\]\) = 0', re=True)
 @plugin.example(".roll 2d6v1+8", r'2d6v1\+8: \(\d\[\+\d\]\)\+8 = \d+', re=True)
