@@ -241,9 +241,10 @@ def _roll_dice(dice_expression: str) -> DicePouch:
 @plugin.command('roll', 'dice', 'd')
 @plugin.priority("medium")
 @plugin.example(".roll", "No dice to roll.")
-@plugin.example(".roll 65(2)",
+@plugin.example(".roll 2d6+4^2&",
                 "I don't know how to process that. "
                 "Are the dice as well as the algorithms correct?")
+@plugin.example(".roll 65(2)", "I couldn't find any valid dice expressions.")
 @plugin.example(".roll 1d0", "I don't have any dice with 0 sides.")
 @plugin.example(".roll -1d6", "I can't roll -1 dice.")
 @plugin.example(".roll 3d6v-1", "I can't drop the lowest -1 of 3 dice.")
@@ -262,7 +263,7 @@ def _roll_dice(dice_expression: str) -> DicePouch:
     ".roll {}d1".format(MAX_DICE + 1), 'I only have {}/{} dice.'.format(MAX_DICE, MAX_DICE + 1))
 @plugin.example(".roll 1d1 + 1d1", '1d1 + 1d1: (1) + (1) = 2')
 @plugin.example(".roll 1d1+1d1", '1d1+1d1: (1)+(1) = 2')
-@plugin.example(".roll 1d6 # initiative", r'1d6: \(\d\) = \d', re=True)
+@plugin.example(".roll d6 # initiative", r'd6: \(\d\) = \d', re=True)
 @plugin.example(".roll 2d20v1+2 # roll with advantage", user_help=True)
 @plugin.example(".roll 2d10+3", user_help=True)
 @plugin.example(".roll 1d6", user_help=True)
@@ -292,6 +293,10 @@ def roll(bot: SopelWrapper, trigger: Trigger):
     arg_str = arg_str_raw.replace("%", "%%")
     arg_str = re.sub(dice_regexp, "%s", arg_str)
 
+    if not dice_expressions:
+        bot.reply("I couldn't find any valid dice expressions.")
+        return
+
     try:
         dice = [_roll_dice(dice_expr) for dice_expr in dice_expressions]
     except DiceError as err:
@@ -315,12 +320,6 @@ def roll(bot: SopelWrapper, trigger: Trigger):
 
     try:
         result = eval_equation(eval_str)
-    except TypeError:
-        bot.reply(
-            "The type of this equation is, apparently, not a string. "
-            "How did you do that, anyway?"
-        )
-        return
     except ValueError:
         # As it seems that ValueError is raised if the resulting equation would
         # be too big, give a semi-serious answer to reflect on this.
