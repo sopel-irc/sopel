@@ -220,6 +220,7 @@ def _roll_dice(dice_match: re.Match[str]) -> DicePouch:
                 "I don't know how to process that. "
                 "Are the dice as well as the algorithms correct?")
 @plugin.example(".roll 65(2)", "I couldn't find any valid dice expressions.")
+@plugin.example(".roll 2d-2", "I don't have any dice with -2 sides.")
 @plugin.example(".roll 1d0", "I don't have any dice with 0 sides.")
 @plugin.example(".roll -1d6", "I can't roll -1 dice.")
 @plugin.example(".roll 3d6v-1", "I can't drop the lowest -1 of 3 dice.")
