@@ -149,9 +149,9 @@ class SopelIdentifierMemory(SopelMemory):
         """A factory to transform keys into identifiers."""
 
     def _make_key(self, key: Optional[str]) -> Optional[Identifier]:
-        if key is not None:
-            return self.make_identifier(key)
-        return None
+        if key is None:
+            return None
+        return self.make_identifier(key)
 
     def __getitem__(self, key: Optional[str]):
         return super().__getitem__(self._make_key(key))
