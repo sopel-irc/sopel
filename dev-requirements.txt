@@ -17,7 +17,9 @@ sphinx>=7.2.0,<8; python_version > '3.8'
 sphinxcontrib-autoprogram==0.1.8
 # custom plugin to help with RFC links
 sphinx-rfcsection~=0.1.1
-vcrpy<3.0.0
+# use fork of vcrpy 5.x until kevin1024/vcrpy#777 is (hopefully) accepted
+# (or until py3.9 EOL... in 10/2025, I HOPE NOT)
+vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3
 # type check
 mypy>=1.3,<2
 sqlalchemy[mypy]>=1.4,<1.5

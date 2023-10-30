@@ -2,218 +2,766 @@ interactions:
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: [python-requests/2.24.0]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
     method: GET
     uri: https://api.duckduckgo.com/?format=json&no_html=1&no_redirect=1&q=site%3Agrandorder.wiki+chulainn+alter
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA12QwQ6CMBBE/6VnvoAbiSaQcEKMB+OhtEvZpLSkXSLE+O8qLYLeurMzsy99sAO0
-        aJDQmnNVspSxhBU9V5ADqo52QuFLq2wQtlCYs8aT44K+FZnxd3D1PEA0LHN458AlGvXfdLKjE9G+
-        EARDBRIdiEiyHqphisrRENL8i7Em/ajJs/R6S9ga3F+pQHMCWdsBRbRtxAvCBSV1oa0H4iw1o9bv
-        DzKtbez0WTxfd2csY0IBAAA=
+      string: '{"Abstract":"","AbstractSource":"","AbstractText":"","AbstractURL":"","Answer":"","AnswerType":"","Definition":"","DefinitionSource":"","DefinitionURL":"","Entity":"","Heading":"","Image":"","ImageHeight":"","ImageIsLogo":"","ImageWidth":"","Infobox":"","Redirect":"","RelatedTopics":[],"Results":[],"Type":"","meta":{"attribution":null,"blockgroup":null,"created_date":"2021-03-24","description":"testing","designer":null,"dev_date":"2021-03-24","dev_milestone":"development","developer":[{"name":"zt","type":"duck.co","url":"https://duck.co/user/zt"}],"example_query":"","id":"just_another_test","is_stackexchange":0,"js_callback_name":"another_test","live_date":null,"maintainer":{"github":""},"name":"Just
+        Another Test","perl_module":"DDG::Lontail::AnotherTest","producer":null,"production_state":"offline","repo":"fathead","signal_from":"just_another_test","src_domain":"how
+        about there","src_id":null,"src_name":"hi there","src_options":{"directory":"","is_fanon":0,"is_mediawiki":0,"is_wikipedia":0,"language":"","min_abstract_length":null,"skip_abstract":0,"skip_abstract_paren":0,"skip_icon":0,"skip_image_name":0,"skip_qr":"","src_info":"","src_skip":""},"src_url":"Hello
+        there","status":null,"tab":"is this source","topic":[],"unsafe":null}}'
     headers:
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: [max-age=1]
-      Connection: [keep-alive]
-      Content-Encoding: [gzip]
-      Content-Security-Policy: ['default-src https: blob: data: ''unsafe-inline''
-          ''unsafe-eval''; frame-ancestors ''self''']
-      Content-Type: [application/x-javascript]
-      Date: ['Fri, 09 Oct 2020 04:40:43 GMT']
-      Expect-CT: [max-age=0]
-      Expires: ['Fri, 09 Oct 2020 04:40:44 GMT']
-      Referrer-Policy: [origin]
-      Server: [nginx]
-      Server-Timing: [total;dur=11;desc="Backend Total"]
-      Strict-Transport-Security: [max-age=31536000]
-      Transfer-Encoding: [chunked]
-      Vary: [Accept-Encoding]
-      X-Content-Type-Options: [nosniff]
-      X-DuckDuckGo-Locale: [en_US]
-      X-DuckDuckGo-Results: ['1']
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1;mode=block]
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=1
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - br
+      Content-Security-Policy:
+      - 'default-src ''none'' ; connect-src  https://duckduckgo.com https://*.duckduckgo.com
+        https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ ;
+        manifest-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; media-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; script-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ''unsafe-inline'' ''unsafe-eval'' ; font-src data:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; img-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; style-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ''unsafe-inline'' ; object-src ''none'' ; worker-src blob: ; child-src blob:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; form-action  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-ancestors ''self'' ; base-uri ''self'' ; block-all-mixed-content ;'
+      Content-Type:
+      - application/x-javascript
+      Date:
+      - Thu, 12 Oct 2023 04:39:28 GMT
+      Expect-CT:
+      - max-age=0
+      Expires:
+      - Thu, 12 Oct 2023 04:39:29 GMT
+      Permissions-Policy:
+      - interest-cohort=()
+      Referrer-Policy:
+      - origin
+      Server:
+      - nginx
+      Server-Timing:
+      - total;dur=37;desc="Backend Total"
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-DuckDuckGo-Locale:
+      - en_US
+      X-DuckDuckGo-Results:
+      - '1'
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1;mode=block
+    status:
+      code: 200
+      message: OK
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
-          like Gecko) Chrome/55.0.2883.87 Safari/537.36']
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
+        Gecko) Chrome/55.0.2883.87 Safari/537.36
     method: GET
     uri: https://duckduckgo.com/html/?kl=us-en&q=site%3Agrandorder.wiki+chulainn+alter
   response:
-    body: {string: "<html>\r\n<head><title>302 Found</title></head>\r\n<body>\r\n<center><h1>302
-        Found</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"}
+    body:
+      string: "<html>\r\n<head><title>302 Found</title></head>\r\n<body>\r\n<center><h1>302
+        Found</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
     headers:
-      Cache-Control: [max-age=1]
-      Connection: [keep-alive]
-      Content-Length: ['138']
-      Content-Security-Policy: ['default-src https: blob: data: ''unsafe-inline''
-          ''unsafe-eval''; frame-ancestors ''self''']
-      Content-Type: [text/html]
-      Date: ['Fri, 09 Oct 2020 04:40:43 GMT']
-      Expect-CT: [max-age=0]
-      Expires: ['Fri, 09 Oct 2020 04:40:44 GMT']
-      Location: ['https://html.duckduckgo.com/html/?kl=us-en&q=site%3Agrandorder.wiki+chulainn+alter']
-      Referrer-Policy: [origin]
-      Server: [nginx]
-      Strict-Transport-Security: [max-age=31536000]
-      X-Content-Type-Options: [nosniff]
-      X-DuckDuckGo-Locale: [en_US]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1;mode=block]
-    status: {code: 302, message: Moved Temporarily}
+      Cache-Control:
+      - max-age=1
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '138'
+      Content-Security-Policy:
+      - 'default-src ''none'' ; connect-src  https://duckduckgo.com https://*.duckduckgo.com
+        https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ ;
+        manifest-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; media-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; script-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; font-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; img-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; style-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; object-src ''none'' ; worker-src blob: ; child-src blob:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-ancestors ''self'' ; base-uri ''self'' ; block-all-mixed-content ;'
+      Content-Type:
+      - text/html
+      Date:
+      - Thu, 12 Oct 2023 04:39:28 GMT
+      Expect-CT:
+      - max-age=0
+      Expires:
+      - Thu, 12 Oct 2023 04:39:29 GMT
+      Location:
+      - https://html.duckduckgo.com/html/?kl=us-en&q=site%3Agrandorder.wiki+chulainn+alter
+      Permissions-Policy:
+      - interest-cohort=()
+      Referrer-Policy:
+      - origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      X-Content-Type-Options:
+      - nosniff
+      X-DuckDuckGo-Locale:
+      - en_US
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1;mode=block
+    status:
+      code: 302
+      message: Moved Temporarily
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
-          like Gecko) Chrome/55.0.2883.87 Safari/537.36']
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
+        Gecko) Chrome/55.0.2883.87 Safari/537.36
     method: GET
     uri: https://html.duckduckgo.com/html/?kl=us-en&q=site%3Agrandorder.wiki+chulainn+alter
   response:
     body:
-      string: !!binary |
-        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
+      string: "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\n<!--[if
+        IE 6]><html class=\"ie6\" xmlns=\"http://www.w3.org/1999/xhtml\"><![endif]-->\n<!--[if
+        IE 7]><html class=\"lt-ie8 lt-ie9\" xmlns=\"http://www.w3.org/1999/xhtml\"><![endif]-->\n<!--[if
+        IE 8]><html class=\"lt-ie9\" xmlns=\"http://www.w3.org/1999/xhtml\"><![endif]-->\n<!--[if
+        gt IE 8]><!--><html xmlns=\"http://www.w3.org/1999/xhtml\"><!--<![endif]-->\n<head>\n
+        \ <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n
+        \ <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0,
+        maximum-scale=3.0, user-scalable=1\" />\n  <meta name=\"referrer\" content=\"origin\"
+        />\n  <meta name=\"HandheldFriendly\" content=\"true\" />\n  <meta name=\"robots\"
+        content=\"noindex, nofollow\" />\n  <title>site:grandorder.wiki chulainn alter
+        at DuckDuckGo</title>\n  <link title=\"DuckDuckGo (HTML)\" type=\"application/opensearchdescription+xml\"
+        rel=\"search\" href=\"//duckduckgo.com/opensearch_html_v2.xml\" />\n  <link
+        href=\"//duckduckgo.com/favicon.ico\" rel=\"shortcut icon\" />\n  <link rel=\"icon\"
+        href=\"//duckduckgo.com/favicon.ico\" type=\"image/x-icon\" />\n  <link rel=\"apple-touch-icon\"
+        href=\"//duckduckgo.com/assets/logo_icon128.v101.png\"/>\n  <link rel=\"image_src\"
+        href=\"//duckduckgo.com/assets/logo_homepage.normal.v101.png\"/>\n  <link
+        rel=\"stylesheet\" media=\"handheld, all\" href=\"//duckduckgo.com/h.5b5f458716a629130ff9.css\"
+        type=\"text/css\"/>\n</head>\n\n<body class=\"body--html\">\n  <a name=\"top\"
+        id=\"top\"></a>\n\n  <form action=\"/html/\" method=\"post\">\n    <input
+        type=\"text\" name=\"state_hidden\" id=\"state_hidden\" />\n  </form>\n\n
+        \ <div>\n    <div class=\"site-wrapper-border\"></div>\n\n    <div id=\"header\"
+        class=\"header cw header--html\">\n        <a title=\"DuckDuckGo\" href=\"/html/\"
+        class=\"header__logo-wrap\"></a>\n\n\n    <form name=\"x\" class=\"header__form\"
+        action=\"/html/\" method=\"post\">\n\n      <div class=\"search search--header\">\n
+        \         <input name=\"q\" autocomplete=\"off\" class=\"search__input\" id=\"search_form_input_homepage\"
+        type=\"text\" value=\"site:grandorder.wiki chulainn alter\" />\n          <input
+        name=\"b\" id=\"search_button_homepage\" class=\"search__button search__button--html\"
+        value=\"\" title=\"Search\" alt=\"Search\" type=\"submit\" />\n      </div>\n\n\n
+        \   \n    \n    \n    \n\n    <div class=\"frm__select\">\n      <select name=\"kl\">\n
+        \     \n        <option value=\"\" >All Regions</option>\n      \n        <option
+        value=\"ar-es\" >Argentina</option>\n      \n        <option value=\"au-en\"
+        >Australia</option>\n      \n        <option value=\"at-de\" >Austria</option>\n
+        \     \n        <option value=\"be-fr\" >Belgium (fr)</option>\n      \n        <option
+        value=\"be-nl\" >Belgium (nl)</option>\n      \n        <option value=\"br-pt\"
+        >Brazil</option>\n      \n        <option value=\"bg-bg\" >Bulgaria</option>\n
+        \     \n        <option value=\"ca-en\" >Canada (en)</option>\n      \n        <option
+        value=\"ca-fr\" >Canada (fr)</option>\n      \n        <option value=\"ct-ca\"
+        >Catalonia</option>\n      \n        <option value=\"cl-es\" >Chile</option>\n
+        \     \n        <option value=\"cn-zh\" >China</option>\n      \n        <option
+        value=\"co-es\" >Colombia</option>\n      \n        <option value=\"hr-hr\"
+        >Croatia</option>\n      \n        <option value=\"cz-cs\" >Czech Republic</option>\n
+        \     \n        <option value=\"dk-da\" >Denmark</option>\n      \n        <option
+        value=\"ee-et\" >Estonia</option>\n      \n        <option value=\"fi-fi\"
+        >Finland</option>\n      \n        <option value=\"fr-fr\" >France</option>\n
+        \     \n        <option value=\"de-de\" >Germany</option>\n      \n        <option
+        value=\"gr-el\" >Greece</option>\n      \n        <option value=\"hk-tzh\"
+        >Hong Kong</option>\n      \n        <option value=\"hu-hu\" >Hungary</option>\n
+        \     \n        <option value=\"is-is\" >Iceland</option>\n      \n        <option
+        value=\"in-en\" >India (en)</option>\n      \n        <option value=\"id-en\"
+        >Indonesia (en)</option>\n      \n        <option value=\"ie-en\" >Ireland</option>\n
+        \     \n        <option value=\"il-en\" >Israel (en)</option>\n      \n        <option
+        value=\"it-it\" >Italy</option>\n      \n        <option value=\"jp-jp\" >Japan</option>\n
+        \     \n        <option value=\"kr-kr\" >Korea</option>\n      \n        <option
+        value=\"lv-lv\" >Latvia</option>\n      \n        <option value=\"lt-lt\"
+        >Lithuania</option>\n      \n        <option value=\"my-en\" >Malaysia (en)</option>\n
+        \     \n        <option value=\"mx-es\" >Mexico</option>\n      \n        <option
+        value=\"nl-nl\" >Netherlands</option>\n      \n        <option value=\"nz-en\"
+        >New Zealand</option>\n      \n        <option value=\"no-no\" >Norway</option>\n
+        \     \n        <option value=\"pk-en\" >Pakistan (en)</option>\n      \n
+        \       <option value=\"pe-es\" >Peru</option>\n      \n        <option value=\"ph-en\"
+        >Philippines (en)</option>\n      \n        <option value=\"pl-pl\" >Poland</option>\n
+        \     \n        <option value=\"pt-pt\" >Portugal</option>\n      \n        <option
+        value=\"ro-ro\" >Romania</option>\n      \n        <option value=\"ru-ru\"
+        >Russia</option>\n      \n        <option value=\"xa-ar\" >Saudi Arabia</option>\n
+        \     \n        <option value=\"sg-en\" >Singapore</option>\n      \n        <option
+        value=\"sk-sk\" >Slovakia</option>\n      \n        <option value=\"sl-sl\"
+        >Slovenia</option>\n      \n        <option value=\"za-en\" >South Africa</option>\n
+        \     \n        <option value=\"es-ca\" >Spain (ca)</option>\n      \n        <option
+        value=\"es-es\" >Spain (es)</option>\n      \n        <option value=\"se-sv\"
+        >Sweden</option>\n      \n        <option value=\"ch-de\" >Switzerland (de)</option>\n
+        \     \n        <option value=\"ch-fr\" >Switzerland (fr)</option>\n      \n
+        \       <option value=\"tw-tzh\" >Taiwan</option>\n      \n        <option
+        value=\"th-en\" >Thailand (en)</option>\n      \n        <option value=\"tr-tr\"
+        >Turkey</option>\n      \n        <option value=\"us-en\" selected>US (English)</option>\n
+        \     \n        <option value=\"us-es\" >US (Spanish)</option>\n      \n        <option
+        value=\"ua-uk\" >Ukraine</option>\n      \n        <option value=\"uk-en\"
+        >United Kingdom</option>\n      \n        <option value=\"vn-en\" >Vietnam
+        (en)</option>\n      \n      </select>\n    </div>\n\n    <div class=\"frm__select
+        frm__select--last\">\n      <select class=\"\" name=\"df\">\n      \n        <option
+        value=\"\" selected>Any Time</option>\n      \n        <option value=\"d\"
+        >Past Day</option>\n      \n        <option value=\"w\" >Past Week</option>\n
+        \     \n        <option value=\"m\" >Past Month</option>\n      \n        <option
+        value=\"y\" >Past Year</option>\n      \n      </select>\n    </div>\n\n    </form>\n\n
+        \   </div>\n\n\n\n\n\n<!-- Web results are present -->\n\n  <div>\n  <div
+        class=\"serp__results\">\n  <div id=\"links\" class=\"results\">\n\n      \n\n\n\n
+        \ \n\n\n            <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)\">C\xFA
+        Chulainn (Alter) (5-Star Berserker locked Servant) - Grand Order Wiki</a>\n
+        \         \n          </h2>\n\n      \n\n            <div class=\"result__extras\">\n
+        \               <div class=\"result__extras__url\">\n                  <span
+        class=\"result__icon\">\n                    \n                      <a rel=\"nofollow\"
+        href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)\">\n
+        \                 grandorder.wiki/C\xFA_Chulainn_(Alter)\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)\">\u300EG\xE1e
+        Bolg\u300F Rank: B++ NP Type: Anti-Army Range: 5~50 Maximum Targets: 100 Gouging
+        Piercing Spear of Carnage. A homing demonic spear missile. C\xFA <b>Chulainn&#x27;s</b>
+        original Noble Phantasm. In his <b>Alter</b> state, he can throw it with such
+        force that it is capable of destroying his own body, in exchange for damage
+        and area of effect to be increased.</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Campaigns\">C\xFA
+        Chulainn (Alter)/Campaigns - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Campaigns\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Campaigns\">\n
+        \                 grandorder.wiki/C\xFA_Chulainn_(Alter)/Campaigns\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Campaigns\">C\xFA
+        <b>Chulainn</b> (<b>Alter</b>) first appeared in E Pluribus Unum Campaign
+        3 (29 March 2018 04:00:00 JST). This page lists events where this servant
+        had a bonus, and Summoning Campaigns in which they were featured.</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Dialogue\">C\xFA
+        Chulainn (Alter)/Dialogue - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Dialogue\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Dialogue\">\n
+        \                 grandorder.wiki/C\xFA_Chulainn_(Alter)/Dialogue\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Dialogue\">Voice
+        Line English Japanese Fan Translation Sound Clip Summon: I am C\xFA <b>Chulainn</b>,
+        summoned at your request!...My color has nothing to do with you.</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Interlude\">C\xFA
+        Chulainn (Alter)/Interlude - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Interlude\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Interlude\">\n
+        \                 www.grandorder.wiki/C\xFA_Chulainn_(Alter)/Interlude\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Interlude\">C\xFA
+        <b>Chulainn</b> <b>Alter</b> I knew it. C\xFA <b>Chulainn</b> <b>Alter</b>
+        We lost communication, we&#x27;re low on food and water, and I&#x27;m the
+        only Servant you&#x27;ve got. C\xFA <b>Chulainn</b> <b>Alter</b> Even your
+        trusty Shielder isn&#x27;t here. ===Branch End=== C\xFA <b>Chulainn</b> <b>Alter</b>
+        Anyone would be scared out of their wits. Right? C\xFA <b>Chulainn</b> <b>Alter</b>
+        Don&#x27;t give me that look. C\xFA <b>Chulainn</b> <b>Alter</b></a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.grandorder.wiki/Formal_Portrait:_C%C3%BA_Chulainn_(Alter)\">Formal
+        Portrait: C\xFA Chulainn (Alter) - grandorder.wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.grandorder.wiki/Formal_Portrait:_C%C3%BA_Chulainn_(Alter)\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/Formal_Portrait:_C%C3%BA_Chulainn_(Alter)\">\n
+        \                 www.grandorder.wiki/Formal_Portrait:_C\xFA_Chulainn_(Alter)\n
+        \                 </a>\n\n                  \n\n                </div>\n            </div>\n\n
+        \           \n                  <a class=\"result__snippet\" href=\"https://www.grandorder.wiki/Formal_Portrait:_C%C3%BA_Chulainn_(Alter)\">A
+        4\u2605 Craft Essence. Atk: 100-100/HP: 100-100. Increase Mystic Code EXP
+        received from clearing quests by 50</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Noble_Phantasm_Chants\">Noble
+        Phantasm Chants - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Noble_Phantasm_Chants\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Noble_Phantasm_Chants\">\n
+        \                 grandorder.wiki/Noble_Phantasm_Chants\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Noble_Phantasm_Chants\">File:Abigail
+        Williams (Summer) Voice 3rd form Noble Phantasm 1.mp3. Beyond the gate of
+        deep slumber, what comes and goes through the sky is the ship of the stars,
+        the skyscraper of the cloud curtain, the village where cats frolic, the palace
+        of the gods, the picturesque scenery of the frozen wastelands!</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Rank_Up\">C\xFA
+        Chulainn (Alter)/Rank Up - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Rank_Up\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Rank_Up\">\n
+        \                 grandorder.wiki/C\xFA_Chulainn_(Alter)/Rank_Up\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn_(Alter)/Rank_Up\">Attention:
+        This content is currently only available in the JP version of the game.</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/One-Man_War\">One-Man
+        War - grandorder.wiki</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://grandorder.wiki/One-Man_War\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/One-Man_War\">\n
+        \                 grandorder.wiki/One-Man_War\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/One-Man_War\">A
+        4\u2605 Craft Essence. Atk: 100-100/HP: 100-100. Only when equipped to C\xFA
+        <b>Chulainn</b> (<b>Alter</b>) (Berserker), Increase your NP Strength by 30%
+        Apply Guts (1 time, revive with 20% HP)</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Heroic_Spirit_Travel_Journal:_Cu_Chulainn_(Alter)\">Heroic
+        Spirit Travel Journal: Cu Chulainn (Alter)</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Heroic_Spirit_Travel_Journal:_Cu_Chulainn_(Alter)\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Heroic_Spirit_Travel_Journal:_Cu_Chulainn_(Alter)\">\n
+        \                 grandorder.wiki/Heroic_Spirit_Travel_Journal:_Cu_Chulainn_(Alter)\n
+        \                 </a>\n\n                  \n\n                </div>\n            </div>\n\n
+        \           \n                  <a class=\"result__snippet\" href=\"https://grandorder.wiki/Heroic_Spirit_Travel_Journal:_Cu_Chulainn_(Alter)\">A
+        4\u2605 Craft Essence. Atk: 100-100/HP: 100-100. Increase the number of Friend
+        Points gained by 10 (stackable).</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://grandorder.wiki/C%C3%BA_Chulainn\">C\xFA Chulainn (3-Star Lancer
+        fp Servant) - Grand Order Wiki</a>\n          \n          </h2>\n\n      \n\n
+        \           <div class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn\">\n
+        \                 grandorder.wiki/C\xFA_Chulainn\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn\">3-Star
+        Lancer fp Servant. B+ Quick NP (Deal significant damage to a single enemy.)
+        QQABB. Atk: 1334-7239/HP: 1726-9593. Reverse S, Male, Lawful-Balanced. ID
+        017. Voiced by Nobutoshi Canna, Art by Takeuchi Takashi. With a dislike of
+        decorations and honor, this lancer prefers to listen to his instincts. If
+        it&#x27;s a job, he won&#x27;t hesitate to kill even an ordinary citizen.
+        &lt;br /&gt;Though he can be ...</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://grandorder.wiki/Category:Story\">Category:Story - Fate/Grand
+        Order Wiki</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://grandorder.wiki/Category:Story\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Category:Story\">\n
+        \                 grandorder.wiki/Category:Story\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Category:Story\">Da
+        Vinci and the 7 Counterfeit Heroic Spirits/Story. Daily Report of the Sparrow&#x27;s
+        Inn/Story. Darius III/Interlude. David/Interlude. Dead Heat Summer Race!/Death
+        Jail Summer Escape/Story. Dead Heat Summer Race!/Story. Devil&#x27;s Building
+        Climber - Great Battle at Himeji Castle/Story. Diarmuid Ua Duibhne (Saber)/Trial
+        Quest.</a>\n            \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Quests/E_Pluribus_Unum/Main_Quests\">Quests/E
+        Pluribus Unum/Main Quests - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Quests/E_Pluribus_Unum/Main_Quests\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Quests/E_Pluribus_Unum/Main_Quests\">\n
+        \                 grandorder.wiki/Quests/E_Pluribus_Unum/Main_Quests\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Quests/E_Pluribus_Unum/Main_Quests\">C\xFA
+        <b>Chulainn</b> (<b>Alter</b>) Lvl 55 (112,855 HP) Queen Medb Lvl 55 (213,233
+        HP) Possible Drops: 1. 1. Completion Reward 1. Chapter 22. Shielder, Master,
+        Soldier, Nurse Edit \u30B7\u30FC\u30EB\u30C0\u30FC\u3001\u30DE\u30B9\u30BF\u30FC\u3001\u30BD\u30EB\u30B8\u30E3\u30FC\u3001\u30CA\u30FC\u30B9
+        AP EXP QP Bond Quest Type E Pluribus Unum - Washington \u30EF\u30B7\u30F3\u30C8\u30F3
+        20 31,380 (1569 XP/AP) 128,000 1,230</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Servant_Strengthening_Quests_Part_XIV\">Servant
+        Strengthening Quests Part XIV - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Servant_Strengthening_Quests_Part_XIV\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Servant_Strengthening_Quests_Part_XIV\">\n
+        \                 grandorder.wiki/Servant_Strengthening_Quests_Part_XIV\n
+        \                 </a>\n\n                  \n\n                </div>\n            </div>\n\n
+        \           \n                  <a class=\"result__snippet\" href=\"https://grandorder.wiki/Servant_Strengthening_Quests_Part_XIV\">Cu
+        <b>Chulainn</b> (<b>Alter</b>) Noble Phantasm Upgrade. Cu <b>Chulainn</b>
+        (Prototype) Noble Phantasm Upgrade: Curruid Coinchenn A to A+ + Increase Damage
+        by 200% per level. + Remove their Defensive Buffs. G\xE1e Bolg B to B+ + 400%
+        Damage at each level. + Increase own Quick Card Effectiveness by 20% (1 turn,
+        Activates First).</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://grandorder.wiki/Jeanne_d%27Arc_(Alter)/Interlude\">Jeanne d&#x27;Arc
+        (Alter)/Interlude - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Jeanne_d%27Arc_(Alter)/Interlude\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Jeanne_d%27Arc_(Alter)/Interlude\">\n
+        \                 grandorder.wiki/Jeanne_d&#39;Arc_(Alter)/Interlude\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Jeanne_d%27Arc_(Alter)/Interlude\">Wait,
+        Jeanne <b>Alter</b>! Mash...She ran off. C\xFA <b>Chulainn</b> I guess we&#x27;ll
+        just have to follow her. I&#x27;ll catch up to her first. Geronimo I will
+        accompany Fujimaru. Like she said, I can sense some lingering remnants around
+        here. Geronimo However, they pose no threat to humanity even if left alone,
+        and would eventually perish on their own...</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n
+        \           <div class=\"result results_links results_links_deep web-result
+        \">\n\n\n          <div class=\"links_main links_deep result__body\"> <!--
+        This is the visible part -->\n\n          <h2 class=\"result__title\">\n          \n
+        \           <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Servant_Sprites\">Servant
+        Sprites - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n      \n\n
+        \           <div class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://grandorder.wiki/Servant_Sprites\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Servant_Sprites\">\n
+        \                 grandorder.wiki/Servant_Sprites\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Servant_Sprites\">Altria
+        Pendragon (<b>Alter</b>) 003: Altria Pendragon (Archer) 129: Altria Pendragon
+        (Lancer <b>Alter</b>) 078: Altria Pendragon (Lancer) 119: Altria Pendragon
+        (Lily) 004: Altria Pendragon (Rider <b>Alter</b>) 179: Altria Pendragon (Ruler)
+        265: Altria Pendragon (Santa <b>Alter</b>) 073: x200px: x200px: Amakusa Shirou:
+        093: Anastasia &amp; Viy: 318: Anastasia Nikolaevna ...</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.grandorder.wiki/Cu\">Cu
+        - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n      \n\n            <div
+        class=\"result__extras\">\n                <div class=\"result__extras__url\">\n
+        \                 <span class=\"result__icon\">\n                    \n                      <a
+        rel=\"nofollow\" href=\"https://www.grandorder.wiki/Cu\">\n                        <img
+        class=\"result__icon__img\" width=\"16\" height=\"16\" alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/Cu\">\n
+        \                 www.grandorder.wiki/Cu\n                  </a>\n\n                  \n\n
+        \               </div>\n            </div>\n\n            \n                  <a
+        class=\"result__snippet\" href=\"https://www.grandorder.wiki/Cu\">C\xFA is
+        an Old Irish word meaning hound. It also refers to Heroic Spirit C\xFA <b>Chulainn</b>.
+        There are many versions of C\xFA <b>Chulainn</b> in Fate/Grand Order, including:</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn/Dialogue\">C\xFA
+        Chulainn/Dialogue - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn/Dialogue\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn/Dialogue\">\n
+        \                 grandorder.wiki/C\xFA_Chulainn/Dialogue\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/C%C3%BA_Chulainn/Dialogue\">Voice
+        Line English Japanese Fan Translation Sound Clip Summon: Lancer-class Servant!
+        I have been summoned and come at your request. Let&#x27;s take this easy,
+        Master!</a>\n            \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.grandorder.wiki/An_Encounter_in_the_Dark_Night\">An
+        Encounter in the Dark Night - grandorder.wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.grandorder.wiki/An_Encounter_in_the_Dark_Night\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/An_Encounter_in_the_Dark_Night\">\n
+        \                 www.grandorder.wiki/An_Encounter_in_the_Dark_Night\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.grandorder.wiki/An_Encounter_in_the_Dark_Night\">A
+        4\u2605 Craft Essence. Atk: 100-100/HP: 100-100. Increase Master EXP from
+        clearing quests by 50</a>\n            \n\n            <div class=\"clear\"></div>\n
+        \         </div>\n\n        </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result
+        results_links results_links_deep web-result \">\n\n\n          <div class=\"links_main
+        links_deep result__body\"> <!-- This is the visible part -->\n\n          <h2
+        class=\"result__title\">\n          \n            <a rel=\"nofollow\" class=\"result__a\"
+        href=\"https://www.grandorder.wiki/Bond_Level_Expansion_Part_X\">Bond Level
+        Expansion Part X - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.grandorder.wiki/Bond_Level_Expansion_Part_X\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/Bond_Level_Expansion_Part_X\">\n
+        \                 www.grandorder.wiki/Bond_Level_Expansion_Part_X\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.grandorder.wiki/Bond_Level_Expansion_Part_X\">Cu
+        <b>Chulainn</b> (<b>Alter</b>) If equipped to Cu <b>Chulainn</b> (<b>Alter</b>),
+        Increase own NP Strength by 30% Revive with 20% HP when defeated (1 time).
+        Elemental Paracelsus von Hohenheim: If equipped to Paracelsus von Hohenheim,
+        Increase all allies&#x27; Arts Card effectiveness &amp; NP Strength by 10%
+        while on the field. Concealed Goddess Helena Blavatsky: If equipped to ...</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.grandorder.wiki/Class-Based_Summoning_Campaign_3\">Class-Based
+        Summoning Campaign 3 - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.grandorder.wiki/Class-Based_Summoning_Campaign_3\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/Class-Based_Summoning_Campaign_3\">\n
+        \                 www.grandorder.wiki/Class-Based_Summoning_Campaign_3\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.grandorder.wiki/Class-Based_Summoning_Campaign_3\">C\xFA
+        <b>Chulainn</b> (Caster) 3\u2605 Caster: MAX ATK 6,580 MAX HP 9,604 ... Paracelsus
+        von Hohenheim. 3\u2605 Caster: MAX ATK 6,711 MAX HP 9,506 C\xFA <b>Chulainn</b>
+        (<b>Alter</b>) 5\u2605 Berserker: MAX ATK 12,805 MAX HP 12,210</a>\n            \n\n
+        \           <div class=\"clear\"></div>\n          </div>\n\n        </div>\n\n
+        \ \n\n\n\n  \n\n\n            <div class=\"result results_links results_links_deep
+        web-result \">\n\n\n          <div class=\"links_main links_deep result__body\">
+        <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Noble_Phantasms_by_Damage\">Noble
+        Phantasms by Damage - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Noble_Phantasms_by_Damage\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Noble_Phantasms_by_Damage\">\n
+        \                 grandorder.wiki/Noble_Phantasms_by_Damage\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Noble_Phantasms_by_Damage\">Improved
+        Card performance: Sakata Kintoki (Rider), Lancelot (Saber), Bedivere, Illyasviel
+        von Einzbern, Cleopatra, Ishtar. Attack Up: Lancelot, Eric Bloodaxe, Cu <b>Chulainn</b>
+        (<b>Alter</b>) Defense Down: Martha (Ruler), Enkidu, James Moriarty. Jack
+        the Ripper &#x27;s Noble Phantasm has Special Attack against Females.</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://grandorder.wiki/Class-Based_Summoning_Campaign\">Class-Based
+        Summoning Campaign - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://grandorder.wiki/Class-Based_Summoning_Campaign\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://grandorder.wiki/Class-Based_Summoning_Campaign\">\n
+        \                 grandorder.wiki/Class-Based_Summoning_Campaign\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://grandorder.wiki/Class-Based_Summoning_Campaign\">Altria
+        Pendragon (Lancer <b>Alter</b>) 4\u2605 Lancer: MAX ATK 9,968 MAX HP 11,761
+        ... C\xFA <b>Chulainn</b>. 3\u2605 Lancer: MAX ATK 7,239 MAX HP 9,593 C\xFA
+        <b>Chulainn</b> (Prototype) 3\u2605 Lancer: MAX ATK 7,082 MAX HP 10,098</a>\n
+        \           \n\n            <div class=\"clear\"></div>\n          </div>\n\n
+        \       </div>\n\n  \n\n\n\n  \n\n\n            <div class=\"result results_links
+        results_links_deep web-result \">\n\n\n          <div class=\"links_main links_deep
+        result__body\"> <!-- This is the visible part -->\n\n          <h2 class=\"result__title\">\n
+        \         \n            <a rel=\"nofollow\" class=\"result__a\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Caster)/Rank_Up\">C\xFA
+        Chulainn (Caster)/Rank Up - Fate/Grand Order Wiki</a>\n          \n          </h2>\n\n
+        \     \n\n            <div class=\"result__extras\">\n                <div
+        class=\"result__extras__url\">\n                  <span class=\"result__icon\">\n
+        \                   \n                      <a rel=\"nofollow\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Caster)/Rank_Up\">\n
+        \                       <img class=\"result__icon__img\" width=\"16\" height=\"16\"
+        alt=\"\"\n                          src=\"//external-content.duckduckgo.com/ip3/www.grandorder.wiki.ico\"
+        name=\"i15\" />\n                      </a>\n                  \n                  </span>\n\n
+        \                 <a class=\"result__url\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Caster)/Rank_Up\">\n
+        \                 www.grandorder.wiki/C\xFA_Chulainn_(Caster)/Rank_Up\n                  </a>\n\n
+        \                 \n\n                </div>\n            </div>\n\n            \n
+        \                 <a class=\"result__snippet\" href=\"https://www.grandorder.wiki/C%C3%BA_Chulainn_(Caster)/Rank_Up\">Altria
+        Pendragon (<b>Alter</b>) Lvl 58 (170,716 HP) Possible Drops: Completion Reward
+        2, Skill Upgrade: Rune Spell A to &#x27;Primordial Rune (C\xFA)&#x27; Rank
+        Up Quest: C\xFA <b>Chulainn</b> (Caster) II Edit \u5F37\u5316\u30AF\u30A8\u30B9\u30C8\uFF1A\u30AF\u30FC\u30FB\u30D5\u30FC\u30EA\u30F3
+        II AP EXP QP Bond Quest Type Chaldea Gate \u30DE\u30EB\u30BB\u30A4\u30E6 20
+        22,190 (1110 XP/AP) 7,400 715 Rank Up</a>\n            \n\n            <div
+        class=\"clear\"></div>\n          </div>\n\n        </div>\n\n  \n\n\n\n\n
+        \       \n        \n                <div class=\"nav-link\">\n        <form
+        action=\"/html/\" method=\"post\">\n          <input type=\"submit\" class='btn
+        btn--alt' value=\"Next\" />\n          <input type=\"hidden\" name=\"q\" value=\"site:grandorder.wiki
+        chulainn alter\" />\n          <input type=\"hidden\" name=\"s\" value=\"23\"
+        />\n          <input type=\"hidden\" name=\"nextParams\" value=\"\" />\n          <input
+        type=\"hidden\" name=\"v\" value=\"l\" />\n          <input type=\"hidden\"
+        name=\"o\" value=\"json\" />\n          <input type=\"hidden\" name=\"dc\"
+        value=\"24\" />\n          <input type=\"hidden\" name=\"api\" value=\"d.js\"
+        />\n          <input type=\"hidden\" name=\"vqd\" value=\"4-56732450256492758319920990433373815428\"
+        />\n\n        \n        \n        \n          <input name=\"kl\" value=\"us-en\"
+        type=\"hidden\" />\n        \n        \n        \n        \n        </form>\n
+        \               </div>\n        \n\n\n\n        <div class=\" feedback-btn\">\n
+        \           <a rel=\"nofollow\" href=\"//duckduckgo.com/feedback.html\" target=\"_new\">Feedback</a>\n
+        \       </div>\n        <div class=\"clear\"></div>\n  </div>\n  </div> <!--
+        links wrapper //-->\n\n\n\n    </div>\n  </div>\n\n    <div id=\"bottom_spacing2\"></div>\n\n
+        \   \n      <img src=\"//duckduckgo.com/t/sl_h\"/>\n    \n</body>\n</html>\n"
     headers:
-      Cache-Control: [max-age=1]
-      Connection: [keep-alive]
-      Content-Encoding: [gzip]
-      Content-Security-Policy: ['default-src https: blob: data: ''unsafe-inline''
-          ''unsafe-eval''; frame-ancestors ''self''']
-      Content-Type: [text/html; charset=UTF-8]
-      Date: ['Fri, 09 Oct 2020 04:40:43 GMT']
-      Expect-CT: [max-age=0]
-      Expires: ['Fri, 09 Oct 2020 04:40:44 GMT']
-      Referrer-Policy: [origin]
-      Server: [nginx]
-      Server-Timing: [total;dur=124;desc="Backend Total"]
-      Set-Cookie: ['kl=us-en; Secure; HttpOnly; SameSite=Strict;Expires=Sat, 09 Oct
-          2021 04:40:43 GMT;']
-      Strict-Transport-Security: [max-age=0]
-      Transfer-Encoding: [chunked]
-      Vary: [Accept-Encoding]
-      X-Content-Type-Options: [nosniff]
-      X-DuckDuckGo-Locale: [en_US]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1;mode=block]
-    status: {code: 200, message: OK}
+      Cache-Control:
+      - max-age=1
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - br
+      Content-Security-Policy:
+      - 'default-src ''none'' ; connect-src  https://duckduckgo.com https://*.duckduckgo.com
+        https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ ;
+        manifest-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; media-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; script-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; font-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; img-src data:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; style-src  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; object-src ''none'' ; worker-src blob: ; child-src blob:  https://duckduckgo.com
+        https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-src blob:  https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/
+        ; frame-ancestors ''self'' ; base-uri ''self'' ; block-all-mixed-content ;'
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Thu, 12 Oct 2023 04:39:29 GMT
+      Expect-CT:
+      - max-age=0
+      Expires:
+      - Thu, 12 Oct 2023 04:39:30 GMT
+      Permissions-Policy:
+      - interest-cohort=()
+      Referrer-Policy:
+      - origin
+      Server:
+      - nginx
+      Server-Timing:
+      - total;dur=606;desc="Backend Total"
+      Set-Cookie:
+      - kl=us-en; Secure; HttpOnly; SameSite=Strict;Expires=Fri, 11 Oct 2024 04:39:28
+        GMT;
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-DuckDuckGo-Locale:
+      - en_US
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1;mode=block
+    status:
+      code: 200
+      message: OK
 version: 1
