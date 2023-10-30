@@ -6,6 +6,7 @@ Plugins: Developer Overview
    :titlesonly:
 
    plugin/what
+   plugin/tutorials
    plugin/anatomy
    plugin/bot
    plugin/time
