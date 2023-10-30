@@ -33,7 +33,7 @@ Assuming your test files are in the ``test`` folder in your project directory::
 
 You can run your test suite with::
 
-    py.test -v test/
+    pytest -v test/
 
 .. __: https://docs.pytest.org/en/stable/getting-started.html
 

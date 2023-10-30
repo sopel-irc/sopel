@@ -108,7 +108,7 @@ class MockIRCServer:
         ``blocking`` arguments to the instance methods below.
 
     The :class:`~sopel.tests.factories.IRCFactory` factory can be used to
-    create such mock object, either directly or by using ``py.test`` and the
+    create such mock object, either directly or by using ``pytest`` and the
     :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
 
     .. versionadded:: 7.1
@@ -361,7 +361,7 @@ class MockUser:
     :param str host: user's host
 
     The :class:`~sopel.tests.factories.UserFactory` factory can be used to
-    create such mock object, either directly or by using ``py.test`` and the
+    create such mock object, either directly or by using ``pytest`` and the
     :func:`~sopel.tests.pytest_plugin.userfactory` fixture.
     """
     def __init__(self, nick=None, user=None, host=None):
