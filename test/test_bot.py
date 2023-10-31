@@ -383,7 +383,7 @@ def test_register_unregister_plugin(tmpconfig, mockplugin):
 def test_remove_plugin_unknown_plugin(tmpconfig):
     sopel = bot.Sopel(tmpconfig, daemon=False)
 
-    handler = plugins.handlers.PyModulePlugin('admin', 'sopel.modules')
+    handler = plugins.handlers.PyModulePlugin('admin', 'sopel.builtins')
     with pytest.raises(plugins.exceptions.PluginNotRegistered):
         sopel.remove_plugin(handler, [], [], [], [])
 

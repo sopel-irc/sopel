@@ -14,7 +14,7 @@ and only one plugin per unique name, using a specific order:
 * homedir's ``plugins`` directory
 * ``sopel.plugins`` entry point group
 * ``sopel_modules``'s subpackages
-* ``sopel.modules``'s core plugins
+* ``sopel.builtins``'s core plugins
 
 (The ``coretasks`` plugin is *always* the one from ``sopel.coretasks`` and
 cannot be overridden.)
@@ -62,21 +62,21 @@ def find_internal_plugins():
     """List internal plugins.
 
     :return: yield instances of :class:`~.handlers.PyModulePlugin`
-             configured for ``sopel.modules.*``
+             configured for ``sopel.builtins.*``
 
-    Internal plugins can be found under ``sopel.modules``. This list does not
+    Internal plugins can be found under ``sopel.builtins``. This list does not
     include the ``coretasks`` plugin.
     """
-    modules = importlib.util.find_spec('sopel.modules')
-    if modules is None or modules.submodule_search_locations is None:
+    builtins = importlib.util.find_spec('sopel.builtins')
+    if builtins is None or builtins.submodule_search_locations is None:
         raise RuntimeError('Cannot resolve internal plugins')
     plugin_list = itertools.chain.from_iterable(
         _list_plugin_filenames(path)
-        for path in modules.submodule_search_locations
+        for path in builtins.submodule_search_locations
     )
 
     for name, _ in set(plugin_list):
-        yield handlers.PyModulePlugin(name, 'sopel.modules')
+        yield handlers.PyModulePlugin(name, 'sopel.builtins')
 
 
 def find_sopel_modules_plugins():
@@ -210,7 +210,7 @@ def get_usable_plugins(settings):
     * homedir's ``plugins`` directory
     * ``sopel.plugins`` entry point group
     * ``sopel_modules``'s subpackages
-    * ``sopel.modules``'s core plugins
+    * ``sopel.builtins``'s core plugins
 
     (The ``coretasks`` plugin is *always* the one from ``sopel.coretasks`` and
     cannot be overridden.)

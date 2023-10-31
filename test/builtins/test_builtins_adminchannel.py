@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from sopel.modules import adminchannel
+from sopel.builtins import adminchannel
 
 
 VALID_INPUTS = (

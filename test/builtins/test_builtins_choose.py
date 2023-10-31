@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from sopel import formatting
-from sopel.modules import choose
+from sopel.builtins import choose
 
 
 UNICODE_ZS_CATEGORY = [

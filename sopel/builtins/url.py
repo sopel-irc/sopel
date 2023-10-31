@@ -489,7 +489,7 @@ def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> b
 
     .. seealso::
 
-        The :func:`~sopel.modules.url.setup` function that defines the
+        The :func:`~sopel.builtins.url.setup` function that defines the
         ``url_exclude`` in ``bot.memory``.
 
     .. versionchanged:: 7.0

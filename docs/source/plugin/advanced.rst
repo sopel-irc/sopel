@@ -132,7 +132,7 @@ from other plugins, including commands. For example, this can be used to add
 an alias for an existing command::
 
     from sopel import plugin
-    from sopel.modules import wikipedia as wp
+    from sopel.builtins import wikipedia as wp
 
     @plugin.command("wiki")
     @plugin.output_prefix(wp.wikipedia.output_prefix)

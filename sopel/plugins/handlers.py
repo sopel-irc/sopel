@@ -88,7 +88,7 @@ class AbstractPluginHandler(abc.ABC):
     configure, load, shutdown, etc. a Sopel plugin (or "module").
 
     It is through this interface that Sopel will interact with its plugins,
-    whether internal (from ``sopel.modules``) or external (from the Python
+    whether internal (from ``sopel.builtins``) or external (from the Python
     files in a directory, to ``sopel_modules.*`` subpackages).
 
     Sopel's loader will create a "Plugin Handler" for each plugin it finds, to
@@ -236,9 +236,9 @@ class PyModulePlugin(AbstractPluginHandler):
 
         >>> import sys
         >>> from sopel.plugins.handlers import PyModulePlugin
-        >>> plugin = PyModulePlugin('xkcd', 'sopel.modules')
+        >>> plugin = PyModulePlugin('xkcd', 'sopel.builtins')
         >>> plugin.module_name
-        'sopel.modules.xkcd'
+        'sopel.builtins.xkcd'
         >>> plugin.load()
         >>> plugin.module_name in sys.modules
         True
@@ -246,8 +246,8 @@ class PyModulePlugin(AbstractPluginHandler):
     Is the same as this::
 
         >>> import sys
-        >>> from sopel.modules import xkcd
-        >>> 'sopel.modules.xkcd' in sys.modules
+        >>> from sopel.builtins import xkcd
+        >>> 'sopel.builtins.xkcd' in sys.modules
         True
 
     """
