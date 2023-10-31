@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools~=63.0", "wheel"]
+requires = ["setuptools~=66.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -39,6 +39,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Communications :: Chat :: Internet Relay Chat",
 ]
 requires-python = ">=3.8"
