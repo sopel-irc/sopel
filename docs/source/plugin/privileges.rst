@@ -11,7 +11,7 @@ IRC users can have privileges in a **channel**, given by MODE messages such as:
 This will give both OP and Voice privileges to the user named "Nickname" in the
 "#example" channel (and only in this channel). When Sopel receives a MODE
 message it registers and updates its knowledge of a user's privileges in a
-channel, which can be used by plugins in various way.
+channel, which can be used by plugins in various ways.
 
 Access rights
 =============
@@ -22,9 +22,10 @@ Privileged users
 A plugin can limit who can trigger its callables using the
 :func:`~sopel.plugin.require_privilege` decorator::
 
-    from sopel import plugin, privileges
+    from sopel import plugin
+    from sopel.privileges import AccessLevel
 
-    @plugin.require_privilege(privileges.OP)
+    @plugin.require_privilege(AccessLevel.OP)
     @plugin.require_chanmsg
     @plugin.command('chanopcommand')
     def chanop_command(bot, trigger):
@@ -34,7 +35,7 @@ This way, only users with OP privileges or above in a channel can use the
 command ``chanopcommand`` in that channel: other users will be ignored by the
 bot. It is possible to tell these users why with the ``message`` parameter::
 
-    @plugin.require_privilege(privileges.OP, 'You need +o privileges.')
+    @plugin.require_privilege(AccessLevel.OP, 'You need +o privileges.')
 
 .. important::
 
@@ -50,7 +51,7 @@ Sometimes, you may want the bot to be a privileged user in a channel to allow a
 command. For that, there is the :func:`~sopel.plugin.require_bot_privilege`
 decorator::
 
-    @plugin.require_bot_privilege(privileges.OP)
+    @plugin.require_bot_privilege(AccessLevel.OP)
     @plugin.require_chanmsg
     @plugin.command('opbotcommand')
     def change_topic(bot, trigger):
@@ -63,13 +64,13 @@ the user who invokes the command.
 As with ``require_privilege``, you can provide an error message::
 
     @plugin.require_bot_privilege(
-        privileges.OP, 'The bot needs +o privileges.')
+        AccessLevel.OP, 'The bot needs +o privileges.')
 
 And you **can** use both ``require_privilege`` and ``require_bot_privilege`` on
 the same plugin callable::
 
-    @plugin.require_privilege(privileges.VOICE)
-    @plugin.require_bot_privilege(privileges.OP)
+    @plugin.require_privilege(AccessLevel.VOICE)
+    @plugin.require_bot_privilege(AccessLevel.OP)
     @plugin.require_chanmsg
     @plugin.command('special')
     def special_command(bot, trigger):
@@ -92,7 +93,7 @@ Sometimes, a command should be used only by users who are authenticated via
 IRC services. On IRC networks that provide such information to IRC clients,
 this is possible with the :func:`~sopel.plugin.require_account` decorator::
 
-    @plugin.require_privilege(privileges.VOICE)
+    @plugin.require_privilege(AccessLevel.VOICE)
     @plugin.require_account
     @plugin.require_chanmsg
     @plugin.command('danger')
@@ -130,15 +131,15 @@ then you can get that user's privileges through the **channel**'s
     user_privileges = channel.privileges[trigger.nick]
 
 You can check the user's privileges manually using bitwise operators. Here
-for example, we check if the user is voiced (+v) or above::
+for example, we check if the user is voiced (``+v``) or above::
 
-    from sopel import privileges
+    from sopel.privileges import AccessLevel
 
-    if user_privileges & privileges.VOICE:
+    if user_privileges & AccessLevel.VOICE:
         # user is voiced
-    elif user_privileges > privileges.VOICE:
+    elif user_privileges > AccessLevel.VOICE:
         # not voiced, but higher privileges
-        # like privileges.HALFOP or privileges.OP
+        # like AccessLevel.HALFOP or AccessLevel.OP
     else:
         # no privilege
 
@@ -146,9 +147,9 @@ Another option is to use dedicated methods from the ``channel`` object::
 
     if channel.is_voiced('Nickname'):
         # user is voiced
-    elif channel.has_privilege('Nickname', privileges.VOICE):
+    elif channel.has_privilege('Nickname', AccessLevel.VOICE):
         # not voiced, but higher privileges
-        # like privileges.HALFOP or privileges.OP
+        # like AccessLevel.HALFOP or AccessLevel.OP
     else:
         # no privilege
 
@@ -158,14 +159,14 @@ You can also iterate over the list of users and filter them by privileges::
     op_users = [
         user
         for nick, user in channel.users
-        if channel.is_op(nick, privileges.OP)
+        if channel.is_op(nick, AccessLevel.OP)
     ]
 
     # get users with OP privilege or above
     op_or_higher_users = [
         user
         for nick, user in channel.users
-        if channel.has_privileges(nick, privileges.OP)
+        if channel.has_privileges(nick, AccessLevel.OP)
     ]
 
 .. seealso::

@@ -4,7 +4,7 @@ from __future__ import annotations
 import functools
 from typing import Any, Optional, TYPE_CHECKING, Union
 
-from sopel import privileges
+from sopel.privileges import AccessLevel
 from sopel.tools import memories
 from sopel.tools.identifiers import Identifier, IdentifierFactory
 
@@ -158,7 +158,7 @@ class Channel:
 
         This maps nickname :class:`~sopel.tools.identifiers.Identifier`\\s to
         bitwise integer values. This can be compared to appropriate constants
-        from :mod:`sopel.privileges`.
+        from :class:`sopel.privileges.AccessLevel`.
         """
         self.topic: str = ''
         """The topic of the channel."""
@@ -203,7 +203,7 @@ class Channel:
 
         :param user: the new user to add
         :param privs: privilege bitmask (see constants in
-                      :mod:`sopel.privileges`)
+                      :class:`sopel.privileges.AccessLevel`)
 
         Called when a new user JOINs the channel.
         """
@@ -274,7 +274,7 @@ class Channel:
 
         """
         identifier = self.make_identifier(nick)
-        return bool(self.privileges.get(identifier, 0) & privileges.OPER)
+        return bool(self.privileges.get(identifier, 0) & AccessLevel.OPER)
 
     def is_owner(self, nick: str) -> bool:
         """Tell if a user has the OWNER privilege level.
@@ -306,7 +306,7 @@ class Channel:
 
         """
         identifier = self.make_identifier(nick)
-        return bool(self.privileges.get(identifier, 0) & privileges.OWNER)
+        return bool(self.privileges.get(identifier, 0) & AccessLevel.OWNER)
 
     def is_admin(self, nick: str) -> bool:
         """Tell if a user has the ADMIN privilege level.
@@ -338,7 +338,7 @@ class Channel:
 
         """
         identifier = self.make_identifier(nick)
-        return bool(self.privileges.get(identifier, 0) & privileges.ADMIN)
+        return bool(self.privileges.get(identifier, 0) & AccessLevel.ADMIN)
 
     def is_op(self, nick: str) -> bool:
         """Tell if a user has the OP privilege level.
@@ -364,7 +364,7 @@ class Channel:
 
         """
         identifier = self.make_identifier(nick)
-        return bool(self.privileges.get(identifier, 0) & privileges.OP)
+        return bool(self.privileges.get(identifier, 0) & AccessLevel.OP)
 
     def is_halfop(self, nick: str) -> bool:
         """Tell if a user has the HALFOP privilege level.
@@ -396,7 +396,7 @@ class Channel:
 
         """
         identifier = self.make_identifier(nick)
-        return bool(self.privileges.get(identifier, 0) & privileges.HALFOP)
+        return bool(self.privileges.get(identifier, 0) & AccessLevel.HALFOP)
 
     def is_voiced(self, nick: str) -> bool:
         """Tell if a user has the VOICE privilege level.
@@ -423,7 +423,7 @@ class Channel:
 
         """
         identifier = self.make_identifier(nick)
-        return bool(self.privileges.get(identifier, 0) & privileges.VOICE)
+        return bool(self.privileges.get(identifier, 0) & AccessLevel.VOICE)
 
     def rename_user(self, old: Identifier, new: Identifier) -> None:
         """Rename a user.
