@@ -358,7 +358,7 @@ def unblockable(function: Any) -> Any:
 def interval(*intervals: Union[int, float]) -> Callable:
     """Decorate a function to be called by the bot every *n* seconds.
 
-    :param int intervals: one or more duration(s), in seconds
+    :param intervals: one or more duration(s), in seconds
 
     This decorator can be used multiple times for multiple intervals, or
     multiple intervals can be given in multiple arguments. The first time the
@@ -397,7 +397,7 @@ def interval(*intervals: Union[int, float]) -> Callable:
 def rule(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a line matches the given pattern.
 
-    :param str patterns: one or more regular expression(s)
+    :param patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function::
 
@@ -454,7 +454,6 @@ def rule_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match URLs
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -500,7 +499,7 @@ def rule_lazy(*loaders: Callable) -> Callable:
 def find(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called for each time a pattern is found in a line.
 
-    :param str patterns: one or more regular expression(s)
+    :param patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function::
 
@@ -557,7 +556,6 @@ def find_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match patterns in a line
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -603,7 +601,7 @@ def find_lazy(*loaders: Callable) -> Callable:
 def search(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a pattern matches anywhere in a line.
 
-    :param str patterns: one or more regular expression(s)
+    :param patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function::
 
@@ -663,7 +661,6 @@ def search_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match patterns in a line
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -709,8 +706,8 @@ def search_lazy(*loaders: Callable) -> Callable:
 def thread(value: bool) -> Callable:
     """Decorate a function to specify if it should be run in a separate thread.
 
-    :param bool value: if ``True``, the function is called in a separate thread;
-                       otherwise, from the bot's main thread
+    :param value: if ``True``, the function is called in a separate thread;
+                  otherwise, from the bot's main thread
 
     Functions run in a separate thread (as is the default) will not prevent the
     bot from executing other functions at the same time. Functions not run in a
@@ -776,7 +773,7 @@ def echo(
 def command(*command_list: str) -> Callable:
     """Decorate a function to set one or more commands that should trigger it.
 
-    :param str command_list: one or more command name(s) to match
+    :param command_list: one or more command name(s) to match
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -872,7 +869,7 @@ commands = command
 def nickname_command(*command_list: str) -> Callable:
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
-    :param str command_list: one or more command name(s) to match
+    :param command_list: one or more command name(s) to match
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -925,7 +922,7 @@ nickname_commands = nickname_command
 def action_command(*command_list: str) -> Callable:
     """Decorate a function to trigger on CTCP ACTION lines.
 
-    :param str command_list: one or more command name(s) to match
+    :param command_list: one or more command name(s) to match
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -977,7 +974,7 @@ action_commands = action_command
 def label(value: str) -> Callable:
     """Decorate a function to add a rule label.
 
-    :param str value: a label for the rule
+    :param value: a label for the rule
 
     The rule label allows the documentation and the logging system to refer
     to this function by its label. A function can have one and only one label::
@@ -1003,8 +1000,7 @@ def label(value: str) -> Callable:
 def priority(value: str) -> Callable:
     """Decorate a function to be executed with higher or lower priority.
 
-    :param str value: one of ``high``, ``medium``, or ``low``;
-                      defaults to ``medium``
+    :param value: one of ``high``, ``medium``, or ``low``; defaults to ``medium``
 
     The priority allows you to control the order of callable execution, if your
     plugin needs it.
@@ -1018,7 +1014,7 @@ def priority(value: str) -> Callable:
 def event(*event_list: str) -> Callable:
     """Decorate a function to be triggered on specific IRC events.
 
-    :param str event_list: one or more event name(s) on which to trigger
+    :param event_list: one or more event name(s) on which to trigger
 
     This is one of a number of events, such as 'JOIN', 'PART', 'QUIT', etc.
     (More details can be found in RFC 1459.) When the Sopel bot is sent one of
@@ -1049,7 +1045,7 @@ def ctcp(
 ) -> Union[Any, Callable]:
     """Decorate a callable to trigger on CTCP commands (mostly, ``ACTION``).
 
-    :param str command_list: one or more CTCP command(s) on which to trigger
+    :param command_list: one or more CTCP command(s) on which to trigger
 
     There are various CTCP commands to handle with this decorator, such as
     ``ACTION``, ``VERSION``, and ``TIME``::
@@ -1327,10 +1323,10 @@ def require_privmsg(
 ) -> Callable:
     """Decorate a function to only be triggerable from a private message.
 
-    :param str message: optional message said if triggered in a channel
-    :param bool reply: use :meth:`~sopel.bot.Sopel.reply` instead of
-                       :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said if triggered in a channel
+    :param reply: use :meth:`~sopel.bot.Sopel.reply` instead of
+                  :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
+                  ``False``
 
     If the decorated function is triggered by a channel message, ``message``
     will be said if given. By default, it uses :meth:`bot.say()
@@ -1365,10 +1361,9 @@ def require_chanmsg(
 ) -> Callable:
     """Decorate a function to only be triggerable from a channel message.
 
-    :param str message: optional message said if triggered in private message
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said if triggered in private message
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     A decorated plugin callable will be triggered only by messages from a
     channel::
@@ -1413,11 +1408,10 @@ def require_account(
 ) -> Callable:  # lgtm [py/similar-function]
     """Decorate a function to require services/NickServ authentication.
 
-    :param str message: optional message to say if a user without
-                        authentication tries to trigger this function
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message to say if a user without authentication
+                    tries to trigger this function
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     .. versionadded:: 7.0
     .. note::
@@ -1463,11 +1457,10 @@ def require_privilege(
 ) -> Callable:
     """Decorate a function to require at least the given channel permission.
 
-    :param int level: required privilege level to use this command
-    :param str message: optional message said to insufficiently privileged user
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param level: required privilege level to use this command
+    :param message: optional message said to insufficiently privileged user
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     ``level`` can be one of the privilege level constants defined in this
     module. If the user does not have the privilege, the bot will say
@@ -1509,10 +1502,9 @@ def require_admin(
 ) -> Callable:  # lgtm [py/similar-function]
     """Decorate a function to require the triggering user to be a bot admin.
 
-    :param str message: optional message said to non-admin user
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said to non-admin user
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     When the triggering user is not an admin, the command is not run, and the
     bot will say the ``message`` if given. By default, it uses
@@ -1548,10 +1540,9 @@ def require_owner(
 ) -> Callable:  # lgtm [py/similar-function]
     """Decorate a function to require the triggering user to be the bot owner.
 
-    :param str message: optional message said to non-owner user
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said to non-owner user
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     When the triggering user is not the bot's owner, the command is not run,
     and the bot will say ``message`` if given. By default, it uses
@@ -1587,12 +1578,11 @@ def require_bot_privilege(
 ) -> Callable:
     """Decorate a function to require a minimum channel privilege for the bot.
 
-    :param int level: minimum channel privilege the bot needs for this function
-    :param str message: optional message said if the bot's channel privilege
-                        level is insufficient
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param level: minimum channel privilege the bot needs for this function
+    :param message: optional message said if the bot's channel privilege level
+                    is insufficient
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     ``level`` can be one of the privilege level constants defined in this
     module. If the bot does not have the privilege, the bot will say
@@ -1626,7 +1616,7 @@ def require_bot_privilege(
 def url(*url_rules: str) -> Callable:
     """Decorate a function to handle URLs.
 
-    :param str url_rules: one or more regex pattern(s) to match URLs
+    :param url_rules: one or more regex pattern(s) to match URLs
 
     This decorator takes a regex string that will be matched against URLs in a
     message. The function it decorates is like any other callable::
@@ -1687,7 +1677,6 @@ def url_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match URLs.
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -1714,7 +1703,6 @@ def url_lazy(*loaders: Callable) -> Callable:
             bot.say('URL found: %s' % trigger.group(0))
 
     .. versionadded:: 7.1
-
     .. seealso::
 
         When more than one loader is provided, they will be chained together
@@ -1893,8 +1881,8 @@ class example:
 def output_prefix(prefix: str) -> Callable:
     """Decorate a function to add a prefix on its output.
 
-    :param str prefix: the prefix to add (must include trailing whitespace if
-                       desired; Sopel does not assume it should add anything)
+    :param prefix: the prefix to add (must include trailing whitespace if
+                   desired; Sopel does not assume it should add anything)
 
     Prefix will be added to text sent through:
 
