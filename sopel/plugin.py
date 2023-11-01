@@ -1454,7 +1454,7 @@ def require_chanmsg(
 def require_account(
     message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> Callable:  # lgtm [py/similar-function]
+) -> Callable:
     """Decorate a function to require services/NickServ authentication.
 
     :param message: optional message to say if a user without authentication
@@ -1573,7 +1573,7 @@ def require_privilege(
 def require_admin(
     message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> Callable:  # lgtm [py/similar-function]
+) -> Callable:
     """Decorate a function to require the triggering user to be a bot admin.
 
     :param message: optional message said to non-admin user
@@ -1633,7 +1633,7 @@ def require_admin(
 def require_owner(
     message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> Callable:  # lgtm [py/similar-function]
+) -> Callable:
     """Decorate a function to require the triggering user to be the bot owner.
 
     :param message: optional message said to non-owner user
