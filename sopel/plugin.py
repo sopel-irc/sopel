@@ -1047,8 +1047,8 @@ def ctcp(
 
     :param command_list: one or more CTCP command(s) on which to trigger
 
-    There are various CTCP commands to handle with this decorator, such as
-    ``ACTION``, ``VERSION``, and ``TIME``::
+    There are `various CTCP commands`__ to handle with this decorator, such as
+    ``ACTION``, ``CLIENTINFO``, ``TIME``, and ``VERSION``::
 
         from sopel import plugin
 
@@ -1056,6 +1056,16 @@ def ctcp(
         @plugin.rule('.*')
         def ctcp_time(bot, trigger):
             bot.say('Sorry, not a clock.')
+
+    This decorator also works without parentheses, in which case it will trigger
+    on CTCP ``ACTION``::
+
+        from sopel import plugin
+
+        @plugin.ctcp
+        @plugin.rule('.*')
+        def ctcp_action(bot, trigger):
+            bot.reply('Why would you do that?!')
 
     .. versionadded:: 7.1
 
@@ -1069,6 +1079,8 @@ def ctcp(
         In that case, Sopel will assume it should trigger on ``ACTION``.
 
         As ``sopel.module`` will be removed in Sopel 9, so will ``@intent``.
+
+    .. __: https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-02#appendix-A
     """
     default_commands = ('ACTION',) + command_list
     if function is None:
@@ -1328,10 +1340,30 @@ def require_privmsg(
                   :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
                   ``False``
 
-    If the decorated function is triggered by a channel message, ``message``
+    A decorated plugin callable will be triggered only by messages sent to the
+    bot in private::
+
+        from sopel import plugin
+
+        @plugin.command('.shh')
+        @plugin.require_privmsg('PM only command.')
+        def confidential_command(bot, trigger):
+            # trigger on private messages only
+
+    If the decorated function is triggered by a channel message, the ``message``
     will be said if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    <.bot.Sopel.say>`, but when ``reply`` is ``True``, then it uses
     :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.shh')
+        @plugin.require_privmsg
+        def confidential_command(bot, trigger):
+            # trigger on private messages only
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1370,15 +1402,25 @@ def require_chanmsg(
 
         from sopel import plugin
 
-        @plugin.command('.mycommand')
+        @plugin.command('.mtopic')
         @plugin.require_chanmsg('Channel only command.')
         def manage_topic(bot, trigger):
             # trigger on channel messages only
 
-    If the decorated function is triggered by a private message, ``message``
+    If the decorated function is triggered by a private message, the ``message``
     will be said if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses
     :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.mtopic')
+        @plugin.require_chanmsg
+        def manage_topic(bot, trigger):
+            # trigger on channel messages only
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1412,6 +1454,31 @@ def require_account(
                     tries to trigger this function
     :param reply: use :meth:`~.bot.Sopel.reply` instead of
                   :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
+
+    A decorated plugin callable will be triggered only if the triggering user is
+    logged into a network services account::
+
+        from sopel import plugin
+
+        @plugin.command('.regonly')
+        @plugin.require_account('Registered users only.')
+        def logged_in_command(bot, trigger):
+            # trigger only if user is logged in to services
+
+    If an unauthenticated user triggers the decorated function, the ``message``
+    will be said if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.regonly')
+        @plugin.require_account
+        def logged_in_command(bot, trigger):
+            # trigger only if user is logged in to services
 
     .. versionadded:: 7.0
     .. note::
@@ -1463,10 +1530,10 @@ def require_privilege(
                   :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     ``level`` can be one of the privilege level constants defined in this
-    module. If the user does not have the privilege, the bot will say
+    module. If the user does not have at least that privilege, the bot will say
     ``message`` if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
-    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
 
     Use of ``require_privilege()`` implies :func:`require_chanmsg`.
 
@@ -1506,10 +1573,32 @@ def require_admin(
     :param reply: use :meth:`~.bot.Sopel.reply` instead of
                   :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
+    A decorated plugin callable will be triggered only if the triggering user is
+    an admin of the bot, according to its configuration::
+
+        from sopel import plugin
+
+        @plugin.command('.adminonly')
+        @plugin.require_admin('Bot admin only command.')
+        def admin_command(bot, trigger):
+            # trigger only if user is a bot admin
+
+    The bot's :attr:`~.config.core_section.CoreSection.owner` is also an admin.
+
     When the triggering user is not an admin, the command is not run, and the
-    bot will say the ``message`` if given. By default, it uses
-    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
-    uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    bot will say the ``message`` if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.adminonly')
+        @plugin.require_admin
+        def admin_command(bot, trigger):
+            # trigger only if user is a bot admin
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1544,10 +1633,30 @@ def require_owner(
     :param reply: use :meth:`~.bot.Sopel.reply` instead of
                   :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
+    A decorated plugin callable will be triggered only if the triggering user is
+    recognized as the bot's owner, according to its configuration::
+
+        from sopel import plugin
+
+        @plugin.command('.owneronly')
+        @plugin.require_owner('Bot owner only command.')
+        def owner_command(bot, trigger):
+            # trigger only if user is the bot's owner
+
     When the triggering user is not the bot's owner, the command is not run,
     and the bot will say ``message`` if given. By default, it uses
-    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
-    uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses
+    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.owneronly')
+        @plugin.require_owner
+        def owner_command(bot, trigger):
+            # trigger only if user is the bot's owner
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1587,8 +1696,8 @@ def require_bot_privilege(
     ``level`` can be one of the privilege level constants defined in this
     module. If the bot does not have the privilege, the bot will say
     ``message`` if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
-    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
 
     Privilege requirements are ignored in private messages.
 
