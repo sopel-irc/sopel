@@ -13,6 +13,29 @@ This will give both OP and Voice privileges to the user named "Nickname" in the
 message it registers and updates its knowledge of a user's privileges in a
 channel, which can be used by plugins in various ways.
 
+Historically, these two privilege levels ("op" and "voiced") were the only
+channel privileges available:
+
+* :attr:`~sopel.privileges.AccessLevel.OP`: channel operator, set and unset by
+  modes ``+o`` and ``-o``
+* :attr:`~sopel.privileges.AccessLevel.VOICE`: the privilege to send messages to
+  a channel with the ``+m`` mode, set and unset by modes ``+v`` and ``-v``
+
+Since then, other privileges have been adopted by IRC servers and clients:
+
+* :attr:`~sopel.privileges.AccessLevel.HALFOP`: intermediate level between VOICE
+  and OP, set and unset by modes ``+h`` and ``-h``
+* :attr:`~sopel.privileges.AccessLevel.ADMIN`: channel admin, above OP and below
+  OWNER, set and unset by modes ``+a`` and ``-a``
+* :attr:`~sopel.privileges.AccessLevel.OWNER`: channel owner, above ADMIN and OP,
+  set and unset by modes ``+q`` and ``-q``
+
+.. important::
+
+    Not all IRC networks support these added privilege modes. If you are writing
+    a plugin for public distribution, ensure your code behaves sensibly if only
+    ``+v`` (voice) and ``+o`` (op) modes exist.
+
 Access rights
 =============
 
