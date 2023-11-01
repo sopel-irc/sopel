@@ -489,10 +489,10 @@ class CoreSection(StaticSection):
     """
 
     default_time_format = ValidatedAttribute('default_time_format',
-                                             default='%Y-%m-%d - %T%Z')
+                                             default='%Y-%m-%d - %T %Z')
     """The default format to use for time in messages.
 
-    :default: ``%Y-%m-%d - %T%Z``
+    :default: ``%Y-%m-%d - %T %Z``
 
     Used when plugins format times with :func:`sopel.tools.time.format_time`.
 
@@ -500,7 +500,7 @@ class CoreSection(StaticSection):
 
     .. code-block:: ini
 
-        default_time_format = %Y-%m-%d - %T%Z
+        default_time_format = %Y-%m-%d - %T %Z
 
     .. seealso::
 
