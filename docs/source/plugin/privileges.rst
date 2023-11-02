@@ -21,7 +21,10 @@ channel privileges available:
 * :attr:`~sopel.privileges.AccessLevel.VOICE`: the privilege to send messages to
   a channel with the ``+m`` mode, set and unset by modes ``+v`` and ``-v``
 
-Since then, other privileges have been adopted by IRC servers and clients:
+.. _nonstandard privilege levels:
+
+Over time, IRC servers and clients have adopted various combinations of
+nonstandard, less formally defined privilege levels:
 
 * :attr:`~sopel.privileges.AccessLevel.HALFOP`: intermediate level between VOICE
   and OP, set and unset by modes ``+h`` and ``-h``
@@ -30,11 +33,10 @@ Since then, other privileges have been adopted by IRC servers and clients:
 * :attr:`~sopel.privileges.AccessLevel.OWNER`: channel owner, above ADMIN and OP,
   set and unset by modes ``+q`` and ``-q``
 
-.. important::
-
-    Not all IRC networks support these added privilege modes. If you are writing
-    a plugin for public distribution, ensure your code behaves sensibly if only
-    ``+v`` (voice) and ``+o`` (op) modes exist.
+**It's important to note that not all IRC networks support these nonstandard
+privileges, and the ones that do may not support all of them.** If you are
+writing a plugin for public distribution, ensure your code behaves sensibly when
+only the standardized ``+v`` (voice) and ``+o`` (op) modes exist.
 
 Access rights
 =============

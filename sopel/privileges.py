@@ -15,26 +15,17 @@ __all__ = [
 class AccessLevel(enum.IntFlag):
     """Enumeration of available user privilege levels.
 
-    Comparing privileges
-    ====================
-
-    This class represents privileges as powers of two, with higher values
-    assigned to higher-level privileges::
+    This class represents privileges as comparable, combinable flags. Lower
+    privilege levels compare as *less than* (``<``) higher ones::
 
         >>> from sopel.privileges import AccessLevel
         >>> AccessLevel.VOICE < AccessLevel.HALFOP < AccessLevel.OP \\
         ... < AccessLevel.ADMIN < AccessLevel.OWNER
         True
 
-    Then a user's privileges are represented as a sum of privilege levels::
+    A user's privileges are represented as a combination of privilege levels::
 
-        >>> AccessLevel.VOICE
-        1
-        >>> AccessLevel.OP
-        4
         >>> priv = AccessLevel.VOICE | AccessLevel.OP
-        >>> priv
-        5
 
     This allows using comparators and bitwise operators to compare privileges.
     Here, ``priv`` contains both VOICE and OP privileges, but not HALFOP::
@@ -46,9 +37,9 @@ class AccessLevel(enum.IntFlag):
 
     .. important::
 
-        Do not refer directly to the integer value of a privilege level in your
-        code; the values may change. Use the appropriate member of this class as
-        a reference point instead.
+        Do not hard-code the value of a privilege level in your code; the values
+        may change. Always reference or compare to the appropriate member of
+        this class directly.
 
     """
     # values should behave as ints, but their string representations should
@@ -77,9 +68,7 @@ class AccessLevel(enum.IntFlag):
 
     .. important::
 
-        Not all IRC networks support this privilege mode. If you are writing a
-        plugin for public distribution, ensure your code behaves sensibly if
-        only ``+v`` (voice) and ``+o`` (op) modes exist.
+        Beware: This is one of the `nonstandard privilege levels`_.
 
     """
 
@@ -105,9 +94,7 @@ class AccessLevel(enum.IntFlag):
 
     .. important::
 
-        Not all IRC networks support this privilege mode. If you are writing a
-        plugin for public distribution, ensure your code behaves sensibly if
-        only ``+v`` (voice) and ``+o`` (op) modes exist.
+        Beware: This is one of the `nonstandard privilege levels`_.
 
     """
 
@@ -122,9 +109,7 @@ class AccessLevel(enum.IntFlag):
 
     .. important::
 
-        Not all IRC networks support this privilege mode. If you are writing a
-        plugin for public distribution, ensure your code behaves sensibly if
-        only ``+v`` (voice) and ``+o`` (op) modes exist.
+        Beware: This is one of the `nonstandard privilege levels`_.
 
     """
 
@@ -142,8 +127,6 @@ class AccessLevel(enum.IntFlag):
 
     .. important::
 
-        Not all IRC networks support this privilege mode. If you are writing a
-        plugin for public distribution, ensure your code behaves sensibly if
-        only ``+v`` (voice) and ``+o`` (op) modes exist.
+        Beware: This is one of the `nonstandard privilege levels`_.
 
     """
