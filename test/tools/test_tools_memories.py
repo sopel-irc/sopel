@@ -6,6 +6,11 @@ import pytest
 from sopel.tools import identifiers, memories
 
 
+def test_sopel_default_memory_contains():
+    memory = memories.SopelMemoryWithDefault(list)
+    assert 'key' not in memory
+
+
 def test_sopel_identifier_memory_none():
     memory = memories.SopelIdentifierMemory()
     assert None not in memory
