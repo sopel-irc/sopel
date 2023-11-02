@@ -14,7 +14,6 @@ import functools
 import logging
 import re
 from typing import (
-    Any,
     Callable,
     Optional,
     Pattern,
@@ -331,7 +330,9 @@ class capability:
         return self
 
 
-def unblockable(function: Any) -> Any:
+def unblockable(
+    function: Optional[Callable] = None,
+) -> Callable:
     """Decorate a function to exempt it from the ignore/blocks system.
 
     For example, this can be used to ensure that important events such as
@@ -351,8 +352,14 @@ def unblockable(function: Any) -> Any:
         Sopel's :meth:`~sopel.bot.Sopel.dispatch` method.
 
     """
-    function.unblockable = True
-    return function
+    def add_attribute(function):
+        function.unblockable = True
+        return function
+
+    # hack to allow both @unblockable and @unblockable() to work
+    if callable(function):
+        return add_attribute(function)
+    return add_attribute
 
 
 def interval(*intervals: Union[int, float]) -> Callable:
@@ -724,8 +731,8 @@ def thread(value: bool) -> Callable:
 
 
 def allow_bots(
-    function: Optional[Any] = None,
-) -> Union[Any, Callable]:
+    function: Optional[Callable] = None,
+) -> Callable:
     """Decorate a function to specify that it should receive events from bots.
 
     On networks implementing the `Bot Mode specification`__, messages and
@@ -746,8 +753,8 @@ def allow_bots(
 
 
 def echo(
-    function: Optional[Any] = None,
-) -> Union[Any, Callable]:
+    function: Optional[Callable] = None,
+) -> Callable:
     """Decorate a function to specify that it should receive echo messages.
 
     This decorator can be used to listen in on the messages that Sopel is
@@ -1040,9 +1047,9 @@ def event(*event_list: str) -> Callable:
 
 
 def ctcp(
-    function: Any = None,
+    function: Union[Callable, Optional[str]] = None,
     *command_list: str,
-) -> Union[Any, Callable]:
+) -> Callable:
     """Decorate a callable to trigger on CTCP commands (mostly, ``ACTION``).
 
     :param command_list: one or more CTCP command(s) on which to trigger
