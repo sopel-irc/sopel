@@ -21,8 +21,38 @@ def test_expression_eval():
     assert evaluator("43 - 1") == 42
     assert evaluator("1 + 1 - 2") == 0
 
-    with pytest.raises(ExpressionEvaluator.Error):
+    with pytest.raises(ExpressionEvaluator.Error) as exc:
         evaluator("2 * 2")
+    assert "Unsupported binary operator" in exc.value.args[0]
+
+    with pytest.raises(ExpressionEvaluator.Error) as exc:
+        evaluator("~2")
+    assert "Unsupported unary operator" in exc.value.args[0]
+
+
+def test_equation_eval_invalid_constant():
+    """Ensure unsupported constants are rejected."""
+    evaluator = EquationEvaluator()
+
+    with pytest.raises(ExpressionEvaluator.Error) as exc:
+        evaluator("2 + 'string'")
+    assert "values are not supported" in exc.value.args[0]
+
+
+def test_equation_eval_timeout():
+    """Ensure EquationEvaluator times out as expected."""
+    # timeout is added to the current time;
+    # negative means the timeout is "reached" before even starting
+    timeout = -1.0
+    evaluator = EquationEvaluator()
+
+    with pytest.raises(ExpressionEvaluator.Error) as exc:
+        evaluator("1000000**100", timeout)
+    assert "Time for evaluating" in exc.value.args[0]
+
+    with pytest.raises(ExpressionEvaluator.Error) as exc:
+        evaluator("+42", timeout)
+    assert "Time for evaluating" in exc.value.args[0]
 
 
 def test_equation_eval():
