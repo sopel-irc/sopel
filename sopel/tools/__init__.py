@@ -1,6 +1,6 @@
 """Useful miscellaneous tools and shortcuts for Sopel plugins
 
-*Availability: 3+*
+.. versionadded:: 3.0
 """
 
 # tools.py - Sopel misc tools
@@ -68,8 +68,7 @@ def get_input(prompt):
 
     .. deprecated:: 7.1
 
-        Use of this function will become a warning when Python 2 support is
-        dropped in Sopel 8.0. The function will be removed in Sopel 8.1.
+        This function will be removed in Sopel 8.1.
 
     """
     return input(prompt)
@@ -116,6 +115,11 @@ class OutputRedirect:
     """Redirect the output to the terminal and a log file.
 
     A simplified object used to write to both the terminal and a log file.
+
+    .. deprecated:: 8.0
+
+        Vestige of old logging system. Will be removed in Sopel 8.1.
+
     """
 
     @deprecated(
@@ -200,6 +204,8 @@ def get_hostmask_regex(mask):
     :param str mask: the hostmask that the pattern should match
     :return: a compiled regex pattern matching the given ``mask``
     :rtype: :ref:`re.Pattern <python:re-objects>`
+
+    .. versionadded:: 4.4
     """
     mask = re.escape(mask)
     mask = mask.replace(r'\*', '.*')
@@ -243,6 +249,8 @@ def chain_loaders(*lazy_loaders):
     This function takes any number of lazy loaders as arguments and merges them
     together into one. It's primarily a helper for lazy rule decorators such as
     :func:`sopel.plugin.url_lazy`.
+
+    .. versionadded:: 7.1
 
     .. important::
 
