@@ -33,7 +33,7 @@ import importlib
 import itertools
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 # TODO: use stdlib importlib.metadata when possible, after dropping py3.9.
 # Stdlib does not support `entry_points(group='filter')` until py3.10, but
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-def _list_plugin_filenames(directory: str | os.PathLike) -> Iterable[tuple[str, str]]:
+def _list_plugin_filenames(directory: Union[str, os.PathLike]) -> Iterable[tuple[str, str]]:
     # list plugin filenames from a directory
     # yield 2-value tuples: (name, absolute path)
     base = os.path.abspath(directory)
