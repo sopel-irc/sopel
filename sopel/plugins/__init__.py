@@ -31,7 +31,9 @@ from __future__ import annotations
 import collections
 import importlib
 import itertools
+import logging
 import os
+from typing import TYPE_CHECKING, Union
 
 # TODO: use stdlib importlib.metadata when possible, after dropping py3.9.
 # Stdlib does not support `entry_points(group='filter')` until py3.10, but
@@ -41,13 +43,22 @@ import importlib_metadata
 
 from . import exceptions, handlers, rules  # noqa
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
-def _list_plugin_filenames(directory):
+
+LOGGER = logging.getLogger(__name__)
+
+
+def _list_plugin_filenames(directory: Union[str, os.PathLike]) -> Iterable[tuple[str, str]]:
     # list plugin filenames from a directory
     # yield 2-value tuples: (name, absolute path)
     base = os.path.abspath(directory)
     for filename in os.listdir(base):
-        abspath = os.path.join(base, filename)
+        abspath = os.path.realpath(os.path.join(base, filename))
+        if not os.path.exists(abspath):
+            LOGGER.warning("Plugin path does not exist, skipping: %r", abspath)
+            continue
 
         if os.path.isdir(abspath):
             if os.path.isfile(os.path.join(abspath, '__init__.py')):

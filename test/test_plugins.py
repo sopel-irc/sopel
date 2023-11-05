@@ -155,3 +155,12 @@ def test_plugin_load_entry_point(tmpdir):
     assert hasattr(test_mod, 'example_url')
     assert hasattr(test_mod, 'shutdown')
     assert hasattr(test_mod, 'ignored')
+
+
+def test_plugin_skip_broken_links(tmp_path):
+    plugins_path = tmp_path
+    plugin = plugins_path.joinpath("amazing_plugin.py")
+    link_target = plugins_path.joinpath("nonexistent_file.py")
+    plugin.symlink_to(link_target)
+
+    assert list(plugins._list_plugin_filenames(plugins_path)) == []
