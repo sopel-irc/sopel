@@ -73,6 +73,8 @@ sopel-plugins = "sopel.cli.plugins:main"
 pytest-sopel = "sopel.tests.pytest_plugin"
 
 [tool.pytest.ini_options]
+# NOTE: sopel/ is included here to include dynamically-generated tests
+testpaths = ["test", "sopel"]
 python_files = "*.py"
 addopts = "--tb=short -p no:nose"
 norecursedirs = "build contrib"
