@@ -18,14 +18,11 @@ import re
 
 from sopel import plugin
 from sopel.formatting import bold
-from sopel.tools import SopelIdentifierMemory
 
 
 def setup(bot):
     if 'find_lines' not in bot.memory:
-        bot.memory['find_lines'] = SopelIdentifierMemory(
-            identifier_factory=bot.make_identifier,
-        )
+        bot.memory['find_lines'] = bot.make_identifier_memory()
 
 
 def shutdown(bot):
@@ -49,9 +46,7 @@ def collectlines(bot, trigger):
 
     # Add a log for the channel and nick, if there isn't already one
     if trigger.sender not in bot.memory['find_lines']:
-        bot.memory['find_lines'][trigger.sender] = SopelIdentifierMemory(
-            identifier_factory=bot.make_identifier,
-        )
+        bot.memory['find_lines'][trigger.sender] = bot.make_identifier_memory()
     if trigger.nick not in bot.memory['find_lines'][trigger.sender]:
         bot.memory['find_lines'][trigger.sender][trigger.nick] = deque(maxlen=10)
 
