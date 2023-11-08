@@ -133,9 +133,7 @@ def setup(bot: Sopel):
 
     # Ensure last_seen_url is in memory
     if 'last_seen_url' not in bot.memory:
-        bot.memory['last_seen_url'] = tools.SopelIdentifierMemory(
-            identifier_factory=bot.make_identifier,
-        )
+        bot.memory['last_seen_url'] = bot.make_identifier_memory()
 
     # Initialize shortened_urls as a dict if it doesn't exist.
     if 'shortened_urls' not in bot.memory:
