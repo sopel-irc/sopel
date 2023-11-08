@@ -227,7 +227,10 @@ class AbstractBot(abc.ABC):
     # Utility
 
     def make_identifier(self, name: str) -> identifiers.Identifier:
-        """Instantiate an Identifier using the bot's context."""
+        """Instantiate an Identifier using the bot's context.
+
+        .. versionadded:: 8.0
+        """
         casemapping = {
             'ascii': identifiers.ascii_lower,
             'rfc1459': identifiers.rfc1459_lower,
@@ -259,6 +262,8 @@ class AbstractBot(abc.ABC):
             memories.SopelIdentifierMemory(
                 identifier_factory=bot.make_identifier,
             )
+
+        .. versionadded:: 8.0
 
         .. seealso::
 
