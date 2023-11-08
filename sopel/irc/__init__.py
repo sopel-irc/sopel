@@ -45,7 +45,7 @@ from typing import (
 
 from sopel import tools, trigger
 from sopel.lifecycle import deprecated
-from sopel.tools import identifiers
+from sopel.tools import identifiers, memories
 from .backends import AsyncioBackend, UninitializedBackend
 from .capabilities import Capabilities
 from .isupport import ISupport
@@ -240,6 +240,34 @@ class AbstractBot(abc.ABC):
             name,
             casemapping=casemapping,
             chantypes=chantypes,
+        )
+
+    def make_identifier_memory(self) -> memories.SopelIdentifierMemory:
+        """Instantiate a SopelIdentifierMemory using the bot's context.
+
+        This is a shortcut for :class:`~.memories.SopelIdentifierMemory`\'s most
+        common use case, which requires remembering to pass the ``bot``\'s own
+        :meth:`make_identifier` method so the ``SopelIdentifierMemory`` will
+        cast its keys to :class:`~.tools.identifiers.Identifier`\\s that are
+        compatible with what the bot tracks internally and sends with
+        :class:`~.trigger.Trigger`\\s when a plugin callable runs.
+
+        Calling this method is equivalent to the following::
+
+            from sopel.tools import memories
+
+            memories.SopelIdentifierMemory(
+                identifier_factory=bot.make_identifier,
+            )
+
+        .. seealso::
+
+            The :mod:`.tools.memories` module describes how to use
+            :class:`~.tools.memories.SopelIdentifierMemory` and its siblings.
+
+        """
+        return memories.SopelIdentifierMemory(
+            identifier_factory=self.make_identifier,
         )
 
     def safe_text_length(self, recipient: str) -> int:
