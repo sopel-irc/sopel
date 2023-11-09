@@ -14,7 +14,6 @@ import functools
 import logging
 import re
 from typing import (
-    Any,
     Callable,
     Optional,
     Pattern,
@@ -331,7 +330,9 @@ class capability:
         return self
 
 
-def unblockable(function: Any) -> Any:
+def unblockable(
+    function: Optional[Callable] = None,
+) -> Callable:
     """Decorate a function to exempt it from the ignore/blocks system.
 
     For example, this can be used to ensure that important events such as
@@ -351,14 +352,20 @@ def unblockable(function: Any) -> Any:
         Sopel's :meth:`~sopel.bot.Sopel.dispatch` method.
 
     """
-    function.unblockable = True
-    return function
+    def add_attribute(function):
+        function.unblockable = True
+        return function
+
+    # hack to allow both @unblockable and @unblockable() to work
+    if callable(function):
+        return add_attribute(function)
+    return add_attribute
 
 
 def interval(*intervals: Union[int, float]) -> Callable:
     """Decorate a function to be called by the bot every *n* seconds.
 
-    :param int intervals: one or more duration(s), in seconds
+    :param intervals: one or more duration(s), in seconds
 
     This decorator can be used multiple times for multiple intervals, or
     multiple intervals can be given in multiple arguments. The first time the
@@ -397,7 +404,7 @@ def interval(*intervals: Union[int, float]) -> Callable:
 def rule(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a line matches the given pattern.
 
-    :param str patterns: one or more regular expression(s)
+    :param patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function::
 
@@ -454,7 +461,6 @@ def rule_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match URLs
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -500,7 +506,7 @@ def rule_lazy(*loaders: Callable) -> Callable:
 def find(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called for each time a pattern is found in a line.
 
-    :param str patterns: one or more regular expression(s)
+    :param patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function::
 
@@ -557,7 +563,6 @@ def find_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match patterns in a line
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -603,7 +608,7 @@ def find_lazy(*loaders: Callable) -> Callable:
 def search(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a pattern matches anywhere in a line.
 
-    :param str patterns: one or more regular expression(s)
+    :param patterns: one or more regular expression(s)
 
     Each argument is a regular expression which will trigger the function::
 
@@ -663,7 +668,6 @@ def search_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match patterns in a line
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -709,8 +713,8 @@ def search_lazy(*loaders: Callable) -> Callable:
 def thread(value: bool) -> Callable:
     """Decorate a function to specify if it should be run in a separate thread.
 
-    :param bool value: if ``True``, the function is called in a separate thread;
-                       otherwise, from the bot's main thread
+    :param value: if ``True``, the function is called in a separate thread;
+                  otherwise, from the bot's main thread
 
     Functions run in a separate thread (as is the default) will not prevent the
     bot from executing other functions at the same time. Functions not run in a
@@ -727,8 +731,8 @@ def thread(value: bool) -> Callable:
 
 
 def allow_bots(
-    function: Optional[Any] = None,
-) -> Union[Any, Callable]:
+    function: Optional[Callable] = None,
+) -> Callable:
     """Decorate a function to specify that it should receive events from bots.
 
     On networks implementing the `Bot Mode specification`__, messages and
@@ -749,8 +753,8 @@ def allow_bots(
 
 
 def echo(
-    function: Optional[Any] = None,
-) -> Union[Any, Callable]:
+    function: Optional[Callable] = None,
+) -> Callable:
     """Decorate a function to specify that it should receive echo messages.
 
     This decorator can be used to listen in on the messages that Sopel is
@@ -776,7 +780,7 @@ def echo(
 def command(*command_list: str) -> Callable:
     """Decorate a function to set one or more commands that should trigger it.
 
-    :param str command_list: one or more command name(s) to match
+    :param command_list: one or more command name(s) to match
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -872,7 +876,7 @@ commands = command
 def nickname_command(*command_list: str) -> Callable:
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
-    :param str command_list: one or more command name(s) to match
+    :param command_list: one or more command name(s) to match
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -925,7 +929,7 @@ nickname_commands = nickname_command
 def action_command(*command_list: str) -> Callable:
     """Decorate a function to trigger on CTCP ACTION lines.
 
-    :param str command_list: one or more command name(s) to match
+    :param command_list: one or more command name(s) to match
 
     This decorator can be used to add multiple commands to one callable in a
     single line. The resulting match object will have the command as the first
@@ -977,7 +981,7 @@ action_commands = action_command
 def label(value: str) -> Callable:
     """Decorate a function to add a rule label.
 
-    :param str value: a label for the rule
+    :param value: a label for the rule
 
     The rule label allows the documentation and the logging system to refer
     to this function by its label. A function can have one and only one label::
@@ -1003,8 +1007,7 @@ def label(value: str) -> Callable:
 def priority(value: str) -> Callable:
     """Decorate a function to be executed with higher or lower priority.
 
-    :param str value: one of ``high``, ``medium``, or ``low``;
-                      defaults to ``medium``
+    :param value: one of ``high``, ``medium``, or ``low``; defaults to ``medium``
 
     The priority allows you to control the order of callable execution, if your
     plugin needs it.
@@ -1018,7 +1021,7 @@ def priority(value: str) -> Callable:
 def event(*event_list: str) -> Callable:
     """Decorate a function to be triggered on specific IRC events.
 
-    :param str event_list: one or more event name(s) on which to trigger
+    :param event_list: one or more event name(s) on which to trigger
 
     This is one of a number of events, such as 'JOIN', 'PART', 'QUIT', etc.
     (More details can be found in RFC 1459.) When the Sopel bot is sent one of
@@ -1044,15 +1047,15 @@ def event(*event_list: str) -> Callable:
 
 
 def ctcp(
-    function: Any = None,
+    function: Union[Callable, Optional[str]] = None,
     *command_list: str,
-) -> Union[Any, Callable]:
+) -> Callable:
     """Decorate a callable to trigger on CTCP commands (mostly, ``ACTION``).
 
-    :param str command_list: one or more CTCP command(s) on which to trigger
+    :param command_list: one or more CTCP command(s) on which to trigger
 
-    There are various CTCP commands to handle with this decorator, such as
-    ``ACTION``, ``VERSION``, and ``TIME``::
+    There are `various CTCP commands`__ to handle with this decorator, such as
+    ``ACTION``, ``CLIENTINFO``, ``TIME``, and ``VERSION``::
 
         from sopel import plugin
 
@@ -1060,6 +1063,16 @@ def ctcp(
         @plugin.rule('.*')
         def ctcp_time(bot, trigger):
             bot.say('Sorry, not a clock.')
+
+    This decorator also works without parentheses, in which case it will trigger
+    on CTCP ``ACTION``::
+
+        from sopel import plugin
+
+        @plugin.ctcp
+        @plugin.rule('.*')
+        def ctcp_action(bot, trigger):
+            bot.reply('Why would you do that?!')
 
     .. versionadded:: 7.1
 
@@ -1073,6 +1086,8 @@ def ctcp(
         In that case, Sopel will assume it should trigger on ``ACTION``.
 
         As ``sopel.module`` will be removed in Sopel 9, so will ``@intent``.
+
+    .. __: https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-02#appendix-A
     """
     default_commands = ('ACTION',) + command_list
     if function is None:
@@ -1327,15 +1342,35 @@ def require_privmsg(
 ) -> Callable:
     """Decorate a function to only be triggerable from a private message.
 
-    :param str message: optional message said if triggered in a channel
-    :param bool reply: use :meth:`~sopel.bot.Sopel.reply` instead of
-                       :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said if triggered in a channel
+    :param reply: use :meth:`~sopel.bot.Sopel.reply` instead of
+                  :meth:`~sopel.bot.Sopel.say` when ``True``; defaults to
+                  ``False``
 
-    If the decorated function is triggered by a channel message, ``message``
+    A decorated plugin callable will be triggered only by messages sent to the
+    bot in private::
+
+        from sopel import plugin
+
+        @plugin.command('.shh')
+        @plugin.require_privmsg('PM only command.')
+        def confidential_command(bot, trigger):
+            # trigger on private messages only
+
+    If the decorated function is triggered by a channel message, the ``message``
     will be said if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    <.bot.Sopel.say>`, but when ``reply`` is ``True``, then it uses
     :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.shh')
+        @plugin.require_privmsg
+        def confidential_command(bot, trigger):
+            # trigger on private messages only
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1365,25 +1400,34 @@ def require_chanmsg(
 ) -> Callable:
     """Decorate a function to only be triggerable from a channel message.
 
-    :param str message: optional message said if triggered in private message
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said if triggered in private message
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     A decorated plugin callable will be triggered only by messages from a
     channel::
 
         from sopel import plugin
 
-        @plugin.command('.mycommand')
+        @plugin.command('.mtopic')
         @plugin.require_chanmsg('Channel only command.')
         def manage_topic(bot, trigger):
             # trigger on channel messages only
 
-    If the decorated function is triggered by a private message, ``message``
+    If the decorated function is triggered by a private message, the ``message``
     will be said if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses
     :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.mtopic')
+        @plugin.require_chanmsg
+        def manage_topic(bot, trigger):
+            # trigger on channel messages only
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1410,14 +1454,38 @@ def require_chanmsg(
 def require_account(
     message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> Callable:  # lgtm [py/similar-function]
+) -> Callable:
     """Decorate a function to require services/NickServ authentication.
 
-    :param str message: optional message to say if a user without
-                        authentication tries to trigger this function
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message to say if a user without authentication
+                    tries to trigger this function
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
+
+    A decorated plugin callable will be triggered only if the triggering user is
+    logged into a network services account::
+
+        from sopel import plugin
+
+        @plugin.command('.regonly')
+        @plugin.require_account('Registered users only.')
+        def logged_in_command(bot, trigger):
+            # trigger only if user is logged in to services
+
+    If an unauthenticated user triggers the decorated function, the ``message``
+    will be said if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.regonly')
+        @plugin.require_account
+        def logged_in_command(bot, trigger):
+            # trigger only if user is logged in to services
 
     .. versionadded:: 7.0
     .. note::
@@ -1463,17 +1531,16 @@ def require_privilege(
 ) -> Callable:
     """Decorate a function to require at least the given channel permission.
 
-    :param int level: required privilege level to use this command
-    :param str message: optional message said to insufficiently privileged user
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param level: required privilege level to use this command
+    :param message: optional message said to insufficiently privileged user
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     ``level`` can be one of the privilege level constants defined in this
-    module. If the user does not have the privilege, the bot will say
+    module. If the user does not have at least that privilege, the bot will say
     ``message`` if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
-    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
 
     Use of ``require_privilege()`` implies :func:`require_chanmsg`.
 
@@ -1506,18 +1573,39 @@ def require_privilege(
 def require_admin(
     message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> Callable:  # lgtm [py/similar-function]
+) -> Callable:
     """Decorate a function to require the triggering user to be a bot admin.
 
-    :param str message: optional message said to non-admin user
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said to non-admin user
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
+
+    A decorated plugin callable will be triggered only if the triggering user is
+    an admin of the bot, according to its configuration::
+
+        from sopel import plugin
+
+        @plugin.command('.adminonly')
+        @plugin.require_admin('Bot admin only command.')
+        def admin_command(bot, trigger):
+            # trigger only if user is a bot admin
+
+    The bot's :attr:`~.config.core_section.CoreSection.owner` is also an admin.
 
     When the triggering user is not an admin, the command is not run, and the
-    bot will say the ``message`` if given. By default, it uses
-    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
-    uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    bot will say the ``message`` if given. By default, it uses :meth:`bot.say()
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.adminonly')
+        @plugin.require_admin
+        def admin_command(bot, trigger):
+            # trigger only if user is a bot admin
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1545,18 +1633,37 @@ def require_admin(
 def require_owner(
     message: Union[Callable, Optional[str]] = None,
     reply: bool = False,
-) -> Callable:  # lgtm [py/similar-function]
+) -> Callable:
     """Decorate a function to require the triggering user to be the bot owner.
 
-    :param str message: optional message said to non-owner user
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param message: optional message said to non-owner user
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
+
+    A decorated plugin callable will be triggered only if the triggering user is
+    recognized as the bot's owner, according to its configuration::
+
+        from sopel import plugin
+
+        @plugin.command('.owneronly')
+        @plugin.require_owner('Bot owner only command.')
+        def owner_command(bot, trigger):
+            # trigger only if user is the bot's owner
 
     When the triggering user is not the bot's owner, the command is not run,
     and the bot will say ``message`` if given. By default, it uses
-    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is true, then it
-    uses :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    :meth:`bot.say() <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses
+    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+
+    This decorator also works without parentheses, if you want its default (no
+    arguments) behavior::
+
+        from sopel import plugin
+
+        @plugin.command('.owneronly')
+        @plugin.require_owner
+        def owner_command(bot, trigger):
+            # trigger only if user is the bot's owner
 
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
@@ -1587,18 +1694,17 @@ def require_bot_privilege(
 ) -> Callable:
     """Decorate a function to require a minimum channel privilege for the bot.
 
-    :param int level: minimum channel privilege the bot needs for this function
-    :param str message: optional message said if the bot's channel privilege
-                        level is insufficient
-    :param bool reply: use :meth:`~.bot.Sopel.reply` instead of
-                       :meth:`~.bot.Sopel.say` when ``True``; defaults to
-                       ``False``
+    :param level: minimum channel privilege the bot needs for this function
+    :param message: optional message said if the bot's channel privilege level
+                    is insufficient
+    :param reply: use :meth:`~.bot.Sopel.reply` instead of
+                  :meth:`~.bot.Sopel.say` when ``True``; defaults to ``False``
 
     ``level`` can be one of the privilege level constants defined in this
     module. If the bot does not have the privilege, the bot will say
     ``message`` if given. By default, it uses :meth:`bot.say()
-    <.bot.Sopel.say>`, but when ``reply`` is true, then it uses
-    :meth:`bot.reply() <.bot.Sopel.reply>` instead.
+    <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
+    <.bot.Sopel.reply>` instead.
 
     Privilege requirements are ignored in private messages.
 
@@ -1626,7 +1732,7 @@ def require_bot_privilege(
 def url(*url_rules: str) -> Callable:
     """Decorate a function to handle URLs.
 
-    :param str url_rules: one or more regex pattern(s) to match URLs
+    :param url_rules: one or more regex pattern(s) to match URLs
 
     This decorator takes a regex string that will be matched against URLs in a
     message. The function it decorates is like any other callable::
@@ -1687,7 +1793,6 @@ def url_lazy(*loaders: Callable) -> Callable:
 
     :param loaders: one or more functions to generate a list of **compiled**
                     regexes to match URLs.
-    :type loaders: :term:`function`
 
     Each ``loader`` function must accept a ``settings`` parameter and return a
     list (or tuple) of **compiled** regular expressions::
@@ -1714,7 +1819,6 @@ def url_lazy(*loaders: Callable) -> Callable:
             bot.say('URL found: %s' % trigger.group(0))
 
     .. versionadded:: 7.1
-
     .. seealso::
 
         When more than one loader is provided, they will be chained together
@@ -1893,8 +1997,8 @@ class example:
 def output_prefix(prefix: str) -> Callable:
     """Decorate a function to add a prefix on its output.
 
-    :param str prefix: the prefix to add (must include trailing whitespace if
-                       desired; Sopel does not assume it should add anything)
+    :param prefix: the prefix to add (must include trailing whitespace if
+                   desired; Sopel does not assume it should add anything)
 
     Prefix will be added to text sent through:
 
