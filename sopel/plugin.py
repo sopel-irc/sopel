@@ -333,17 +333,18 @@ class capability:
 def unblockable(
     function: Optional[Callable] = None,
 ) -> Callable:
-    """Decorate a function to exempt it from the ignore/blocks system.
+    """Decorate a function to exempt it from Sopel's ignore system.
 
     For example, this can be used to ensure that important events such as
-    ``JOIN`` are always recorded::
+    ``JOIN`` are always recorded even if the user's nickname or hostname is
+    :ref:`ignored <Ignoring Users>`::
 
         from sopel import plugin
 
         @plugin.event('JOIN')
         @plugin.unblockable
         def on_join_callable(bot, trigger):
-            # do something when a user JOIN a channel
+            # do something when a user JOINs a channel
             # a blocked nickname or hostname *will* trigger this
             pass
 

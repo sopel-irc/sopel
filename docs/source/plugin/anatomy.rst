@@ -141,7 +141,7 @@ Bypassing restrictions
 
 By default, a :term:`Rule` will not trigger on messages from Sopel itself,
 other users that are flagged as bots, or users who are
-:ref:`ignored <Ignore User>` or :ref:`rate-limited <Rate limiting>`. In
+:ref:`ignored <Ignoring Users>` or :ref:`rate-limited <Rate limiting>`. In
 certain cases, it might be desirable to bypass these defaults using one or
 more of these decorators:
 

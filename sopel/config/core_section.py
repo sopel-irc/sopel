@@ -777,9 +777,10 @@ class CoreSection(StaticSection):
     host_blocks = ListAttribute('host_blocks')
     """A list of hostnames which Sopel should ignore.
 
-    Messages from any user whose connection hostname matches one of these
-    values will be ignored. :ref:`Regular expression syntax <re-syntax>`
-    is supported, so remember to escape special characters:
+    Sopel will :ref:`ignore <Ignoring Users>` messages from any user whose
+    connection hostname matches one of these values.
+    :ref:`Regular expression syntax <re-syntax>` is supported, so remember to
+    escape special characters:
 
     .. code-block:: ini
 
@@ -791,6 +792,9 @@ class CoreSection(StaticSection):
         The :attr:`nick_blocks` list can be used to block users by their nick.
 
     .. note::
+
+        :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
+        run regardless of matching ``*_blocks`` entries.
 
         We are working toward a better block system; see :issue:`1355` for more
         information and updates.
@@ -1036,9 +1040,10 @@ class CoreSection(StaticSection):
     nick_blocks = ListAttribute('nick_blocks')
     """A list of nicks which Sopel should ignore.
 
-    Messages from any user whose nickname matches one of these values will be
-    ignored. :ref:`Regular expression syntax <re-syntax>` is supported, so
-    remember to escape special characters:
+    Sopel will :ref:`ignore <Ignoring Users>` messages from any user whose
+    nickname matches one of these values.
+    :ref:`Regular expression syntax <re-syntax>` is supported, so remember to
+    escape special characters:
 
     .. code-block:: ini
 
@@ -1051,6 +1056,9 @@ class CoreSection(StaticSection):
         The :attr:`host_blocks` list can be used to block users by their host.
 
     .. note::
+
+        :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
+        run regardless of matching ``*_blocks`` entries.
 
         We are working toward a better block system; see :issue:`1355` for more
         information and updates.
