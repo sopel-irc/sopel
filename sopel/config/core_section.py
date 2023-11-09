@@ -792,10 +792,8 @@ class CoreSection(StaticSection):
 
     .. note::
 
-        We are working on a better block system; see `issue #1355`__ for more
-        information and update.
-
-    .. __: https://github.com/sopel-irc/sopel/issues/1355
+        We are working toward a better block system; see :issue:`1355` for more
+        information and updates.
 
     """
 
@@ -1054,10 +1052,8 @@ class CoreSection(StaticSection):
 
     .. note::
 
-        We are working on a better block system; see `issue #1355`__ for more
-        information and update.
-
-    .. __: https://github.com/sopel-irc/sopel/issues/1355
+        We are working toward a better block system; see :issue:`1355` for more
+        information and updates.
 
     """
 
