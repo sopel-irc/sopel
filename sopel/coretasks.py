@@ -1405,6 +1405,7 @@ def blocks(bot, trigger):
         elif text[2] == "host":
             hosts.add(text[3].lower())
             bot.config.core.host_blocks = list(hosts)
+            bot.config.save()
         else:
             bot.reply(STRINGS['invalid'] % ("adding"))
             return
