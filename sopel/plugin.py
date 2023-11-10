@@ -23,7 +23,14 @@ from typing import (
 )
 
 # import and expose privileges as shortcut
-from sopel.privileges import ADMIN, HALFOP, OP, OPER, OWNER, VOICE
+from sopel.privileges import AccessLevel
+
+VOICE = AccessLevel.VOICE
+HALFOP = AccessLevel.HALFOP
+OP = AccessLevel.OP
+ADMIN = AccessLevel.ADMIN
+OWNER = AccessLevel.OWNER
+OPER = AccessLevel.OPER
 
 
 if TYPE_CHECKING:
@@ -1525,7 +1532,7 @@ def require_account(
 
 
 def require_privilege(
-    level: int,
+    level: AccessLevel,
     message: Optional[str] = None,
     reply: bool = False,
 ) -> Callable:
@@ -1688,7 +1695,7 @@ def require_owner(
 
 
 def require_bot_privilege(
-    level: int,
+    level: AccessLevel,
     message: Optional[str] = None,
     reply: bool = False,
 ) -> Callable:
