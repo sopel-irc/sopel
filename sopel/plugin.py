@@ -15,6 +15,7 @@ import logging
 import re
 from typing import (
     Callable,
+    Literal,
     Optional,
     Pattern,
     Protocol,
@@ -1011,7 +1012,7 @@ def label(value: str) -> Callable:
     return add_attribute
 
 
-def priority(value: str) -> Callable:
+def priority(value: Literal['low', 'medium', 'high']) -> Callable:
     """Decorate a function to be executed with higher or lower priority.
 
     :param value: one of ``high``, ``medium``, or ``low``; defaults to ``medium``
