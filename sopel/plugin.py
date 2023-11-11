@@ -1015,10 +1015,11 @@ def label(value: str) -> Callable:
 def priority(value: Literal['low', 'medium', 'high']) -> Callable:
     """Decorate a function to be executed with higher or lower priority.
 
-    :param value: one of ``high``, ``medium``, or ``low``; defaults to ``medium``
+    :param value: one of ``high``, ``medium``, or ``low``
 
-    The priority allows you to control the order of callable execution, if your
-    plugin needs it.
+    The priority allows you some control over the order of callable execution,
+    if your plugin needs it. If a callable does not specify its ``priority``,
+    Sopel assumes ``medium``.
     """
     def add_attribute(function):
         function.priority = value
