@@ -9,6 +9,7 @@ Plugin Internal Machinery
    section exists primarily for the aid of Sopel’s core development.
 
 .. toctree::
+    :maxdepth: 2
 
     loader
     plugins/plugins

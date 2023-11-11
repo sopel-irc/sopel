@@ -1,6 +1,6 @@
-============
-Core Section
-============
+===================
+Core Config Section
+===================
 
 .. automodule:: sopel.config.core_section
    :members:
