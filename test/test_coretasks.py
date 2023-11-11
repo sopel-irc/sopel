@@ -340,6 +340,36 @@ def test_handle_isupport_casemapping(mockbot):
     assert mockbot.nick.lower() == 'test[a]'
 
 
+def test_handle_isupport_casemapping_identifiermemory(mockbot):
+    # create a nick that needs casemapping
+    rfc1459 = 'Test[a]'
+
+    # create `SopelIdentifierMemory` w/bot's helper method and add the nick
+    memory = mockbot.make_identifier_memory()
+    memory[rfc1459] = rfc1459
+
+    # check default behavior (`rfc1459` casemapping)
+    assert memory['test{a}'] == rfc1459
+    assert memory['Test[a]'] == rfc1459
+
+    # now the bot "connects" to a server using `CASEMAPPING=ascii`
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'CHANTYPES=# EXCEPTS INVEX CHANMODES=eIbq,k,flj,CFLMPQScgimnprstz '
+        'CHANLIMIT=#:120 PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 '
+        'NETWORK=example STATUSMSG=@+ CALLERID=g CASEMAPPING=ascii '
+        ':are supported by this server')
+
+    # CASEMAPPING token change doesn't affect previously existing Identifiers...
+    assert memory['Test{a}'] == rfc1459
+    # ...so we have to create a new nick that will casemap differently now
+    ascii = 'Test[b]'
+    memory[ascii] = ascii
+    assert len(memory) == 2
+    assert memory['test[b]'] == ascii
+    assert 'test{b}' not in memory
+
+
 def test_handle_isupport_chantypes(mockbot):
     # check default behavior (chantypes allows #, &, +, and !)
     assert not mockbot.make_identifier('#channel').is_nick()

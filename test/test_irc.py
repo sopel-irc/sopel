@@ -29,6 +29,21 @@ def bot(tmpconfig, botfactory):
     return botfactory(tmpconfig)
 
 
+def test_make_identifier(bot):
+    nick = bot.make_identifier('Test[a]')
+    assert 'test{a}' == nick
+
+
+def test_make_identifier_memory(bot):
+    memory = bot.make_identifier_memory()
+    memory['Test[a]'] = True
+    assert memory['test{a}'] is True
+
+    memory['test{a}'] = False
+    assert len(memory) == 1
+    assert memory['Test[a]'] is False
+
+
 def prefix_length(bot):
     # ':', nick, '!', '~', ident/username, '@', maximum hostname length, <0x20>
     return 1 + len(bot.nick) + 1 + 1 + len(bot.user) + 1 + 63 + 1
