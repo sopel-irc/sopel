@@ -319,9 +319,8 @@ try:
 
     is_dirty = bool(subprocess.check_output(["git", "status", "--untracked-files=no", "--porcelain"], text=True).strip())
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    git_describe = subprocess.check_output(["git", "describe", "--tags"], text=True).strip() + ("-dirty" if is_dirty else "")
     github_ref = "https://github.com/sopel-irc/sopel/commit/{commit_hash}".format(commit_hash=commit_hash)
-    build_info = "(built against `{git_describe} <{github_ref}>`_)".format(git_describe=git_describe, github_ref=github_ref)
+    build_info = "(built against `{commit_hash} <{github_ref}>`_)".format(commit_hash=commit_hash[:7], github_ref=github_ref)
 except Exception as exc:
     build_info = "(built against an unknown commit)"
 
