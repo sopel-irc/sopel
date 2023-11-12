@@ -73,6 +73,15 @@ sopel-plugins = "sopel.cli.plugins:main"
 [project.entry-points.pytest11]
 pytest-sopel = "sopel.tests.pytest_plugin"
 
+[tool.mypy]
+check_untyped_defs = true
+plugins = "sqlalchemy.ext.mypy.plugin"
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = 'scramp.*'
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 # NOTE: sopel/ is included here to include dynamically-generated tests
 testpaths = ["test", "sopel"]

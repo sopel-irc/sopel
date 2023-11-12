@@ -98,10 +98,8 @@ def _handle_sasl_capability(
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
     server_auth_method = bot.settings.core.server_auth_method
-    auth_target = bot.settings.core.auth_target
     is_required = 'sasl' in (auth_method, server_auth_method)
 
-    LOGGER.critical("FOO. BAR!")
     if not is_required:
         # not required: we are fine, available or not
         return plugin.CapabilityNegotiation.DONE
@@ -112,13 +110,6 @@ def _handle_sasl_capability(
             'cannot authenticate with SASL.',
         )
         return plugin.CapabilityNegotiation.ERROR
-    elif auth_target not in ["PLAIN", "EXTERNAL", "SCRAM-SHA-256"]:
-        LOGGER.error(
-            'Configured SASL method %r is not supported by Sopel.',
-            auth_target,
-        )
-        return plugin.CapabilityNegotiation.ERROR
-
     # Check SASL configuration (password is required)
     password, mech = _get_sasl_pass_and_mech(bot)
     if not password:
@@ -130,9 +121,18 @@ def _handle_sasl_capability(
     cap_info = bot.capabilities.get_capability_info('sasl')
     cap_params = cap_info.params
 
-    available_mechs = cap_params.split(',') if cap_params else []
+    server_mechs = cap_params.split(',') if cap_params else []
 
-    if available_mechs and mech not in available_mechs:
+    sopel_mechs = ["PLAIN", "EXTERNAL", "SCRAM-SHA-256"]
+    if mech not in sopel_mechs:
+        raise config.ConfigurationError(
+            'SASL mechanism "{mech}" is not supported by Sopel; '
+            'available mechanisms are: {available}.'.format(
+                mech=mech,
+                available=', '.join(sopel_mechs),
+            )
+        )
+    if server_mechs and mech not in server_mechs:
         # Raise an error if configured to use an unsupported SASL mechanism,
         # but only if the server actually advertised supported mechanisms,
         # i.e. this network supports SASL 3.2
@@ -141,11 +141,13 @@ def _handle_sasl_capability(
         # by the sasl_mechs() function
 
         # See https://github.com/sopel-irc/sopel/issues/1780 for background
+
+        common_mechs = set(sopel_mechs) & set(server_mechs)
         raise config.ConfigurationError(
             'SASL mechanism "{mech}" is not advertised by this server; '
             'available mechanisms are: {available}.'.format(
                 mech=mech,
-                available=', '.join(available_mechs),
+                available=', '.join(common_mechs),
             )
         )
 
