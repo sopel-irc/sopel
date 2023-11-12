@@ -59,6 +59,15 @@ enable = coretasks
 auth_method = sasl
 """
 
+TMP_CONFIG_SASL_EXTERNAL = """
+[core]
+owner = Uowner
+nick = TestBot
+enable = coretasks
+auth_method = sasl
+auth_target = EXTERNAL
+"""
+
 
 @pytest.fixture
 def tmpconfig(configfactory: ConfigFactory) -> Config:
@@ -251,6 +260,67 @@ def test_sasl_plain_no_password(
         'CAP END',
         'QUIT :Configuration error.',
     ), 'No password is a configuration error and the bot must quit.'
+
+
+def test_sasl_external_no_password(
+    botfactory: BotFactory,
+    configfactory: ConfigFactory,
+) -> None:
+    tmpconfig = configfactory("conf.ini", TMP_CONFIG_SASL_EXTERNAL)
+    mockbot = botfactory.preloaded(tmpconfig, preloads=["coretasks"])
+    mockbot.backend.connected = True
+
+    # connect and capability negotiation
+    mockbot.on_connect()
+    mockbot.on_message(":irc.example.com CAP * LS :sasl=PLAIN,EXTERNAL")
+    n = len(mockbot.backend.message_sent)
+    mockbot.on_message(":irc.example.com CAP * ACK :sasl")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        "AUTHENTICATE EXTERNAL",
+    ), "The bot should initiate SASL EXTERNAL authentication without a password set."
+    n += 1
+    mockbot.on_message("AUTHENTICATE +")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        "AUTHENTICATE +",
+    ), "SASL EXTERNAL authentication should continue without a password set."
+    n += 1
+
+    mockbot.on_message(":irc.example.com 903 SopelTest :SASL authentication successful")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        "CAP END",
+    ), "SASL success must resume capability negotiation."
+
+
+def test_sasl_external_fail(
+    botfactory: BotFactory,
+    configfactory: ConfigFactory,
+) -> None:
+    tmpconfig = configfactory("conf.ini", TMP_CONFIG_SASL_EXTERNAL)
+    mockbot = botfactory.preloaded(tmpconfig, preloads=["coretasks"])
+    mockbot.backend.connected = True
+
+    # connect and capability negotiation
+    mockbot.on_connect()
+    mockbot.on_message(":irc.example.com CAP * LS :sasl=PLAIN,EXTERNAL")
+    n = len(mockbot.backend.message_sent)
+
+    mockbot.on_message(":irc.example.com CAP * ACK :sasl")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        "AUTHENTICATE EXTERNAL",
+    ), "The bot should initiate SASL EXTERNAL authentication without a password set."
+    n += 1
+
+    mockbot.on_message("AUTHENTICATE +")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        "AUTHENTICATE +",
+    ), "SASL EXTERNAL authentication should continue without a password set."
+    n += 1
+
+    mockbot.on_message(":irc.example.com 904 SopelTest :SASL authentication failed")
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        "CAP END",
+        "QUIT :SASL Auth Failed",
+    ), "SASL EXTERNAL failure should trigger CAP END and QUIT."
 
 
 def test_sasl_plain_bad_password(botfactory: BotFactory, tmpconfig) -> None:

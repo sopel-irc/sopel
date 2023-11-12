@@ -107,9 +107,9 @@ def _handle_sasl_capability(
         )
         return plugin.CapabilityNegotiation.ERROR
 
-    # Check SASL configuration (password is required)
+    # Check SASL configuration (password is required for PLAIN/SCRAM)
     password, mech = _get_sasl_pass_and_mech(bot)
-    if not password:
+    if mech != "EXTERNAL" and not password:
         raise config.ConfigurationError(
             'SASL authentication required but no password available; '
             'please check your configuration file.',
