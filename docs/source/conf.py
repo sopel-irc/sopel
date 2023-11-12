@@ -10,7 +10,10 @@ from __future__ import generator_stop
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import subprocess
 from datetime import date
+
+from packaging.version import Version
 
 from sopel import __version__
 
@@ -308,3 +311,26 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+
+try:
+    if Version(__version__).is_prerelease:
+        tags.add("preview")
+
+    is_dirty = bool(subprocess.check_output(["git", "status", "--untracked-files=no", "--porcelain"], text=True).strip())
+    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    git_describe = subprocess.check_output(["git", "describe", "--tags"], text=True).strip() + ("-dirty" if is_dirty else "")
+    github_ref = "https://github.com/sopel-irc/sopel/commit/{commit_hash}".format(commit_hash=commit_hash)
+    build_info = "(built against `{git_describe} <{github_ref}>`_)".format(git_describe=git_describe, github_ref=github_ref)
+except Exception as exc:
+    build_info = "(built against an unknown commit)"
+
+
+rst_prolog = """
+.. only:: preview
+
+    .. warning:: This is preview documentation for Sopel |version| {build_info}.
+
+                 Click `here <https://sopel.chat/docs/>`_ for the latest stable documentation.
+
+""".format(build_info=build_info)
