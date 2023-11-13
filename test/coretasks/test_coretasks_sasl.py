@@ -445,8 +445,8 @@ def test_sasl_scram_sha_256_auth(mockbot: Sopel):
     )
 
 
-def test_sasl_scram_sha_256_nonsense_server_first(mockbot: Sopel):
-    """Verify the bot handles a nonsense SCRAM-SHA-256 server_first correctly."""
+def test_sasl_scram_sha_256_invalid_server_first(mockbot: Sopel):
+    """Verify the bot handles an invalid SCRAM-SHA-256 server_first correctly."""
     mech = ScramMechanism()
     salt, stored_key, server_key, iter_count = mech.make_auth_info(
         "secret", iteration_count=5000
@@ -471,8 +471,8 @@ def test_sasl_scram_sha_256_nonsense_server_first(mockbot: Sopel):
     )
 
 
-def test_sasl_scram_sha_256_nonsense_server_final(mockbot: Sopel):
-    """Verify the bot handles a nonsense SCRAM-SHA-256 server_final correctly."""
+def test_sasl_scram_sha_256_invalid_server_final(mockbot: Sopel):
+    """Verify the bot handles an invalid SCRAM-SHA-256 server_final correctly."""
     mech = ScramMechanism()
     salt, stored_key, server_key, iter_count = mech.make_auth_info(
         "secret", iteration_count=5000
@@ -506,7 +506,6 @@ def test_sasl_scram_sha_256_nonsense_server_final(mockbot: Sopel):
 
 def test_sasl_scram_sha_256_error_server_first(mockbot: Sopel):
     """Verify the bot handles an error SCRAM-SHA-256 server_first correctly."""
-
     mockbot.settings.core.auth_method = "sasl"
     mockbot.settings.core.auth_target = "SCRAM-SHA-256"
     mockbot.on_message("CAP * LS :sasl")

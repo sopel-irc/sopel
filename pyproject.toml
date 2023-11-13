@@ -78,6 +78,7 @@ check_untyped_defs = true
 plugins = "sqlalchemy.ext.mypy.plugin"
 show_error_codes = true
 
+# Remove once scramp has type stubs or annotations
 [[tool.mypy.overrides]]
 module = 'scramp.*'
 ignore_missing_imports = true

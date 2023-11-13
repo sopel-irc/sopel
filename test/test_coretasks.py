@@ -17,7 +17,6 @@ TMP_CONFIG = """
 [core]
 owner = Uowner
 nick = TestBot
-auth_password = hunter2
 enable = coretasks
 """
 
