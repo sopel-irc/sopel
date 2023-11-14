@@ -10,7 +10,7 @@ from __future__ import generator_stop
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import subprocess
+import os
 from datetime import date
 
 from packaging.version import Version
@@ -313,16 +313,20 @@ texinfo_documents = [
 #texinfo_show_urls = 'footnote'
 
 
-try:
-    if Version(__version__).is_prerelease:
-        tags.add("preview")
-
-    is_dirty = bool(subprocess.check_output(["git", "status", "--untracked-files=no", "--porcelain"], text=True).strip())
-    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+commit_hash = os.environ.get("SOPEL_GIT_COMMIT", "")[:7]
+is_dirty = bool(os.environ.get("SOPEL_GIT_DIRTY"))
+if commit_hash:
     github_ref = "https://github.com/sopel-irc/sopel/commit/{commit_hash}".format(commit_hash=commit_hash)
-    build_info = "(built against `{commit_hash} <{github_ref}>`_)".format(commit_hash=commit_hash[:7], github_ref=github_ref)
-except Exception as exc:
+    build_info = "(built against `{commit_hash}{dirty} <{github_ref}>`_)".format(
+        commit_hash=commit_hash[:7],
+        dirty="-dirty" if is_dirty else "",
+        github_ref=github_ref
+    )
+else:
     build_info = "(built against an unknown commit)"
+
+if Version(__version__).is_prerelease or commit_hash:
+    tags.add("preview")
 
 
 rst_prolog = """
