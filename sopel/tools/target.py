@@ -209,7 +209,14 @@ class Channel:
         """
         assert isinstance(user, User)
         self.users[user.nick] = user
-        self.privileges[user.nick] = privs or 0
+        if user.nick in self.privileges:
+            # avoid race condition possible on e.g. Unreal 3.2 wherein a MODE
+            # came in before WHOREPLY and the user's privilege bits were set
+            # but the WHOREPLY doesn't contain any prefix(es) yet
+            # https://github.com/sopel-irc/sopel/issues/2562
+            self.privileges[user.nick] |= (privs or 0)
+        else:
+            self.privileges[user.nick] = privs or 0
         user.channels[self.name] = self
 
     def has_privilege(self, nick: str, privilege: int) -> bool:

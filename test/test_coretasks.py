@@ -645,3 +645,26 @@ def test_handle_who_reply_botmode(mockbot):
         ':End of /WHO list.')
 
     assert mockbot.users['Internets'].is_bot is True
+
+
+def test_bot_who_mode_order(mockbot, ircfactory):
+    """Make sure the privileges are kept from MODEs received before WHOREPLY."""
+    irc = ircfactory(mockbot)
+    irc.bot._isupport = isupport.ISupport(chanmodes=("o", "", "", "", tuple()))
+    irc.bot.modeparser.chanmodes = irc.bot.isupport.CHANMODES
+    irc.channel_joined("#test")
+
+    # bot sends WHO immediately when new user joins the #test channel
+    mockbot.on_message(":Alex!alex@alex.local JOIN :#test")
+    assert mockbot.backend.message_sent == rawlist("WHO Alex")
+
+    # a MODE modifying privileges is received before the WHO response comes back
+    mockbot.on_message(":ChanServ!ChanServ@services.local MODE #test +o Alex")
+    mockbot.on_message(
+        ":server.local 352 Sopel #test alex alex.local specific.server.local Alex Hr :0 Alex")
+    mockbot.on_message(":server.local 315 Sopel Alex :End of /WHO list.")
+
+    # the privilege applied by the MODE command should be kept
+    assert (
+        mockbot.channels["#test"].privileges[Identifier("Alex")] == OP
+    ), "Privileges from MODE received before WHOREPLY should be kept"
