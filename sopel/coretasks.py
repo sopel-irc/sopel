@@ -194,12 +194,16 @@ def shutdown(bot):
 
 
 def _join_event_processing(bot):
-    """Process a batch of JOIN event from the ``join_events_queue`` queue.
+    """Process a batch of JOIN events from the ``join_events_queue`` queue.
 
-    Every time this function is executed, it processes at most
-    ``throttle_join`` JOIN events. For each JOIN, it sends a WHO request to
-    know more about the channel. This will prevent an excess of flood when
-    there are too many channels to join at once.
+    Every time this function is executed, it processes up to ``throttle_join``
+    JOIN events. For each queued JOIN event, it invokes ``_new_channel_info()``
+    to send requests for more information about the channel, such as channel
+    modes, online users, and their privileges.
+
+    This queue is intended to protect the bot from being kicked for "excess
+    flood" when there are too many channels to join at once. Scheduling this
+    function to run is handled by `coretasks.setup()`.
     """
     batch_size = max(bot.settings.core.throttle_join, 1)
     for _ in range(batch_size):
@@ -207,9 +211,23 @@ def _join_event_processing(bot):
             channel = bot.memory['join_events_queue'].popleft()
         except IndexError:
             break
-        LOGGER.debug("Sending MODE and WHO after channel JOIN: %s", channel)
-        bot.write(["MODE", channel])
-        _send_who(bot, channel)
+        _new_channel_info(bot, channel)
+
+
+def _new_channel_info(bot, channel):
+    """Request information about a newly joined ``channel`` from the server.
+
+    The bot is primarily interested in online users and their privileges, but
+    it also requests information about channel modes.
+
+    These requests are handled in a standalone function to facilitate future
+    refinement of the "get information about a new channel" operation. As Sopel
+    learns more IRCv3 protocol extensions, conditional logic can be added here
+    to reduce the amount of redundant data requested about new channels.
+    """
+    LOGGER.debug("Sending MODE and WHO after channel JOIN: %s", channel)
+    bot.write(["MODE", channel])
+    _send_who(bot, channel)
 
 
 def auth_after_register(bot):
@@ -971,9 +989,7 @@ def track_join(bot, trigger):
             LOGGER.debug("JOIN event added to queue for channel: %s", channel)
             bot.memory['join_events_queue'].append(channel)
         else:
-            LOGGER.debug("Send MODE and direct WHO for channel: %s", channel)
-            bot.write(["MODE", channel])
-            _send_who(bot, channel)
+            _new_channel_info(bot, channel)
     else:
         LOGGER.info(
             "Channel %r joined by user: %s",
