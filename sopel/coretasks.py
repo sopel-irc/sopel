@@ -1353,6 +1353,7 @@ def _get_sasl_pass_and_mech(bot):
 
 
 @plugin.commands('blocks')
+@plugin.example(r'.blocks del nick falsep0sitive', user_help=True)
 @plugin.example(r'.blocks add host some\.malicious\.network', user_help=True)
 @plugin.example(r'.blocks add nick sp(a|4)mb(o|0)t\d*', user_help=True)
 @plugin.thread(False)
@@ -1360,9 +1361,9 @@ def _get_sasl_pass_and_mech(bot):
 @plugin.priority('low')
 @plugin.require_admin
 def blocks(bot, trigger):
-    """
-    Manage Sopel's blocking features.
-    See https://sopel.chat/usage/ignoring-people/ for usage notes.
+    """Manage Sopel's blocking features.
+
+    Full argspec: `list [nick|host]` or `[add|del] [nick|host] pattern`
     """
     STRINGS = {
         "success_del": "Successfully deleted block: %s",
@@ -1405,6 +1406,7 @@ def blocks(bot, trigger):
         elif text[2] == "host":
             hosts.add(text[3].lower())
             bot.config.core.host_blocks = list(hosts)
+            bot.config.save()
         else:
             bot.reply(STRINGS['invalid'] % ("adding"))
             return

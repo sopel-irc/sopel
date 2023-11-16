@@ -757,13 +757,35 @@ example, only the ``bugzilla`` and ``remind`` plugins are enabled (because
 To detect plugins from extra directories, use the :attr:`~CoreSection.extra`
 option.
 
-Ignore User
------------
+Ignoring Users
+--------------
 
-To ignore users based on their hosts and/or nicks, you can use these options:
+To ignore users by nickname and/or hostname, you can use these options:
 
 * :attr:`~CoreSection.host_blocks`
 * :attr:`~CoreSection.nick_blocks`
+
+See each setting's documentation for a full description of its allowed syntax.
+You can add them directly to the configuration file like this::
+
+    [core]
+    nick_blocks =
+        AbusiveUser
+        Guest\d+
+    host_blocks =
+        .*\.evilhost.name
+        bitco\.in
+
+Any :ref:`bot admin <Owner & Admins>` can modify these from IRC with the
+``.blocks`` command. The full syntax is:
+
+.. code-block:: text
+
+    .blocks list [nick|host]
+    .blocks [add|del] [nick|host] pattern
+
+Sopel automatically saves changes made using the ``.blocks`` command to its
+configuration file.
 
 
 Logging

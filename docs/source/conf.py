@@ -29,10 +29,15 @@ needs_sphinx = '7.1'  # todo: upgrade when Py3.8 reaches EOL
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.autoprogram',
     'sphinx_rfcsection',
 ]
+extlinks = {
+    'issue': ('https://github.com/sopel-irc/sopel/issues/%s', '#%s'),
+    'pr': ('https://github.com/sopel-irc/sopel/pull/%s', '#%s'),
+}
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'sqlalchemy': ('https://docs.sqlalchemy.org/en/14/', None),

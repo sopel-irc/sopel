@@ -1282,10 +1282,8 @@ class SopelWrapper:
 
     .. deprecated:: 8.0
 
-        ``SopelWrapper`` is being replaced with a ``contextvars`` based
-        alternative. For more information, see `#2460`__.
-
-    .. __: https://github.com/sopel-irc/sopel/issues/2460
+        ``SopelWrapper`` will be replaced with a ``contextvars`` based
+        alternative. For more information, see :issue:`2460`.
 
     """
     def __init__(self, sopel, trigger, output_prefix=''):
