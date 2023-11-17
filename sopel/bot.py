@@ -75,9 +75,7 @@ class Sopel(irc.AbstractBot):
         self.modeparser = modes.ModeParser()
         """A mode parser used to parse ``MODE`` messages and modestrings."""
 
-        self.channels = tools.SopelIdentifierMemory(
-            identifier_factory=self.make_identifier,
-        )
+        self.channels = self.make_identifier_memory()
         """A map of the channels that Sopel is in.
 
         The keys are :class:`~sopel.tools.identifiers.Identifier`\\s of the
@@ -85,9 +83,7 @@ class Sopel(irc.AbstractBot):
         which contain the users in the channel and their permissions.
         """
 
-        self.users = tools.SopelIdentifierMemory(
-            identifier_factory=self.make_identifier,
-        )
+        self.users = self.make_identifier_memory()
         """A map of the users that Sopel is aware of.
 
         The keys are :class:`~sopel.tools.identifiers.Identifier`\\s of the

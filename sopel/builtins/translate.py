@@ -15,7 +15,7 @@ import re
 
 import requests
 
-from sopel import plugin, tools
+from sopel import plugin
 from sopel.tools import web
 
 
@@ -25,9 +25,7 @@ PLUGIN_OUTPUT_PREFIX = '[translate] '
 
 def setup(bot):
     if 'mangle_lines' not in bot.memory:
-        bot.memory['mangle_lines'] = tools.SopelIdentifierMemory(
-            identifier_factory=bot.make_identifier,
-        )
+        bot.memory['mangle_lines'] = bot.make_identifier_memory()
 
 
 def shutdown(bot):
