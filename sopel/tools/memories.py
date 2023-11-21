@@ -235,19 +235,35 @@ class SopelIdentifierMemory(SopelMemory):
         super().__delitem__(self._make_key(key))
 
     def copy(self):
+        """Get a shallow copy of this ``SopelIdentifierMemory``.
+
+        See :meth:`dict.copy`.
+        """
         return type(self)(self, identifier_factory=self.make_identifier)
 
     def get(self, key: str, default=_NO_DEFAULT):
+        """Get the value of ``key`` from this ``SopelIdentifierMemory``.
+
+        Takes an optional ``default`` value, just like :meth:`dict.get`.
+        """
         if default is _NO_DEFAULT:
             return super().get(self._make_key(key))
         return super().get(self._make_key(key), default)
 
     def pop(self, key: str, default=_NO_DEFAULT):
+        """Pop the value of ``key`` from this ``SopelIdentifierMemory``.
+
+        Takes an optional ``default`` value, just like :meth:`dict.pop`.
+        """
         if default is _NO_DEFAULT:
             return super().pop(self._make_key(key))
         return super().pop(self._make_key(key), default)
 
     def update(self, maybe_mapping=tuple()):
+        """Update this ``SopelIdentifierMemory`` with key-value pairs.
+
+        See :meth:`dict.update`.
+        """
         super().update(self._convert_keys(maybe_mapping))
 
     def __or__(self, other):

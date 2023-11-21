@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import abc
-from datetime import datetime, timedelta, timezone
+import datetime
 import functools
 import inspect
 import itertools
@@ -466,24 +466,24 @@ class Manager:
 class RuleMetrics:
     """Tracker of a rule's usage."""
     def __init__(self) -> None:
-        self.started_at: Optional[datetime] = None
-        self.ended_at: Optional[datetime] = None
+        self.started_at: Optional[datetime.datetime] = None
+        self.ended_at: Optional[datetime.datetime] = None
         self.last_return_value: Any = None
 
     def start(self) -> None:
         """Record a starting time (before execution)."""
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = datetime.datetime.now(datetime.timezone.utc)
 
     def end(self) -> None:
         """Record a ending time (after execution)."""
-        self.ended_at = datetime.now(timezone.utc)
+        self.ended_at = datetime.datetime.now(datetime.timezone.utc)
 
     def set_return_value(self, value: Any) -> None:
         """Set the last return value of a rule."""
         self.last_return_value = value
 
     @property
-    def last_time(self) -> Optional[datetime]:
+    def last_time(self) -> Optional[datetime.datetime]:
         """Last recorded start/end time for the associated rule."""
         # detect if we just started something or if it ended
         if (self.started_at and self.ended_at) and (self.started_at < self.ended_at):
@@ -493,7 +493,7 @@ class RuleMetrics:
 
     def is_limited(
         self,
-        time_limit: datetime,
+        time_limit: datetime.datetime,
     ) -> bool:
         """Determine if the rule hits the time limit."""
         if not self.started_at:
@@ -758,24 +758,24 @@ class AbstractRule(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def user_rate_limit(self) -> timedelta:
+    def user_rate_limit(self) -> datetime.timedelta:
         """The rule's user rate limit."""
 
     @property
     @abc.abstractmethod
-    def channel_rate_limit(self) -> timedelta:
+    def channel_rate_limit(self) -> datetime.timedelta:
         """The rule's channel rate limit."""
 
     @property
     @abc.abstractmethod
-    def global_rate_limit(self) -> timedelta:
+    def global_rate_limit(self) -> datetime.timedelta:
         """The rule's global rate limit."""
 
     @abc.abstractmethod
     def is_user_rate_limited(
         self,
         nick: Identifier,
-        at_time: Optional[datetime] = None,
+        at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
@@ -789,7 +789,7 @@ class AbstractRule(abc.ABC):
     def is_channel_rate_limited(
         self,
         channel: Identifier,
-        at_time: Optional[datetime] = None,
+        at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
@@ -802,7 +802,7 @@ class AbstractRule(abc.ABC):
     @abc.abstractmethod
     def is_global_rate_limited(
         self,
-        at_time: Optional[datetime] = None,
+        at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         """Tell when the rule reached the global rate limit.
 
@@ -1205,43 +1205,43 @@ class Rule(AbstractRule):
         return self._metrics_global
 
     @property
-    def user_rate_limit(self) -> timedelta:
-        return timedelta(seconds=self._user_rate_limit)
+    def user_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._user_rate_limit)
 
     @property
-    def channel_rate_limit(self) -> timedelta:
-        return timedelta(seconds=self._channel_rate_limit)
+    def channel_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._channel_rate_limit)
 
     @property
-    def global_rate_limit(self) -> timedelta:
-        return timedelta(seconds=self._global_rate_limit)
+    def global_rate_limit(self) -> datetime.timedelta:
+        return datetime.timedelta(seconds=self._global_rate_limit)
 
     def is_user_rate_limited(
         self,
         nick: Identifier,
-        at_time: Optional[datetime] = None,
+        at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         if at_time is None:
-            at_time = datetime.now(timezone.utc)
+            at_time = datetime.datetime.now(datetime.timezone.utc)
         metrics = self.get_user_metrics(nick)
         return metrics.is_limited(at_time - self.user_rate_limit)
 
     def is_channel_rate_limited(
         self,
         channel: Identifier,
-        at_time: Optional[datetime] = None,
+        at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         if at_time is None:
-            at_time = datetime.now(timezone.utc)
+            at_time = datetime.datetime.now(datetime.timezone.utc)
         metrics = self.get_channel_metrics(channel)
         return metrics.is_limited(at_time - self.channel_rate_limit)
 
     def is_global_rate_limited(
         self,
-        at_time: Optional[datetime] = None,
+        at_time: Optional[datetime.datetime] = None,
     ) -> bool:
         if at_time is None:
-            at_time = datetime.now(timezone.utc)
+            at_time = datetime.datetime.now(datetime.timezone.utc)
         metrics = self.get_global_metrics()
         return metrics.is_limited(at_time - self.global_rate_limit)
 

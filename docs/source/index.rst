@@ -20,6 +20,7 @@ Documentation
 
 .. toctree::
     :maxdepth: 2
+    :titlesonly:
 
     run
     plugin

@@ -232,13 +232,13 @@ In that case:
 
 .. seealso::
 
-   Sopel uses the built-in :func:`ssl.wrap_socket` function to wrap the socket
-   used for the IRC connection.
+   Sopel uses the built-in :meth:`ssl.SSLContext.wrap_socket` function to wrap
+   the socket used for the IRC connection.
 
 .. note::
 
    Sopel will try to look at one of these files for the CA certs pem file
-   required by :func:`ssl.wrap_socket`:
+   required by :meth:`ssl.SSLContext.wrap_socket`:
 
    * ``/etc/pki/tls/cert.pem``
    * ``/etc/ssl/certs/ca-certificates.crt`` (Debian)

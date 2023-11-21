@@ -130,6 +130,7 @@ autodoc_type_aliases = {
     'ModeDetails': 'sopel.irc.modes.ModeDetails',
     'PrivilegeDetails': 'sopel.irc.modes.PrivilegeDetails',
 }
+autodoc_preserve_defaults = True
 
 
 # -- Options for HTML output ---------------------------------------------------

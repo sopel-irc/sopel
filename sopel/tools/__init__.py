@@ -90,6 +90,17 @@ def get_sendable_message(text, max_length=400):
     care of multibyte UTF-8 characters by working on the Unicode string,
     then making sure the bytes version is smaller than the max length.
 
+    .. note::
+
+        In most cases, letting the bot gracefully handle message truncation
+        using optional arguments to :meth:`bot.say() <.bot.Sopel.say>` is
+        preferable. However, this function is part of the public API to provide
+        for more advanced use-cases.
+
+        See also the :meth:`bot.safe_text_length() <.bot.Sopel.safe_text_length>`
+        method, whose return value can be passed as this function's
+        ``max_length`` argument.
+
     .. versionadded:: 6.6.2
     """
     unicode_max_length = max_length
