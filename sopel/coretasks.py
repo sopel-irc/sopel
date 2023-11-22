@@ -23,6 +23,7 @@ dispatch function in :class:`sopel.bot.Sopel` and making it easier to maintain.
 from __future__ import annotations
 
 import base64
+from binascii import Error as BinasciiError
 import collections
 import copy
 from datetime import datetime, timedelta, timezone
@@ -31,6 +32,9 @@ import logging
 import re
 import time
 from typing import Callable, Optional, TYPE_CHECKING
+
+from scramp import ScramClient, ScramException
+from scramp.core import ClientStage as ScramClientStage
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
@@ -106,7 +110,6 @@ def _handle_sasl_capability(
             'cannot authenticate with SASL.',
         )
         return plugin.CapabilityNegotiation.ERROR
-
     # Check SASL configuration (password is required)
     password, mech = _get_sasl_pass_and_mech(bot)
     if not password:
@@ -118,9 +121,18 @@ def _handle_sasl_capability(
     cap_info = bot.capabilities.get_capability_info('sasl')
     cap_params = cap_info.params
 
-    available_mechs = cap_params.split(',') if cap_params else []
+    server_mechs = cap_params.split(',') if cap_params else []
 
-    if available_mechs and mech not in available_mechs:
+    sopel_mechs = ["PLAIN", "EXTERNAL", "SCRAM-SHA-256"]
+    if mech not in sopel_mechs:
+        raise config.ConfigurationError(
+            'SASL mechanism "{mech}" is not supported by Sopel; '
+            'available mechanisms are: {available}.'.format(
+                mech=mech,
+                available=', '.join(sopel_mechs),
+            )
+        )
+    if server_mechs and mech not in server_mechs:
         # Raise an error if configured to use an unsupported SASL mechanism,
         # but only if the server actually advertised supported mechanisms,
         # i.e. this network supports SASL 3.2
@@ -129,11 +141,13 @@ def _handle_sasl_capability(
         # by the sasl_mechs() function
 
         # See https://github.com/sopel-irc/sopel/issues/1780 for background
+
+        common_mechs = set(sopel_mechs) & set(server_mechs)
         raise config.ConfigurationError(
             'SASL mechanism "{mech}" is not advertised by this server; '
             'available mechanisms are: {available}.'.format(
                 mech=mech,
-                available=', '.join(available_mechs),
+                available=', '.join(common_mechs),
             )
         )
 
@@ -1250,7 +1264,43 @@ def auth_proceed(bot, trigger):
             bot.write(('AUTHENTICATE', '*'))
             return
 
-    # TODO: Implement SCRAM challenges
+    elif mech == "SCRAM-SHA-256":
+        if trigger.args[0] == "+":
+            bot._scram_client = ScramClient([mech], sasl_username, sasl_password)
+            client_first = bot._scram_client.get_client_first()
+            LOGGER.info("Sending SASL SCRAM client first")
+            send_authenticate(bot, client_first)
+        elif bot._scram_client.stage == ScramClientStage.get_client_first:
+            try:
+                server_first = base64.b64decode(trigger.args[0]).decode("utf-8")
+                bot._scram_client.set_server_first(server_first)
+            except (BinasciiError, KeyError, ScramException) as e:
+                LOGGER.error("SASL SCRAM server_first failed: %r", e)
+                bot.write(("AUTHENTICATE", "*"))
+                return
+            if bot._scram_client.iterations < 4096:
+                LOGGER.warning(
+                    "SASL SCRAM iteration count is insecure, continuing anyway"
+                )
+            elif bot._scram_client.iterations >= 4_000_000:
+                LOGGER.warning(
+                    "SASL SCRAM iteration count is very high, this will be slow..."
+                )
+            client_final = bot._scram_client.get_client_final()
+            LOGGER.info("Sending SASL SCRAM client final")
+            send_authenticate(bot, client_final)
+        elif bot._scram_client.stage == ScramClientStage.get_client_final:
+            try:
+                server_final = base64.b64decode(trigger.args[0]).decode("utf-8")
+                bot._scram_client.set_server_final(server_final)
+            except (BinasciiError, KeyError, ScramException) as e:
+                LOGGER.error("SASL SCRAM server_final failed: %r", e)
+                bot.write(("AUTHENTICATE", "*"))
+                return
+            LOGGER.info("SASL SCRAM succeeded")
+            bot.write(("AUTHENTICATE", "+"))
+            bot._scram_client = None
+        return
 
 
 def _make_sasl_plain_token(account, password):

@@ -576,7 +576,7 @@ When :attr:`~CoreSection.server_auth_method` is defined the settings used are:
 * :attr:`~CoreSection.server_auth_username`: account's username
 * :attr:`~CoreSection.server_auth_password`: account's password
 * :attr:`~CoreSection.server_auth_sasl_mech`: the SASL mechanism to use
-  (defaults to ``PLAIN``; ``EXTERNAL`` is also available)
+  (default is ``PLAIN``; ``EXTERNAL`` and ``SCRAM-SHA-256`` are also available)
 
 For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
 

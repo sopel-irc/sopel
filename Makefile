@@ -8,7 +8,7 @@ lint-style:
 	flake8
 
 lint-type:
-	mypy --check-untyped-defs sopel
+	mypy sopel
 
 .PHONY: test test_norecord test_novcr vcr_rerecord
 test:

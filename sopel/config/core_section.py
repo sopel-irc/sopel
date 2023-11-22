@@ -1195,12 +1195,16 @@ class CoreSection(StaticSection):
 
     :default: ``PLAIN``
 
-    ``EXTERNAL`` is also supported, e.g. for using :attr:`client_cert_file` to
-    authenticate via CertFP.
+    Supported mechanisms are:
+
+    * ``PLAIN``, to authenticate by sending a plaintext password
+    * ``EXTERNAL``, to authenticate using a TLS client certificate
+      (see :attr:`client_cert_file`)
+    * ``SCRAM-SHA-256``, for password-based challenge-response authentication
 
     .. versionadded:: 7.0
     .. versionchanged:: 8.0
-        Added support for SASL EXTERNAL mechanism.
+        Added support for SASL EXTERNAL and SCRAM-SHA-256 mechanisms.
     """
 
     server_auth_username = ValidatedAttribute('server_auth_username')
