@@ -273,6 +273,13 @@ class capability:
         self._cap_req: tuple[str, ...] = tuple(sorted(cap_req))
         self._handler: Optional[CapabilityHandler] = handler
 
+    def __str__(self) -> str:
+        caps = ", ".join(repr(cap) for cap in self._cap_req)
+        handler = ""
+        if self._handler and hasattr(self._handler, "__name__"):
+            handler = " ({}())".format(self._handler.__name__)
+        return "<capability {}{}>".format(caps, handler)
+
     @property
     def cap_req(self) -> tuple[str, ...]:
         """Capability request as a sorted tuple.
