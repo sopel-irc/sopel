@@ -334,6 +334,12 @@ def mw_info(bot, trigger, match=None):
     article = unquote(page_info.path)[trim_offset:]
     section = unquote(page_info.fragment)
 
+    if article.startswith("Special:"):
+        # The MediaWiki query API does not include pages in the Special:
+        # namespace, so there's no point bothering when we know this will error
+        LOGGER.debug("Ignoring page in Special: namespace")
+        return False
+
     if section:
         if section.startswith('cite_note-'):
             # Don't bother trying to retrieve a section snippet if cite-note is linked
@@ -367,6 +373,11 @@ def wikipedia(bot, trigger):
     if not query:
         bot.reply('What do you want me to look up?')
         return plugin.NOLIMIT
+
+    if query.startswith("Special:"):
+        bot.reply("Sorry, the MediaWiki API doesn't support querying the Special: namespace.")
+        return False
+
     server = lang + '.wikipedia.org'
     query = mw_search(server, query, 1)
     if not query:
