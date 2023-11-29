@@ -756,8 +756,11 @@ class CoreSection(StaticSection):
     def homedir(self):
         """The directory in which various files are stored at runtime.
 
-        By default, this is the same directory as the config file. It cannot be
-        changed at runtime.
+        Specifying the ``homedir`` option is useful for e.g. :doc:`running Sopel
+        as a system service </run/service>`.
+
+        If not set, the config file's parent directory will be used. This value
+        cannot be changed at runtime.
         """
         return self._parent.homedir
 
@@ -824,7 +827,7 @@ class CoreSection(StaticSection):
     :default: ``logs``
 
     If the given value is not an absolute path, it will be interpreted relative
-    to the directory containing the config file with which Sopel was started.
+    to the :attr:`homedir` of the config file with which Sopel was started.
 
     .. seealso::
 
