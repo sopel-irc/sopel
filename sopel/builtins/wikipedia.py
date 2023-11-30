@@ -12,7 +12,7 @@ import logging
 import re
 from urllib.parse import quote, unquote, urlparse
 
-from requests import get
+from requests import get, post
 
 from sopel import plugin
 from sopel.config import types
@@ -127,6 +127,9 @@ class WikipediaSection(types.StaticSection):
     default_lang = types.ValidatedAttribute('default_lang', default='en')
     """The default language to find articles from (same as Wikipedia language subdomain)."""
 
+    shorten_links = types.BooleanAttribute('shorten_links', default=False)
+    """Whether to shorten article links using Wikimedia's official w.wiki shortener."""
+
 
 def setup(bot):
     bot.config.define_section('wikipedia', WikipediaSection)
@@ -137,12 +140,42 @@ def configure(config):
     | name | example | purpose |
     | ---- | ------- | ------- |
     | default\\_lang | en | The default language to find articles from (same as Wikipedia language subdomain) |
+    | shorten\\_links | no | Whether to shorten article links using Wikimedia's official w.wiki shortener |
     """
     config.define_section('wikipedia', WikipediaSection)
     config.wikipedia.configure_setting(
         'default_lang',
         "Enter the default language to find articles from."
     )
+    config.wikipedia.configure_setting(
+        'shorten_links',
+        "Shorten article links with Wikimedia's official w.wiki shortener?"
+    )
+
+
+class ShorteningError(RuntimeError):
+    """Custom exception type for failed w.wiki shortening."""
+
+
+def wikimedia_short(url: str) -> str:
+    params = {
+        'action': 'shortenurl',
+        'format': 'json',
+        'formatversion': 2,
+        'url': url,
+    }
+
+    try:
+        result = post('https://meta.wikimedia.org/w/api.php', params=params).json()
+    except Exception as exc:
+        LOGGER.exception("Failed to shorten %r: %r", url, exc)
+        raise ShorteningError
+
+    try:
+        return result['shortenurl']['shorturl']
+    except KeyError:
+        LOGGER.exception("Short URL was not in JSON result: %r", result)
+        raise ShorteningError
 
 
 def choose_lang(bot, trigger):
@@ -180,9 +213,20 @@ def say_snippet(bot, trigger, server, query, show_url=True, commanded=False):
     page_name = query.replace('_', ' ')
     query = quote(query.replace(' ', '_'))
     url = 'https://{}/wiki/{}'.format(server, query)
+    short_url = ''
+
+    if show_url and bot.settings.wikipedia.shorten_links:
+        try:
+            short_url = wikimedia_short(url)
+        except ShorteningError:
+            pass
 
     # If the trigger looks like another instance of this plugin, assume it is
-    if trigger.startswith(PLUGIN_OUTPUT_PREFIX) and trigger.endswith(' | ' + url):
+    if trigger.startswith(PLUGIN_OUTPUT_PREFIX) and (
+        trigger.endswith(' | ' + url) or (
+            short_url and trigger.endswith(' | ' + short_url)
+        )
+    ):
         return
 
     try:
@@ -202,7 +246,7 @@ def say_snippet(bot, trigger, server, query, show_url=True, commanded=False):
 
     trailing = '"'
     if show_url:
-        trailing += ' | ' + url
+        trailing += ' | ' + (short_url or url)
 
     bot.say(msg, truncation=' […]', trailing=trailing)
 
