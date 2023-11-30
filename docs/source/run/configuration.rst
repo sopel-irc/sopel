@@ -804,12 +804,10 @@ there may be as many as four log files per config:
 Sopel uses the built-in :func:`logging.basicConfig` function to configure its
 logs with the following arguments:
 
-* ``format``: set to :attr:`~CoreSection.logging_format` if configured
-* ``datefmt``: set to :attr:`~CoreSection.logging_datefmt` if configured
-* ``level``: set to :attr:`~CoreSection.logging_level`, default to ``WARNING``
-  (see the Python documentation for `available logging levels`__)
-
-.. __: https://docs.python.org/3/library/logging.html#logging-levels
+* ``format``: set to :attr:`~CoreSection.logging_format`
+* ``datefmt``: set to :attr:`~CoreSection.logging_datefmt`
+* ``level``: set to :attr:`~CoreSection.logging_level` (see
+  :ref:`available logging levels <levels>` in Python's documentation)
 
 Example of configuration for logging::
 
