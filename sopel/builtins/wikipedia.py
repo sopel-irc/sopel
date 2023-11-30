@@ -12,16 +12,20 @@ import logging
 import re
 from urllib.parse import quote, unquote, urlparse
 
-from requests import get, post
+from requests import get, head, post
 
 from sopel import plugin
 from sopel.config import types
+from sopel.trigger import PreTrigger
 
 
 LOGGER = logging.getLogger(__name__)
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
+# match Wikipedia links on any subdomain, but exclude File: links
+WIKILINK_PATTERN = re.compile(
+    r'https?:\/\/([a-z]+(?:\.m)?\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+)')
 
 
 class WikiParser(HTMLParser):
@@ -365,8 +369,7 @@ def mw_image_description(server, image):
     return desc
 
 
-# Matches a Wikipedia link (excluding /File: pages)
-@plugin.url(r'https?:\/\/([a-z]+(?:\.m)?\.wikipedia\.org)\/wiki\/((?!File\:)[^ ]+)')
+@plugin.url(WIKILINK_PATTERN)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
@@ -386,6 +389,35 @@ def mw_info(bot, trigger, match=None):
             say_section(bot, trigger, server, article, section)
     else:
         say_snippet(bot, trigger, server, article, show_url=False)
+
+
+@plugin.url(r'https?://w\.wiki/.+')
+@plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
+def mw_short_info(bot, trigger):
+    """Handle w.wiki links, short links officially maintained by Wikimedia."""
+    link = trigger.group(0)
+    if link.startswith('http:'):
+        link = link.replace('http:', 'https:', 1)
+
+    try:
+        destination = head(link).headers['location']
+    except Exception:
+        # probably just an invalid link; we're best-effort here, so simply ignore it
+        pass
+
+    match = WIKILINK_PATTERN.match(destination)
+
+    if match:
+        # I couldn't stomach the Dirty Hack method of doing this
+        # (overwriting trigger._match)
+        pretrigger = PreTrigger(
+            bot.nick,
+            trigger.raw.replace(trigger.group(0), match.group(0)),
+            url_schemes=bot.settings.core.auto_url_schemes,
+            identifier_factory=bot.make_identifier,
+            statusmsg_prefixes=bot.isupport.get('STATUSMSG'),
+        )
+        bot.dispatch(pretrigger)
 
 
 @plugin.command('wikipedia', 'wp')
