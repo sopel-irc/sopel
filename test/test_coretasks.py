@@ -753,3 +753,14 @@ def test_handle_setname(mockbot):
     )
 
     assert mockbot.users['Internets'].realname == 'ServiceBot'
+
+
+def test_handle_setname_no_user(mockbot, caplog):
+    """Make sure Sopel ignores SETNAME message for unknown user"""
+    caplog.set_level(logging.DEBUG)
+    mockbot.on_message(':Akarin!yuruyuri@hajimaru.yo SETNAME :Bun Bazooka')
+
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == (
+        "Discarding SETNAME ('Bun Bazooka') received for unknown user Akarin.")
+    assert caplog.record_tuples[0][1] == logging.DEBUG

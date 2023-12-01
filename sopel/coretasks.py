@@ -856,6 +856,10 @@ def handle_setname(bot, trigger):
     """Update a user's realname when notified by the IRC server."""
     user = bot.users.get(trigger.nick)
     if not user:
+        LOGGER.debug(
+            "Discarding SETNAME (%r) received for unknown user %s.",
+            trigger, trigger.nick,
+        )
         return
 
     LOGGER.info(
