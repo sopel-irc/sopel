@@ -5,7 +5,7 @@ qa: lint test coverages
 lint: lint-style lint-type
 
 lint-style:
-	flake8
+	flake8 sopel/ test/
 
 lint-type:
 	mypy --check-untyped-defs sopel
