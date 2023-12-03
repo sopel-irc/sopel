@@ -327,12 +327,22 @@ def mw_image_description(server, image):
 def mw_info(bot, trigger, match=None):
     """Retrieves and outputs a snippet of the linked page."""
     server = match.group(1)
-    page_info = urlparse(match.group(2))
-    article = unquote(page_info.path)
+    page_info = urlparse(match.group(0))
+    # in Python 3.9+ this can be str.removeprefix() instead, but we're confident that
+    # "/wiki/" is at the start of the path anyway since it's part of the pattern
+    trim_offset = len("/wiki/")
+    article = unquote(page_info.path)[trim_offset:]
     section = unquote(page_info.fragment)
 
+    if article.startswith("Special:"):
+        # The MediaWiki query API does not include pages in the Special:
+        # namespace, so there's no point bothering when we know this will error
+        LOGGER.debug("Ignoring page in Special: namespace")
+        return False
+
     if section:
-        if section.startswith('cite_note-'):  # Don't bother trying to retrieve a snippet when cite-note is linked
+        if section.startswith('cite_note-'):
+            # Don't bother trying to retrieve a section snippet if cite-note is linked
             say_snippet(bot, trigger, server, article, show_url=False)
         elif section.startswith('/media'):
             # gh2316: media fragments are usually images; try to get an image description
@@ -363,6 +373,11 @@ def wikipedia(bot, trigger):
     if not query:
         bot.reply('What do you want me to look up?')
         return plugin.NOLIMIT
+
+    if query.startswith("Special:"):
+        bot.reply("Sorry, the MediaWiki API doesn't support querying the Special: namespace.")
+        return False
+
     server = lang + '.wikipedia.org'
     query = mw_search(server, query, 1)
     if not query:
