@@ -511,19 +511,21 @@ def test_require_bot_privilege_private_message(configfactory,
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True
+    assert mock(bot, bot._trigger) is not True, (
+        'Callable requiring bot channel privilege must be ignored in private.')
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.OP)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True
+    assert mock(bot, bot._trigger) is not True, (
+        'Callable requiring bot channel privilege must be ignored in private.')
 
     @plugin.command('ban')
     @plugin.require_bot_privilege(plugin.OWNER)
     def mock(bot, trigger):
         return True
 
-    assert mock(bot, bot._trigger) is True, (
-        'There must not be privilege check for a private message.')
+    assert mock(bot, bot._trigger) is not True, (
+        'Callable requiring bot channel privilege must be ignored in private.')
