@@ -1716,16 +1716,18 @@ def require_bot_privilege(
     <.bot.Sopel.say>`, but when ``reply`` is ``True`` it uses :meth:`bot.reply()
     <.bot.Sopel.reply>` instead.
 
-    Privilege requirements are ignored in private messages.
+    Use of ``require_bot_privilege()`` implies :func:`require_chanmsg`.
 
     .. versionadded:: 7.1
+    .. versionchanged:: 8.0
+        Decorated callables no longer run in response to private messages.
     """
     def actual_decorator(function):
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
-            # If this is a privmsg, ignore privilege requirements
+            # If this is a privmsg, do not trigger
             if trigger.is_privmsg:
-                return function(bot, trigger, *args, **kwargs)
+                return
 
             if not bot.has_channel_privilege(trigger.sender, level):
                 if message and not callable(message):
