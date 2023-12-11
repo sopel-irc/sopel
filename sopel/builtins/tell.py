@@ -205,7 +205,11 @@ def f_remind(bot, trigger):
         return
 
     if tellee[0] == '@':
-        tellee = tellee[1:]
+        if len(tellee) == 1:
+            bot.reply("%s whom?" % verb)
+            return
+        else:
+            tellee = tellee[1:]
 
     if tellee == bot.nick:
         bot.reply("I'm here now; you can %s me whatever you want!" % verb)
