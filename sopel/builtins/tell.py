@@ -178,10 +178,13 @@ def f_remind(bot, trigger):
     verb = trigger.group(1)
 
     if not trigger.group(3):
+        tellee = ""
+    else:
+        tellee = trigger.group(3).rstrip('.,:;').lstrip('@')
+
+    if not tellee:
         bot.reply("%s whom?" % verb)
         return
-
-    tellee = trigger.group(3).rstrip('.,:;')
 
     # all we care about is having at least one non-whitespace
     # character after the name
@@ -203,9 +206,6 @@ def f_remind(bot, trigger):
     if len(tellee) > bot.isupport.get('NICKLEN', 30):
         bot.reply('That nickname is too long.')
         return
-
-    if tellee[0] == '@':
-        tellee = tellee[1:]
 
     if tellee == bot.nick:
         bot.reply("I'm here now; you can %s me whatever you want!" % verb)
