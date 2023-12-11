@@ -181,7 +181,7 @@ def f_remind(bot, trigger):
         bot.reply("%s whom?" % verb)
         return
 
-    tellee = trigger.group(3).rstrip('.,:;')
+    tellee = trigger.group(3).rstrip('.,:;').lstrip('@')
 
     # all we care about is having at least one non-whitespace
     # character after the name
