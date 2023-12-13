@@ -170,8 +170,14 @@ def _format_safe_lstrip(text):
 @plugin.command('tell', 'ask')
 @plugin.nickname_command('tell', 'ask')
 @plugin.example('$nickname, tell dgw he broke it again.', user_help=True)
+@plugin.example('.ask ', 'ask whom?')
 @plugin.example('.tell ', 'tell whom?')
+@plugin.example('.ask @', 'ask whom?')
+@plugin.example('.tell @', 'tell whom?')
 @plugin.example('.ask Exirel ', 'ask Exirel what?')
+@plugin.example('.tell Exirel ', 'tell Exirel what?')
+@plugin.example('.ask @Exirel ', 'ask Exirel what?')
+@plugin.example('.tell @Exirel ', 'tell Exirel what?')
 def f_remind(bot, trigger):
     """Give someone a message the next time they're seen"""
     teller = trigger.nick
