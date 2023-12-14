@@ -1221,6 +1221,14 @@ class Sopel(irc.AbstractBot):
         except KeyError:
             pass
 
+    @deprecated(
+        reason=(
+            'URL handling has been unified in the Rules system via the @url '
+            'decorator. Use RuleManager.check_url_callbacks() if needed.'),
+        version='8.0',
+        warning_in='8.1',
+        removed_in='9.0',
+    )
     def search_url_callbacks(self, url):
         """Yield callbacks whose regex pattern matches the ``url``.
 
