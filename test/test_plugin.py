@@ -33,6 +33,19 @@ def test_capability(cap_ack_wrapped):
     assert result == (True, None)
 
 
+def test_capability_as_string():
+    handler = plugin.capability('batch')
+    assert str(handler).startswith('<capability')
+    assert str(handler).endswith("'batch'>")
+
+    def _batch_callback(cap_req, bot, acknowledged):
+        ...
+
+    handler = plugin.capability('batch', handler=_batch_callback)
+
+    assert '(_batch_callback())' in str(handler)
+
+
 def test_capability_handler_define_once():
     @plugin.capability('away-notify')
     def handler(name, bot, acknowledged):

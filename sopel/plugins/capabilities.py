@@ -233,7 +233,7 @@ class Manager:
         plugin_caps[plugin_name] = (
             request, False,
         )
-        LOGGER.debug('Capability Request registered: %s', str(request))
+        LOGGER.debug('Capability Request registered: %s', request)
 
     def request_available(
         self,
