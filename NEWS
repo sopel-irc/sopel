@@ -29,6 +29,8 @@ Plugin changes
 
 * admin:
   * Added `.raw` command to make Sopel send a raw IRC line [[#2104][]]
+* clock:
+  * Added `unset` commands for user & channel time zone/format [[#2181][]]
 * pronouns:
   * Accept abbreviated pronoun sets [[#2070][]]
   * Added `.clearpronouns` command [[#2154][]]
@@ -53,10 +55,12 @@ Core changes
     [the Bot Mode specification][bot-mode-spec] [[#2088][]]
   * `userhost-in-names` capability and the legacy `UHNAMES` feature [[#2102][]]
   * `chghost` capability [[#2116][]]
+* Improved SASL handling when auth fails [[#2187][], [#2191][]]
 * Plugins in `~/.sopel/modules` are no longer loaded by default [[#2119][]]
 * Removed support for Phenny/Jenni plugin style [[#2126][]]
 * Ignore `bot`-tagged messages by default [[#2089][]]
 * Privilege tracking (MODE event handling) refactored [[#2131][]]
+* Maintain ordering of `ISupport.PREFIX` property [[#2200][]]
 
 API changes
 -----------
@@ -65,6 +69,8 @@ API changes
 * Removed support for Phenny/Jenni plugin style [[#2126][]]
 * Stopped searching `bot.memory['url_callbacks']` for link handlers [[#2121][]]
 * Deprecated `bot.search_url_callbacks()` [[#2121][], [#2156][], [#2581][]]
+* Moved privileges into their own `sopel.privileges` submodule [[#2179][]]
+  * The original constants in `sopel.plugin` are still available for now
 * Sopel's API now uses `Enum` types where suitable:
   * `formatting.colors` [[#2122][]]
   * `tools.events` [[#2127][]]
@@ -73,20 +79,25 @@ API changes
 * `tools.time.format_time()` accepts offset-aware `datetime` values [[#2132][]]
 * Added `bot.safe_text_length()` method [[#2136][]]
 * Added `RPL_WHOISBOT` to `tools.events` list [[#2145][]]
+* Added `bot.plugins` property [[#2199][]]
 * Removed previously deprecated API features [[#2128][], [#2129][], [#2141][],
   [#2144][], [#2146][], [#2147][], [#2148][], [#2150][]]
 
 Housekeeping changes
 --------------------
 
-* Many, many improvements to documentation [[#1990][], [#2169][], [#2178][]]
+* Many, many improvements to documentation [[#1990][], [#2169][], [#2178][],
+  [#2182][]]
 * Switched from Travis CI to GitHub Actions and revamped testing infrastructure
-  [[#2075][], [#2078][], [#2123][]]
+  [[#2075][], [#2078][], [#2123][], [#2188][]]
 * Cleanup on aisle `contrib/` [[#2085][]]
 * Cleanup usage of deprecated features in core & built-in plugins [[#2117][]]
+* Import reorganization [[#2179][]]
+* Miscellaneous code smell/style issues fixed [[#2186][]]
 * Removed legacy CLI run mode [[#2118][]]
 * Removed old `sopel.test_tools` [[#2139][], [#2177][]]
 * Raw logs improved both output and decode failure handling [[#2095][]]
+* Started our journey into the wonderful world of type checking [[#2185][]]
 
 [bot-mode-spec]: https://ircv3.net/specs/extensions/bot-mode
 
@@ -140,6 +151,16 @@ Housekeeping changes
 [#2170]: https://github.com/sopel-irc/sopel/pull/2170
 [#2177]: https://github.com/sopel-irc/sopel/pull/2177
 [#2178]: https://github.com/sopel-irc/sopel/pull/2178
+[#2179]: https://github.com/sopel-irc/sopel/pull/2179
+[#2181]: https://github.com/sopel-irc/sopel/pull/2181
+[#2182]: https://github.com/sopel-irc/sopel/pull/2182
+[#2185]: https://github.com/sopel-irc/sopel/pull/2185
+[#2186]: https://github.com/sopel-irc/sopel/pull/2186
+[#2187]: https://github.com/sopel-irc/sopel/pull/2187
+[#2188]: https://github.com/sopel-irc/sopel/pull/2188
+[#2191]: https://github.com/sopel-irc/sopel/pull/2191
+[#2199]: https://github.com/sopel-irc/sopel/pull/2199
+[#2200]: https://github.com/sopel-irc/sopel/pull/2200
 [#2581]: https://github.com/sopel-irc/sopel/pull/2581
 
 
