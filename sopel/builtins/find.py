@@ -121,11 +121,11 @@ def kick_cleanup(bot, trigger):
              [:,]\s+)?         # Followed by optional colon/comma and whitespace
              s(?P<sep>/)       # The literal s and a separator / as group 2
              (?P<old>          # Group 3 is the thing to find
-               (?:\\/|[^/])+   # One or more non-slashes or escaped slashes
+               (?:\\\\|\\/|[^/])+   # One or more non-slashes or escaped slashes
              )
              /                 # The separator again
              (?P<new>          # Group 4 is what to replace with
-               (?:\\/|[^/])*   # One or more non-slashes or escaped slashes
+               (?:\\\\|\\/|[^/])*   # One or more non-slashes or escaped slashes
              )
              (?:/              # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
@@ -136,11 +136,11 @@ def kick_cleanup(bot, trigger):
              [:,]\s+)?         # Followed by optional colon/comma and whitespace
              s(?P<sep>\|)      # The literal s and a separator | as group 2
              (?P<old>          # Group 3 is the thing to find
-               (?:\\\||[^|])+  # One or more non-pipe or escaped pipe
+               (?:\\\\|\\\||[^|])+  # One or more non-pipe or escaped pipe
              )
              \|                # The separator again
              (?P<new>          # Group 4 is what to replace with
-               (?:\\\||[^|])*  # One or more non-pipe or escaped pipe
+               (?:\\\\|\\\||[^|])*  # One or more non-pipe or escaped pipe
              )
              (?:\|             # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
@@ -161,14 +161,16 @@ def findandreplace(bot, trigger):
         return
 
     sep = trigger.group('sep')
-    old = trigger.group('old').replace('\\%s' % sep, sep)
+    escape_sequence_pattern = re.compile(r'\\[\\%s]' % sep)
+
+    old = escape_sequence_pattern.sub(decode_escape, trigger.group('old'))
     new = trigger.group('new')
     me = False  # /me command
     flags = trigger.group('flags') or ''
 
     # only clean/format the new string if it's non-empty
     if new:
-        new = bold(new.replace('\\%s' % sep, sep))
+        new = bold(escape_sequence_pattern.sub(decode_escape, new))
 
     # If g flag is given, replace all. Otherwise, replace once.
     if 'g' in flags:
@@ -217,3 +219,12 @@ def findandreplace(bot, trigger):
         phrase = '%s %s' % (trigger.nick, new_phrase)
 
     bot.say(phrase)
+
+
+def decode_escape(match):
+    print("Substituting %s" % match.group(0))
+    return {
+        r'\\': '\\',
+        r'\|': '|',
+        r'\/': '/',
+    }[match.group(0)]

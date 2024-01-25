@@ -43,6 +43,7 @@ REPLACES_THAT_WORK = (
     ("An escaped / line.", r"s/\//slash/", f"An escaped {bold('slash')} line."),
     ("A piped line.", r"s|line|replacement|", f"A piped {bold('replacement')}."),
     ("An escaped | line.", r"s|\||pipe|", f"An escaped {bold('pipe')} line."),
+    ("An escaped \\ line.", r"s/\\/backslash/", f"An escaped {bold('backslash')} line."),
 )
 
 
