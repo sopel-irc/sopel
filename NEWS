@@ -46,24 +46,34 @@ Plugin changes
   * Improved result of trying to kick the bot with `.kick` [[#2240][]]
 * clock:
   * Added `unset` commands for user & channel time zone/format [[#2181][]]
+* currency:
+  * `fiat_provider` setting takes precedence over the existence of a
+    `fixer_io_key` value [[#2330][]]
 * emoticons:
   * Added `.tback` alias for `.unflip` command [[#2287][]]
   * Made `.unflip` table more closely match the `.tflip` one [[#2287][]]
 * find:
   * Code cleanup [[#2267][]]
+* help:
+  * Now updatable independently from [its own package][sopel-help], but still
+    installs with Sopel as a dependency [[#2332][]]
 * pronouns:
   * Accept abbreviated pronoun sets [[#2070][]]
   * Added `.clearpronouns` command [[#2154][]]
   * Fetch pronoun list dynamically at startup [[#2130][]]
+* reddit:
+  * Newer `praw` library allowed [[#2319][]]
+  * Extracted to [its own package][sopel-reddit] [[#2444][]]
 * safety:
   * Comprehensive rework improving caching, output, etc. [[#2279][]]
 * search:
-  * Code style fixes/tweaks [[#2260][]]
+  * Code style and dependency updates [[#2260][], [#2334][]]
 * seen:
   * Adapted to aware `trigger.time` [[#2265][]]
 * url:
   * Improved interaction between `.title` command and link handlers [[#2282][]]
   * Removed traceback from debug log when URL fetch fails [[#2280][]]
+  * Cleaned up code [[#2304][], [#2307][]]
 * version:
   * Support retrieving plugin versions with `.version pluginname` [[#2133][]]
 * wikipedia:
@@ -71,13 +81,15 @@ Plugin changes
     were removed [[#1966][]]
   * Remove deprecated `lang_per_channel` setting [[#2142][]]
   * Work around excessive whitespace in math formulas [[#2286][]]
+  * Don't ping the user who posted a URL that fails to load [[#2315][]]
 
 Core changes
 ------------
 
 * Removed support for EOL Python versions (2.7, 3.3, 3.4, 3.5, 3.6, & 3.7) and
   modernized coding standards [[#2062][], [#2073][], [#2123][], [#2124][],
-  [#2134][], [#2136][], [#2138][], [#2205][], [#2213][], [#2227][], [#2298][]]
+  [#2134][], [#2136][], [#2138][], [#2205][], [#2213][], [#2227][], [#2298][],
+  [#2326][], [#2327][]]
 * IRC backend refactored to use `asyncio` [[#2256][]]
   * Just in time, too: The `asynchat` module was removed in Python 3.12
 * `SopelDB` adapted to SQLAlchemy 2.x style [[#2243][]]
@@ -99,16 +111,25 @@ Core changes
 * Added `__slots__` to `Channel` and `User` objects [[#2233][]]
 * Improved handling of the bot's nick getting changed [[#2240][]]
 * Improved tracking and enforcement of rate limits [[#2297][]]
-* Added `ssl_ciphers` and `ssl_minimum_version` settings [[#2246][]]
+* Prevent infinite loop on connection failure [[#2306][]]
+* Added `ssl_ciphers` and `ssl_minimum_version` settings [[#2246][], [#2306][]]
+* Added `antiloop_repeat_text`, `antiloop_silent_after`, `antiloop_threshold`,
+  and `antiloop_window` settings to control command-loop prevention [[#2320][]]
 * Using `,` in `ListAttribute` values logs a warning [[#2252][]]
   * Write lists with newlines instead; Sopel 9 will remove splitting on `,`
 * IRC connections use TLS on port 6697 by default [[#2277][]]
   * *Potentially* a breaking change, but the configuration wizard has long
     written these settings to the final config file even if they were left at
     the default values
+* Fixed `UHNAMES` race condition caused by joining channels too soon [[#2321][]]
 * Removed hunting for CA root store [[#2278][], [#2303][]]
   * Sopel will simply use the system TLS library's default trust store unless
     the `ca_certs` setting is specified
+* Improved truncation/splitting of over-length messages in e.g. `bot.say()`
+  [[#2310][], [#2450][]]
+* Gracefully handle missing `userhost-in-names` data, e.g. with ZNC [[#2312][]]
+  * See [ZNC issue #1224][znc/znc#1224]
+* Override `get_version()` method for `EntryPointPlugin` [[#2313][]]
 
 API changes
 -----------
@@ -160,20 +181,24 @@ API changes
     `plugin.ctcp()` decorator instead
   * Sopel 8.0 removes `intent` from `trigger.tags`; use `trigger.ctcp` instead
 * Updated invite-related event names in `tools.events` [[#2270][]]
+* Fixed checking if `None` exists in a `SopelIdentifierMemory` [[#2306][]]
 * Removed previously-deprecated API features [[#2128][], [#2129][], [#2141][],
-  [#2144][], [#2146][], [#2147][], [#2148][], [#2150][]]
+  [#2144][], [#2146][], [#2147][], [#2148][], [#2150][], [#2329][]]
 
 Housekeeping changes
 --------------------
 
 * Many, many improvements to documentation [[#1990][], [#2169][], [#2178][],
-  [#2182][], [#2226][], [#2238][], [#2239][], [#2257][], [#2275][], [#2276][]]
+  [#2182][], [#2226][], [#2238][], [#2239][], [#2257][], [#2275][], [#2276][],
+  [#2323][]]
 * Switched from Travis CI to GitHub Actions and revamped testing infrastructure
-  [[#2075][], [#2078][], [#2123][], [#2188][]]
+  [[#2075][], [#2078][], [#2123][], [#2188][], [#2335][]]
+* Modernized packaging [[#2328][]]
 * Cleanup on aisle `contrib/` [[#2085][]]
-* Cleanup usage of deprecated features in core & built-in plugins [[#2117][]]
+* Cleanup of deprecated feature usage in core & built-in plugins [[#2117][]]
 * Import reorganization [[#2179][]]
 * Miscellaneous code smell/style issues fixed [[#2186][], [#2220][], [#2231][]]
+* Miscellaneous logging improvements [[#2309][]]
 * Miscellaneous test suite improvements [[#2262][]]
 * Removed legacy CLI run mode [[#2118][]]
 * Removed old `sopel.test_tools` [[#2139][], [#2177][]]
@@ -183,6 +208,9 @@ Housekeeping changes
     something else, so we won't *also* list all of them here
 
 [bot-mode-spec]: https://ircv3.net/specs/extensions/bot-mode
+[sopel-help]: https://pypi.org/project/sopel-help/
+[sopel-reddit]: https://pypi.org/project/sopel-reddit/
+[znc/znc#1224]: https://github.com/znc/znc/issues/1224
 
 [#1966]: https://github.com/sopel-irc/sopel/pull/1966
 [#1990]: https://github.com/sopel-irc/sopel/pull/1990
@@ -289,6 +317,28 @@ Housekeeping changes
 [#2297]: https://github.com/sopel-irc/sopel/pull/2297
 [#2298]: https://github.com/sopel-irc/sopel/pull/2298
 [#2303]: https://github.com/sopel-irc/sopel/pull/2303
+[#2304]: https://github.com/sopel-irc/sopel/pull/2304
+[#2306]: https://github.com/sopel-irc/sopel/pull/2306
+[#2307]: https://github.com/sopel-irc/sopel/pull/2307
+[#2309]: https://github.com/sopel-irc/sopel/pull/2309
+[#2310]: https://github.com/sopel-irc/sopel/pull/2310
+[#2312]: https://github.com/sopel-irc/sopel/pull/2312
+[#2313]: https://github.com/sopel-irc/sopel/pull/2313
+[#2315]: https://github.com/sopel-irc/sopel/pull/2315
+[#2319]: https://github.com/sopel-irc/sopel/pull/2319
+[#2320]: https://github.com/sopel-irc/sopel/pull/2320
+[#2321]: https://github.com/sopel-irc/sopel/pull/2321
+[#2323]: https://github.com/sopel-irc/sopel/pull/2323
+[#2326]: https://github.com/sopel-irc/sopel/pull/2326
+[#2327]: https://github.com/sopel-irc/sopel/pull/2327
+[#2328]: https://github.com/sopel-irc/sopel/pull/2328
+[#2329]: https://github.com/sopel-irc/sopel/pull/2329
+[#2330]: https://github.com/sopel-irc/sopel/pull/2330
+[#2332]: https://github.com/sopel-irc/sopel/pull/2332
+[#2334]: https://github.com/sopel-irc/sopel/pull/2334
+[#2335]: https://github.com/sopel-irc/sopel/pull/2335
+[#2444]: https://github.com/sopel-irc/sopel/pull/2444
+[#2450]: https://github.com/sopel-irc/sopel/pull/2450
 [#2581]: https://github.com/sopel-irc/sopel/pull/2581
 
 
