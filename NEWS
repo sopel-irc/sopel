@@ -17,6 +17,8 @@ Highlights
   * Use the `core.extra` setting to add this directory back if needed
 * Database options can be configured all at once in new `db_url` setting (useful
   for managed cloud hosting such as Heroku)
+* `.blocks` command accepts "nick" and "host" types now, and no longer lies
+  about supporting "hostmasks" (further improvements to come)
 * Sopel no longer supports loading (very!) old Phenny/Jenni plugins
 
 **For developers:**
@@ -29,12 +31,22 @@ Highlights
   * Feel free to use `bot.make_identifier()` yourself to get an `Identifier`
     representing any nick or channel name you get, e.g. as input to a command
 * The `core.nick` setting value is now returned as a `str`, not an `Identifier`
+* Capability negotiation is a first-class plugin API feature (see
+  `plugin.capability` and the [related documentation chapter][cap-mgmt-8])
+* `trigger.sender` attribute as passed to plugin callables is now `None` in
+  cases where its value is meaningless (events with no channel/query context)
 * Numerous deprecated API features were removed:
   * `bot.privileges` (use `bot.channels`)
   * `bot.msg()` (use `bot.say()`)
   * `sopel.web` submodule (use `sopel.tools.web`)
 * Messages from other bots are ignored by default on supported networks, but
   plugins can opt back in with the `@plugin.allow_bots` decorator
+* `STATUSMSG` prefix is removed from `trigger.sender` if present and stored in a
+  separate `trigger.status_prefix` attribute
+  * See documentation for `bot.SopelWrapper.default_destination`
+* `bot.connection_registered` is now *the* way to check whether the bot is
+  connected to IRC, registered with the network, and ready for your plugin to
+  send commands
 
 Plugin changes
 --------------
@@ -46,6 +58,10 @@ Plugin changes
   * Improved result of trying to kick the bot with `.kick` [[#2240][]]
 * clock:
   * Added `unset` commands for user & channel time zone/format [[#2181][]]
+* coretasks:
+  * Replaced "hostmask" type with "host" in `.blocks` command [[#2344][]]
+    * Real "hostmask" support is planned; see [#1355][]
+  * Improved help output for `.blocks` [[#2345][]]
 * currency:
   * `fiat_provider` setting takes precedence over the existence of a
     `fixer_io_key` value [[#2330][]]
@@ -64,15 +80,23 @@ Plugin changes
 * reddit:
   * Newer `praw` library allowed [[#2319][]]
   * Extracted to [its own package][sopel-reddit] [[#2444][]]
+* remind:
+  * Avoid trying to use IRC connection if it's not ready [[#2351][], [#2374][]]
+  * Extracted to [its own package][sopel-remind] [[#2478][]]
 * safety:
   * Comprehensive rework improving caching, output, etc. [[#2279][]]
 * search:
   * Code style and dependency updates [[#2260][], [#2334][]]
 * seen:
   * Adapted to aware `trigger.time` [[#2265][]]
+  * Prevent error spam if database is temporarily inaccessible [[#2338][]]
+* unicode_info:
+  * Uses `unicodedata2` if available [[#2349][], [#2361][]]
 * url:
   * Improved interaction between `.title` command and link handlers [[#2282][]]
   * Removed traceback from debug log when URL fetch fails [[#2280][]]
+  * Made channel-privilege-based access to `.urlexclude` command and friends
+    configurable [[#2352][]]
   * Cleaned up code [[#2304][], [#2307][]]
 * version:
   * Support retrieving plugin versions with `.version pluginname` [[#2133][]]
@@ -82,6 +106,8 @@ Plugin changes
   * Remove deprecated `lang_per_channel` setting [[#2142][]]
   * Work around excessive whitespace in math formulas [[#2286][]]
   * Don't ping the user who posted a URL that fails to load [[#2315][]]
+* xkcd:
+  * Switched keyword-search backend [[#2376][], [#2377][]]
 
 Core changes
 ------------
@@ -89,7 +115,7 @@ Core changes
 * Removed support for EOL Python versions (2.7, 3.3, 3.4, 3.5, 3.6, & 3.7) and
   modernized coding standards [[#2062][], [#2073][], [#2123][], [#2124][],
   [#2134][], [#2136][], [#2138][], [#2205][], [#2213][], [#2227][], [#2298][],
-  [#2326][], [#2327][]]
+  [#2326][], [#2327][], [#2342][]]
 * IRC backend refactored to use `asyncio` [[#2256][]]
   * Just in time, too: The `asynchat` module was removed in Python 3.12
 * `SopelDB` adapted to SQLAlchemy 2.x style [[#2243][]]
@@ -130,6 +156,10 @@ Core changes
 * Gracefully handle missing `userhost-in-names` data, e.g. with ZNC [[#2312][]]
   * See [ZNC issue #1224][znc/znc#1224]
 * Override `get_version()` method for `EntryPointPlugin` [[#2313][]]
+* Take advantage of `LINELEN` token if advertised in ISUPPORT [[#2346][]]
+* Raise error on receiving non-UTF-8 data if server advertises `UTF8ONLY`
+  [[#2365][], [#2369][], [#2372][]]
+* Make *all* arguments `safe()` when preparing IRC commands [[#2368][]]
 
 API changes
 -----------
@@ -142,7 +172,8 @@ API changes
 * Deprecated `sopel.tools` shims: `iteritems`, `iterkeys`, `itervalues`, and
   `raw_input` will be removed in Sopel 8.1 [[#2228][]]
 * Deprecated `tools.web.entity()` and its `r_entity` constant [[#2205][]]
-* Moved privileges into their own `sopel.privileges` submodule [[#2179][]]
+* Moved privilege constants into their own `sopel.privileges` submodule
+  [[#2179][], [#2352][]]
   * The original constants in `sopel.plugin` are still available for now
 * Sopel's API now uses `Enum` types where suitable:
   * `formatting.colors` [[#2122][]]
@@ -182,6 +213,21 @@ API changes
   * Sopel 8.0 removes `intent` from `trigger.tags`; use `trigger.ctcp` instead
 * Updated invite-related event names in `tools.events` [[#2270][]]
 * Fixed checking if `None` exists in a `SopelIdentifierMemory` [[#2306][]]
+* Reworked capability negotiation [[#2341][]]
+  * See [Managing Capability Negotiation][cap-mgmt-8] documentation chapter
+  * This replaces the `irc.utils.CapReq` interface, which is now deprecated
+* Changed `trigger.sender` property to be `None` for events not associated with
+  a channel or query [[#2359][]]
+* Fixed `trigger.text` erroneously containing command name for events with empty
+  `args` [[#2360][]]
+* Removed `STATUSMSG` prefix from `trigger.sender` [[#2370][], [#2441][]]
+  * Status prefix is now stored in a new `trigger.status_prefix` attribute
+  * The `bot` passed to plugin callables will use the `status_prefix` and
+    `sender` attributes to build its `default_destination`, meaning no change to
+    plugins' most common usages of `bot.say()`, `bot.reply()`, etc.
+* Fixed `formatting.color` result when passing `0` as `fg` or `bg` [[#2366][]]
+* `config.types.FilenameAttribute` strips quotes from its value [[#2371][]]
+* Made `bot.connection_registered` more robust [[#2375][]]
 * Removed previously-deprecated API features [[#2128][], [#2129][], [#2141][],
   [#2144][], [#2146][], [#2147][], [#2148][], [#2150][], [#2329][]]
 
@@ -190,15 +236,16 @@ Housekeeping changes
 
 * Many, many improvements to documentation [[#1990][], [#2169][], [#2178][],
   [#2182][], [#2226][], [#2238][], [#2239][], [#2257][], [#2275][], [#2276][],
-  [#2323][]]
+  [#2323][], [#2379][]]
 * Switched from Travis CI to GitHub Actions and revamped testing infrastructure
-  [[#2075][], [#2078][], [#2123][], [#2188][], [#2335][]]
+  [[#2075][], [#2078][], [#2123][], [#2188][], [#2335][], [#2342][], [#2381][]]
 * Modernized packaging [[#2328][]]
 * Cleanup on aisle `contrib/` [[#2085][]]
 * Cleanup of deprecated feature usage in core & built-in plugins [[#2117][]]
 * Import reorganization [[#2179][]]
-* Miscellaneous code smell/style issues fixed [[#2186][], [#2220][], [#2231][]]
-* Miscellaneous logging improvements [[#2309][]]
+* Miscellaneous code smell/style issues fixed [[#2186][], [#2220][], [#2231][],
+  [#2382][]]
+* Miscellaneous logging improvements [[#2309][], [#2354][]]
 * Miscellaneous test suite improvements [[#2262][]]
 * Removed legacy CLI run mode [[#2118][]]
 * Removed old `sopel.test_tools` [[#2139][], [#2177][]]
@@ -208,10 +255,13 @@ Housekeeping changes
     something else, so we won't *also* list all of them here
 
 [bot-mode-spec]: https://ircv3.net/specs/extensions/bot-mode
+[cap-mgmt-8]: https://sopel.chat/docs/plugin/advanced#managing-capability-negotiation
 [sopel-help]: https://pypi.org/project/sopel-help/
 [sopel-reddit]: https://pypi.org/project/sopel-reddit/
+[sopel-remind]: https://pypi.org/project/sopel-remind/
 [znc/znc#1224]: https://github.com/znc/znc/issues/1224
 
+[#1355]: https://github.com/sopel-irc/sopel/issues/1355
 [#1966]: https://github.com/sopel-irc/sopel/pull/1966
 [#1990]: https://github.com/sopel-irc/sopel/pull/1990
 [#2062]: https://github.com/sopel-irc/sopel/pull/2062
@@ -337,8 +387,36 @@ Housekeeping changes
 [#2332]: https://github.com/sopel-irc/sopel/pull/2332
 [#2334]: https://github.com/sopel-irc/sopel/pull/2334
 [#2335]: https://github.com/sopel-irc/sopel/pull/2335
+[#2338]: https://github.com/sopel-irc/sopel/pull/2338
+[#2341]: https://github.com/sopel-irc/sopel/pull/2341
+[#2342]: https://github.com/sopel-irc/sopel/pull/2342
+[#2344]: https://github.com/sopel-irc/sopel/pull/2344
+[#2345]: https://github.com/sopel-irc/sopel/pull/2345
+[#2346]: https://github.com/sopel-irc/sopel/pull/2346
+[#2349]: https://github.com/sopel-irc/sopel/pull/2349
+[#2351]: https://github.com/sopel-irc/sopel/pull/2351
+[#2352]: https://github.com/sopel-irc/sopel/pull/2352
+[#2354]: https://github.com/sopel-irc/sopel/pull/2354
+[#2359]: https://github.com/sopel-irc/sopel/pull/2359
+[#2360]: https://github.com/sopel-irc/sopel/pull/2360
+[#2361]: https://github.com/sopel-irc/sopel/pull/2361
+[#2365]: https://github.com/sopel-irc/sopel/pull/2365
+[#2368]: https://github.com/sopel-irc/sopel/pull/2368
+[#2369]: https://github.com/sopel-irc/sopel/pull/2369
+[#2370]: https://github.com/sopel-irc/sopel/pull/2370
+[#2371]: https://github.com/sopel-irc/sopel/pull/2371
+[#2372]: https://github.com/sopel-irc/sopel/pull/2372
+[#2374]: https://github.com/sopel-irc/sopel/pull/2374
+[#2375]: https://github.com/sopel-irc/sopel/pull/2375
+[#2376]: https://github.com/sopel-irc/sopel/pull/2376
+[#2377]: https://github.com/sopel-irc/sopel/pull/2377
+[#2379]: https://github.com/sopel-irc/sopel/pull/2379
+[#2381]: https://github.com/sopel-irc/sopel/pull/2381
+[#2382]: https://github.com/sopel-irc/sopel/pull/2382
+[#2441]: https://github.com/sopel-irc/sopel/pull/2441
 [#2444]: https://github.com/sopel-irc/sopel/pull/2444
 [#2450]: https://github.com/sopel-irc/sopel/pull/2450
+[#2478]: https://github.com/sopel-irc/sopel/pull/2478
 [#2581]: https://github.com/sopel-irc/sopel/pull/2581
 
 
