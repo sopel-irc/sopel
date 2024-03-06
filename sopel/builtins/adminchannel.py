@@ -331,9 +331,8 @@ def topic(bot, trigger):
         return
     channel = trigger.sender.lower()
 
-    mask = None
-    mask = bot.db.get_channel_value(channel, 'topic_mask')
-    mask = mask or default_mask(trigger)
+    mask = bot.db.get_channel_value(
+        channel, 'topic_mask', default_mask(trigger))
     mask = mask.replace('%s', '{}')
     narg = len(re.findall('{}', mask))
 
@@ -372,7 +371,14 @@ def set_mask(bot, trigger):
 
     This mask is used when running the 'topic' command.
     """
-    bot.db.set_channel_value(trigger.sender, 'topic_mask', trigger.group(2))
+    new_mask = trigger.group(2)
+
+    if new_mask is None:
+        bot.db.delete_channel_value(trigger.sender, 'topic_mask')
+        bot.reply('Cleared topic mask.')
+        return
+
+    bot.db.set_channel_value(trigger.sender, 'topic_mask', new_mask)
     message = (
         'Topic mask set. '
         'Use `{prefix}topic <args>` to set topic '
