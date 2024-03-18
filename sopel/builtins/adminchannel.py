@@ -365,31 +365,35 @@ def topic(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.command('tmask')
 def set_mask(bot, trigger):
-    """Set the topic mask to use for the current channel
+    """Set or get the topic mask to use for the current channel.
 
-    Within the topic mask, {} is used to allow substituting in chunks of text.
+    This mask is used when running the 'topic' command. `{}` is used to allow
+    interpolating chunks of text within the topic mask.
 
-    This mask is used when running the 'topic' command.
+    If called without arguments, prints the channel's current topic mask.
     """
     new_mask = trigger.group(2)
 
     if new_mask is None:
-        bot.db.delete_channel_value(trigger.sender, 'topic_mask')
-        bot.reply('Cleared topic mask.')
+        mask = bot.db.get_channel_value(
+            trigger.sender, 'topic_mask', default_mask(trigger))
+        bot.reply('Current topic mask: {}'.format(mask))
         return
 
     bot.db.set_channel_value(trigger.sender, 'topic_mask', new_mask)
     message = (
         'Topic mask set. '
-        'Use `{prefix}topic <args>` to set topic '
-        'and `{prefix}showmask` to see current mask.'
+        'Use `{prefix}topic <args>` to set topic, '
+        '`{prefix}tmask` without arguments to see the current mask, '
+        'and `{prefix}cleartmask` to clear the topic mask.'
     ).format(prefix=bot.settings.core.help_prefix)
     bot.reply(message)
 
 
 @plugin.require_chanmsg
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
-@plugin.command('showmask')
-def show_mask(bot, trigger):
-    """Show the topic mask for the current channel."""
-    bot.say(bot.db.get_channel_value(trigger.sender, 'topic_mask', default_mask(trigger)))
+@plugin.command('cleartmask')
+def clear_mask(bot, trigger):
+    """Clear the topic mask for the current channel."""
+    bot.db.delete_channel_value(trigger.sender, 'topic_mask')
+    bot.reply('Cleared topic mask.')
