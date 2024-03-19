@@ -363,6 +363,9 @@ def topic(bot, trigger):
 
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
 @plugin.commands('tmask set', 'tmask get', 'tmask clear', 'tmask')
+@plugin.example('.tmask clear', user_help=True)
+@plugin.example('.tmask get', user_help=True)
+@plugin.example('.tmask set My {} topic mask!', user_help=True)
 def topic_mask_management(bot, trigger):
     """Set, get, or clear the current channel's topic mask.
 
