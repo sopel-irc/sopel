@@ -361,39 +361,45 @@ def topic(bot, trigger):
     bot.write(('TOPIC', channel + ' :' + topic))
 
 
-@plugin.require_chanmsg
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
-@plugin.command('tmask')
-def set_mask(bot, trigger):
-    """Set or get the topic mask to use for the current channel.
+@plugin.commands('tmask set', 'tmask get', 'tmask clear', 'tmask')
+def topic_mask_management(bot, trigger):
+    """Set, get, or clear the current channel's topic mask.
 
-    This mask is used when running the 'topic' command. `{}` is used to allow
-    interpolating chunks of text within the topic mask.
+    Recognized subcommands are 'set', 'get', and 'clear'. A plain 'tmask'
+    command with no arguments is equivalent to 'tmask get'.
 
-    If called without arguments, prints the channel's current topic mask.
+    This mask is used by the 'topic' command. `{}` allows interpolating a chunk
+    of text within the topic mask template.
     """
-    new_mask = trigger.group(2)
+    command, _, subcommand = trigger.group(1).partition(' ')
 
-    if new_mask is None:
+    if not subcommand or subcommand == 'get':
         mask = bot.db.get_channel_value(
             trigger.sender, 'topic_mask', default_mask(trigger))
         bot.reply('Current topic mask: {}'.format(mask))
         return
 
-    bot.db.set_channel_value(trigger.sender, 'topic_mask', new_mask)
-    message = (
-        'Topic mask set. '
-        'Use `{prefix}topic <args>` to set topic, '
-        '`{prefix}tmask` without arguments to see the current mask, '
-        'and `{prefix}cleartmask` to clear the topic mask.'
-    ).format(prefix=bot.settings.core.help_prefix)
-    bot.reply(message)
+    if subcommand == 'set':
+        if not trigger.group(2):
+            message = (
+                'I need a non-empty topic mask to set. '
+                'To delete the saved topic mask, use `{prefix}tmask clear`.'
+            ).format(prefix=bot.settings.core.help_prefix)
+            bot.reply(message)
+            return
 
+        bot.db.set_channel_value(trigger.sender, 'topic_mask', trigger.group(2))
+        message = (
+            'Topic mask set. '
+            'Use `{prefix}topic <args>` to set topic, '
+            '`{prefix}tmask get` to see the current mask, '
+            'and `{prefix}tmask clear` to delete the saved topic mask.'
+        ).format(prefix=bot.settings.core.help_prefix)
+        bot.reply(message)
+        return
 
-@plugin.require_chanmsg
-@plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV)
-@plugin.command('cleartmask')
-def clear_mask(bot, trigger):
-    """Clear the topic mask for the current channel."""
-    bot.db.delete_channel_value(trigger.sender, 'topic_mask')
-    bot.reply('Cleared topic mask.')
+    if subcommand == 'clear':
+        bot.db.delete_channel_value(trigger.sender, 'topic_mask')
+        bot.reply('Cleared topic mask.')
+        return
