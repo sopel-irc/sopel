@@ -502,8 +502,9 @@ def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> b
     )
     return (
         excluded or
-        any(bot.search_url_callbacks(url)) or
-        bot.rules.check_url_callback(bot, url)
+        bot.rules.check_url_callback(bot, url) or
+        # don't do this in YOUR plugins
+        any(bot._search_url_callbacks_impl(url))
     )
 
 
