@@ -22,6 +22,12 @@ INVALID_URLS = (
     "http://example..com/",  # empty label
     "http://?",  # no host
 )
+PRIVATE_URLS = (
+    # "https://httpbin.org/redirect-to?url=http://127.0.0.1/",  # online
+    "http://127.1.1.1/",
+    "http://10.1.1.1/",
+    "http://169.254.1.1/",
+)
 
 
 @pytest.fixture
@@ -73,6 +79,11 @@ def mockbot(configfactory):
 @pytest.mark.parametrize("site", INVALID_URLS)
 def test_find_title_invalid(site):
     # All local for invalid ones
+    assert url.find_title(site) is None
+
+
+@pytest.mark.parametrize("site", PRIVATE_URLS)
+def test_find_title_private(site):
     assert url.find_title(site) is None
 
 
