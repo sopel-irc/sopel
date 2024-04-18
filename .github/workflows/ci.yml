@@ -48,7 +48,6 @@ jobs:
         with:
           flag-name: ${{ matrix.python-version }}
           parallel: true
-          file: coverage.xml
 
   coveralls:
     if: ${{ github.repository_owner == 'sopel-irc' }}
