@@ -41,11 +41,9 @@ jobs:
         run: make lint
       - name: Run pytest
         run: make test_norecord
-      - name: Generate XML coverage report
-        # Coveralls reporter doesn't understand branch coverage in .coverage DB
-        # and conversion to LCOV doesn't work right either
-        run: coverage xml
-      - name: Upload coverage data to coveralls.io
+      - name: Generate coverage report
+        run: coverage report
+      - name: Upload coverage report to coveralls.io
         uses: coverallsapp/github-action@v2
         with:
           flag-name: ${{ matrix.python-version }}
