@@ -8,6 +8,9 @@ Changes between 7.1.9 and 8.0.0
 Highlights
 ----------
 
+Detailed coverage of the major changes can be found in the dedicated
+[Sopel 8 upgrade guide][sopel-8-migration].
+
 **For users:**
 
 * Python 3.8+ is now required
@@ -357,6 +360,7 @@ Housekeeping changes
 [pronoun-base]: https://github.com/lucasew/svelte-pronounisland
 [pronoun-ours]: https://github.com/sopel-irc/pronoun-service
 [rate-decorator]: https://sopel.chat/docs/plugin/decorators#sopel.plugin.rate
+[sopel-8-migration]: https://sopel.chat/usage/installing/upgrading-to-sopel-8/
 [sopel-bugzilla]: https://pypi.org/project/sopel-bugzilla/
 [sopel-help]: https://pypi.org/project/sopel-help/
 [sopel-iplookup]: https://pypi.org/project/sopel-iplookup/
