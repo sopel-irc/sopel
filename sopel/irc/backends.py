@@ -476,10 +476,15 @@ class AsyncioBackend(AbstractIRCBackend):
         connection_kwargs = self.get_connection_kwargs()
 
         # register signal handlers
-        for quit_signal in QUIT_SIGNALS:
-            self._loop.add_signal_handler(quit_signal, self._signal_quit)
-        for restart_signal in RESTART_SIGNALS:
-            self._loop.add_signal_handler(restart_signal, self._signal_restart)
+        # @TODO: does not work on Windows
+        try:
+            for quit_signal in QUIT_SIGNALS:
+                self._loop.add_signal_handler(quit_signal, self._signal_quit)
+            for restart_signal in RESTART_SIGNALS:
+                self._loop.add_signal_handler(restart_signal, self._signal_restart)
+        except NotImplementedError:
+            # Windows - just accept slightly less functionality and skip the signals
+            pass
 
         # connect to socket
         LOGGER.debug('Attempt connection.')
