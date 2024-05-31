@@ -100,3 +100,21 @@ def test_get_label_entrypoint(plugin_tmpfile):
     assert meta['label'] == 'plugin label'
     assert meta['type'] == handlers.EntryPointPlugin.PLUGIN_TYPE
     assert meta['source'] == 'test_plugin = file_mod'
+
+
+def test_entrypoint_plugin_get_version(plugin_tmpfile):
+    # See gh-2593, an entrypoint plugin whose project/package names are not
+    # equal raises an exception other than ValueError
+    distrib_dir = os.path.dirname(plugin_tmpfile.strpath)
+    sys.path.append(distrib_dir)
+
+    # load the entry point
+    try:
+        entry_point = importlib.metadata.EntryPoint(
+            'test_plugin', 'file_mod', 'sopel.plugins')
+        plugin = handlers.EntryPointPlugin(entry_point)
+        plugin.load()
+        plugin.module.__package__ = "FAKEFAKEFAKE"
+        plugin.get_version()
+    finally:
+        sys.path.remove(distrib_dir)
