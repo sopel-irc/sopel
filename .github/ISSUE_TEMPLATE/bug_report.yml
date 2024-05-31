@@ -53,9 +53,10 @@ body:
     attributes:
       label: "Relevant logs"
       description: >-
-        If applicable, add logs to help us figure out what's happening. Raw
-        logs are super helpful! Logs are usually found in `~/.sopel/logs/`,
-        depending on your configuration.
+        If applicable, add logs to help us figure out what's happening.
+
+        Log files are usually found in `~/.sopel/logs`. For more information,
+        consult [the FAQ on obtaining logs](https://sopel.chat/docs/faq#how-to-obtain-logs)
       render: shell
 
   - type: textarea
