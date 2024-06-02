@@ -11,15 +11,15 @@ namespaces = false
 
 [project]
 name = "sopel"
-version = "8.0.0.dev0"
+version = "8.0.0"
 description = "Simple and extensible IRC bot"
 maintainers = [
-  { name="dgw", email="dgw@technobabbl.es" },
-  { name="Florian Strzelecki", email="florian.strzelecki@gmail.com" },
+  { name="dgw" },
+  { name="Florian Strzelecki" },
 ]
 authors = [
-  { name="dgw", email="dgw@technobabbl.es" },
-  { name="Florian Strzelecki", email="florian.strzelecki@gmail.com" },
+  { name="dgw" },
+  { name="Florian Strzelecki" },
   { name="Sean B. Palmer" },
   { name="Else Powell" },
   { name="Elad Alfassa" },
