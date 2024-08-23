@@ -22,7 +22,9 @@ sphinx-rfcsection~=0.1.1
 vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3
 # type check
 mypy>=1.3,<2
+# for `pkg_resources`; first version in which it's typed
+# we don't use `pkg_resources` directly, but mypy still cares
+setuptools>=71.1
 sqlalchemy[mypy]>=1.4,<1.5
-types-pkg-resources~=0.1.3
 types-pytz
 types-requests>=2,<3

@@ -10,6 +10,8 @@ from collections import defaultdict
 import threading
 from typing import Any, Optional, TYPE_CHECKING, Union
 
+from typing_extensions import override
+
 from .identifiers import Identifier, IdentifierFactory
 
 if TYPE_CHECKING:
@@ -259,6 +261,7 @@ class SopelIdentifierMemory(SopelMemory):
             return super().pop(self._make_key(key))
         return super().pop(self._make_key(key), default)
 
+    @override
     def update(self, maybe_mapping=tuple()):
         """Update this ``SopelIdentifierMemory`` with key-value pairs.
 
