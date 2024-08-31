@@ -160,7 +160,7 @@ class OutputRedirect:
 
         :param str string: the string to write
         """
-        if not self.quiet:
+        if not self.quiet and sys.__stderr__ and sys.__stdout__:
             try:
                 if self.stderr:
                     sys.__stderr__.write(string)
@@ -179,9 +179,9 @@ class OutputRedirect:
 
     def flush(self):
         """Flush the file writing buffer."""
-        if self.stderr:
+        if self.stderr and sys.__stderr__:
             sys.__stderr__.flush()
-        else:
+        elif sys.__stdout__:
             sys.__stdout__.flush()
 
 
