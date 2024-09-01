@@ -17,7 +17,9 @@ import time
 from types import MappingProxyType
 from typing import (
     Any,
+    Callable,
     Optional,
+    Sequence,
     TYPE_CHECKING,
     TypeVar,
     Union,
@@ -36,6 +38,8 @@ from sopel.trigger import Trigger
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
+
+    from sopel.plugins.handlers import AbstractPluginHandler
     from sopel.trigger import PreTrigger
 
 
@@ -182,7 +186,6 @@ class Sopel(irc.AbstractBot):
 
         :return: the bot's current hostmask if the bot is connected and in
                  a least one channel; ``None`` otherwise
-        :rtype: Optional[str]
         """
         if not self.users or self.nick not in self.users:
             # bot must be connected and in at least one channel
@@ -198,11 +201,11 @@ class Sopel(irc.AbstractBot):
         """
         return MappingProxyType(self._plugins)
 
-    def has_channel_privilege(self, channel, privilege) -> bool:
+    def has_channel_privilege(self, channel: str, privilege: int) -> bool:
         """Tell if the bot has a ``privilege`` level or above in a ``channel``.
 
-        :param str channel: a channel the bot is in
-        :param int privilege: privilege level to check
+        :param channel: a channel the bot is in
+        :param privilege: privilege level to check
         :raise ValueError: when the channel is unknown
 
         This method checks the bot's privilege level in a channel, i.e. if it
@@ -339,10 +342,10 @@ class Sopel(irc.AbstractBot):
 
     # plugins management
 
-    def reload_plugin(self, name) -> None:
+    def reload_plugin(self, name: str) -> None:
         """Reload a plugin.
 
-        :param str name: name of the plugin to reload
+        :param name: name of the plugin to reload
         :raise plugins.exceptions.PluginNotRegistered: when there is no
             ``name`` plugin registered
 
@@ -391,22 +394,24 @@ class Sopel(irc.AbstractBot):
 
     # TODO: deprecate both add_plugin and remove_plugin; see #2425
 
-    def add_plugin(self, plugin, callables, jobs, shutdowns, urls) -> None:
+    def add_plugin(
+        self,
+        plugin: AbstractPluginHandler,
+        callables: Sequence[Callable],
+        jobs: Sequence[Callable],
+        shutdowns: Sequence[Callable],
+        urls: Sequence[Callable],
+    ) -> None:
         """Add a loaded plugin to the bot's registry.
 
         :param plugin: loaded plugin to add
-        :type plugin: :class:`sopel.plugins.handlers.AbstractPluginHandler`
         :param callables: an iterable of callables from the ``plugin``
-        :type callables: :term:`iterable`
         :param jobs: an iterable of functions from the ``plugin`` that are
                      periodically invoked
-        :type jobs: :term:`iterable`
         :param shutdowns: an iterable of functions from the ``plugin`` that
                           should be called on shutdown
-        :type shutdowns: :term:`iterable`
         :param urls: an iterable of functions from the ``plugin`` to call when
                      matched against a URL
-        :type urls: :term:`iterable`
         """
         self._plugins[plugin.name] = plugin
         self.register_callables(callables)
@@ -414,22 +419,24 @@ class Sopel(irc.AbstractBot):
         self.register_shutdowns(shutdowns)
         self.register_urls(urls)
 
-    def remove_plugin(self, plugin, callables, jobs, shutdowns, urls) -> None:
+    def remove_plugin(
+        self,
+        plugin: AbstractPluginHandler,
+        callables: Sequence[Callable],
+        jobs: Sequence[Callable],
+        shutdowns: Sequence[Callable],
+        urls: Sequence[Callable],
+    ) -> None:
         """Remove a loaded plugin from the bot's registry.
 
         :param plugin: loaded plugin to remove
-        :type plugin: :class:`sopel.plugins.handlers.AbstractPluginHandler`
         :param callables: an iterable of callables from the ``plugin``
-        :type callables: :term:`iterable`
         :param jobs: an iterable of functions from the ``plugin`` that are
                      periodically invoked
-        :type jobs: :term:`iterable`
         :param shutdowns: an iterable of functions from the ``plugin`` that
                           should be called on shutdown
-        :type shutdowns: :term:`iterable`
         :param urls: an iterable of functions from the ``plugin`` to call when
                      matched against a URL
-        :type urls: :term:`iterable`
         """
         name = plugin.name
         if not self.has_plugin(name):
@@ -993,12 +1000,11 @@ class Sopel(irc.AbstractBot):
         self,
         scheduler: plugin_jobs.Scheduler,
         exc: BaseException,
-    ):
+    ) -> None:
         """Called when the Job Scheduler fails.
 
         :param scheduler: the job scheduler that errored
-        :type scheduler: :class:`sopel.plugins.jobs.Scheduler`
-        :param Exception exc: the raised exception
+        :param exc: the raised exception
 
         .. seealso::
 
@@ -1011,14 +1017,12 @@ class Sopel(irc.AbstractBot):
         scheduler: plugin_jobs.Scheduler,
         job: tools_jobs.Job,
         exc: BaseException,
-    ):
+    ) -> None:
         """Called when a job from the Job Scheduler fails.
 
         :param scheduler: the job scheduler responsible for the errored ``job``
-        :type scheduler: :class:`sopel.plugins.jobs.Scheduler`
         :param job: the Job that errored
-        :type job: :class:`sopel.tools.jobs.Job`
-        :param Exception exc: the raised exception
+        :param exc: the raised exception
 
         .. seealso::
 
@@ -1030,13 +1034,11 @@ class Sopel(irc.AbstractBot):
         self,
         trigger: Optional[Trigger] = None,
         exception: Optional[BaseException] = None,
-    ):
+    ) -> None:
         """Called internally when a plugin causes an error.
 
-        :param trigger: the ``Trigger``\\ing line (if available)
-        :type trigger: :class:`sopel.trigger.Trigger`
-        :param Exception exception: the exception raised by the error (if
-                                    available)
+        :param trigger: the IRC line that caused the error (if available)
+        :param exception: the exception raised by the error (if available)
         """
         message = 'Unexpected error'
         if exception:
@@ -1056,7 +1058,7 @@ class Sopel(irc.AbstractBot):
     def _host_blocked(self, host: str) -> bool:
         """Check if a hostname is blocked.
 
-        :param str host: the hostname to check
+        :param host: the hostname to check
         """
         bad_masks = self.config.core.host_blocks
         for bad_mask in bad_masks:
@@ -1071,7 +1073,7 @@ class Sopel(irc.AbstractBot):
     def _nick_blocked(self, nick: str) -> bool:
         """Check if a nickname is blocked.
 
-        :param str nick: the nickname to check
+        :param nick: the nickname to check
         """
         bad_nicks = self.config.core.nick_blocks
         for bad_nick in bad_nicks:
