@@ -56,7 +56,7 @@ class SafetySection(types.StaticSection):
     """Optional hosts-file formatted domain blocklist to use instead of StevenBlack's."""
 
 
-def configure(settings: Config):
+def configure(settings: Config) -> None:
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
@@ -90,7 +90,7 @@ def configure(settings: Config):
     )
 
 
-def setup(bot: Sopel):
+def setup(bot: Sopel) -> None:
     bot.settings.define_section("safety", SafetySection)
 
     if bot.settings.safety.default_mode is None:
@@ -166,7 +166,7 @@ def download_domain_list(bot: Sopel, path: str) -> bool:
     return True
 
 
-def update_local_cache(bot: Sopel, init: bool = False):
+def update_local_cache(bot: Sopel, init: bool = False) -> None:
     """Download the current malware domain list and load it into memory.
 
     :param init: Load the file even if it's unchanged
@@ -202,7 +202,7 @@ def update_local_cache(bot: Sopel, init: bool = False):
     bot.memory[SAFETY_CACHE_LOCAL_KEY] = unsafe_domains
 
 
-def shutdown(bot: Sopel):
+def shutdown(bot: Sopel) -> None:
     bot.memory.pop(SAFETY_CACHE_KEY, None)
     bot.memory.pop(SAFETY_CACHE_LOCAL_KEY, None)
     bot.memory.pop(SAFETY_CACHE_LOCK_KEY, None)
@@ -211,7 +211,7 @@ def shutdown(bot: Sopel):
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.priority('high')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def url_handler(bot: SopelWrapper, trigger: Trigger):
+def url_handler(bot: SopelWrapper, trigger: Trigger) -> None:
     """Checks for malicious URLs."""
     mode = bot.db.get_channel_value(
         trigger.sender,
@@ -365,7 +365,7 @@ def virustotal_lookup(
 @plugin.example(".virustotal https://malware.wicar.org/")
 @plugin.example(".virustotal hxxps://malware.wicar.org/")
 @plugin.output_prefix("[safety][VirusTotal] ")
-def vt_command(bot: SopelWrapper, trigger: Trigger):
+def vt_command(bot: SopelWrapper, trigger: Trigger) -> None:
     """Look up VT results on demand."""
     if not bot.settings.safety.vt_api_key:
         bot.reply("Sorry, I don't have a VirusTotal API key configured.")
@@ -421,7 +421,7 @@ def vt_command(bot: SopelWrapper, trigger: Trigger):
 @plugin.command('safety')
 @plugin.example(".safety on")
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def toggle_safety(bot: SopelWrapper, trigger: Trigger):
+def toggle_safety(bot: SopelWrapper, trigger: Trigger) -> None:
     """Set safety setting for channel."""
     if not trigger.admin and bot.channels[trigger.sender].privileges[trigger.nick] < plugin.OP:
         bot.reply('Only channel operators can change safety settings')
@@ -455,7 +455,7 @@ def toggle_safety(bot: SopelWrapper, trigger: Trigger):
 # Clean the cache every day
 # Code above also calls this if there are too many cache entries
 @plugin.interval(24 * 60 * 60)
-def _clean_cache(bot: Sopel):
+def _clean_cache(bot: Sopel) -> None:
     """Cleans up old entries in URL safety cache."""
 
     update_local_cache(bot)
