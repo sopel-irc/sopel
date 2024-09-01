@@ -161,7 +161,7 @@ CAP_ACCOUNT_TAG = plugin.capability(
 CAP_SASL = plugin.capability('sasl', handler=_handle_sasl_capability)
 
 
-def setup(bot: Sopel):
+def setup(bot: Sopel) -> None:
     """Set up the coretasks plugin.
 
     The setup phase is used to activate the throttle feature to prevent a flood
@@ -1261,7 +1261,7 @@ def _make_sasl_plain_token(account, password):
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.priority('medium')
-def sasl_success(bot: SopelWrapper, trigger: Trigger):
+def sasl_success(bot: SopelWrapper, trigger: Trigger) -> None:
     """Resume capability negotiation on successful SASL auth."""
     LOGGER.info("Successful SASL Auth.")
     bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
@@ -1514,7 +1514,7 @@ def _record_who(
     away: Optional[bool] = None,
     is_bot: Optional[bool] = None,
     modes: Optional[str] = None,
-):
+) -> None:
     nick = bot.make_identifier(nick)
     channel = bot.make_identifier(channel)
     if nick not in bot.users:
