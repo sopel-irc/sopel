@@ -102,8 +102,6 @@ def test_replace_the_replacement(bot, irc, user, channel):
             channel, user.nick, bold('eggs'),
         ),
         "PRIVMSG %s :%s meant to say: %s" % (
-            channel, user.nick, bold(bold('bacon')),
-            # the test is accurate, even though the behavior here (doubled bold
-            # control characters) is less than ideal
+            channel, user.nick, bold('bacon'),
         ),
     )
