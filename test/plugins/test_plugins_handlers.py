@@ -100,3 +100,45 @@ def test_get_label_entrypoint(plugin_tmpfile):
     assert meta['label'] == 'plugin label'
     assert meta['type'] == handlers.EntryPointPlugin.PLUGIN_TYPE
     assert meta['source'] == 'test_plugin = file_mod'
+
+
+MOCK_PARENT_MODULE = """
+from sopel import plugin
+
+from .sub import foo
+
+
+@plugin.command('mock')
+def mock(bot, trigger):
+    bot.say(foo)
+"""
+
+MOCK_SUB_MODULE = """
+foo = 'bar baz'
+"""
+
+
+@pytest.fixture
+def plugin_folder(tmp_path):
+    root = tmp_path / 'test_folder_plugin'
+    root.mkdir()
+
+    parent = root / '__init__.py'
+    with open(parent, 'w') as f:
+        f.write(MOCK_PARENT_MODULE)
+
+    submodule = root / 'sub.py'
+    with open(submodule, 'w') as f:
+        f.write(MOCK_SUB_MODULE)
+
+    return str(root)
+
+
+def test_folder_plugin_imports(plugin_folder):
+    """Ensure submodule imports work as expected in folder plugins.
+
+    Regression test for https://github.com/sopel-irc/sopel/issues/2619
+    """
+    handler = handlers.PyFilePlugin(plugin_folder)
+    handler.load()
+    assert handler.module.foo == 'bar baz'
