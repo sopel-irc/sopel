@@ -25,10 +25,11 @@ def safe(string):
     :rtype: str
     :raises TypeError: when ``string`` is ``None``
 
-    This function removes newlines from a string and always returns a unicode
-    string (``str``), but doesn't strip or alter it in any other way::
+    This function removes newlines and null-bytes from a string. It will always
+    return a Unicode ``str``, even if given non-Unicode input, but doesn't strip
+    or alter the string in any other way::
 
-        >>> safe('some text\\r\\n')
+        >>> safe('some \x00text\\r\\n')
         'some text'
 
     This is useful to ensure a string can be used in a IRC message.
@@ -45,6 +46,7 @@ def safe(string):
         string = string.decode("utf8")
     string = string.replace('\n', '')
     string = string.replace('\r', '')
+    string = string.replace('\x00', '')
     return string
 
 
