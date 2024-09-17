@@ -57,7 +57,9 @@ from . import exceptions
 
 
 if TYPE_CHECKING:
+    from importlib_metadata import EntryPoint
     from sopel.bot import Sopel
+    from sopel.config import Config
     from types import ModuleType
 
 
@@ -118,7 +120,6 @@ class AbstractPluginHandler(abc.ABC):
         """Retrieve a display label for the plugin.
 
         :return: a human readable label for display purpose
-        :rtype: str
 
         This method should, at least, return ``<module_name> plugin``.
         """
@@ -128,17 +129,15 @@ class AbstractPluginHandler(abc.ABC):
         """Retrieve a meta description for the plugin.
 
         :return: Metadata about the plugin
-        :rtype: :class:`dict`
 
         The expected keys are detailed in :class:`PluginMetaDescription`.
         """
 
     @abc.abstractmethod
-    def get_version(self):
+    def get_version(self) -> Optional[str]:
         """Retrieve the plugin's version.
 
         :return: the plugin's version string
-        :rtype: str
         """
         raise NotImplementedError
 
@@ -147,18 +146,16 @@ class AbstractPluginHandler(abc.ABC):
         """Tell if the plugin is loaded or not.
 
         :return: ``True`` if the plugin is loaded, ``False`` otherwise
-        :rtype: bool
 
         This must return ``True`` if the :meth:`load` method has been called
         with success.
         """
 
     @abc.abstractmethod
-    def setup(self, bot):
+    def setup(self, bot: Sopel):
         """Run the plugin's setup action.
 
         :param bot: instance of Sopel
-        :type bot: :class:`sopel.bot.Sopel`
         """
 
     @abc.abstractmethod
@@ -166,7 +163,6 @@ class AbstractPluginHandler(abc.ABC):
         """Tell if the plugin has a setup action.
 
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
-        :rtype: bool
         """
 
     @abc.abstractmethod
@@ -174,27 +170,24 @@ class AbstractPluginHandler(abc.ABC):
         """Retrieve the plugin's list of capability requests."""
 
     @abc.abstractmethod
-    def register(self, bot):
+    def register(self, bot: Sopel):
         """Register the plugin with the ``bot``.
 
         :param bot: instance of Sopel
-        :type bot: :class:`sopel.bot.Sopel`
         """
 
     @abc.abstractmethod
-    def unregister(self, bot):
+    def unregister(self, bot: Sopel):
         """Unregister the plugin from the ``bot``.
 
         :param bot: instance of Sopel
-        :type bot: :class:`sopel.bot.Sopel`
         """
 
     @abc.abstractmethod
-    def shutdown(self, bot):
+    def shutdown(self, bot: Sopel):
         """Run the plugin's shutdown action.
 
         :param bot: instance of Sopel
-        :type bot: :class:`sopel.bot.Sopel`
         """
 
     @abc.abstractmethod
@@ -203,15 +196,13 @@ class AbstractPluginHandler(abc.ABC):
 
         :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
                  otherwise
-        :rtype: bool
         """
 
     @abc.abstractmethod
-    def configure(self, settings):
+    def configure(self, settings: Config):
         """Configure Sopel's ``settings`` for this plugin.
 
         :param settings: Sopel's configuration
-        :type settings: :class:`sopel.config.Config`
 
         This method will be called by Sopel's configuration wizard.
         """
@@ -222,7 +213,6 @@ class AbstractPluginHandler(abc.ABC):
 
         :return: ``True`` if the plugin has a ``configure`` action, ``False``
                  otherwise
-        :rtype: bool
         """
 
 
@@ -259,15 +249,15 @@ class PyModulePlugin(AbstractPluginHandler):
     should not be modified at runtime.
     """
 
-    def __init__(self, name, package=None):
+    def __init__(self, name: str, package: Optional[str] = None):
         self.name = name
         self.package = package
-        if package:
+        if self.package is not None:
             self.module_name = self.package + '.' + self.name
         else:
             self.module_name = name
 
-        self._module = None
+        self._module: Optional[ModuleType] = None
 
     @property
     def module(self) -> ModuleType:
@@ -275,11 +265,10 @@ class PyModulePlugin(AbstractPluginHandler):
             raise RuntimeError('No module for plugin %s' % self.name)
         return self._module
 
-    def get_label(self):
+    def get_label(self) -> str:
         """Retrieve a display label for the plugin.
 
         :return: a human readable label for display purpose
-        :rtype: str
 
         By default, this is ``<name> plugin``. If the plugin's module has a
         docstring, its first line is used as the plugin's label.
@@ -297,7 +286,6 @@ class PyModulePlugin(AbstractPluginHandler):
         """Retrieve a meta description for the plugin.
 
         :return: Metadata about the plugin
-        :rtype: :class:`dict`
 
         The expected keys are detailed in :class:`PluginMetaDescription`.
 
@@ -325,7 +313,6 @@ class PyModulePlugin(AbstractPluginHandler):
         """Retrieve the plugin's version.
 
         :return: the plugin's version string
-        :rtype: Optional[str]
         """
         version: Optional[str] = None
         if self.is_loaded() and hasattr(self.module, "__version__"):
@@ -349,18 +336,17 @@ class PyModulePlugin(AbstractPluginHandler):
         """
         self._module = importlib.reload(self.module)
 
-    def is_loaded(self):
+    def is_loaded(self) -> bool:
         return self._module is not None
 
-    def setup(self, bot):
+    def setup(self, bot: Sopel):
         if self.has_setup():
             self.module.setup(bot)
 
-    def has_setup(self):
+    def has_setup(self) -> bool:
         """Tell if the plugin has a setup action.
 
         :return: ``True`` if the plugin has a setup, ``False`` otherwise
-        :rtype: bool
 
         The plugin has a setup action if its module has a ``setup`` attribute.
         This attribute is expected to be a callable.
@@ -374,7 +360,7 @@ class PyModulePlugin(AbstractPluginHandler):
             if isinstance(module_attribute, plugin_decorators.capability)
         ]
 
-    def register(self, bot: Sopel) -> None:
+    def register(self, bot: Sopel):
         # capabilities are directly registered
         for cap_request in self.get_capability_requests():
             bot.cap_requests.register(self.name, cap_request)
@@ -389,27 +375,26 @@ class PyModulePlugin(AbstractPluginHandler):
         # TODO: replace add_plugin to direct call to register_* methods
         bot.add_plugin(self, *relevant_parts)
 
-    def unregister(self, bot):
+    def unregister(self, bot: Sopel):
         relevant_parts = loader.clean_module(self.module, bot.config)
         bot.remove_plugin(self, *relevant_parts)
 
-    def shutdown(self, bot):
+    def shutdown(self, bot: Sopel):
         if self.has_shutdown():
             self.module.shutdown(bot)
 
-    def has_shutdown(self):
+    def has_shutdown(self) -> bool:
         """Tell if the plugin has a shutdown action.
 
         :return: ``True`` if the plugin has a ``shutdown`` action, ``False``
                  otherwise
-        :rtype: bool
 
         The plugin has a shutdown action if its module has a ``shutdown``
         attribute. This attribute is expected to be a callable.
         """
         return hasattr(self.module, 'shutdown')
 
-    def configure(self, settings):
+    def configure(self, settings: Config):
         if self.has_configure():
             self.module.configure(settings)
 
@@ -418,7 +403,6 @@ class PyModulePlugin(AbstractPluginHandler):
 
         :return: ``True`` if the plugin has a ``configure`` action, ``False``
                  otherwise
-        :rtype: bool
 
         The plugin has a configure action if its module has a ``configure``
         attribute. This attribute is expected to be a callable.
@@ -450,7 +434,7 @@ class PyFilePlugin(PyModulePlugin):
     should not be modified at runtime.
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename: str):
         good_file = (
             os.path.isfile(filename) and
             filename.endswith('.py') and not filename.startswith('_')
@@ -471,7 +455,7 @@ class PyFilePlugin(PyModulePlugin):
             spec = importlib.util.spec_from_file_location(
                 name,
                 os.path.join(filename, '__init__.py'),
-                submodule_search_locations=filename,
+                submodule_search_locations=[filename],
             )
         else:
             raise exceptions.PluginError('Invalid Sopel plugin: %s' % filename)
@@ -485,7 +469,7 @@ class PyFilePlugin(PyModulePlugin):
 
         super().__init__(name)
 
-    def _load(self):
+    def _load(self) -> ModuleType:
         module = importlib.util.module_from_spec(self.module_spec)
         sys.modules[self.name] = module
         if not self.module_spec.loader:
@@ -497,7 +481,6 @@ class PyFilePlugin(PyModulePlugin):
         """Retrieve a meta description for the plugin.
 
         :return: Metadata about the plugin
-        :rtype: :class:`dict`
 
         The expected keys are detailed in :class:`PluginMetaDescription`.
 
@@ -596,7 +579,7 @@ class EntryPointPlugin(PyModulePlugin):
     should not be modified at runtime.
     """
 
-    def __init__(self, entry_point):
+    def __init__(self, entry_point: EntryPoint):
         self.entry_point = entry_point
         super().__init__(entry_point.name)
 
@@ -607,7 +590,6 @@ class EntryPointPlugin(PyModulePlugin):
         """Retrieve the plugin's version.
 
         :return: the plugin's version string
-        :rtype: Optional[str]
         """
         version: Optional[str] = super().get_version()
 
@@ -628,7 +610,6 @@ class EntryPointPlugin(PyModulePlugin):
         """Retrieve a meta description for the plugin.
 
         :return: Metadata about the plugin
-        :rtype: :class:`dict`
 
         The expected keys are detailed in :class:`PluginMetaDescription`.
 
