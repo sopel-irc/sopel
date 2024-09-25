@@ -649,7 +649,10 @@ class ChoiceAttribute(BaseValidated):
         if value in self.choices:
             return value
         else:
-            raise ValueError('Value must be in {}'.format(self.choices))
+            raise ValueError(
+                '{!r} is not one of the valid choices: {}'
+                .format(value, ', '.join(self.choices))
+            )
 
     def serialize(self, value):
         """Make sure ``value`` is valid and safe to write in the config file.
@@ -662,7 +665,10 @@ class ChoiceAttribute(BaseValidated):
         if value in self.choices:
             return value
         else:
-            raise ValueError('Value must be in {}'.format(self.choices))
+            raise ValueError(
+                '{!r} is not one of the valid choices: {}'
+                .format(value, ', '.join(self.choices))
+            )
 
 
 class FilenameAttribute(BaseValidated):
