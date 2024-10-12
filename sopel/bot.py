@@ -602,30 +602,26 @@ class Sopel(irc.AbstractBot):
         if trigger.admin or rule.is_unblockable():
             return False, None
 
+        nick = trigger.nick
         is_channel = trigger.sender and not trigger.sender.is_nick()
         channel = trigger.sender if is_channel else None
 
         at_time = trigger.time
-
-        user_metrics = rule.get_user_metrics(trigger.nick)
-        channel_metrics = rule.get_channel_metrics(channel)
-        global_metrics = rule.get_global_metrics()
-
-        if user_metrics.is_limited(at_time - rule.user_rate_limit):
+        if rule.is_user_rate_limited(nick, at_time):
             template = rule.user_rate_template
             rate_limit_type = "user"
             rate_limit = rule.user_rate_limit
-            metrics = user_metrics
-        elif is_channel and channel_metrics.is_limited(at_time - rule.channel_rate_limit):
+            metrics = rule.get_user_metrics(nick)
+        elif channel and rule.is_channel_rate_limited(channel, at_time):
             template = rule.channel_rate_template
             rate_limit_type = "channel"
             rate_limit = rule.channel_rate_limit
-            metrics = channel_metrics
-        elif global_metrics.is_limited(at_time - rule.global_rate_limit):
+            metrics = rule.get_channel_metrics(channel)
+        elif rule.is_global_rate_limited(at_time):
             template = rule.global_rate_template
             rate_limit_type = "global"
             rate_limit = rule.global_rate_limit
-            metrics = global_metrics
+            metrics = rule.get_global_metrics()
         else:
             return False, None
 
