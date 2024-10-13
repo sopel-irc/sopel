@@ -2,6 +2,26 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 8.0.x and 8.1.0
+===============================
+
+FIXME: Update heading before shipping final NEWS for 8.1.0
+
+Plugin changes
+--------------
+
+* url:
+  * Improve private IP protection [[#2285][]]
+
+Housekeeping changes
+--------------------
+
+* Started testing on Python 3.13, and fixed deprecation warnings [[#2628][]]
+
+[#2285]: https://github.com/sopel-irc/sopel/pull/2285
+[#2628]: https://github.com/sopel-irc/sopel/pull/2628
+
+
 Changes between 7.1.9 and 8.0.0
 ===============================
 
