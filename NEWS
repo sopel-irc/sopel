@@ -2,6 +2,24 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 8.0.0 and 8.0.1
+===============================
+
+Core changes
+------------
+
+* `config.types.ChoiceAttribute` logs invalid values for debugging [[#2624][]]
+
+Housekeeping changes
+--------------------
+
+* Minor updates to keep up with type-checking ecosystem [[#2614][], [#2628][]]
+
+[#2614]: https://github.com/sopel-irc/sopel/pull/2614
+[#2624]: https://github.com/sopel-irc/sopel/pull/2624
+[#2628]: https://github.com/sopel-irc/sopel/pull/2628
+
+
 Changes between 7.1.9 and 8.0.0
 ===============================
 
