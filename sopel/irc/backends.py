@@ -20,7 +20,7 @@ import signal
 import socket
 import ssl
 import threading
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 from .abstract_backends import AbstractIRCBackend
 
@@ -158,7 +158,7 @@ class AsyncioBackend(AbstractIRCBackend):
         ca_certs: Optional[str] = None,
         ssl_ciphers: Optional[list[str]] = None,
         ssl_minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_2,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(bot)
         # connection parameters
@@ -379,7 +379,7 @@ class AsyncioBackend(AbstractIRCBackend):
         }
 
     async def _connect_to_server(
-        self, **connection_kwargs
+        self, **connection_kwargs: Any,
     ) -> tuple[
         Optional[asyncio.StreamReader],
         Optional[asyncio.StreamWriter],

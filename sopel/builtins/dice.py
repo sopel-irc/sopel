@@ -244,7 +244,7 @@ def _roll_dice(dice_match: re.Match[str]) -> DicePouch:
 @plugin.example(".roll 2d10+3", user_help=True)
 @plugin.example(".roll 1d6", user_help=True)
 @plugin.output_prefix('[dice] ')
-def roll(bot: SopelWrapper, trigger: Trigger):
+def roll(bot: SopelWrapper, trigger: Trigger) -> None:
     """Rolls dice and reports the result.
 
     The dice roll follows this format: XdY[vZ][+N][#COMMENT]
