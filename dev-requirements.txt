@@ -22,7 +22,7 @@ sphinx-rfcsection~=0.1.1
 vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3
 # type check
 # often breaks CI on master, so pin and update deliberately, on our own terms
-mypy==1.11.2
+mypy==1.12.0
 # for `pkg_resources`; first version in which it's typed
 # we don't use `pkg_resources` directly, but mypy still cares
 setuptools>=71.1

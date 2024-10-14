@@ -50,7 +50,9 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-def _list_plugin_filenames(directory: Union[str, os.PathLike]) -> Iterable[tuple[str, str]]:
+def _list_plugin_filenames(
+    directory: Union[str, os.PathLike[str]],
+) -> Iterable[tuple[str, str]]:
     # list plugin filenames from a directory
     # yield 2-value tuples: (name, absolute path)
     base = os.path.abspath(directory)
