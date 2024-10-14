@@ -5,6 +5,13 @@ causing problems with the site build.
 Changes between 8.0.0 and 8.0.1
 ===============================
 
+Plugin changes
+--------------
+
+* find:
+  * Fixed double-bold formatting [[#2589][]]
+  * Support escaping backslashes [[#2589][]]
+
 Core changes
 ------------
 
@@ -14,7 +21,9 @@ Housekeeping changes
 --------------------
 
 * Minor updates to keep up with type-checking ecosystem [[#2614][], [#2628][]]
+* Added tests to `find` plugin [[#2589][]]
 
+[#2589]: https://github.com/sopel-irc/sopel/pull/2589
 [#2614]: https://github.com/sopel-irc/sopel/pull/2614
 [#2624]: https://github.com/sopel-irc/sopel/pull/2624
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
