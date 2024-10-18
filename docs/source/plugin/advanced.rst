@@ -15,6 +15,45 @@ If something is not in here, feel free to ask about it on our IRC channel, or
 maybe open an issue with the solution if you devise one yourself.
 
 
+Running a function on a schedule
+================================
+
+Sopel provides the :func:`@plugin.interval <sopel.plugin.interval>` decorator
+to run plugin callables periodically, but plugin developers semi-frequently ask
+how to run a function at the same time every day/week.
+
+Integrating this kind of feature into Sopel's plugin API is trickier than one
+might think, and it's actually simpler to have plugins just use a library like
+`schedule`__ directly::
+
+    import schedule
+
+    from sopel import plugin
+
+
+    def scheduled_message(bot):
+        bot.say("This is the scheduled message.", "#channelname")
+
+
+    def setup(bot):
+        # schedule the message at midnight every day
+        schedule.every().day.at('00:00').do(scheduled_message, bot=bot)
+
+
+    @plugin.interval(60)
+    def run_schedule(bot):
+        schedule.run_pending()
+
+As long as the ``bot`` is passed as an argument, the scheduled function can
+access config settings or any other attributes/properties it needs.
+
+Multiple plugins all setting up their own checks with ``interval`` naturally
+creates *some* overhead, but it shouldn't be significant compared to all the
+other things happening inside a Sopel bot with numerous plugins.
+
+.. __: https://pypi.org/project/schedule/
+
+
 Restricting commands to certain channels
 ========================================
 
