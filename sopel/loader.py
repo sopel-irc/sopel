@@ -117,6 +117,7 @@ def is_limitable(obj):
     """
     forbidden_attrs = (
         'interval',
+        'interval_lazy_loaders',
     )
     forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
 
@@ -159,6 +160,7 @@ def is_triggerable(obj):
     """
     forbidden_attrs = (
         'interval',
+        'interval_lazy_loaders',
         'url_regex',
         'url_lazy_loaders',
     )
@@ -199,6 +201,7 @@ def is_url_callback(obj):
     """
     forbidden_attrs = (
         'interval',
+        'interval_lazy_loaders',
     )
     forbidden = any(hasattr(obj, attr) for attr in forbidden_attrs)
 
@@ -246,7 +249,8 @@ def clean_module(module, config):
             elif is_triggerable(obj):
                 clean_callable(obj, config)
                 callables.append(obj)
-            elif hasattr(obj, 'interval'):
+            elif (hasattr(obj, 'interval') or
+                  hasattr(obj, 'interval_lazy_loaders')):
                 clean_callable(obj, config)
                 jobs.append(obj)
             elif is_url_callback(obj):

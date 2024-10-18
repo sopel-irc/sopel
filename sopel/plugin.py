@@ -417,6 +417,42 @@ def interval(*intervals: Union[int, float]) -> Callable:
     return add_attribute
 
 
+def interval_lazy(*loaders: Callable) -> Callable:
+    """Decorate a callable as an interval with lazy loading.
+
+    :param loaders: one or more functions to generate a list of intervals
+
+    Each ``loader`` function must accept a ``settings`` parameter and return a
+    list (or tuple) of intervals in seconds::
+
+        def loader(settings):
+            return [5, 10]
+
+    It will be called by Sopel when the bot parses the plugin to register the
+    intervals. The ``settings`` argument will be the bot's
+    :class:`sopel.config.Config` object.
+
+    If any of the ``loader`` functions raises a
+    :exc:`~sopel.plugins.exceptions.PluginError` exception, the interval will
+    be ignored; it will not fail the plugin's loading.
+
+    The decorated function will behave like any other :func:`callable`::
+
+        @plugin.interval_lazy(loader)
+        def my_interval_handler(bot):
+            bot.say('Interval triggered')
+
+    .. versionadded:: 8.1
+    """
+    def decorator(function):
+        function._sopel_callable = True
+        if not hasattr(function, 'interval_lazy_loaders'):
+            function.interval_lazy_loaders = []
+        function.interval_lazy_loaders.extend(loaders)
+        return function
+    return decorator
+
+
 def rule(*patterns: Union[str, Pattern]) -> Callable:
     """Decorate a function to be called when a line matches the given pattern.
 

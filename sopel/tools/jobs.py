@@ -287,16 +287,25 @@ class Job:
         kwargs = cls.kwargs_from_callable(handler)
         return cls(
             set(handler.interval),
+            handler.interval_lazy_loaders,
+            settings,
             handler=handler,
             **kwargs)
 
     def __init__(self,
                  intervals,
+                 interval_lazy_loaders,
+                 settings,
                  plugin=None,
                  label=None,
                  handler=None,
                  threaded=True,
                  doc=None):
+        # initialization
+        intervals = list(intervals)
+        for loader in interval_lazy_loaders:
+            intervals.append(loader(settings))
+
         # scheduling
         now = time.time()
         self.intervals = set(intervals)
