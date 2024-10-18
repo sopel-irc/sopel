@@ -620,13 +620,13 @@ class EntryPointPlugin(PyModulePlugin):
 
         if (
             version is None
-            and hasattr(self.module, "__package__")
-            and self.module.__package__ is not None
+            and hasattr(self.entry_point, "dist")
+            and hasattr(self.entry_point.dist, "name")
         ):
             try:
-                version = importlib.metadata.version(self.module.__package__)
-            except ValueError:
-                # package name is probably empty-string; just give up
+                version = importlib.metadata.version(self.entry_point.dist.name)
+            except Exception:
+                # fine, just give up
                 pass
 
         return version
