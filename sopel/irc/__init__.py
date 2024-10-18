@@ -201,17 +201,12 @@ class AbstractBot(abc.ABC):
 
     @property
     def isupport(self) -> ISupport:
-        """Features advertised by the server.
-
-        :type: :class:`~.isupport.ISupport` instance
-        """
+        """Features advertised by the server."""
         return self._isupport
 
     @property
     def myinfo(self) -> MyInfo:
         """Server/network information.
-
-        :type: :class:`~.utils.MyInfo` instance
 
         .. versionadded:: 7.0
         """
@@ -342,8 +337,6 @@ class AbstractBot(abc.ABC):
         """Set up the IRC backend based on the bot's settings.
 
         :return: the initialized IRC backend object
-        :rtype: an object implementing the interface of
-                :class:`~sopel.irc.abstract_backends.AbstractIRCBackend`
         """
         timeout = int(self.settings.core.timeout)
         ping_interval = int(self.settings.core.timeout_ping_interval)
@@ -369,8 +362,8 @@ class AbstractBot(abc.ABC):
     def run(self, host: str, port: int = 6667) -> None:
         """Connect to IRC server and run the bot forever.
 
-        :param str host: the IRC server hostname
-        :param int port: the IRC server port
+        :param host: the IRC server hostname
+        :param port: the IRC server port
         """
         source_address = ((self.settings.core.bind_host, 0)
                           if self.settings.core.bind_host else None)
@@ -412,7 +405,7 @@ class AbstractBot(abc.ABC):
     def on_message(self, message: str) -> None:
         """Handle an incoming IRC message.
 
-        :param str message: the received raw IRC message
+        :param message: the received raw IRC message
         """
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
@@ -443,7 +436,7 @@ class AbstractBot(abc.ABC):
     def on_message_sent(self, raw: str) -> None:
         """Handle any message sent through the connection.
 
-        :param str raw: raw text message sent through the connection
+        :param raw: raw text message sent through the connection
 
         When a message is sent through the IRC connection, the bot will log
         the raw message. If necessary, it will also simulate the
@@ -525,7 +518,7 @@ class AbstractBot(abc.ABC):
     def change_current_nick(self, new_nick: str) -> None:
         """Change the current nick without configuration modification.
 
-        :param str new_nick: new nick to be used by the bot
+        :param new_nick: new nick to be used by the bot
         """
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
@@ -548,11 +541,10 @@ class AbstractBot(abc.ABC):
     # Features
 
     @abc.abstractmethod
-    def dispatch(self, pretrigger: trigger.PreTrigger):
+    def dispatch(self, pretrigger: trigger.PreTrigger) -> None:
         """Handle running the appropriate callables for an incoming message.
 
         :param pretrigger: Sopel PreTrigger object
-        :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
         .. important::
             This method **MUST** be implemented by concrete subclasses.
@@ -561,8 +553,8 @@ class AbstractBot(abc.ABC):
     def log_raw(self, line: str, prefix: str) -> None:
         """Log raw line to the raw log.
 
-        :param str line: the raw line
-        :param str prefix: additional information to prepend to the log line
+        :param line: the raw line
+        :param prefix: additional information to prepend to the log line
 
         The ``prefix`` is usually either ``>>`` for an outgoing ``line`` or
         ``<<`` for a received one.
@@ -611,8 +603,8 @@ class AbstractBot(abc.ABC):
     def action(self, text: str, dest: str) -> None:
         """Send a CTCP ACTION PRIVMSG to a user or channel.
 
-        :param str text: the text to send in the CTCP ACTION
-        :param str dest: the destination of the CTCP ACTION
+        :param text: the text to send in the CTCP ACTION
+        :param dest: the destination of the CTCP ACTION
 
         The same loop detection and length restrictions apply as with
         :func:`say`, though automatic message splitting is not available.
@@ -622,8 +614,8 @@ class AbstractBot(abc.ABC):
     def join(self, channel: str, password: Optional[str] = None) -> None:
         """Join a ``channel``.
 
-        :param str channel: the channel to join
-        :param str password: an optional channel password
+        :param channel: the channel to join
+        :param password: an optional channel password
 
         If ``channel`` contains a space, and no ``password`` is given, the
         space is assumed to split the argument into the channel to join and its

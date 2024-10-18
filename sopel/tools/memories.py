@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Any, TYPE_CHECKING, Union
 
 from typing_extensions import override
 
@@ -18,7 +18,10 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
     from typing import Tuple
 
-    MemoryConstructorInput = Union[Mapping[str, Any], Iterable[Tuple[str, Any]]]
+    MemoryConstructorInput = Union[
+        Mapping[str, Any],
+        Iterable[Tuple[str, Any]],
+    ]
 
 
 class _NO_DEFAULT:
@@ -176,7 +179,7 @@ class SopelIdentifierMemory(SopelMemory):
     """
     def __init__(
         self,
-        *args,
+        *args: MemoryConstructorInput,
         identifier_factory: IdentifierFactory = Identifier,
     ) -> None:
         if len(args) > 1:
@@ -193,7 +196,7 @@ class SopelIdentifierMemory(SopelMemory):
         else:
             super().__init__()
 
-    def _make_key(self, key: Optional[str]) -> Optional[Identifier]:
+    def _make_key(self, key: str | None) -> Identifier | None:
         if key is None:
             return None
         return self.make_identifier(key)
@@ -221,19 +224,19 @@ class SopelIdentifierMemory(SopelMemory):
         # return converted input data
         return ((self.make_identifier(k), v) for k, v in data)
 
-    def __getitem__(self, key: Optional[str]):
+    def __getitem__(self, key: str | None) -> Any:
         return super().__getitem__(self._make_key(key))
 
-    def __contains__(self, key):
+    def __contains__(self, key: Any) -> Any:
         return super().__contains__(self._make_key(key))
 
-    def __setitem__(self, key: Optional[str], value):
+    def __setitem__(self, key: str | None, value: Any) -> None:
         super().__setitem__(self._make_key(key), value)
 
-    def setdefault(self, key: str, default=None):
+    def setdefault(self, key: str, default: Any = None) -> Any:
         return super().setdefault(self._make_key(key), default)
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         super().__delitem__(self._make_key(key))
 
     def copy(self):
@@ -243,7 +246,7 @@ class SopelIdentifierMemory(SopelMemory):
         """
         return type(self)(self, identifier_factory=self.make_identifier)
 
-    def get(self, key: str, default=_NO_DEFAULT):
+    def get(self, key: str, default: Any = _NO_DEFAULT) -> Any:
         """Get the value of ``key`` from this ``SopelIdentifierMemory``.
 
         Takes an optional ``default`` value, just like :meth:`dict.get`.
@@ -252,7 +255,7 @@ class SopelIdentifierMemory(SopelMemory):
             return super().get(self._make_key(key))
         return super().get(self._make_key(key), default)
 
-    def pop(self, key: str, default=_NO_DEFAULT):
+    def pop(self, key: str, default: Any = _NO_DEFAULT) -> Any:
         """Pop the value of ``key`` from this ``SopelIdentifierMemory``.
 
         Takes an optional ``default`` value, just like :meth:`dict.pop`.

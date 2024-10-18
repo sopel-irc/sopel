@@ -34,6 +34,8 @@ from sopel.tools.identifiers import Identifier, IdentifierFactory
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from sopel.config import Config
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -142,7 +144,7 @@ class SopelDB:
 
     def __init__(
         self,
-        config,
+        config: Config,
         identifier_factory: IdentifierFactory = Identifier,
     ) -> None:
         self.make_identifier: IdentifierFactory = identifier_factory
@@ -628,7 +630,7 @@ class SopelDB:
     def delete_nick_group(self, nick: str) -> None:  # pragma: nocover
         self.forget_nick_group(nick)
 
-    def merge_nick_groups(self, first_nick: str, second_nick: str):
+    def merge_nick_groups(self, first_nick: str, second_nick: str) -> None:
         """Merge two nick groups.
 
         :param first_nick: one nick in the first group to merge
@@ -788,7 +790,7 @@ class SopelDB:
         channel: str,
         key: str,
         default: typing.Optional[typing.Any] = None,
-    ):
+    ) -> typing.Any:
         """Get a value from the key-value store for ``channel``.
 
         :param channel: the channel whose values to access
@@ -980,8 +982,8 @@ class SopelDB:
         self,
         name: str,
         key: str,
-        default=None
-    ) -> typing.Optional[typing.Any]:
+        default: typing.Any | None = None
+    ) -> typing.Any | None:
         """Get a value from the key-value store for ``name``.
 
         :param name: nick or channel whose values to access
