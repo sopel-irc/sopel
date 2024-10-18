@@ -97,6 +97,13 @@ class AbstractPluginHandler(abc.ABC):
     on shutdown (either upon exiting Sopel or unloading that plugin).
     """
 
+    name: str
+    """Plugin identifier.
+
+    The name of a plugin identifies this plugin: when Sopel loads a plugin,
+    it will store its information under that identifier.
+    """
+
     @abc.abstractmethod
     def load(self):
         """Load the plugin.
