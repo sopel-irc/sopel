@@ -230,7 +230,7 @@ class SopelIdentifierMemory(SopelMemory):
     def __contains__(self, key: Any) -> Any:
         return super().__contains__(self._make_key(key))
 
-    def __setitem__(self, key: str | None, value: Any) -> Any:
+    def __setitem__(self, key: str | None, value: Any) -> None:
         super().__setitem__(self._make_key(key), value)
 
     def setdefault(self, key: str, default: Any = None) -> Any:

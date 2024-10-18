@@ -60,7 +60,7 @@ class ExpressionEvaluator:
         ast_expression = ast.parse(expression_str, mode='eval')
         return self._eval_node(ast_expression.body, time.time() + timeout)
 
-    def _eval_node(self, node: ast.AST, timeout: float) -> int | float:
+    def _eval_node(self, node: ast.AST, timeout: float) -> float:
         """Recursively evaluate the given :class:`ast.Node <ast.AST>`.
 
         :param node: the AST node to evaluate
@@ -120,7 +120,7 @@ class ExpressionEvaluator:
         )
 
 
-def guarded_mul(left: int | float, right: int | float) -> int | float:
+def guarded_mul(left: float, right: float) -> float:
     """Multiply two values, guarding against overly large inputs.
 
     :param left: the left operand
@@ -209,7 +209,7 @@ def pow_complexity(num: int, exp: int) -> float:
         return exp ** 1.590 * num.bit_length() ** 1.73 / 36864057619.3
 
 
-def guarded_pow(num: int | float, exp: int | float) -> int | float:
+def guarded_pow(num: float, exp: float) -> float:
     """Raise a number to a power, guarding against overly large inputs.
 
     :param num: base
@@ -263,7 +263,7 @@ class EquationEvaluator(ExpressionEvaluator):
         self,
         expression_str: str,
         timeout: float = 5.0,
-    ) -> int | float:
+    ) -> float:
         result = ExpressionEvaluator.__call__(self, expression_str, timeout)
 
         # This wrapper is here so additional sanity checks could be done
