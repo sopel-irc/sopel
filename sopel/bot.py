@@ -714,6 +714,7 @@ class Sopel(irc.AbstractBot):
         """Call a function, applying any rate limits or other restrictions.
 
         :param func: the function to call
+        :type func: :term:`function`
         :param sopel: a SopelWrapper instance
         :param trigger: the Trigger object for the line from the server that
                         triggered this call
