@@ -18,6 +18,8 @@ TEMPLATE_TEST_CONFIG = """
 nick = {name}
 owner = {owner}
 admin = {admin}
+# avoid wasting cycles in time.sleep() during `repeat`ed tests
+flood_max_wait = 0
 """
 
 
