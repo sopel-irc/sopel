@@ -15,6 +15,7 @@ Plugin changes
 Core changes
 ------------
 
+* Fixed loading folder-style plugins with relative imports [[#2633][]]
 * `config.types.ChoiceAttribute` logs invalid values for debugging [[#2624][]]
 
 Housekeeping changes
@@ -23,12 +24,15 @@ Housekeeping changes
 * Minor updates to keep up with type-checking ecosystem [[#2614][], [#2628][]]
 * Start checking for incomplete type annotations [[#2616][]]
 * Added tests to `find` plugin [[#2589][]]
+* Fixed slowdown in `@plugin.example` tests with `repeat` enabled [[#2630][]]
 
 [#2589]: https://github.com/sopel-irc/sopel/pull/2589
 [#2614]: https://github.com/sopel-irc/sopel/pull/2614
 [#2616]: https://github.com/sopel-irc/sopel/pull/2616
 [#2624]: https://github.com/sopel-irc/sopel/pull/2624
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
+[#2630]: https://github.com/sopel-irc/sopel/pull/2630
+[#2633]: https://github.com/sopel-irc/sopel/pull/2633
 
 
 Changes between 7.1.9 and 8.0.0
