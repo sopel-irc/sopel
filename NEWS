@@ -17,10 +17,12 @@ Core changes
 
 * Fixed loading folder-style plugins with relative imports [[#2633][]]
 * `config.types.ChoiceAttribute` logs invalid values for debugging [[#2624][]]
+* Also remove null (`\x00`) in `irc.utils.safe()` function [[#2620][]]
 
 Housekeeping changes
 --------------------
 
+* Documented advanced tip about arbitrarily scheduling code [[#2617][]]
 * Minor updates to keep up with type-checking ecosystem [[#2614][], [#2628][]]
 * Start checking for incomplete type annotations [[#2616][]]
 * Added tests to `find` plugin [[#2589][]]
@@ -29,6 +31,8 @@ Housekeeping changes
 [#2589]: https://github.com/sopel-irc/sopel/pull/2589
 [#2614]: https://github.com/sopel-irc/sopel/pull/2614
 [#2616]: https://github.com/sopel-irc/sopel/pull/2616
+[#2617]: https://github.com/sopel-irc/sopel/pull/2617
+[#2620]: https://github.com/sopel-irc/sopel/pull/2620
 [#2624]: https://github.com/sopel-irc/sopel/pull/2624
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2630]: https://github.com/sopel-irc/sopel/pull/2630
