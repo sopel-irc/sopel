@@ -225,7 +225,6 @@ def quit(bot, trigger):
     bot.quit(quit_message)
 
 
-@plugin.require_privmsg
 @plugin.require_owner
 @plugin.command('raw')
 @plugin.priority('low')
@@ -235,6 +234,11 @@ def raw(bot, trigger):
     Send a raw IRC message. Can only be done in privmsg by the bot owner.
     This is mostly useful for debugging.
     """
+    # Check if the command is used in a channel
+    if not trigger.is_privmsg:
+        bot.say("This command only works as a private message.", trigger.sender)
+        return
+
     if trigger.group(2) is None:
         bot.reply(ERROR_NOTHING_TO_RAW)
         return
@@ -242,7 +246,6 @@ def raw(bot, trigger):
     bot.write([trigger.group(2)])
 
 
-@plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('say', 'msg')
 @plugin.priority('low')
@@ -252,6 +255,11 @@ def say(bot, trigger):
     Send a message to a given channel or nick. Can only be done in privmsg by
     an admin.
     """
+    # Check if the command is used in a channel
+    if not trigger.is_privmsg:
+        bot.say("This command only works as a private message.", trigger.sender)
+        return
+
     if trigger.group(2) is None:
         bot.reply(ERROR_NOTHING_TO_SAY)
         return
@@ -265,7 +273,6 @@ def say(bot, trigger):
     bot.say(message, channel)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('me')
 @plugin.priority('low')
@@ -274,6 +281,11 @@ def me(bot, trigger):
     Send an ACTION (/me) to a given channel or nick. Can only be done in
     privmsg by an admin.
     """
+    # Check if the command is used in a channel
+    if not trigger.is_privmsg:
+        bot.say("This command only works as a private message.", trigger.sender)
+        return
+
     if trigger.group(2) is None:
         bot.reply(ERROR_NOTHING_TO_SAY)
         return
