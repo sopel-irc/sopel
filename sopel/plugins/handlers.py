@@ -48,6 +48,7 @@ import importlib
 import importlib.util
 import inspect
 import itertools
+import logging
 import os
 import sys
 from typing import Optional, TYPE_CHECKING, TypedDict
@@ -59,6 +60,9 @@ from . import exceptions
 if TYPE_CHECKING:
     from sopel.bot import Sopel
     from types import ModuleType
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PluginMetaDescription(TypedDict):
@@ -620,14 +624,20 @@ class EntryPointPlugin(PyModulePlugin):
 
         if (
             version is None
-            and hasattr(self.module, "__package__")
-            and self.module.__package__ is not None
+            and hasattr(self.entry_point, "dist")
+            and hasattr(self.entry_point.dist, "name")
         ):
+            dist_name = self.entry_point.dist.name
             try:
-                version = importlib.metadata.version(self.module.__package__)
-            except ValueError:
-                # package name is probably empty-string; just give up
-                pass
+                version = importlib.metadata.version(dist_name)
+            except (ValueError, importlib.metadata.PackageNotFoundError):
+                LOGGER.warning("Cannot determine version of %r", dist_name)
+            except Exception:
+                LOGGER.warning(
+                    "Unexpected error occurred while checking the version of %r",
+                    dist_name,
+                    exc_info=True,
+                )
 
         return version
 

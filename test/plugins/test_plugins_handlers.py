@@ -142,3 +142,21 @@ def test_folder_plugin_imports(plugin_folder):
     handler = handlers.PyFilePlugin(plugin_folder)
     handler.load()
     assert handler.module.foo == 'bar baz'
+
+
+def test_get_version_entrypoint_package_does_not_match(plugin_tmpfile):
+    # See gh-2593, wherein an entrypoint plugin whose project/package names
+    # are not equal raised an exception that propagated too far
+    distrib_dir = os.path.dirname(plugin_tmpfile.strpath)
+    sys.path.append(distrib_dir)
+
+    try:
+        entry_point = importlib.metadata.EntryPoint(
+            'test_plugin', 'file_mod', 'sopel.plugins')
+        plugin = handlers.EntryPointPlugin(entry_point)
+        plugin.load()
+        plugin.module.__package__ = "FAKEFAKEFAKE"
+        # Under gh-2593, this call raises a PackageNotFound error
+        assert plugin.get_version() is None
+    finally:
+        sys.path.remove(distrib_dir)
