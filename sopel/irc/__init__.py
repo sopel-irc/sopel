@@ -39,7 +39,6 @@ import threading
 import time
 from typing import (
     Any,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -71,7 +70,7 @@ class AbstractBot(abc.ABC):
         self._name: str = settings.core.name
         self._isupport = ISupport()
         self._capabilities = Capabilities()
-        self._myinfo: Optional[MyInfo] = None
+        self._myinfo: MyInfo | None = None
         self._nick: identifiers.Identifier = self.make_identifier(
             settings.core.nick)
 
@@ -87,7 +86,7 @@ class AbstractBot(abc.ABC):
 
         # internal machinery
         self.sending = threading.RLock()
-        self.last_error_timestamp: Optional[datetime] = None
+        self.last_error_timestamp: datetime | None = None
         self.error_count = 0
         self.stack: dict[identifiers.Identifier, dict[str, Any]] = {}
         self.hasquit = False
@@ -180,7 +179,7 @@ class AbstractBot(abc.ABC):
         warning_in='8.1',
         removed_in='9.0',
     )
-    def server_capabilities(self) -> dict[str, Optional[str]]:
+    def server_capabilities(self) -> dict[str, str | None]:
         """A dict mapping supported IRCv3 capabilities to their options.
 
         For example, if the server specifies the capability ``sasl=EXTERNAL``,
@@ -225,7 +224,7 @@ class AbstractBot(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def hostmask(self) -> Optional[str]:
+    def hostmask(self) -> str | None:
         """The bot's hostmask."""
 
     # Utility
@@ -343,7 +342,7 @@ class AbstractBot(abc.ABC):
         self,
         host: str,
         port: int,
-        source_address: Optional[tuple[str, int]],
+        source_address: tuple[str, int] | None,
     ) -> AbstractIRCBackend:
         """Set up the IRC backend based on the bot's settings.
 
@@ -579,7 +578,7 @@ class AbstractBot(abc.ABC):
         logger = logging.getLogger('sopel.raw')
         logger.info("%s\t%r", prefix, line)
 
-    def write(self, args: Iterable[str], text: Optional[str] = None) -> None:
+    def write(self, args: Iterable[str], text: str | None = None) -> None:
         """Send a command to the server.
 
         :param args: an iterable of strings, which will be joined by spaces
@@ -626,7 +625,7 @@ class AbstractBot(abc.ABC):
         """
         self.say('\001ACTION {}\001'.format(text), dest)
 
-    def join(self, channel: str, password: Optional[str] = None) -> None:
+    def join(self, channel: str, password: str | None = None) -> None:
         """Join a ``channel``.
 
         :param channel: the channel to join
@@ -646,7 +645,7 @@ class AbstractBot(abc.ABC):
         self,
         nick: str,
         channel: str,
-        text: Optional[str] = None,
+        text: str | None = None,
     ) -> None:
         """Kick a ``nick`` from a ``channel``.
 
@@ -674,7 +673,7 @@ class AbstractBot(abc.ABC):
 
         self.backend.send_notice(dest, text)
 
-    def part(self, channel: str, msg: Optional[str] = None) -> None:
+    def part(self, channel: str, msg: str | None = None) -> None:
         """Leave a channel.
 
         :param channel: the channel to leave
@@ -685,7 +684,7 @@ class AbstractBot(abc.ABC):
 
         self.backend.send_part(channel, reason=msg)
 
-    def quit(self, message: Optional[str] = None) -> None:
+    def quit(self, message: str | None = None) -> None:
         """Disconnect from IRC and close the bot.
 
         :param message: optional QUIT message to send (e.g. "Bye!")
@@ -704,7 +703,7 @@ class AbstractBot(abc.ABC):
         # problematic because whomever called quit might still want to do
         # something before the main thread quits.
 
-    def restart(self, message: Optional[str] = None) -> None:
+    def restart(self, message: str | None = None) -> None:
         """Disconnect from IRC and restart the bot.
 
         :param message: optional QUIT message to send (e.g. "Be right back!")
