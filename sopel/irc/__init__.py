@@ -78,9 +78,12 @@ class AbstractBot(abc.ABC):
         self.backend: AbstractIRCBackend = UninitializedBackend(self)
         """IRC Connection Backend."""
         self._connection_registered = threading.Event()
-        """Flag stating whether the IRC Connection is registered yet."""
+        """Flag stating whether the IRC connection is registered yet."""
         self.settings = settings
-        """Bot settings."""
+        """The bot's settings.
+
+        .. versionadded:: 7.0
+        """
 
         # internal machinery
         self.sending = threading.RLock()
@@ -136,7 +139,10 @@ class AbstractBot(abc.ABC):
 
     @property
     def capabilities(self) -> Capabilities:
-        """Capabilities negotiated with the server."""
+        """Capabilities negotiated with the server.
+
+        .. versionadded:: 8.0
+        """
         return self._capabilities
 
     @property
@@ -201,7 +207,10 @@ class AbstractBot(abc.ABC):
 
     @property
     def isupport(self) -> ISupport:
-        """Features advertised by the server."""
+        """Features advertised by the server.
+
+        .. versionadded:: 7.0
+        """
         return self._isupport
 
     @property
@@ -287,6 +296,8 @@ class AbstractBot(abc.ABC):
         single line of text. This method computes a safe length of text that
         can be sent using ``PRIVMSG`` or ``NOTICE`` by subtracting the size
         required by the server to convey the bot's message.
+
+        .. versionadded:: 8.0
 
         .. seealso::
 
@@ -512,6 +523,8 @@ class AbstractBot(abc.ABC):
         This method exists to update the casemapping rules for the
         :class:`~sopel.tools.identifiers.Identifier` that represents the bot's
         nick, e.g. after ISUPPORT info is received.
+
+        .. versionadded:: 8.0
         """
         self._nick = self.make_identifier(str(self._nick))
 
@@ -519,6 +532,8 @@ class AbstractBot(abc.ABC):
         """Change the current nick without configuration modification.
 
         :param new_nick: new nick to be used by the bot
+
+        .. versionadded:: 7.1
         """
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
