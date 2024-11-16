@@ -76,7 +76,7 @@ class UrlSection(types.StaticSection):
     """Enable requests to private and local network IP addresses"""
 
 
-def configure(config: Config):
+def configure(config: Config) -> None:
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
@@ -111,7 +111,7 @@ def configure(config: Config):
     )
 
 
-def setup(bot: Sopel):
+def setup(bot: Sopel) -> None:
     bot.config.define_section('url', UrlSection)
 
     if bot.config.url.exclude:
@@ -140,7 +140,7 @@ def setup(bot: Sopel):
         bot.memory['shortened_urls'] = tools.SopelMemory()
 
 
-def shutdown(bot: Sopel):
+def shutdown(bot: Sopel) -> None:
     # Unset `url_exclude` and `last_seen_url`, but not `shortened_urls`;
     # clearing `shortened_urls` will increase API calls. Leaving it in memory
     # should not lead to unexpected behavior.
@@ -151,7 +151,7 @@ def shutdown(bot: Sopel):
             pass
 
 
-def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger):
+def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger) -> bool:
     if trigger.admin:
         return True
 
@@ -169,7 +169,7 @@ def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger):
 @plugin.example('.urlpexclude example\\.com/\\w+', user_help=True)
 @plugin.example('.urlexclude example.com/path', user_help=True)
 @plugin.output_prefix('[url] ')
-def url_ban(bot: SopelWrapper, trigger: Trigger):
+def url_ban(bot: SopelWrapper, trigger: Trigger) -> None:
     """Exclude a URL from auto title.
 
     Use ``urlpexclude`` to exclude a pattern instead of a URL.
@@ -220,7 +220,7 @@ def url_ban(bot: SopelWrapper, trigger: Trigger):
 @plugin.example('.urlpallow example\\.com/\\w+', user_help=True)
 @plugin.example('.urlallow example.com/path', user_help=True)
 @plugin.output_prefix('[url] ')
-def url_unban(bot: SopelWrapper, trigger: Trigger):
+def url_unban(bot: SopelWrapper, trigger: Trigger) -> None:
     """Allow a URL for auto title.
 
     Use ``urlpallow`` to allow a pattern instead of a URL.
@@ -273,7 +273,7 @@ def url_unban(bot: SopelWrapper, trigger: Trigger):
     'Google | www.google.com',
     online=True, vcr=True)
 @plugin.output_prefix('[url] ')
-def title_command(bot: SopelWrapper, trigger: Trigger):
+def title_command(bot: SopelWrapper, trigger: Trigger) -> None:
     """
     Show the title or URL information for the given URL, or the last URL seen
     in this channel.
@@ -313,7 +313,7 @@ def title_command(bot: SopelWrapper, trigger: Trigger):
 
 @plugin.rule(r'(?u).*(https?://\S+).*')
 @plugin.output_prefix('[url] ')
-def title_auto(bot: SopelWrapper, trigger: Trigger):
+def title_auto(bot: SopelWrapper, trigger: Trigger) -> None:
     """
     Automatically show titles for URLs. For shortened URLs/redirects, find
     where the URL redirects to and show the title for that.
@@ -437,7 +437,10 @@ def process_urls(
             except ValueError:
                 # Extra try/except here in case the DNS resolution fails, see #2348
                 try:
-                    ips = [ip_address(ip) for ip in dns.resolver.resolve(parsed_url.hostname)]
+                    ips = [
+                        ip_address(ip.to_text())
+                        for ip in dns.resolver.resolve(parsed_url.hostname)
+                    ]
                 except Exception as exc:
                     LOGGER.debug(
                         "Cannot resolve hostname %s, ignoring URL %s"
@@ -472,7 +475,11 @@ def process_urls(
         yield URLInfo(url, title, parsed_url.hostname, tinyurl, False)
 
 
-def check_callbacks(bot: SopelWrapper, url: str, use_excludes: bool = True) -> bool:
+def check_callbacks(
+    bot: SopelWrapper,
+    url: str,
+    use_excludes: bool = True,
+) -> bool:
     """Check if ``url`` is excluded or matches any URL callback patterns.
 
     :param bot: Sopel instance

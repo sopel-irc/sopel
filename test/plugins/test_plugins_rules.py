@@ -1566,14 +1566,16 @@ def test_rule_rate_limit(mockbot, triggerfactory):
         global_rate_limit=20,
         channel_rate_limit=20,
     )
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_user_rate_limited(mocktrigger.nick) is True
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is True
-    assert rule.is_global_rate_limited() is True
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is True
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is True
+    assert rule.is_global_rate_limited(at_time) is True
 
 
 def test_rule_rate_limit_no_limit(mockbot, triggerfactory):
@@ -1592,14 +1594,16 @@ def test_rule_rate_limit_no_limit(mockbot, triggerfactory):
         global_rate_limit=0,
         channel_rate_limit=0,
     )
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
 
 def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
@@ -1619,14 +1623,16 @@ def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
         channel_rate_limit=20,
         threaded=False,  # make sure there is no race-condition here
     )
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
 
 def test_rule_rate_limit_messages(mockbot, triggerfactory):

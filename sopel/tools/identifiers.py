@@ -97,9 +97,8 @@ def rfc1459_strict_lower(text: str) -> str:
 class Identifier(str):
     """A ``str`` subclass which acts appropriately for IRC identifiers.
 
-    :param str identifier: IRC identifier
+    :param identifier: IRC identifier
     :param casemapping: a casemapping function (optional keyword argument)
-    :type casemapping: Callable[[:class:`str`], :class:`str`]
 
     When used as normal ``str`` objects, case will be preserved.
     However, when comparing two Identifier objects, or comparing an Identifier
@@ -162,12 +161,11 @@ class Identifier(str):
         return self.casemapping(self)
 
     @staticmethod
-    def _lower(identifier: str):
+    def _lower(identifier: str) -> str:
         """Convert an identifier to lowercase per :rfc:`2812`.
 
-        :param str identifier: the identifier (nickname or channel) to convert
+        :param identifier: the identifier (nickname or channel) to convert
         :return: RFC 2812-compliant lowercase version of ``identifier``
-        :rtype: str
 
         :meta public:
 
@@ -186,12 +184,11 @@ class Identifier(str):
         return rfc1459_lower(identifier)
 
     @staticmethod
-    def _lower_swapped(identifier: str):
+    def _lower_swapped(identifier: str) -> str:
         """Backward-compatible version of :meth:`_lower`.
 
         :param identifier: the identifier (nickname or channel) to convert
         :return: RFC 2812-non-compliant lowercase version of ``identifier``
-        :rtype: str
 
         This is what the old :meth:`_lower` function did before Sopel 7.0. It
         maps ``{}``, ``[]``, ``|``, ``\\``, ``^``, and ``~`` incorrectly.

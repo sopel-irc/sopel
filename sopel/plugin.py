@@ -1193,10 +1193,6 @@ def rate(
 
         @rate(10, 10, 2, message='Sorry {nick}, you hit the {rate_limit_type} rate limit!')
 
-    Rate-limited functions that use scheduled future commands should import
-    :class:`threading.Timer` instead of :mod:`sched`, or rate limiting will
-    not work properly.
-
     .. versionchanged:: 8.0
 
         Optional keyword argument ``message`` was added in Sopel 8.

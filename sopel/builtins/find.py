@@ -121,11 +121,11 @@ def kick_cleanup(bot, trigger):
              [:,]\s+)?         # Followed by optional colon/comma and whitespace
              s(?P<sep>/)       # The literal s and a separator / as group 2
              (?P<old>          # Group 3 is the thing to find
-               (?:\\/|[^/])+   # One or more non-slashes or escaped slashes
+               (?:\\\\|\\/|[^/])+   # One or more non-slashes or escaped slashes
              )
              /                 # The separator again
              (?P<new>          # Group 4 is what to replace with
-               (?:\\/|[^/])*   # One or more non-slashes or escaped slashes
+               (?:\\\\|\\/|[^/])*   # One or more non-slashes or escaped slashes
              )
              (?:/              # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
@@ -136,11 +136,11 @@ def kick_cleanup(bot, trigger):
              [:,]\s+)?         # Followed by optional colon/comma and whitespace
              s(?P<sep>\|)      # The literal s and a separator | as group 2
              (?P<old>          # Group 3 is the thing to find
-               (?:\\\||[^|])+  # One or more non-pipe or escaped pipe
+               (?:\\\\|\\\||[^|])+  # One or more non-pipe or escaped pipe
              )
              \|                # The separator again
              (?P<new>          # Group 4 is what to replace with
-               (?:\\\||[^|])*  # One or more non-pipe or escaped pipe
+               (?:\\\\|\\\||[^|])*  # One or more non-pipe or escaped pipe
              )
              (?:\|             # Optional separator followed by group 5 (flags)
                 (?P<flags>\S+)
@@ -161,14 +161,16 @@ def findandreplace(bot, trigger):
         return
 
     sep = trigger.group('sep')
-    old = trigger.group('old').replace('\\%s' % sep, sep)
+    escape_sequence_pattern = re.compile(r'\\[\\%s]' % sep)
+
+    old = escape_sequence_pattern.sub(decode_escape, trigger.group('old'))
     new = trigger.group('new')
     me = False  # /me command
     flags = trigger.group('flags') or ''
 
     # only clean/format the new string if it's non-empty
     if new:
-        new = bold(new.replace('\\%s' % sep, sep))
+        new = escape_sequence_pattern.sub(decode_escape, new)
 
     # If g flag is given, replace all. Otherwise, replace once.
     if 'g' in flags:
@@ -181,39 +183,49 @@ def findandreplace(bot, trigger):
     if 'i' in flags:
         regex = re.compile(re.escape(old), re.U | re.I)
 
-        def repl(s):
-            return re.sub(regex, new, s, count == 1)
+        def repl(line, subst):
+            return re.sub(regex, subst, line, count == 1)
     else:
-        def repl(s):
-            return s.replace(old, new, count)
+        def repl(line, subst):
+            return line.replace(old, subst, count)
 
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
-    new_phrase = None
+    new_line = new_display = None
     for line in history:
         if line.startswith("\x01ACTION"):
             me = True  # /me command
             line = line[8:]
         else:
             me = False
-        replaced = repl(line)
+        replaced = repl(line, new)
         if replaced != line:  # we are done
-            new_phrase = replaced
+            new_line = replaced
+            new_display = repl(line, bold(new))
             break
 
-    if not new_phrase:
+    if not new_line:
         return  # Didn't find anything
 
     # Save the new "edited" message.
     action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
-    history.appendleft(action + new_phrase)  # history is in most-recent-first order
+    history.appendleft(action + new_line)  # history is in most-recent-first order
 
     # output
     if not me:
-        new_phrase = 'meant to say: %s' % new_phrase
+        new_display = 'meant to say: %s' % new_display
     if trigger.group(1):
-        phrase = '%s thinks %s %s' % (trigger.nick, rnick, new_phrase)
+        msg = '%s thinks %s %s' % (trigger.nick, rnick, new_display)
     else:
-        phrase = '%s %s' % (trigger.nick, new_phrase)
+        msg = '%s %s' % (trigger.nick, new_display)
 
-    bot.say(phrase)
+    bot.say(msg)
+
+
+def decode_escape(match):
+    print("Substituting %s" % match.group(0))
+    return {
+        r'\\': '\\',
+        r'\|': '|',
+        r'\/': '/',
+    }[match.group(0)]

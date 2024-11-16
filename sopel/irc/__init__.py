@@ -39,7 +39,6 @@ import threading
 import time
 from typing import (
     Any,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -71,20 +70,23 @@ class AbstractBot(abc.ABC):
         self._name: str = settings.core.name
         self._isupport = ISupport()
         self._capabilities = Capabilities()
-        self._myinfo: Optional[MyInfo] = None
+        self._myinfo: MyInfo | None = None
         self._nick: identifiers.Identifier = self.make_identifier(
             settings.core.nick)
 
         self.backend: AbstractIRCBackend = UninitializedBackend(self)
         """IRC Connection Backend."""
         self._connection_registered = threading.Event()
-        """Flag stating whether the IRC Connection is registered yet."""
+        """Flag stating whether the IRC connection is registered yet."""
         self.settings = settings
-        """Bot settings."""
+        """The bot's settings.
+
+        .. versionadded:: 7.0
+        """
 
         # internal machinery
         self.sending = threading.RLock()
-        self.last_error_timestamp: Optional[datetime] = None
+        self.last_error_timestamp: datetime | None = None
         self.error_count = 0
         self.stack: dict[identifiers.Identifier, dict[str, Any]] = {}
         self.hasquit = False
@@ -136,7 +138,10 @@ class AbstractBot(abc.ABC):
 
     @property
     def capabilities(self) -> Capabilities:
-        """Capabilities negotiated with the server."""
+        """Capabilities negotiated with the server.
+
+        .. versionadded:: 8.0
+        """
         return self._capabilities
 
     @property
@@ -174,7 +179,7 @@ class AbstractBot(abc.ABC):
         warning_in='8.1',
         removed_in='9.0',
     )
-    def server_capabilities(self) -> dict[str, Optional[str]]:
+    def server_capabilities(self) -> dict[str, str | None]:
         """A dict mapping supported IRCv3 capabilities to their options.
 
         For example, if the server specifies the capability ``sasl=EXTERNAL``,
@@ -203,15 +208,13 @@ class AbstractBot(abc.ABC):
     def isupport(self) -> ISupport:
         """Features advertised by the server.
 
-        :type: :class:`~.isupport.ISupport` instance
+        .. versionadded:: 7.0
         """
         return self._isupport
 
     @property
     def myinfo(self) -> MyInfo:
         """Server/network information.
-
-        :type: :class:`~.utils.MyInfo` instance
 
         .. versionadded:: 7.0
         """
@@ -221,7 +224,7 @@ class AbstractBot(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def hostmask(self) -> Optional[str]:
+    def hostmask(self) -> str | None:
         """The bot's hostmask."""
 
     # Utility
@@ -293,6 +296,8 @@ class AbstractBot(abc.ABC):
         can be sent using ``PRIVMSG`` or ``NOTICE`` by subtracting the size
         required by the server to convey the bot's message.
 
+        .. versionadded:: 8.0
+
         .. seealso::
 
             This method is useful when sending a message using :meth:`say`,
@@ -337,13 +342,11 @@ class AbstractBot(abc.ABC):
         self,
         host: str,
         port: int,
-        source_address: Optional[tuple[str, int]],
+        source_address: tuple[str, int] | None,
     ) -> AbstractIRCBackend:
         """Set up the IRC backend based on the bot's settings.
 
         :return: the initialized IRC backend object
-        :rtype: an object implementing the interface of
-                :class:`~sopel.irc.abstract_backends.AbstractIRCBackend`
         """
         timeout = int(self.settings.core.timeout)
         ping_interval = int(self.settings.core.timeout_ping_interval)
@@ -369,8 +372,8 @@ class AbstractBot(abc.ABC):
     def run(self, host: str, port: int = 6667) -> None:
         """Connect to IRC server and run the bot forever.
 
-        :param str host: the IRC server hostname
-        :param int port: the IRC server port
+        :param host: the IRC server hostname
+        :param port: the IRC server port
         """
         source_address = ((self.settings.core.bind_host, 0)
                           if self.settings.core.bind_host else None)
@@ -412,7 +415,7 @@ class AbstractBot(abc.ABC):
     def on_message(self, message: str) -> None:
         """Handle an incoming IRC message.
 
-        :param str message: the received raw IRC message
+        :param message: the received raw IRC message
         """
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
@@ -443,7 +446,7 @@ class AbstractBot(abc.ABC):
     def on_message_sent(self, raw: str) -> None:
         """Handle any message sent through the connection.
 
-        :param str raw: raw text message sent through the connection
+        :param raw: raw text message sent through the connection
 
         When a message is sent through the IRC connection, the bot will log
         the raw message. If necessary, it will also simulate the
@@ -519,13 +522,17 @@ class AbstractBot(abc.ABC):
         This method exists to update the casemapping rules for the
         :class:`~sopel.tools.identifiers.Identifier` that represents the bot's
         nick, e.g. after ISUPPORT info is received.
+
+        .. versionadded:: 8.0
         """
         self._nick = self.make_identifier(str(self._nick))
 
     def change_current_nick(self, new_nick: str) -> None:
         """Change the current nick without configuration modification.
 
-        :param str new_nick: new nick to be used by the bot
+        :param new_nick: new nick to be used by the bot
+
+        .. versionadded:: 7.1
         """
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
@@ -548,11 +555,10 @@ class AbstractBot(abc.ABC):
     # Features
 
     @abc.abstractmethod
-    def dispatch(self, pretrigger: trigger.PreTrigger):
+    def dispatch(self, pretrigger: trigger.PreTrigger) -> None:
         """Handle running the appropriate callables for an incoming message.
 
         :param pretrigger: Sopel PreTrigger object
-        :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
         .. important::
             This method **MUST** be implemented by concrete subclasses.
@@ -561,8 +567,8 @@ class AbstractBot(abc.ABC):
     def log_raw(self, line: str, prefix: str) -> None:
         """Log raw line to the raw log.
 
-        :param str line: the raw line
-        :param str prefix: additional information to prepend to the log line
+        :param line: the raw line
+        :param prefix: additional information to prepend to the log line
 
         The ``prefix`` is usually either ``>>`` for an outgoing ``line`` or
         ``<<`` for a received one.
@@ -572,7 +578,7 @@ class AbstractBot(abc.ABC):
         logger = logging.getLogger('sopel.raw')
         logger.info("%s\t%r", prefix, line)
 
-    def write(self, args: Iterable[str], text: Optional[str] = None) -> None:
+    def write(self, args: Iterable[str], text: str | None = None) -> None:
         """Send a command to the server.
 
         :param args: an iterable of strings, which will be joined by spaces
@@ -611,19 +617,19 @@ class AbstractBot(abc.ABC):
     def action(self, text: str, dest: str) -> None:
         """Send a CTCP ACTION PRIVMSG to a user or channel.
 
-        :param str text: the text to send in the CTCP ACTION
-        :param str dest: the destination of the CTCP ACTION
+        :param text: the text to send in the CTCP ACTION
+        :param dest: the destination of the CTCP ACTION
 
         The same loop detection and length restrictions apply as with
         :func:`say`, though automatic message splitting is not available.
         """
         self.say('\001ACTION {}\001'.format(text), dest)
 
-    def join(self, channel: str, password: Optional[str] = None) -> None:
+    def join(self, channel: str, password: str | None = None) -> None:
         """Join a ``channel``.
 
-        :param str channel: the channel to join
-        :param str password: an optional channel password
+        :param channel: the channel to join
+        :param password: an optional channel password
 
         If ``channel`` contains a space, and no ``password`` is given, the
         space is assumed to split the argument into the channel to join and its
@@ -639,7 +645,7 @@ class AbstractBot(abc.ABC):
         self,
         nick: str,
         channel: str,
-        text: Optional[str] = None,
+        text: str | None = None,
     ) -> None:
         """Kick a ``nick`` from a ``channel``.
 
@@ -667,7 +673,7 @@ class AbstractBot(abc.ABC):
 
         self.backend.send_notice(dest, text)
 
-    def part(self, channel: str, msg: Optional[str] = None) -> None:
+    def part(self, channel: str, msg: str | None = None) -> None:
         """Leave a channel.
 
         :param channel: the channel to leave
@@ -678,7 +684,7 @@ class AbstractBot(abc.ABC):
 
         self.backend.send_part(channel, reason=msg)
 
-    def quit(self, message: Optional[str] = None) -> None:
+    def quit(self, message: str | None = None) -> None:
         """Disconnect from IRC and close the bot.
 
         :param message: optional QUIT message to send (e.g. "Bye!")
@@ -697,7 +703,7 @@ class AbstractBot(abc.ABC):
         # problematic because whomever called quit might still want to do
         # something before the main thread quits.
 
-    def restart(self, message: Optional[str] = None) -> None:
+    def restart(self, message: str | None = None) -> None:
         """Disconnect from IRC and restart the bot.
 
         :param message: optional QUIT message to send (e.g. "Be right back!")

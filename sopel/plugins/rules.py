@@ -26,6 +26,7 @@ import re
 import threading
 from typing import (
     Any,
+    Callable,
     Optional,
     Type,
     TYPE_CHECKING,
@@ -39,7 +40,11 @@ from sopel.config.core_section import (
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
+
+    from sopel.bot import Sopel
+    from sopel.config import Config
     from sopel.tools.identifiers import Identifier
+    from sopel.trigger import PreTrigger
 
 
 __all__ = [
@@ -541,14 +546,16 @@ class AbstractRule(abc.ABC):
     """
     @classmethod
     @abc.abstractmethod
-    def from_callable(cls: Type[TypedRule], settings, handler) -> TypedRule:
+    def from_callable(
+        cls: Type[TypedRule],
+        settings: Config,
+        handler: Callable,
+    ) -> TypedRule:
         """Instantiate a rule object from ``settings`` and ``handler``.
 
         :param settings: Sopel's settings
-        :type settings: :class:`sopel.config.Config`
-        :param callable handler: a function-based rule handler
+        :param handler: a function-based rule handler
         :return: an instance of this class created from the ``handler``
-        :rtype: :class:`AbstractRule`
 
         Sopel's function-based rule handlers are simple callables, decorated
         with :mod:`sopel.plugin`'s decorators to add attributes, such as rate
@@ -580,8 +587,6 @@ class AbstractRule(abc.ABC):
     def get_plugin_name(self) -> str:
         """Get the rule's plugin name.
 
-        :rtype: str
-
         The rule's plugin name will be used in various places to select,
         register, unregister, and manipulate the rule based on its plugin,
         which is referenced by its name.
@@ -590,8 +595,6 @@ class AbstractRule(abc.ABC):
     @abc.abstractmethod
     def get_rule_label(self) -> str:
         """Get the rule's label.
-
-        :rtype: str
 
         A rule can have a label, which can identify the rule by string, the
         same way a plugin can be identified by its name. This label can be used
@@ -603,8 +606,6 @@ class AbstractRule(abc.ABC):
     def get_usages(self) -> tuple:
         """Get the rule's usage examples.
 
-        :rtype: tuple
-
         A rule can have usage examples, i.e. a list of examples showing how
         the rule can be used, or in what context it can be triggered.
         """
@@ -612,8 +613,6 @@ class AbstractRule(abc.ABC):
     @abc.abstractmethod
     def get_test_parameters(self) -> tuple:
         """Get parameters for automated tests.
-
-        :rtype: tuple
 
         A rule can have automated tests attached to it, and this method must
         return the test parameters:
@@ -633,8 +632,6 @@ class AbstractRule(abc.ABC):
     def get_doc(self) -> str:
         """Get the rule's documentation.
 
-        :rtype: str
-
         A rule's documentation is a short text that can be displayed to a user
         on IRC upon asking for help about this rule. The equivalent of Python
         docstrings, but for IRC rules.
@@ -643,8 +640,6 @@ class AbstractRule(abc.ABC):
     @abc.abstractmethod
     def get_priority(self) -> str:
         """Get the rule's priority.
-
-        :rtype: str
 
         A rule can have a priority, based on the three pre-defined priorities
         used by Sopel: ``PRIORITY_HIGH``, ``PRIORITY_MEDIUM``, and
@@ -662,8 +657,6 @@ class AbstractRule(abc.ABC):
     def get_output_prefix(self) -> str:
         """Get the rule's output prefix.
 
-        :rtype: str
-
         .. seealso::
 
             See the :class:`sopel.bot.SopelWrapper` class for more information
@@ -671,13 +664,11 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match(self, bot, pretrigger) -> Iterable:
+    def match(self, bot: Sopel, pretrigger: PreTrigger) -> Iterable:
         """Match a pretrigger according to the rule.
 
         :param bot: Sopel instance
-        :type bot: :class:`sopel.bot.Sopel`
         :param pretrigger: line to match
-        :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
         This method must return a list of `match objects`__.
 
@@ -685,12 +676,11 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match_event(self, event) -> bool:
+    def match_event(self, event: str) -> bool:
         """Tell if the rule matches this ``event``.
 
-        :param str event: potential matching event
+        :param event: potential matching event
         :return: ``True`` when ``event`` matches the rule, ``False`` otherwise
-        :rtype: bool
         """
 
     @abc.abstractmethod
@@ -775,40 +765,49 @@ class AbstractRule(abc.ABC):
     def is_user_rate_limited(
         self,
         nick: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
         :param nick: the nick associated with this check
-        :param at_time: optional aware datetime for the rate limit check;
-                        if not given, ``utcnow`` will be used
+        :param at_time: aware datetime for the rate limit check
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
+
+        .. versionchanged:: 8.0.1
+
+            Parameter ``at_time`` is now required.
+
         """
 
     @abc.abstractmethod
     def is_channel_rate_limited(
         self,
         channel: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
         :param channel: the channel associated with this check
-        :param at_time: optional aware datetime for the rate limit check;
-                        if not given, ``utcnow`` will be used
+        :param at_time: aware datetime for the rate limit check
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
+
+        .. versionchanged:: 8.0.1
+
+            Parameter ``at_time`` is now required.
+
         """
 
     @abc.abstractmethod
-    def is_global_rate_limited(
-        self,
-        at_time: Optional[datetime.datetime] = None,
-    ) -> bool:
+    def is_global_rate_limited(self, at_time: datetime.datetime) -> bool:
         """Tell when the rule reached the global rate limit.
 
-        :param at_time: optional aware datetime for the rate limit check;
-                        if not given, ``utcnow`` will be used
+        :param at_time: aware datetime for the rate limit check
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
+
+        .. versionchanged:: 8.0.1
+
+            Parameter ``at_time`` is now required.
+
         """
 
     @property
@@ -845,7 +844,7 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def parse(self, text) -> Generator:
+    def parse(self, text: str) -> Generator:
         """Parse ``text`` and yield matches.
 
         :param str text: text to parse by the rule
@@ -1046,7 +1045,7 @@ class Rule(AbstractRule):
         self._handler = handler
 
         # filters
-        self._events = events or ['PRIVMSG']
+        self._events: list[str] = events or ['PRIVMSG']
         self._ctcp = ctcp or []
         self._allow_bots = bool(allow_bots)
         self._allow_echo = bool(allow_echo)
@@ -1171,10 +1170,10 @@ class Rule(AbstractRule):
             if result:
                 yield result
 
-    def match_event(self, event) -> bool:
+    def match_event(self, event: str | None) -> bool:
         return bool(event and event in self._events)
 
-    def match_ctcp(self, command: Optional[str]) -> bool:
+    def match_ctcp(self, command: str | None) -> bool:
         if not self._ctcp:
             return True
 
@@ -1219,29 +1218,29 @@ class Rule(AbstractRule):
     def is_user_rate_limited(
         self,
         nick: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
-        if at_time is None:
-            at_time = datetime.datetime.now(datetime.timezone.utc)
+        if self._user_rate_limit <= 0:
+            return False
+
         metrics = self.get_user_metrics(nick)
         return metrics.is_limited(at_time - self.user_rate_limit)
 
     def is_channel_rate_limited(
         self,
         channel: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
-        if at_time is None:
-            at_time = datetime.datetime.now(datetime.timezone.utc)
+        if self._channel_rate_limit <= 0:
+            return False
+
         metrics = self.get_channel_metrics(channel)
         return metrics.is_limited(at_time - self.channel_rate_limit)
 
-    def is_global_rate_limited(
-        self,
-        at_time: Optional[datetime.datetime] = None,
-    ) -> bool:
-        if at_time is None:
-            at_time = datetime.datetime.now(datetime.timezone.utc)
+    def is_global_rate_limited(self, at_time: datetime.datetime) -> bool:
+        if self._global_rate_limit <= 0:
+            return False
+
         metrics = self.get_global_metrics()
         return metrics.is_limited(at_time - self.global_rate_limit)
 

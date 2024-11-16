@@ -42,7 +42,11 @@ class ExpressionEvaluator:
         self.binary_ops = bin_ops or {}
         self.unary_ops = unary_ops or {}
 
-    def __call__(self, expression_str: str, timeout: float = 5.0):
+    def __call__(
+        self,
+        expression_str: str,
+        timeout: float = 5.0,
+    ) -> int | float:
         """Evaluate a Python expression and return the result.
 
         :param expression_str: the expression to evaluate
@@ -56,7 +60,7 @@ class ExpressionEvaluator:
         ast_expression = ast.parse(expression_str, mode='eval')
         return self._eval_node(ast_expression.body, time.time() + timeout)
 
-    def _eval_node(self, node: ast.AST, timeout: float):
+    def _eval_node(self, node: ast.AST, timeout: float) -> float:
         """Recursively evaluate the given :class:`ast.Node <ast.AST>`.
 
         :param node: the AST node to evaluate
@@ -116,7 +120,7 @@ class ExpressionEvaluator:
         )
 
 
-def guarded_mul(left: float, right: float):
+def guarded_mul(left: float, right: float) -> float:
     """Multiply two values, guarding against overly large inputs.
 
     :param left: the left operand
@@ -139,7 +143,7 @@ def guarded_mul(left: float, right: float):
     return operator.mul(left, right)
 
 
-def pow_complexity(num: int, exp: int):
+def pow_complexity(num: int, exp: int) -> float:
     """Estimate the worst case time :func:`pow` takes to calculate.
 
     :param num: base
@@ -205,7 +209,7 @@ def pow_complexity(num: int, exp: int):
         return exp ** 1.590 * num.bit_length() ** 1.73 / 36864057619.3
 
 
-def guarded_pow(num: float, exp: float):
+def guarded_pow(num: float, exp: float) -> float:
     """Raise a number to a power, guarding against overly large inputs.
 
     :param num: base
@@ -255,7 +259,11 @@ class EquationEvaluator(ExpressionEvaluator):
             unary_ops=self.__unary_ops
         )
 
-    def __call__(self, expression_str: str, timeout: float = 5.0):
+    def __call__(
+        self,
+        expression_str: str,
+        timeout: float = 5.0,
+    ) -> float:
         result = ExpressionEvaluator.__call__(self, expression_str, timeout)
 
         # This wrapper is here so additional sanity checks could be done

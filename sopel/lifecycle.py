@@ -13,7 +13,7 @@ import functools
 import inspect
 import logging
 import traceback
-from typing import Callable, Optional
+from typing import Callable
 
 from packaging.version import parse as parse_version
 
@@ -21,13 +21,13 @@ from sopel import __version__
 
 
 def deprecated(
-    reason: Optional[str] = None,
-    version: Optional[str] = None,
-    removed_in: Optional[str] = None,
-    warning_in: Optional[str] = None,
+    reason: str | Callable | None = None,
+    version: str | None = None,
+    removed_in: str | None = None,
+    warning_in: str | None = None,
     stack_frame: int = -1,
-    func: Optional[Callable] = None,
-):
+    func: Callable | None = None,
+) -> Callable:
     """Decorator to mark deprecated functions in Sopel's API
 
     :param reason: optional text added to the deprecation warning

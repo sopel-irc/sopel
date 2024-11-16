@@ -48,6 +48,7 @@ import importlib
 import importlib.util
 import inspect
 import itertools
+import logging
 import os
 import sys
 from typing import Optional, TYPE_CHECKING, TypedDict
@@ -59,6 +60,9 @@ from . import exceptions
 if TYPE_CHECKING:
     from sopel.bot import Sopel
     from types import ModuleType
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PluginMetaDescription(TypedDict):
@@ -95,6 +99,13 @@ class AbstractPluginHandler(abc.ABC):
     which it then delegates loading the plugin, listing its functions
     (commands, jobs, etc.), configuring it, and running any required actions
     on shutdown (either upon exiting Sopel or unloading that plugin).
+    """
+
+    name: str
+    """Plugin identifier.
+
+    The name of a plugin identifies this plugin: when Sopel loads a plugin,
+    it will store its information under that identifier.
     """
 
     @abc.abstractmethod
@@ -471,7 +482,7 @@ class PyFilePlugin(PyModulePlugin):
             spec = importlib.util.spec_from_file_location(
                 name,
                 os.path.join(filename, '__init__.py'),
-                submodule_search_locations=filename,
+                submodule_search_locations=[filename],
             )
         else:
             raise exceptions.PluginError('Invalid Sopel plugin: %s' % filename)
@@ -487,9 +498,9 @@ class PyFilePlugin(PyModulePlugin):
 
     def _load(self):
         module = importlib.util.module_from_spec(self.module_spec)
-        sys.modules[self.name] = module
         if not self.module_spec.loader:
             raise exceptions.PluginError('Could not determine loader for plugin: %s' % self.filename)
+        sys.modules[self.name] = module
         self.module_spec.loader.exec_module(module)
         return module
 
@@ -613,14 +624,20 @@ class EntryPointPlugin(PyModulePlugin):
 
         if (
             version is None
-            and hasattr(self.module, "__package__")
-            and self.module.__package__ is not None
+            and hasattr(self.entry_point, "dist")
+            and hasattr(self.entry_point.dist, "name")
         ):
+            dist_name = self.entry_point.dist.name
             try:
-                version = importlib.metadata.version(self.module.__package__)
-            except ValueError:
-                # package name is probably empty-string; just give up
-                pass
+                version = importlib.metadata.version(dist_name)
+            except (ValueError, importlib.metadata.PackageNotFoundError):
+                LOGGER.warning("Cannot determine version of %r", dist_name)
+            except Exception:
+                LOGGER.warning(
+                    "Unexpected error occurred while checking the version of %r",
+                    dist_name,
+                    exc_info=True,
+                )
 
         return version
 
