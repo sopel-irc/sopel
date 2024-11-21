@@ -126,11 +126,15 @@ def setup(bot: Sopel) -> None:
 
 def safeify_url(url: str) -> str:
     """Replace bits of a URL to make it hard to browse to."""
-    parts = urlparse(url)
-    scheme = "hxx" + parts.scheme[3:]  # hxxp
-    netloc = parts.netloc.replace(".", "[.]")  # google[.]com and IPv4
-    netloc = netloc.replace(":", "[:]")  # IPv6 addresses (bad lazy method)
-    return urlunparse((scheme, netloc) + parts[2:])
+    try:
+        parts = urlparse(url)
+        scheme = parts.scheme.replace("t", "x")  # hxxp
+        netloc = parts.netloc.replace(".", "[.]")  # google[.]com and IPv4
+        netloc = netloc.replace(":", "[:]")  # IPv6 addresses (bad lazy method)
+        return urlunparse((scheme, netloc) + parts[2:])
+    except ValueError:
+        # Still try to defang URLs that fail parsing
+        return url.replace(":", "[:]").replace(".", "[.]")
 
 
 def download_domain_list(bot: Sopel, path: str) -> bool:
@@ -224,7 +228,6 @@ def url_handler(bot: SopelWrapper, trigger: Trigger) -> None:
     strict = "strict" in mode
 
     for url in tools.web.search_urls(trigger):
-        safe_url = safeify_url(url)
 
         positives = 0  # Number of engines saying it's malicious
         total = 0  # Number of total engines
@@ -249,6 +252,7 @@ def url_handler(bot: SopelWrapper, trigger: Trigger) -> None:
 
         if positives >= 1:
             # Possibly malicious URL detected!
+            safe_url = safeify_url(url)
             LOGGER.info(
                 "Possibly malicious link (%s/%s) posted in %s by %s: %r",
                 positives,
@@ -258,11 +262,10 @@ def url_handler(bot: SopelWrapper, trigger: Trigger) -> None:
                 safe_url,
             )
             bot.say(
-                "{} {} of {} engine{} flagged a link {} posted as malicious".format(
+                "{} {} of {} engines flagged a link {} posted as malicious".format(
                     bold(color("WARNING:", colors.RED)),
                     positives,
                     total,
-                    "" if total == 1 else "s",
                     bold(trigger.nick),
                 )
             )
