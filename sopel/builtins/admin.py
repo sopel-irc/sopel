@@ -193,6 +193,7 @@ def temporary_part(bot, trigger):
 @plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('chanlist', 'channels')
 @plugin.priority('low')
+@plugin.example('.chanlist')
 def channel_list(bot, trigger):
     """Show channels Sopel is in. Can only be done in privmsg by an admin."""
     channels = ', '.join(sorted(bot.channels.keys()))
@@ -206,6 +207,8 @@ def channel_list(bot, trigger):
 @plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('restart')
 @plugin.priority('low')
+@plugin.example('.restart brb, updating stuff', user_help=True)
+@plugin.example('.restart', user_help=True)
 def restart(bot, trigger):
     """Restart the bot. Can only be done in privmsg by the bot owner."""
     quit_message = trigger.group(2)
@@ -221,6 +224,8 @@ def restart(bot, trigger):
 @plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('quit')
 @plugin.priority('low')
+@plugin.example('.quit So long, and thanks for all the fish!', user_help=True)
+@plugin.example('.quit', user_help=True)
 def quit(bot, trigger):
     """Quit from the server. Can only be done in privmsg by the bot owner."""
     quit_message = trigger.group(2)
@@ -276,6 +281,7 @@ def say(bot, trigger):
 @plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('me')
 @plugin.priority('low')
+@plugin.example('.me #YourPants takes a good whiff')
 def me(bot, trigger):
     """
     Send an ACTION (/me) to a given channel or nick. Can only be done in
@@ -342,6 +348,7 @@ def hold_ground(bot, trigger):
 @plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('mode')
 @plugin.priority('low')
+@plugin.example('.mode +R')
 def mode(bot, trigger):
     """Set a user mode on Sopel. Can only be done in privmsg by an admin.
 
