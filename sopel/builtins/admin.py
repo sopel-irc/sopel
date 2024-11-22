@@ -9,6 +9,11 @@ Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
+# PLEASE NOTE: Decorator order in this plugin is important! Admin and owner
+# commands should be silent when normal users try to trigger them. Always check
+# `@plugin.require_admin`/`@plugin.require_owner` before
+# `@plugin.require_privmsg`.
+
 from __future__ import annotations
 
 import logging
@@ -26,6 +31,8 @@ ERROR_NOTHING_TO_SAY = 'I need a channel and a message to talk.'
 """Error message when channel and/or message are missing."""
 ERROR_NOTHING_TO_RAW = 'I need an IRC message to send.'
 """Error message when no raw IRC message was given."""
+ERROR_PRIVMSG_ONLY = 'This command only works as a private message.'
+"""Error message when command must be used in PM."""
 
 
 class AdminSection(types.StaticSection):
@@ -112,8 +119,8 @@ def _part(bot, channel, msg=None, save=True):
             LOGGER.info('Removed "%s" from core.channels.', channel)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('join')
 @plugin.priority('low')
 @plugin.example('.join #example key', user_help=True)
@@ -128,8 +135,8 @@ def join(bot, trigger):
     _join(bot, channel, key)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('tmpjoin')
 @plugin.priority('low')
 @plugin.example('.tmpjoin #example key', user_help=True)
@@ -148,8 +155,8 @@ def temporary_join(bot, trigger):
     _join(bot, channel, key, save=False)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('part')
 @plugin.priority('low')
 @plugin.example('.part #example')
@@ -163,8 +170,8 @@ def part(bot, trigger):
     _part(bot, channel, part_msg)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('tmppart')
 @plugin.priority('low')
 @plugin.example('.tmppart #example')
@@ -182,8 +189,8 @@ def temporary_part(bot, trigger):
     _part(bot, channel, part_msg, save=False)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('chanlist', 'channels')
 @plugin.priority('low')
 def channel_list(bot, trigger):
@@ -195,8 +202,8 @@ def channel_list(bot, trigger):
     bot.say(channels, max_messages=1 + len(channels) // 400)
 
 
-@plugin.require_privmsg
 @plugin.require_owner
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('restart')
 @plugin.priority('low')
 def restart(bot, trigger):
@@ -210,8 +217,8 @@ def restart(bot, trigger):
     bot.restart(quit_message)
 
 
-@plugin.require_privmsg
 @plugin.require_owner
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('quit')
 @plugin.priority('low')
 def quit(bot, trigger):
@@ -226,7 +233,7 @@ def quit(bot, trigger):
 
 
 @plugin.require_owner
-@plugin.require_privmsg('This command only works as a private message.')
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('raw')
 @plugin.priority('low')
 @plugin.example('.raw PRIVMSG NickServ :CERT ADD')
@@ -243,7 +250,7 @@ def raw(bot, trigger):
 
 
 @plugin.require_admin
-@plugin.require_privmsg('This command only works as a private message.')
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('say', 'msg')
 @plugin.priority('low')
 @plugin.example('.say #YourPants Does anyone else smell neurotoxin?')
@@ -266,7 +273,7 @@ def say(bot, trigger):
 
 
 @plugin.require_admin
-@plugin.require_privmsg('This command only works as a private message.')
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('me')
 @plugin.priority('low')
 def me(bot, trigger):
@@ -327,8 +334,8 @@ def hold_ground(bot, trigger):
         LOGGER.info('Got kicked from "%s"; admin.hold_ground is off.', channel)
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('mode')
 @plugin.priority('low')
 def mode(bot, trigger):
@@ -387,8 +394,8 @@ def parse_section_option_value(config, trigger):
     return (section, section_name, static_sec, option, value)
 
 
-@plugin.require_privmsg("This command only works as a private message.")
-@plugin.require_admin("This command requires admin privileges.")
+@plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('set')
 @plugin.example('.set core.owner MyNick')
 def set_config(bot, trigger):
@@ -448,8 +455,8 @@ def set_config(bot, trigger):
     bot.say("OK. Set '{}.{}' successfully.".format(section_name, option))
 
 
-@plugin.require_privmsg("This command only works as a private message.")
-@plugin.require_admin("This command requires admin privileges.")
+@plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('unset')
 @plugin.example('.unset core.owner')
 def unset_config(bot, trigger):
@@ -484,8 +491,8 @@ def unset_config(bot, trigger):
         bot.say('Cannot unset {}.{}; it is a required option.'.format(section_name, option))
 
 
-@plugin.require_privmsg
 @plugin.require_admin
+@plugin.require_privmsg(ERROR_PRIVMSG_ONLY)
 @plugin.command('save')
 @plugin.example('.save')
 def save_config(bot, trigger):
