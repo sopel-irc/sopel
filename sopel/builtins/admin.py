@@ -126,7 +126,7 @@ def _part(bot, channel, msg=None, save=True):
 @plugin.example('.join #example key', user_help=True)
 @plugin.example('.join #example', user_help=True)
 def join(bot, trigger):
-    """Join the specified channel. This is an admin-only command."""
+    """Join the specified channel. Can only be done in privmsg by an admin."""
     channel, key = trigger.group(3), trigger.group(4)
     if not channel:
         bot.reply(ERROR_JOIN_NO_CHANNEL)
@@ -142,7 +142,7 @@ def join(bot, trigger):
 @plugin.example('.tmpjoin #example key', user_help=True)
 @plugin.example('.tmpjoin #example', user_help=True)
 def temporary_join(bot, trigger):
-    """Like ``join``, without saving. This is an admin-only command.
+    """Like ``join``, without saving. Can only be done in privmsg by an admin.
 
     Unlike the ``join`` command, ``tmpjoin`` won't remember the channel upon
     restarting the bot.
@@ -161,7 +161,7 @@ def temporary_join(bot, trigger):
 @plugin.priority('low')
 @plugin.example('.part #example')
 def part(bot, trigger):
-    """Part the specified channel. This is an admin-only command."""
+    """Part the specified channel. Can only be done in privmsg by an admin."""
     channel, _sep, part_msg = trigger.group(2).partition(' ')
     if not channel:
         bot.reply(ERROR_PART_NO_CHANNEL)
@@ -176,7 +176,7 @@ def part(bot, trigger):
 @plugin.priority('low')
 @plugin.example('.tmppart #example')
 def temporary_part(bot, trigger):
-    """Like ``part``, without saving. This is an admin-only command.
+    """Like ``part``, without saving. Can only be done in privmsg by an admin.
 
     Unlike the ``part`` command, ``tmppart`` will rejoin the channel upon
     restarting the bot.
@@ -194,7 +194,7 @@ def temporary_part(bot, trigger):
 @plugin.command('chanlist', 'channels')
 @plugin.priority('low')
 def channel_list(bot, trigger):
-    """Show channels Sopel is in."""
+    """Show channels Sopel is in. Can only be done in privmsg by an admin."""
     channels = ', '.join(sorted(bot.channels.keys()))
 
     # conservative assumption about how much room we have in the line to make
@@ -207,7 +207,7 @@ def channel_list(bot, trigger):
 @plugin.command('restart')
 @plugin.priority('low')
 def restart(bot, trigger):
-    """Restart the bot. This is an owner-only command."""
+    """Restart the bot. Can only be done in privmsg by the bot owner."""
     quit_message = trigger.group(2)
     default_message = 'Restarting on command from %s.' % trigger.nick
     if not quit_message:
@@ -222,7 +222,7 @@ def restart(bot, trigger):
 @plugin.command('quit')
 @plugin.priority('low')
 def quit(bot, trigger):
-    """Quit from the server. This is an owner-only command."""
+    """Quit from the server. Can only be done in privmsg by the bot owner."""
     quit_message = trigger.group(2)
     default_message = 'Quitting on command from %s.' % trigger.nick
     if not quit_message:
@@ -297,7 +297,11 @@ def me(bot, trigger):
 @plugin.event('INVITE')
 @plugin.priority('low')
 def invite_join(bot, trigger):
-    """Join a channel Sopel is invited to, if the inviter is an admin."""
+    """Join a channel Sopel is invited to, if conditions are met.
+
+    INVITE from an admin is always accepted. Other users' INVITEs are accepted
+    only if the ``auto_accept_invite`` setting is enabled.
+    """
     channel = trigger.args[1]
     if trigger.admin:
         LOGGER.info(
@@ -339,7 +343,11 @@ def hold_ground(bot, trigger):
 @plugin.command('mode')
 @plugin.priority('low')
 def mode(bot, trigger):
-    """Set a user mode on Sopel. Can only be done in privmsg by an admin."""
+    """Set a user mode on Sopel. Can only be done in privmsg by an admin.
+
+    This command doesn't persist across restarts. Set the ``core.modes`` config
+    option to apply the same mode(s) every time Sopel connects to IRC.
+    """
     mode = trigger.group(3)
     if not mode:
         bot.reply('What mode should I set?')
@@ -399,7 +407,9 @@ def parse_section_option_value(config, trigger):
 @plugin.command('set')
 @plugin.example('.set core.owner MyNick')
 def set_config(bot, trigger):
-    """See and modify values of Sopel's config object.
+    """
+    See and modify values of Sopel's config object. Can only be done in privmsg
+    by an admin.
 
     Trigger args:
         arg1 - section and option, in the form "section.option"
@@ -460,7 +470,9 @@ def set_config(bot, trigger):
 @plugin.command('unset')
 @plugin.example('.unset core.owner')
 def unset_config(bot, trigger):
-    """Unset value of Sopel's config object.
+    """
+    Unset a value in Sopel's config object. Can only be done in privmsg by an
+    admin.
 
     Unsetting a value will reset it to the default specified in the config
     definition.
@@ -496,7 +508,10 @@ def unset_config(bot, trigger):
 @plugin.command('save')
 @plugin.example('.save')
 def save_config(bot, trigger):
-    """Save state of Sopel's config object to the configuration file."""
+    """
+    Save state of Sopel's config object to the configuration file. Can only be
+    done in privmsg by an admin.
+    """
     bot.config.save()
     LOGGER.info('Configuration file saved.')
     bot.say('Configuration file saved.')
