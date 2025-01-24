@@ -76,6 +76,22 @@ def mockbot(configfactory):
     return sopel
 
 
+PRELOADED_CONFIG = """
+[core]
+owner = testnick
+nick = TestBot
+enable =
+    coretasks
+    url
+"""
+
+
+@pytest.fixture
+def preloadedbot(configfactory, botfactory):
+    tmpconfig = configfactory('preloaded.cfg', PRELOADED_CONFIG)
+    return botfactory.preloaded(tmpconfig, ['url'])
+
+
 @pytest.mark.parametrize("site", INVALID_URLS)
 def test_find_title_invalid(site):
     # All local for invalid ones
@@ -114,3 +130,30 @@ def test_url_triggers_rules_and_auto_title(mockbot):
     labels = sorted(result[0].get_rule_label() for result in results)
     expected = ['handle_urls_https', 'title_auto']
     assert labels == expected
+
+
+@pytest.mark.parametrize('level, result', (
+    ('NOTHING', False),
+    ('VOICE', False),
+    ('HALFOP', False),
+    ('OP', True),
+    ('ADMIN', True),
+    ('OWNER', True),
+))
+def test_url_ban_privilege(preloadedbot, ircfactory, triggerfactory, level, result):
+    """Make sure the urlban command privilege check functions correctly."""
+    irc = ircfactory(preloadedbot)
+    irc.channel_joined('#test', [
+        'Unothing', 'Uvoice', 'Uhalfop', 'Uop', 'Uadmin', 'Uowner'])
+    irc.mode_set('#test', '+vhoaq', [
+        'Uvoice', 'Uhalfop', 'Uop', 'Uadmin', 'Uowner'])
+
+    nick = f'U{level.title()}'
+    user = level.lower()
+    line = f':{nick}!{user}@example.com PRIVMSG #test :.urlban *'
+    wrapper = triggerfactory.wrapper(preloadedbot, line)
+    match = triggerfactory(preloadedbot, line)
+
+    # parameter matrix assumes the default `url.exclude_required_access` config
+    # value, which was 'OP' at the time of test creation
+    assert url._user_can_change_excludes(wrapper, match) == result
