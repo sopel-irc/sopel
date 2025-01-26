@@ -2,6 +2,19 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 8.0.1 and 8.0.2
+===============================
+
+Housekeeping changes
+--------------------
+
+* Pin `urllib3` to accommodate our older, forked `vcrpy` in tests [[#2647][]]
+* Update `typing.cast()` usage for stricter linting from `flake8-type-checking`
+  3.x [[#2647][]]
+
+[#2647]: https://github.com/sopel-irc/sopel/pull/2647
+
+
 Changes between 8.0.0 and 8.0.1
 ===============================
 
