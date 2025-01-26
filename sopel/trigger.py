@@ -229,7 +229,7 @@ class PreTrigger:
 
         # The regex will always match any string, even an empty one
         components_match = cast(
-            Match, PreTrigger.component_regex.match(self.hostmask or ''))
+            'Match', PreTrigger.component_regex.match(self.hostmask or ''))
         nick, self.user, self.host = components_match.groups()
         self.nick: Identifier = self.make_identifier(nick)
 
