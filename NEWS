@@ -5,6 +5,11 @@ causing problems with the site build.
 Changes between 8.0.1 and 8.0.2
 ===============================
 
+Plugin changes
+--------------
+
+* Fix permission check in `.urlban` and related commands [[#2650][]]
+
 Housekeeping changes
 --------------------
 
@@ -13,6 +18,7 @@ Housekeeping changes
   3.x [[#2647][]]
 
 [#2647]: https://github.com/sopel-irc/sopel/pull/2647
+[#2650]: https://github.com/sopel-irc/sopel/pull/2650
 
 
 Changes between 8.0.0 and 8.0.1
