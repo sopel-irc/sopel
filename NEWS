@@ -8,7 +8,10 @@ Changes between 8.0.1 and 8.0.2
 Plugin changes
 --------------
 
-* Fix permission check in `.urlban` and related commands [[#2650][]]
+* safety:
+  * Gracefully handle invalid URLs containing square brackets [[#2646][]]
+* url:
+  * Fix permission check in `.urlban` and related commands [[#2650][]]
 
 Housekeeping changes
 --------------------
@@ -17,6 +20,7 @@ Housekeeping changes
 * Update `typing.cast()` usage for stricter linting from `flake8-type-checking`
   3.x [[#2647][]]
 
+[#2646]: https://github.com/sopel-irc/sopel/pull/2646
 [#2647]: https://github.com/sopel-irc/sopel/pull/2647
 [#2650]: https://github.com/sopel-irc/sopel/pull/2650
 
