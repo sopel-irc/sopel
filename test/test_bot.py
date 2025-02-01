@@ -1174,8 +1174,8 @@ def test_rate_limit_time_left_field(mockbot, match_hello_rule, limit_type):
     # assert there is now a NOTICE which contains templated time left information
     assert mockbot.backend.message_sent
     patt = (br"NOTICE Test :"
-            br"time_left=\d+:\d+:\d+(\.\d+)? "
-            br"time_left_sec=\d+(\.\d+)?")
+            br"time_left=\d+:\d+:\d+ "
+            br"time_left_sec=\d+")
     assert re.match(patt, mockbot.backend.message_sent[0])
 
 
