@@ -8,9 +8,11 @@
 from __future__ import annotations
 
 from ast import literal_eval
+from datetime import timedelta
 import inspect
 import itertools
 import logging
+import math
 import re
 import threading
 import time
@@ -631,7 +633,11 @@ class Sopel(irc.AbstractBot):
             return False, None
 
         next_time = metrics.last_time + rate_limit
-        time_left = next_time - at_time
+        time_left = timedelta(
+            seconds=math.ceil(
+                (next_time - at_time).total_seconds()
+            )
+        )
 
         message: Optional[str] = None
 
