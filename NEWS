@@ -13,6 +13,12 @@ Plugin changes
 * url:
   * Fix permission check in `.urlban` and related commands [[#2650][]]
 
+Core changes
+------------
+
+* Removed microseconds from `{time_left}` and `{time_left_sec}` values in rate
+  limit `message` output; round up to next second instead [[#2653][]]
+
 Housekeeping changes
 --------------------
 
@@ -23,6 +29,7 @@ Housekeeping changes
 [#2646]: https://github.com/sopel-irc/sopel/pull/2646
 [#2647]: https://github.com/sopel-irc/sopel/pull/2647
 [#2650]: https://github.com/sopel-irc/sopel/pull/2650
+[#2653]: https://github.com/sopel-irc/sopel/pull/2653
 
 
 Changes between 8.0.0 and 8.0.1
