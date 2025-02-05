@@ -11,7 +11,7 @@ namespaces = false
 
 [project]
 name = "sopel"
-version = "8.0.1"
+version = "8.0.2"
 description = "Simple and extensible IRC bot"
 maintainers = [
   { name="dgw" },
