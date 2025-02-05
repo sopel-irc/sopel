@@ -22,6 +22,7 @@ sphinx-rfcsection~=0.1.1
 vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3
 # also have to use a version of urllib3 that doesn't use the `version_string`
 # attr of the response object, because vcrpy won't support it until 7.x
+# reverting to mainline vcrpy is tracked in #2456
 urllib3<2.3
 # type check
 mypy>=1.3,<2
