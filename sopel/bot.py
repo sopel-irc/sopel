@@ -707,7 +707,7 @@ class Sopel(irc.AbstractBot):
             LOGGER.warning("Plugin aborted while handling trigger %r", trigger, exc_info=abort)
 
             if abort.message:
-                self.say(message, trigger.sender)
+                self.say(abort.message, trigger.sender)
         except KeyboardInterrupt:
             raise
         except Exception as error:
