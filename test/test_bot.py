@@ -9,6 +9,7 @@ import pytest
 
 from sopel import bot, loader, plugin, plugins, trigger
 from sopel.plugins import rules
+from sopel.plugins.exceptions import PluginAbort
 from sopel.tests import rawlist
 from sopel.tools import Identifier, SopelMemory, target
 
@@ -1058,6 +1059,59 @@ def test_call_rule_rate_limited_global_with_message(mockbot, match_hello_rule):
         'NOTICE Test :You reached the server rate limit.',
     ), 'A NOTICE should appear here.'
     assert items == [1], 'There must not be any new item'
+
+
+def test_call_rule_pluginabort_with_message(
+    mockbot: bot.Sopel,
+    match_hello_rule: typing.Callable,
+) -> None:
+    def testrule(bot, trigger):
+        bot.say('Before abort')
+        raise PluginAbort("Aborting!")
+        bot.say('After abort')
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule)
+
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
+    # call rule
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule has been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :Before abort',
+        'PRIVMSG #channel :Aborting!'
+    )
+
+
+def test_call_rule_pluginabort_without_message(
+    mockbot: bot.Sopel,
+    match_hello_rule: typing.Callable,
+) -> None:
+    def testrule(bot, trigger):
+        bot.say('Before abort')
+        raise PluginAbort()
+        bot.say('After abort')
+
+    rule_hello = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule)
+
+    match, rule_trigger, wrapper = match_hello_rule(rule_hello)
+
+    # call rule
+    mockbot.call_rule(rule_hello, wrapper, rule_trigger)
+
+    # assert the rule has been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :Before abort',
+    )
 
 
 # -----------------------------------------------------------------------------
