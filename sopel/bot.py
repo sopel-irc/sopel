@@ -35,6 +35,7 @@ from sopel.plugins import (
     jobs as plugin_jobs,
     rules as plugin_rules,
 )
+from sopel.plugins.exceptions import PluginAbort
 from sopel.tools import jobs as tools_jobs
 from sopel.trigger import Trigger
 
@@ -702,6 +703,15 @@ class Sopel(irc.AbstractBot):
 
         try:
             rule.execute(sopel, trigger)
+        except PluginAbort as abort:
+            LOGGER.warning("Plugin aborted while handling trigger %r", trigger, exc_info=abort)
+
+            if len(abort.args) == 1:
+                message = abort.args[0]
+                if not isinstance(message, str):
+                    message = repr(message)
+
+                self.say(message, trigger.sender)
         except KeyboardInterrupt:
             raise
         except Exception as error:

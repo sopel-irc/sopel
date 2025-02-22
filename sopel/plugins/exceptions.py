@@ -24,3 +24,7 @@ class PluginSettingsError(PluginError):
     for example in its ``setup`` function, in any of its rules or commands,
     and in the loader function for the :func:`sopel.plugin.url_lazy` decorator.
     """
+
+
+class PluginAbort(PluginError):
+    """Exception raised by plugin code to abort handling of the current event."""
