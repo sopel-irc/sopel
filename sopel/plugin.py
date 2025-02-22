@@ -43,8 +43,9 @@ if TYPE_CHECKING:
 __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
-    # decorators
+    # functions
     'abort',
+    # decorators
     'action_command',
     'action_commands',
     'allow_bots',
