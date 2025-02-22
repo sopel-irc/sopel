@@ -14,6 +14,7 @@ import functools
 import logging
 import re
 from typing import (
+    Any,
     Callable,
     Literal,
     Optional,
@@ -2029,6 +2030,6 @@ def output_prefix(prefix: str) -> Callable:
     return add_attribute
 
 
-def abort(*args, **kwargs) -> None:
+def abort(*args: Any, **kwargs: Any) -> None:
     """Abort execution of a plugin event"""
     raise PluginAbort(*args, **kwargs)
