@@ -16,6 +16,7 @@ import re
 from typing import (
     Callable,
     Literal,
+    NoReturn,
     Optional,
     Pattern,
     Protocol,
@@ -2030,6 +2031,6 @@ def output_prefix(prefix: str) -> Callable:
     return add_attribute
 
 
-def abort(msg: str | None = None) -> None:
+def abort(msg: str | None = None) -> NoReturn:
     """Abort execution of a plugin event"""
     raise PluginAbort(msg)
