@@ -23,6 +23,7 @@ from typing import (
     Union,
 )
 
+from sopel.plugins.exceptions import PluginAbort
 # import and expose privileges as shortcut
 from sopel.privileges import AccessLevel
 
@@ -42,6 +43,7 @@ __all__ = [
     # constants
     'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
     # decorators
+    'abort',
     'action_command',
     'action_commands',
     'allow_bots',
@@ -2025,3 +2027,8 @@ def output_prefix(prefix: str) -> Callable:
         function.output_prefix = prefix
         return function
     return add_attribute
+
+
+def abort(*args, **kwargs) -> None:
+    """Abort execution of a plugin event"""
+    raise PluginAbort(*args, **kwargs)
