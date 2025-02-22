@@ -27,4 +27,11 @@ class PluginSettingsError(PluginError):
 
 
 class PluginAbort(PluginError):
-    """Exception raised by plugin code to abort handling of the current event."""
+    """Exception raised by plugin code to abort handling of the current event.
+
+    If a message is provided, the bot will send this message to the sender when
+    the abort is received by the core during event handling.
+    """
+    def __init__(self, message: str | None = None):
+        self.message = message
+        super().__init__(message)
