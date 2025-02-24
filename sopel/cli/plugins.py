@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import inspect
 import operator
+import subprocess
 
 from sopel import config, plugins
 from . import utils
@@ -587,29 +588,31 @@ def handle_new(options):
         .. _The template repo: https://github.com/sopel-irc/plugin
 
     """
-    try:
-        # cookiecutter doesn't advertise type annotations, as of writing
-        from cookiecutter.main import cookiecutter  # type: ignore
-    except ImportError:
-        utils.stderr(
-            'The `cookiecutter` package is required to create a new plugin.')
-        utils.stderr(
-            'Hint: `pip install cookiecutter`')
-        return 2
-
     template = options.template
     plugin_name = options.name
     output_dir = options.directory
 
+    args = (
+        'cookiecutter',
+        '--output-dir', output_dir,
+        template,
+        f'plugin_name={plugin_name}',
+    )
+
     try:
-        cookiecutter(
-            template,
-            output_dir=output_dir,
-            extra_context={'plugin_name': plugin_name},
-        )
-    except EOFError:
-        utils.stderr('Operation cancelled.')
+        result = subprocess.run(args)
+    except FileNotFoundError:
+        utils.stderr(
+            'The `cookiecutter` command is required to create a new plugin.')
+        utils.stderr(
+            'Use your favorite Python package tool to install it.')
+        return 2
+    except KeyboardInterrupt:
+        # override the base handler, as we don't need the "Bye!" message
+        # cookiecutter prints "Aborted!" by itself if interrupted
         return 1
+
+    return result.returncode
 
 
 def main():
