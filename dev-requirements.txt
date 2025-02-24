@@ -11,10 +11,9 @@ sphinx>=4,<5
 # specify exact autoprogram version because the new (in 2021) maintainer
 # showed that they will indeed make major changes in patch versions
 sphinxcontrib-autoprogram==0.1.7
-vcrpy<3.0.0
+vcrpy
 # type check
 mypy>=0.920,<1
 sqlalchemy[mypy]>=1.4,<1.5
-types-pkg-resources~=0.1.3
 types-pytz
 types-requests>=2,<3

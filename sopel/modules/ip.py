@@ -106,12 +106,6 @@ def _find_geoip_db(bot):
 
 
 @plugin.command('iplookup', 'ip')
-@plugin.example(
-    '.ip 8.8.8.8',
-    r'Hostname: \S*dns\S*\.google\S*( \| .+?: .+?)+ \| ISP: AS15169 \S+',
-    re=True,
-    ignore='Downloading GeoIP database, please wait...',
-    online=True)
 @plugin.output_prefix('[IP/Host Lookup] ')
 def ip(bot, trigger):
     """IP Lookup tool"""
