@@ -4,11 +4,8 @@ name: CI
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+      - master
+  pull_request
 
 jobs:
   tests:
