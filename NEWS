@@ -22,6 +22,82 @@ Housekeeping changes
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 
 
+Changes between 8.0.1 and 8.0.2
+===============================
+
+Plugin changes
+--------------
+
+* safety:
+  * Gracefully handle invalid URLs containing square brackets [[#2646][]]
+* url:
+  * Fix permission check in `.urlban` and related commands [[#2650][]]
+
+Core changes
+------------
+
+* Removed microseconds from `{time_left}` and `{time_left_sec}` values in rate
+  limit `message` output; round up to next second instead [[#2653][]]
+
+Housekeeping changes
+--------------------
+
+* Pin `urllib3` to accommodate our older, forked `vcrpy` in tests [[#2647][]]
+* Update `typing.cast()` usage for stricter linting from `flake8-type-checking`
+  3.x [[#2647][]]
+
+[#2646]: https://github.com/sopel-irc/sopel/pull/2646
+[#2647]: https://github.com/sopel-irc/sopel/pull/2647
+[#2650]: https://github.com/sopel-irc/sopel/pull/2650
+[#2653]: https://github.com/sopel-irc/sopel/pull/2653
+
+
+Changes between 8.0.0 and 8.0.1
+===============================
+
+Plugin changes
+--------------
+
+* find:
+  * Fixed double-bold formatting [[#2589][]]
+  * Support escaping backslashes [[#2589][]]
+
+Core changes
+------------
+
+* Use distribution name to query version of entry-point plugins [[#2594][]]
+* Added plugin version number in `sopel-plugins show` output [[#2638][]]
+* Fixed loading folder-style plugins with relative imports [[#2633][]]
+* Fixed rate-limiting behavior for rules without a rate limit [[#2629][]]
+* `config.types.ChoiceAttribute` logs invalid values for debugging [[#2624][]]
+* Also remove null (`\x00`) in `irc.utils.safe()` function [[#2620][]]
+
+Housekeeping changes
+--------------------
+
+* Document advanced tip about arbitrarily scheduling code [[#2617][]]
+* Include `versionadded` notes for more methods in `irc.AbstractBot` [[#2642][]]
+* Start moving from `typing.Optional` to the `| None` convention [[#2642][]]
+* Minor updates to keep up with type-checking ecosystem [[#2614][], [#2628][]]
+* Start checking for incomplete type annotations [[#2616][]]
+* Added tests to `find` plugin [[#2589][]]
+* Fixed slowdown in `@plugin.example` tests with `repeat` enabled [[#2630][]]
+
+[#2589]: https://github.com/sopel-irc/sopel/pull/2589
+[#2594]: https://github.com/sopel-irc/sopel/pull/2594
+[#2614]: https://github.com/sopel-irc/sopel/pull/2614
+[#2616]: https://github.com/sopel-irc/sopel/pull/2616
+[#2617]: https://github.com/sopel-irc/sopel/pull/2617
+[#2620]: https://github.com/sopel-irc/sopel/pull/2620
+[#2624]: https://github.com/sopel-irc/sopel/pull/2624
+[#2628]: https://github.com/sopel-irc/sopel/pull/2628
+[#2629]: https://github.com/sopel-irc/sopel/pull/2629
+[#2630]: https://github.com/sopel-irc/sopel/pull/2630
+[#2633]: https://github.com/sopel-irc/sopel/pull/2633
+[#2638]: https://github.com/sopel-irc/sopel/pull/2638
+[#2642]: https://github.com/sopel-irc/sopel/pull/2642
+
+
 Changes between 7.1.9 and 8.0.0
 ===============================
 
