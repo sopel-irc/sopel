@@ -12,14 +12,17 @@ Plugin changes
 
 * url:
   * Improve private IP protection [[#2285][]]
+  * Housekeeping of deprecated internal API usage [[#2635][]]
 
 Housekeeping changes
 --------------------
 
-* Started testing on Python 3.13, and fixed deprecation warnings [[#2628][]]
+* Start testing on Python 3.13, and fix deprecation warnings [[#2628][]]
+* Replace `bot.search_url_callbacks()` method usage in core [[#2635][]]
 
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
+[#2635]: https://github.com/sopel-irc/sopel/pull/2635
 
 
 Changes between 8.0.1 and 8.0.2
