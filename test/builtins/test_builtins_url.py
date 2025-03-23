@@ -5,7 +5,7 @@ import re
 
 import pytest
 
-from sopel import bot, loader, plugin, plugins, trigger
+from sopel import bot, plugin, plugins, trigger
 from sopel.builtins import url
 
 
@@ -60,7 +60,7 @@ def mockbot(configfactory):
     # clean callables and set plugin name by hand
     # since the loader and plugin handlers are excluded here
     for handler in callables:
-        loader.clean_callable(handler, tmpconfig)
+        handler.setup(tmpconfig)
         handler.plugin_name = 'testplugin'
 
     # register callables
