@@ -18,3 +18,4 @@ Plugin Internal Machinery
     plugins/handlers
     plugins/jobs
     plugins/rules
+    plugins/callables
