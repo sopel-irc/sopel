@@ -53,9 +53,9 @@ import os
 import sys
 from typing import ClassVar, TYPE_CHECKING, TypedDict
 
-from sopel import __version__ as release, loader, plugin as plugin_decorators
+from sopel import __version__ as release
 
-from . import exceptions
+from . import callables, exceptions
 
 
 if TYPE_CHECKING:
@@ -181,7 +181,7 @@ class AbstractPluginHandler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_capability_requests(self) -> list[plugin_decorators.capability]:
+    def get_capability_requests(self) -> list[callables.Capability]:
         """Retrieve the plugin's list of capability requests."""
 
     @abc.abstractmethod
@@ -377,11 +377,11 @@ class PyModulePlugin(AbstractPluginHandler):
         """
         return hasattr(self.module, 'setup')
 
-    def get_capability_requests(self) -> list[plugin_decorators.capability]:
+    def get_capability_requests(self) -> list[callables.Capability]:
         return [
             module_attribute
             for module_attribute in vars(self.module).values()
-            if isinstance(module_attribute, plugin_decorators.capability)
+            if isinstance(module_attribute, callables.Capability)
         ]
 
     def register(self, bot: Sopel) -> None:
@@ -389,17 +389,14 @@ class PyModulePlugin(AbstractPluginHandler):
         for cap_request in self.get_capability_requests():
             bot.cap_requests.register(self.name, cap_request)
 
-        callables, jobs, _, urls = loader.clean_module(
-            self.module,
-            bot.config,
-        )
-
-        for part in itertools.chain(callables, jobs, urls):
-            # annotate all plugin callables with a `plugin_name` attribute
-            # to make per-channel config work; see #1839
+        # plugin callables go through ``bot.add_plugin``
+        rules, jobs, _, urls = callables.clean_module(self.module, bot.config)
+        for part in itertools.chain(rules, jobs, urls):
+            # annotate all callables in relevant_parts with `plugin_name`
+            # attribute to make per-channel config work; see #1839
             setattr(part, 'plugin_name', self.name)
 
-        bot.register_callables(callables)
+        bot.register_callables(rules)
         bot.register_jobs(jobs)
         if self.has_shutdown():
             bot.register_shutdowns([self.module.shutdown])
