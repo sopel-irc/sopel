@@ -360,7 +360,7 @@ def virustotal_lookup(
     }
     bot.memory[SAFETY_CACHE_KEY][url] = result
     if len(bot.memory[SAFETY_CACHE_KEY]) >= (2 * CACHE_LIMIT):
-        _clean_cache(bot)
+        _clean_cache(bot)  # type: ignore[arg-type]
     return result
 
 
