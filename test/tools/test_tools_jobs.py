@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from sopel import loader, plugin
+from sopel import plugin
 from sopel.tools import jobs
 
 
@@ -205,7 +205,7 @@ def test_job_from_callable(mockconfig):
         """The job's docstring."""
         return 'tested'
 
-    loader.clean_callable(handler, mockconfig)
+    handler.setup(mockconfig)
     handler.plugin_name = 'testplugin'
 
     job = jobs.Job.from_callable(mockconfig, handler)

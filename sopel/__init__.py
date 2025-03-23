@@ -25,7 +25,7 @@ __all__ = [
     'db',
     'formatting',
     'irc',
-    'loader',
+    'loader',  # deprecated in 8.1, removed in 9.0
     'logger',
     'module',  # deprecated in 7.1, removed in 9.0
     'plugin',

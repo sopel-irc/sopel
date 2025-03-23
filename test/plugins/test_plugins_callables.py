@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from sopel.plugins.callables import PluginCallable, PluginGeneric, PluginJob
+from sopel.tests import rawlist
 
 
 if TYPE_CHECKING:
@@ -117,6 +118,59 @@ def test_callable_from_plugin_object_generic(
 
     plugin_callable = PluginCallable.from_plugin_object(plugin_generic)
     assert plugin_callable(wrapped, wrapped._trigger) == expected
+
+
+def test_callable_call_guarded(
+    mockbot: Sopel,
+    triggerfactory: TriggerFactory,
+):
+    wrapped = triggerfactory.wrapper(
+        mockbot, ':Foo!foo@example.com PRIVMSG #channel :test message')
+    expected = 'test value: test message'
+
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    def predicate(bot: SopelWrapper, trigger: Trigger):
+        bot.say('guarded')
+        return False
+
+    def free(bot: SopelWrapper, trigger: Trigger):
+        bot.say('free')
+        return True
+
+    n = len(mockbot.backend.message_sent)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.predicates.append(free)
+    assert plugin_callable(wrapped, wrapped._trigger) == expected, (
+        'All predicates return true, the handler should execute.'
+    )
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'PRIVMSG #channel :free'
+    ), 'Predicates can send messages.'
+
+    n = len(mockbot.backend.message_sent)
+
+    plugin_callable.predicates.append(predicate)
+    assert plugin_callable(wrapped, wrapped._trigger) is None, (
+        'One predicate returns false, the handler must not execute.'
+    )
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'PRIVMSG #channel :free',
+        'PRIVMSG #channel :guarded',
+    ), 'Both predicates can send messages.'
+
+    n = len(mockbot.backend.message_sent)
+
+    plugin_callable.predicates.append(free)
+    assert plugin_callable(wrapped, wrapped._trigger) is None, (
+        'One predicate returns false, the handler must not execute.'
+    )
+    assert mockbot.backend.message_sent[n:] == rawlist(
+        'PRIVMSG #channel :free',
+        'PRIVMSG #channel :guarded',
+    ), 'Predicates after the first to return false are never called.'
 
 
 def test_callable_ensure_callable_function():

@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from sopel import loader, plugin, plugins
+from sopel import loader, plugins
 
 
 MOCK_MODULE_CONTENT = """from __future__ import annotations
@@ -15,59 +15,68 @@ import re
 from sopel import plugin
 
 
-@plugin.commands("first")
 def first_command(bot, trigger):
     pass
 
+first_command.commands = ["first"]
+first_command._sopel_callable = True
 
-@plugin.commands("second")
 def second_command(bot, trigger):
     pass
 
+second_command.commands = ["second"]
+second_command._sopel_callable = True
 
-@plugin.interval(5)
 def interval5s(bot):
     pass
 
+interval5s.interval = 5
+interval5s._sopel_callable = True
 
-@plugin.interval(10)
 def interval10s(bot):
     pass
 
+interval10s.interval = 10
+interval10s._sopel_callable = True
 
-@plugin.url(r'.\\.example\\.com')
 def example_url(bot, trigger, match=None):
     pass
 
+example_url.url_regex = [r'.\\.example\\.com']
+example_url._sopel_callable = True
 
 def loader(settings):
     return [re.compile(r'.+\\.example\\.com')]
 
-
-@plugin.url_lazy(loader)
 def example_url_lazy(bot, trigger):
     pass
 
+example_url_lazy.url_lazy_loaders = [loader]
+example_url_lazy._sopel_callable = True
 
-@plugin.rule_lazy(loader)
 def example_rule_lazy(bot, trigger):
     pass
 
+example_rule_lazy.rule_lazy_loaders = [loader]
+example_rule_lazy._sopel_callable = True
 
-@plugin.find_lazy(loader)
 def example_find_lazy(bot, trigger):
     pass
 
+example_find_lazy.find_rules_lazy_loaders = [loader]
+example_find_lazy._sopel_callable = True
 
-@plugin.search_lazy(loader)
 def example_search_lazy(bot, trigger):
     pass
 
+example_search_lazy.search_rules_lazy_loaders = [loader]
+example_search_lazy._sopel_callable = True
 
-@plugin.event('TOPIC')
 def on_topic_command(bot):
     pass
 
+on_topic_command.event = ['TOPIC']
+on_topic_command._sopel_callable = True
 
 def shutdown():
     pass
@@ -77,9 +86,11 @@ def ignored():
     pass
 
 
-@plugin.rate(10)
 def ignored_rate():
     pass
+
+
+ignored_rate.global_rate = 10
 
 
 class Ignored:
@@ -199,21 +210,28 @@ def test_clean_module(testplugin, tmpconfig):
     callables, jobs, shutdowns, urls = loader.clean_module(
         test_mod, tmpconfig)
 
+    func_callables = [c.get_handler() for c in callables]
+
     assert len(callables) == 6
-    assert test_mod.first_command in callables
-    assert test_mod.second_command in callables
-    assert test_mod.on_topic_command in callables
-    assert test_mod.example_rule_lazy in callables
-    assert test_mod.example_find_lazy in callables
-    assert test_mod.example_search_lazy in callables
+    assert test_mod.first_command in func_callables
+    assert test_mod.second_command in func_callables
+    assert test_mod.on_topic_command in func_callables
+    assert test_mod.example_rule_lazy in func_callables
+    assert test_mod.example_find_lazy in func_callables
+    assert test_mod.example_search_lazy in func_callables
+
+    func_jobs = [c.get_handler() for c in jobs]
     assert len(jobs) == 2
-    assert test_mod.interval5s in jobs
-    assert test_mod.interval10s in jobs
+    assert test_mod.interval5s in func_jobs
+    assert test_mod.interval10s in func_jobs
+
     assert len(shutdowns)
     assert test_mod.shutdown in shutdowns
+
+    func_urls = [c.get_handler() for c in urls]
     assert len(urls) == 2
-    assert test_mod.example_url in urls
-    assert test_mod.example_url_lazy in urls
+    assert test_mod.example_url in func_urls
+    assert test_mod.example_url_lazy in func_urls
 
     # assert is_triggerable behavior *after* clean_module has been called
     assert loader.is_triggerable(test_mod.first_command)
@@ -271,10 +289,10 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
     new_callables, new_jobs, new_shutdowns, new_urls = loader.clean_module(
         test_mod, tmpconfig)
 
-    assert new_callables == callables
-    assert new_jobs == jobs
-    assert new_shutdowns == shutdowns
-    assert new_urls == urls
+    assert len(new_callables) == 6
+    assert len(new_jobs) == 2
+    assert len(new_shutdowns) == 1
+    assert len(new_urls) == 2
 
     # assert is_triggerable behavior
     assert loader.is_triggerable(test_mod.first_command)
@@ -754,8 +772,17 @@ def test_clean_callable_events(tmpconfig, func):
 
 
 def test_clean_callable_example(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('.test hello')(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -770,7 +797,7 @@ def test_clean_callable_example(tmpconfig, func):
 
 
 def test_clean_callable_example_not_set(tmpconfig, func):
-    plugin.commands('test')(func)
+    func.commands = ['test']
 
     loader.clean_callable(func, tmpconfig)
 
@@ -785,9 +812,17 @@ def test_clean_callable_example_not_set(tmpconfig, func):
 
 
 def test_clean_callable_example_multi_commands(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.commands('unit')(func)
-    plugin.example('.test hello')(func)
+    func.commands = ['test', 'unit']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -806,9 +841,26 @@ def test_clean_callable_example_multi_commands(tmpconfig, func):
 
 
 def test_clean_callable_example_first_only(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('.test hello')(func)
-    plugin.example('.test bonjour')(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }, {
+        "example": '.test bonjour',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -822,10 +874,26 @@ def test_clean_callable_example_first_only(tmpconfig, func):
 
 
 def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.commands('unit')(func)
-    plugin.example('.test hello')(func)
-    plugin.example('.test bonjour')(func)
+    func.commands = ['test', 'unit']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }, {
+        "example": '.test bonjour',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -844,8 +912,17 @@ def test_clean_callable_example_first_only_multi_commands(tmpconfig, func):
 
 
 def test_clean_callable_example_user_help(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('.test hello', user_help=True)(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": True,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -859,9 +936,26 @@ def test_clean_callable_example_user_help(tmpconfig, func):
 
 
 def test_clean_callable_example_user_help_multi(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('.test hello', user_help=True)(func)
-    plugin.example('.test bonjour', user_help=True)(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": True,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }, {
+        "example": '.test bonjour',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": True,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -875,9 +969,26 @@ def test_clean_callable_example_user_help_multi(tmpconfig, func):
 
 
 def test_clean_callable_example_user_help_mixed(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('.test hello')(func)
-    plugin.example('.test bonjour', user_help=True)(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }, {
+        "example": '.test bonjour',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": True,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -891,8 +1002,17 @@ def test_clean_callable_example_user_help_mixed(tmpconfig, func):
 
 
 def test_clean_callable_example_default_prefix(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('.test hello')(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '.test hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     tmpconfig.core.help_prefix = '!'
     loader.clean_callable(func, tmpconfig)
@@ -907,8 +1027,17 @@ def test_clean_callable_example_default_prefix(tmpconfig, func):
 
 
 def test_clean_callable_example_nickname(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('$nickname: hello')(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '$nickname: hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     loader.clean_callable(func, tmpconfig)
 
@@ -922,8 +1051,17 @@ def test_clean_callable_example_nickname(tmpconfig, func):
 
 
 def test_clean_callable_example_nickname_custom_prefix(tmpconfig, func):
-    plugin.commands('test')(func)
-    plugin.example('$nickname: hello')(func)
+    func.commands = ['test']
+    func.example = [{
+        "example": '$nickname: hello',
+        "result": None,
+        # flags
+        "is_private_message": True,
+        "is_help": False,
+        "is_pattern": False,
+        "is_admin": False,
+        "is_owner": False,
+    }]
 
     tmpconfig.core.help_prefix = '!'
     loader.clean_callable(func, tmpconfig)

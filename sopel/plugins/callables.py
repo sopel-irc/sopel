@@ -47,6 +47,7 @@ from sopel.lifecycle import deprecated
 
 if TYPE_CHECKING:
     from types import ModuleType
+
     from sopel.bot import Sopel, SopelWrapper
     from sopel.config import Config
     from sopel.trigger import Trigger
@@ -100,6 +101,25 @@ class TypedPluginJobHandler(Protocol):
     __name__: str
 
     def __call__(self, bot: Sopel, *arg: Any, **kwargs: Any) -> Any:
+        ...
+
+
+class TypedCallablePredicate(Protocol):
+    """Protocol definition of a plugin callable predicate function.
+
+    A predicate function must accept two positional arguments:
+
+    * an instance of :class:`~sopel.bot.SopelWrapper`
+    * an instance of :class:`~sopel.trigger.Trigger`
+
+    And it must return a boolean:
+
+    * if True, the plugin callable can execute
+    * otherwise, the predicate prevents the execution of the plugin callable
+
+    .. versionadded:: 8.1
+    """
+    def __call__(self, bot: SopelWrapper, trigger: Trigger) -> bool:
         ...
 
 
@@ -227,6 +247,11 @@ class PluginCallable(AbstractPluginObject):
     """Plugin callable, i.e. execute a plugin function when triggered.
 
     :param handler: a function to be called when the plugin callable is invoked
+
+    .. note::
+
+        You can guard against execution with :attr:`predicates`: all
+        predicates must return ``True`` for the callable to execute.
     """
     @property
     @deprecated(
@@ -323,6 +348,7 @@ class PluginCallable(AbstractPluginObject):
             obj, 'action_commands', handler.action_commands)
 
         # rate limiting
+        handler.rate_limit_admins = getattr(obj, 'rate_limit_admins', False)
         handler.user_rate = getattr(obj, 'user_rate', None)
         handler.channel_rate = getattr(obj, 'channel_rate', None)
         handler.global_rate = getattr(obj, 'global_rate', None)
@@ -462,8 +488,10 @@ class PluginCallable(AbstractPluginObject):
         # how to run it
         self.priority: Literal['low', 'medium', 'high'] = 'medium'
         self.unblockable: bool = False
+        self.predicates: list[TypedCallablePredicate] = []
 
         # rate limiting
+        self.rate_limit_admins: bool = False
         self.user_rate: int | None = None
         self.channel_rate: int | None = None
         self.global_rate: int | None = None
@@ -482,10 +510,12 @@ class PluginCallable(AbstractPluginObject):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        return self._handler(bot, trigger, *args, **kwargs)
+        if all(predicate(bot, trigger) for predicate in self.predicates):
+            return self._handler(bot, trigger, *args, **kwargs)
+        return None
 
     @override
-    def get_handler(self) -> Callable:
+    def get_handler(self) -> TypedPluginCallableHandler:
         return self._handler
 
     def setup(self, settings: Config) -> None:

@@ -26,7 +26,7 @@ from typing import (
     TypeVar,
 )
 
-from sopel import db, irc, logger, plugin, plugins, tools
+from sopel import db, irc, logger, plugins, tools
 from sopel.irc import modes
 from sopel.lifecycle import deprecated
 from sopel.plugins import (
@@ -41,6 +41,7 @@ from sopel.trigger import Trigger
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
+    from sopel.plugins.callables import PluginCallable
     from sopel.plugins.handlers import (
         AbstractPluginHandler,
         PluginMetaDescription,
@@ -440,10 +441,10 @@ class Sopel(irc.AbstractBot):
     def add_plugin(
         self,
         plugin: AbstractPluginHandler,
-        callables: Sequence[Callable],
+        callables: Sequence[PluginCallable],
         jobs: Sequence[Callable],
         shutdowns: Sequence[Callable],
-        urls: Sequence[Callable],
+        urls: Sequence[PluginCallable],
     ) -> None:
         """Add a loaded plugin to the bot's registry.
 
@@ -536,20 +537,20 @@ class Sopel(irc.AbstractBot):
 
     # callable management
 
-    def register_callables(self, callables: Iterable) -> None:
+    def register_callables(self, callables: Iterable[PluginCallable]) -> None:
         match_any = re.compile(r'.*')
         settings = self.settings
 
         for callbl in callables:
-            rules = getattr(callbl, 'rule', [])
-            lazy_rules = getattr(callbl, 'rule_lazy_loaders', [])
-            find_rules = getattr(callbl, 'find_rules', [])
-            lazy_find_rules = getattr(callbl, 'find_rules_lazy_loaders', [])
-            search_rules = getattr(callbl, 'search_rules', [])
-            lazy_search_rules = getattr(callbl, 'search_rules_lazy_loaders', [])
-            commands = getattr(callbl, 'commands', [])
-            nick_commands = getattr(callbl, 'nickname_commands', [])
-            action_commands = getattr(callbl, 'action_commands', [])
+            rules = callbl.rules
+            lazy_rules = callbl.rule_lazy_loaders
+            find_rules = callbl.find_rules
+            lazy_find_rules = callbl.find_rules_lazy_loaders
+            search_rules = callbl.search_rules
+            lazy_search_rules = callbl.search_rules_lazy_loaders
+            commands = callbl.commands
+            nick_commands = callbl.nickname_commands
+            action_commands = callbl.action_commands
             is_rule = any([
                 rules,
                 lazy_rules,
@@ -611,7 +612,7 @@ class Sopel(irc.AbstractBot):
                 self._rules_manager.register_action_command(rule)
 
             if not is_command and not is_rule:
-                callbl.rule = [match_any]
+                callbl.rules = [match_any]
                 self._rules_manager.register(
                     plugin_rules.Rule.from_callable(self.settings, callbl))
 
@@ -636,7 +637,7 @@ class Sopel(irc.AbstractBot):
             if shutdown not in shutdowns
         ]
 
-    def register_urls(self, urls: Iterable) -> None:
+    def register_urls(self, urls: Iterable[PluginCallable]) -> None:
         for func in urls:
             url_regex = getattr(func, 'url_regex', [])
             url_lazy_loaders = getattr(func, 'url_lazy_loaders', None)
@@ -884,7 +885,7 @@ class Sopel(irc.AbstractBot):
             exit_code = None
             self.error(trigger, exception=error)
 
-        if exit_code != plugin.NOLIMIT:
+        if exit_code != plugin_rules.IGNORE_RATE_LIMIT:
             self._times[nick][func] = current_time
             self._times[self.nick][func] = current_time
             if not trigger.is_privmsg:
