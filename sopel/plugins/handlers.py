@@ -58,6 +58,9 @@ from . import exceptions
 
 
 if TYPE_CHECKING:
+    # TODO: Replace by `importlib.metadata` from stdlib in Python 3.10+
+    from importlib_metadata import EntryPoint
+
     from sopel.bot import Sopel
     from types import ModuleType
 
@@ -607,8 +610,8 @@ class EntryPointPlugin(PyModulePlugin):
     should not be modified at runtime.
     """
 
-    def __init__(self, entry_point):
-        self.entry_point = entry_point
+    def __init__(self, entry_point: EntryPoint) -> None:
+        self.entry_point: EntryPoint = entry_point
         super().__init__(entry_point.name)
 
     def load(self):
@@ -622,9 +625,15 @@ class EntryPointPlugin(PyModulePlugin):
         """
         version: Optional[str] = super().get_version()
 
+        # Note: we need to check for attribute because of older Python version
+        # and we need to check if .dist is not None because hasattr does not
+        # type safeguard properly (or mypy doesn't care?)
+        # Up until Python 3.12, it is unclear if the dist attribute can be used
+        # or not, as it is undocumented in Python 3.10.
         if (
             version is None
             and hasattr(self.entry_point, "dist")
+            and self.entry_point.dist is not None
             and hasattr(self.entry_point.dist, "name")
         ):
             dist_name = self.entry_point.dist.name
