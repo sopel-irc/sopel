@@ -19,10 +19,12 @@ Housekeeping changes
 
 * Start testing on Python 3.13, and fix deprecation warnings [[#2628][]]
 * Replace `bot.search_url_callbacks()` method usage in core [[#2635][]]
+* Satisfy type checker in `EntryPointPlugin` version handler [[#2670][]]
 
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
+[#2670]: https://github.com/sopel-irc/sopel/pull/2670
 
 
 Changes between 8.0.1 and 8.0.2
