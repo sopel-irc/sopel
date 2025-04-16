@@ -765,40 +765,49 @@ class AbstractRule(abc.ABC):
     def is_user_rate_limited(
         self,
         nick: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
         """Tell when the rule reached the ``nick``'s rate limit.
 
         :param nick: the nick associated with this check
-        :param at_time: optional aware datetime for the rate limit check;
-                        if not given, ``utcnow`` will be used
+        :param at_time: aware datetime for the rate limit check
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
+
+        .. versionchanged:: 8.0.1
+
+            Parameter ``at_time`` is now required.
+
         """
 
     @abc.abstractmethod
     def is_channel_rate_limited(
         self,
         channel: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
         """Tell when the rule reached the ``channel``'s rate limit.
 
         :param channel: the channel associated with this check
-        :param at_time: optional aware datetime for the rate limit check;
-                        if not given, ``utcnow`` will be used
+        :param at_time: aware datetime for the rate limit check
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
+
+        .. versionchanged:: 8.0.1
+
+            Parameter ``at_time`` is now required.
+
         """
 
     @abc.abstractmethod
-    def is_global_rate_limited(
-        self,
-        at_time: Optional[datetime.datetime] = None,
-    ) -> bool:
+    def is_global_rate_limited(self, at_time: datetime.datetime) -> bool:
         """Tell when the rule reached the global rate limit.
 
-        :param at_time: optional aware datetime for the rate limit check;
-                        if not given, ``utcnow`` will be used
+        :param at_time: aware datetime for the rate limit check
         :return: ``True`` when the rule reached the limit, ``False`` otherwise.
+
+        .. versionchanged:: 8.0.1
+
+            Parameter ``at_time`` is now required.
+
         """
 
     @property
@@ -1209,29 +1218,29 @@ class Rule(AbstractRule):
     def is_user_rate_limited(
         self,
         nick: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
-        if at_time is None:
-            at_time = datetime.datetime.now(datetime.timezone.utc)
+        if self._user_rate_limit <= 0:
+            return False
+
         metrics = self.get_user_metrics(nick)
         return metrics.is_limited(at_time - self.user_rate_limit)
 
     def is_channel_rate_limited(
         self,
         channel: Identifier,
-        at_time: Optional[datetime.datetime] = None,
+        at_time: datetime.datetime,
     ) -> bool:
-        if at_time is None:
-            at_time = datetime.datetime.now(datetime.timezone.utc)
+        if self._channel_rate_limit <= 0:
+            return False
+
         metrics = self.get_channel_metrics(channel)
         return metrics.is_limited(at_time - self.channel_rate_limit)
 
-    def is_global_rate_limited(
-        self,
-        at_time: Optional[datetime.datetime] = None,
-    ) -> bool:
-        if at_time is None:
-            at_time = datetime.datetime.now(datetime.timezone.utc)
+    def is_global_rate_limited(self, at_time: datetime.datetime) -> bool:
+        if self._global_rate_limit <= 0:
+            return False
+
         metrics = self.get_global_metrics()
         return metrics.is_limited(at_time - self.global_rate_limit)
 

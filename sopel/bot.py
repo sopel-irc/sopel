@@ -8,9 +8,11 @@
 from __future__ import annotations
 
 from ast import literal_eval
+from datetime import timedelta
 import inspect
 import itertools
 import logging
+import math
 import re
 import threading
 import time
@@ -659,30 +661,26 @@ class Sopel(irc.AbstractBot):
         if trigger.admin or rule.is_unblockable():
             return False, None
 
+        nick = trigger.nick
         is_channel = trigger.sender and not trigger.sender.is_nick()
         channel = trigger.sender if is_channel else None
 
         at_time = trigger.time
-
-        user_metrics = rule.get_user_metrics(trigger.nick)
-        channel_metrics = rule.get_channel_metrics(channel)
-        global_metrics = rule.get_global_metrics()
-
-        if user_metrics.is_limited(at_time - rule.user_rate_limit):
+        if rule.is_user_rate_limited(nick, at_time):
             template = rule.user_rate_template
             rate_limit_type = "user"
             rate_limit = rule.user_rate_limit
-            metrics = user_metrics
-        elif is_channel and channel_metrics.is_limited(at_time - rule.channel_rate_limit):
+            metrics = rule.get_user_metrics(nick)
+        elif channel and rule.is_channel_rate_limited(channel, at_time):
             template = rule.channel_rate_template
             rate_limit_type = "channel"
             rate_limit = rule.channel_rate_limit
-            metrics = channel_metrics
-        elif global_metrics.is_limited(at_time - rule.global_rate_limit):
+            metrics = rule.get_channel_metrics(channel)
+        elif rule.is_global_rate_limited(at_time):
             template = rule.global_rate_template
             rate_limit_type = "global"
             rate_limit = rule.global_rate_limit
-            metrics = global_metrics
+            metrics = rule.get_global_metrics()
         else:
             return False, None
 
@@ -692,7 +690,11 @@ class Sopel(irc.AbstractBot):
             return False, None
 
         next_time = metrics.last_time + rate_limit
-        time_left = next_time - at_time
+        time_left = timedelta(
+            seconds=math.ceil(
+                (next_time - at_time).total_seconds()
+            )
+        )
 
         message: Optional[str] = None
 
@@ -773,9 +775,14 @@ class Sopel(irc.AbstractBot):
         :param func: the function to call
         :type func: :term:`function`
         :param sopel: a SopelWrapper instance
-        :type sopel: :class:`SopelWrapper`
-        :param Trigger trigger: the Trigger object for the line from the server
-                                that triggered this call
+        :param trigger: the Trigger object for the line from the server that
+                        triggered this call
+
+        .. deprecated:: 8.1
+
+            This method is deprecated and will be removed in Sopel 9.0. The
+            new rules system uses :meth:`call_rule` instead.
+
         """
         nick = trigger.nick
         current_time = time.time()
@@ -1177,6 +1184,7 @@ class Sopel(irc.AbstractBot):
         # Avoid calling shutdown methods if we already have.
         self.shutdown_methods = []
 
+    # TODO: Remove in Sopel 9.0
     # URL callbacks management
 
     @deprecated(

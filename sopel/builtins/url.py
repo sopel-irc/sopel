@@ -64,7 +64,7 @@ class UrlSection(types.StaticSection):
     """A list of regular expressions to match URLs for which the title should not be shown."""
     exclude_required_access = types.ChoiceAttribute(
         'exclude_required_access',
-        choices=privileges.__all__,
+        choices=[level.name for level in privileges.AccessLevel],
         default='OP',
     )
     """Minimum channel access level required to edit ``exclude`` list using chat commands."""
@@ -168,7 +168,7 @@ def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger) -> bool:
     channel = bot.channels[trigger.sender]
     user_access = channel.privileges[trigger.nick]
 
-    if user_access >= getattr(privileges, required_access):
+    if user_access >= getattr(privileges.AccessLevel, required_access):
         return True
 
     return False
@@ -478,7 +478,8 @@ def check_callbacks(
     )
     return (
         excluded or
-        any(bot.search_url_callbacks(url)) or
+        # TODO: _url_callbacks is deprecated and will be removed in Sopel 9.0
+        any(pattern.search(url) for pattern in bot._url_callbacks.keys()) or
         bot.rules.check_url_callback(bot, url)
     )
 

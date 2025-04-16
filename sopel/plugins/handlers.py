@@ -48,6 +48,7 @@ import importlib
 import importlib.util
 import inspect
 import itertools
+import logging
 import os
 import sys
 from typing import ClassVar, TYPE_CHECKING, TypedDict
@@ -59,10 +60,14 @@ from . import exceptions
 if TYPE_CHECKING:
     from types import ModuleType
 
+    # TODO: Replace by `importlib.metadata` from stdlib in Python 3.10+
     from importlib_metadata import EntryPoint
 
     from sopel.bot import Sopel
     from sopel.config import Config
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PluginMetaDescription(TypedDict):
@@ -502,9 +507,9 @@ class PyFilePlugin(PyModulePlugin):
 
     def _load(self) -> ModuleType:
         module = importlib.util.module_from_spec(self.module_spec)
-        sys.modules[self.name] = module
         if not self.module_spec.loader:
             raise exceptions.PluginError('Could not determine loader for plugin: %s' % self.filename)
+        sys.modules[self.name] = module
         self.module_spec.loader.exec_module(module)
         return module
 
@@ -611,7 +616,7 @@ class EntryPointPlugin(PyModulePlugin):
     should not be modified at runtime.
     """
 
-    def __init__(self, entry_point: EntryPoint):
+    def __init__(self, entry_point: EntryPoint) -> None:
         self.entry_point: EntryPoint = entry_point
         super().__init__(entry_point.name)
 
@@ -625,16 +630,28 @@ class EntryPointPlugin(PyModulePlugin):
         """
         version: str | None = super().get_version()
 
+        # Note: we need to check for attribute because of older Python version
+        # and we need to check if .dist is not None because hasattr does not
+        # type safeguard properly (or mypy doesn't care?)
+        # Up until Python 3.12, it is unclear if the dist attribute can be used
+        # or not, as it is undocumented in Python 3.10.
         if (
             version is None
-            and hasattr(self.module, "__package__")
-            and self.module.__package__ is not None
+            and hasattr(self.entry_point, "dist")
+            and self.entry_point.dist is not None
+            and hasattr(self.entry_point.dist, "name")
         ):
+            dist_name = self.entry_point.dist.name
             try:
-                version = importlib.metadata.version(self.module.__package__)
-            except ValueError:
-                # package name is probably empty-string; just give up
-                pass
+                version = importlib.metadata.version(dist_name)
+            except (ValueError, importlib.metadata.PackageNotFoundError):
+                LOGGER.warning("Cannot determine version of %r", dist_name)
+            except Exception:
+                LOGGER.warning(
+                    "Unexpected error occurred while checking the version of %r",
+                    dist_name,
+                    exc_info=True,
+                )
 
         return version
 
