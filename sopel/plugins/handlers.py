@@ -53,8 +53,8 @@ import os
 import sys
 from typing import Optional, TYPE_CHECKING, TypedDict
 
-from sopel import __version__ as release, loader, plugin as plugin_decorators
-from . import exceptions
+from sopel import __version__ as release
+from . import callables, exceptions
 
 
 if TYPE_CHECKING:
@@ -184,7 +184,7 @@ class AbstractPluginHandler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_capability_requests(self) -> list[plugin_decorators.capability]:
+    def get_capability_requests(self) -> list[callables.Capability]:
         """Retrieve the plugin's list of capability requests."""
 
     @abc.abstractmethod
@@ -381,11 +381,11 @@ class PyModulePlugin(AbstractPluginHandler):
         """
         return hasattr(self.module, 'setup')
 
-    def get_capability_requests(self) -> list[plugin_decorators.capability]:
+    def get_capability_requests(self) -> list[callables.Capability]:
         return [
             module_attribute
             for module_attribute in vars(self.module).values()
-            if isinstance(module_attribute, plugin_decorators.capability)
+            if isinstance(module_attribute, callables.Capability)
         ]
 
     def register(self, bot: Sopel) -> None:
@@ -394,7 +394,7 @@ class PyModulePlugin(AbstractPluginHandler):
             bot.cap_requests.register(self.name, cap_request)
 
         # plugin callables go through ``bot.add_plugin``
-        relevant_parts = loader.clean_module(self.module, bot.config)
+        relevant_parts = callables.clean_module(self.module, bot.config)
         for part in itertools.chain(*relevant_parts):
             # annotate all callables in relevant_parts with `plugin_name`
             # attribute to make per-channel config work; see #1839
@@ -403,9 +403,14 @@ class PyModulePlugin(AbstractPluginHandler):
         # TODO: replace add_plugin to direct call to register_* methods
         bot.add_plugin(self, *relevant_parts)
 
-    def unregister(self, bot):
-        relevant_parts = loader.clean_module(self.module, bot.config)
-        bot.remove_plugin(self, *relevant_parts)
+    def unregister(self, bot: Sopel) -> None:
+        # hack version waiting on #2636
+        name = self.name
+        bot.rules.unregister_plugin(name)
+        bot.scheduler.unregister_plugin(name)
+        if self.has_shutdown():
+            bot.unregister_shutdowns([self.module.shutdown])
+        del bot._plugins[name]
 
     def shutdown(self, bot):
         if self.has_shutdown():
