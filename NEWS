@@ -14,6 +14,11 @@ Plugin changes
   * Improve private IP protection [[#2285][]]
   * Housekeeping of deprecated internal API usage [[#2635][]]
 
+Core changes
+------------
+
+* Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
+
 Housekeeping changes
 --------------------
 
@@ -24,6 +29,7 @@ Housekeeping changes
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
+[#2636]: https://github.com/sopel-irc/sopel/pull/2636
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
 
 
