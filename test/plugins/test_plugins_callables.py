@@ -86,6 +86,176 @@ def test_generic_ensure_callable_job():
 
 # Test plugin callable
 
+def test_callable_properties():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+
+    # generic properties
+    assert plugin_callable.is_triggerable is False
+    assert plugin_callable.is_limitable is False
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is False
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_event_rules():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.events.append('PRIVMSG')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is True, (
+        'Events without pattern is considered a generic rule.',
+    )
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_match_rules():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.rules.append('.*')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is True
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_find_rules():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.find_rules.append('.*')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is True
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_search_rules():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.search_rules.append('.*')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is True
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_commands():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.commands.append('hello')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is False
+    assert plugin_callable.is_named_rule is True
+    assert plugin_callable.is_url_callback is False
+
+    # add an event
+    plugin_callable.events.append('PRIVMSG')
+    assert plugin_callable.is_generic_rule is False, (
+        'No generic rule with event without pattern but with named rule.'
+    )
+    assert plugin_callable.is_named_rule is True
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_nick_commands():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.nickname_commands.append('hello')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is False
+    assert plugin_callable.is_named_rule is True
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_action_commands():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.action_commands.append('hello')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is False
+    assert plugin_callable.is_named_rule is True
+    assert plugin_callable.is_url_callback is False
+
+
+def test_callable_properties_url_callback():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.url_regex.append(r'example\.com')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is False
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is True
+
+    # add an event
+    plugin_callable.events.append('PRIVMSG')
+    assert plugin_callable.is_generic_rule is False, (
+        'No generic rule with event without pattern but with URL callback.'
+    )
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is True
+
+
 def test_callable_call(
     mockbot: Sopel,
     triggerfactory: TriggerFactory,
