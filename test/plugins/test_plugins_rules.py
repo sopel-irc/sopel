@@ -6,8 +6,8 @@ import re
 
 import pytest
 
-from sopel import bot, loader, plugin, trigger
-from sopel.plugins import rules
+from sopel import bot, plugin, trigger
+from sopel.plugins import callables, rules
 from sopel.tests import rawlist
 
 
@@ -542,7 +542,8 @@ def test_rule_get_rule_label_handler(mockbot):
     def the_handler_rule(wrapped, trigger):
         pass
 
-    rule = rules.Rule([regex], handler=the_handler_rule)
+    handler = callables.PluginCallable.ensure_callable(the_handler_rule)
+    rule = rules.Rule([regex], handler=handler)
     assert rule.get_rule_label() == 'the_handler_rule'
 
 
@@ -894,7 +895,7 @@ def test_rule_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -935,7 +936,7 @@ def test_rule_from_callable_nick_placeholder(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -972,7 +973,7 @@ def test_rule_from_callable_nickname_placeholder(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1006,7 +1007,7 @@ def test_rule_from_callable_lazy(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1049,7 +1050,7 @@ def test_rule_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1063,7 +1064,7 @@ def test_rule_from_callable_lazy_invalid(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1077,7 +1078,7 @@ def test_rule_from_callable_lazy_invalid_no_regex(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1094,7 +1095,7 @@ def test_kwargs_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'  # normally added by the Plugin handler
 
     # get kwargs
@@ -1121,7 +1122,7 @@ def test_kwargs_from_callable(mockbot):
     assert 'doc' in kwargs
 
     assert kwargs['plugin'] == 'testplugin'
-    assert kwargs['label'] is None
+    assert kwargs['label'] == 'handler'
     assert kwargs['priority'] == rules.PRIORITY_MEDIUM
     assert kwargs['events'] == ['PRIVMSG']
     assert kwargs['ctcp'] == []
@@ -1148,7 +1149,7 @@ def test_kwargs_from_callable_label(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1163,7 +1164,7 @@ def test_kwargs_from_callable_priority(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1178,7 +1179,7 @@ def test_kwargs_from_callable_event(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1193,7 +1194,7 @@ def test_kwargs_from_callable_ctcp_intent(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1208,7 +1209,7 @@ def test_kwargs_from_callable_allow_echo(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1223,7 +1224,7 @@ def test_kwargs_from_callable_threaded(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1238,7 +1239,7 @@ def test_kwargs_from_callable_unblockable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1253,7 +1254,7 @@ def test_kwargs_from_callable_rate_limit(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1280,7 +1281,7 @@ def test_kwargs_from_callable_rate_limit_user(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1307,7 +1308,7 @@ def test_kwargs_from_callable_rate_limit_channel(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1334,7 +1335,7 @@ def test_kwargs_from_callable_rate_limit_server(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1362,7 +1363,7 @@ def test_kwargs_from_callable_examples(mockbot):
         """This is the doc you are looking for."""
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1395,7 +1396,7 @@ def test_kwargs_from_callable_examples_test(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1449,7 +1450,7 @@ def test_kwargs_from_callable_examples_help(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1516,7 +1517,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
         """
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1980,7 +1981,7 @@ def test_command_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2034,7 +2035,7 @@ def test_command_from_callable_subcommand(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2063,7 +2064,7 @@ def test_command_from_callable_subcommand_aliases(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2117,7 +2118,7 @@ def test_command_from_callable_escaped_regex_pattern(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2147,7 +2148,7 @@ def test_command_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -2316,7 +2317,7 @@ def test_nick_command_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -2329,7 +2330,7 @@ def test_nick_command_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
@@ -2418,7 +2419,7 @@ def test_nick_command_from_callable_regex_pattern(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
@@ -2546,7 +2547,7 @@ def test_action_command_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -2559,7 +2560,7 @@ def test_action_command_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
@@ -2625,7 +2626,7 @@ def test_action_command_from_callable_regex_pattern(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
@@ -2701,7 +2702,7 @@ def test_find_rule_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -2788,7 +2789,7 @@ def test_search_rule_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -2961,7 +2962,7 @@ def test_url_callback_from_callable(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % match.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -3042,7 +3043,7 @@ def test_url_callback_from_callable_no_match_parameter(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -3081,7 +3082,7 @@ def test_url_callback_from_callable_lazy(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -3122,7 +3123,7 @@ def test_url_callback_from_callable_invalid(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -3135,7 +3136,7 @@ def test_url_callback_from_callable_lazy_invalid(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
