@@ -399,7 +399,7 @@ class PluginCallable(AbstractPluginObject):
         A triggerable is a callable that will be used by the bot to handle a
         particular trigger (i.e. an IRC message): it can be a regex rule, an
         event, a CTCP command, a command, a nickname command, or an action
-        command. However, it must not be a job or a URL callback.
+        command, or even a URL callback. However, it must not be a job.
 
         .. seealso::
 
@@ -407,11 +407,6 @@ class PluginCallable(AbstractPluginObject):
             decorated function a triggerable object.
 
         """
-        forbidden = any([
-            self.url_regex,
-            self.url_lazy_loaders,
-        ])
-
         allowed = any([
             self.rules,
             self.rule_lazy_loaders,
@@ -424,9 +419,51 @@ class PluginCallable(AbstractPluginObject):
             self.commands,
             self.nickname_commands,
             self.action_commands,
+            self.url_regex,
+            self.url_lazy_loaders,
         ])
 
-        return allowed and not forbidden
+        return allowed
+
+    @property
+    def is_generic_rule(self) -> bool:
+        """Check if the callable is a generic rule.
+
+        A generic rule is a trigger condition without any specific pattern
+        outside of the plugin defined regex.
+
+        .. note::
+
+            This will return true if no pattern is defined but at least an
+            event is required without the callable being a named rule.
+        """
+        allowed = any([
+            self.rules,
+            self.rule_lazy_loaders,
+            self.find_rules,
+            self.find_rules_lazy_loaders,
+            self.search_rules,
+            self.search_rules_lazy_loaders,
+        ])
+
+        return allowed or bool(
+            self.events and not (self.is_named_rule or self.is_url_callback)
+        )
+
+    @property
+    def is_named_rule(self) -> bool:
+        """Check if the callable is a named rule.
+
+        A named rule is anything with a name in it: commands, nickname
+        commands, or action commands.
+        """
+        allowed = any([
+            self.commands,
+            self.nickname_commands,
+            self.action_commands,
+        ])
+
+        return allowed
 
     @property
     def is_url_callback(self) -> bool:
@@ -536,7 +573,7 @@ class PluginCallable(AbstractPluginObject):
             self.channel_rate = self.channel_rate or 0
             self.global_rate = self.global_rate or 0
 
-        if not self.is_triggerable and not self.is_url_callback:
+        if not self.is_triggerable:
             return
 
         if not self.events:
@@ -942,22 +979,31 @@ def clean_module(
                     jobs.append(handler)
                 else:
                     LOGGER.error(
-                        'Plugin job "%s" has no interval defined',
+                        'Plugin job "%s" has no interval defined.',
                         handler.label,
                     )
                     continue
 
             elif isinstance(handler, PluginCallable):
                 handler.setup(config)
-                if handler.is_triggerable:
-                    callables.append(handler)
-
                 if handler.is_url_callback:
                     urls.append(handler)
-
+                elif handler.is_triggerable:
+                    # this is not a URL callback but it's still triggerable
+                    callables.append(handler)
+                else:
+                    LOGGER.warning(
+                        'Plugin callable "%s" is not triggerable.',
+                        handler.label,
+                    )
+                    continue
             else:
                 # it's a subclass of AbstractPluginObject that isn't a
                 # plugin job or callable, and it cannot be handled
+                LOGGER.warning(
+                    'Unknown type of plugin callable "%s".',
+                    handler.label,
+                )
                 continue
 
     return callables, jobs, shutdowns, urls
