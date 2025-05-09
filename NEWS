@@ -10,6 +10,12 @@ FIXME: Update heading before shipping final NEWS for 8.1.0
 Plugin changes
 --------------
 
+* tld:
+  * Plugin removed in favor of faster updates via external package; see
+    [sopel-tld][] on PyPI [[#2673][]]
+* unicode_info:
+  * Plugin removed in favor of fuller-featured external package; see
+    [sopel-unicode][] on PyPI [[#2674][]]
 * url:
   * Improve private IP protection [[#2285][]]
   * Housekeeping of deprecated internal API usage [[#2635][]]
@@ -26,11 +32,16 @@ Housekeeping changes
 * Replace `bot.search_url_callbacks()` method usage in core [[#2635][]]
 * Satisfy type checker in `EntryPointPlugin` version handler [[#2670][]]
 
+[sopel-tld]: https://pypi.org/project/sopel-tld/
+[sopel-unicode]: https://pypi.org/project/sopel-unicode/
+
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
 [#2636]: https://github.com/sopel-irc/sopel/pull/2636
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
+[#2673]: https://github.com/sopel-irc/sopel/pull/2673
+[#2674]: https://github.com/sopel-irc/sopel/pull/2674
 
 
 Changes between 8.0.1 and 8.0.2
