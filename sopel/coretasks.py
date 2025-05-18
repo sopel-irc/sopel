@@ -1549,7 +1549,11 @@ def _record_who(
         }
         for c in modes:
             priv = priv | mapping[c]
-    if channel not in bot.channels:
+
+    # `*` placeholder is returned for users with no visible channels; see #2675
+    if channel == '*':
+        return
+    elif channel not in bot.channels:
         bot.channels[channel] = target.Channel(
             channel,
             identifier_factory=bot.make_identifier,
