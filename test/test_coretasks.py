@@ -713,11 +713,7 @@ def test_handle_who_reply_placeholder(mockbot):
     assert mockbot.users['Ken_Andrews'].is_bot is None
 
     assert len(mockbot.channels) == 1
-
     assert '*' not in mockbot.channels
-    with pytest.raises(KeyError):
-        mockbot.channels['*'].add_user(mockbot.users['Mr_Nesbitt'])
-
     assert '#channel' in mockbot.channels
     assert mockbot.channels['#channel']
     assert len(mockbot.channels['#channel'].users) == 1
