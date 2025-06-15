@@ -55,6 +55,45 @@ dependencies = [
     "typing_extensions>=4.4",  # for @typing.override, added in py3.12
 ]
 
+[dependency-groups]
+dev = [ # These are requirements to develop Sopel itself.
+    "coveralls>=2.0",
+    "flake8>=5",
+    "flake8-coding",
+    "flake8-future-import",
+    "flake8-isort",
+    "flake8-pyproject",
+    "flake8-type-checking; python_version >= '3.8'",
+    # Sphinx theme
+    "furo==2023.9.10",
+    "pytest~=7.4",
+    "pytest-vcr~=1.0.2",
+    "requests-mock~=1.9.3",
+    "sphinx>=7.1.0,<8; python_version <= '3.8'",
+    "sphinx>=7.2.0,<8; python_version > '3.8'",
+    # specify exact autoprogram version because the new (in 2021) maintainer
+    # showed that they will indeed make major changes in patch versions
+    "sphinxcontrib-autoprogram==0.1.8",
+    # custom plugin to help with RFC links
+    "sphinx-rfcsection~=0.1.1",
+    # use fork of vcrpy 5.x until kevin1024/vcrpy#777 is (hopefully) accepted
+    # (or until py3.9 EOL... in 10/2025, I HOPE NOT)
+    "vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3",
+    # also have to use a version of urllib3 that doesn't use the `version_string`
+    # attr of the response object, because vcrpy won't support it until 7.x
+    # reverting to mainline vcrpy is tracked in #2456
+    "urllib3<2.3",
+    # type check
+    # often breaks CI on master, so pin and update deliberately, on our own terms
+    "mypy==1.11.2",
+    # for `pkg_resources`; first version in which it's typed
+    # we don't use `pkg_resources` directly, but mypy still cares
+    "setuptools>=71.1",
+    "sqlalchemy[mypy]>=1.4,<1.5",
+    "types-pytz",
+    "types-requests>=2,<3",
+]
+
 [project.urls]
 "Homepage" = "https://sopel.chat/"
 "Release notes" = "https://sopel.chat/changelog/"
