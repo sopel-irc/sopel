@@ -18,7 +18,8 @@ import logging
 import re
 import sys
 
-from sopel.lifecycle import deprecated  # Don't delete; maintains backward compatibility with pre-8.0 API
+# Don't delete `deprecated` import - maintains backward compatibility with pre-8.0 API
+from sopel.lifecycle import deprecated
 from ._events import events  # NOQA
 
 # shortcuts & backward compatibility with pre-8.0
