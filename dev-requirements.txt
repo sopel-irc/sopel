@@ -4,6 +4,7 @@ flake8>=5
 flake8-coding
 flake8-future-import
 flake8-isort
+flake8-pyproject
 flake8-type-checking; python_version >= '3.8'
 # Sphinx theme
 furo==2023.9.10
