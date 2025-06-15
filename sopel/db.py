@@ -31,6 +31,7 @@ from sqlalchemy.sql import delete, func, select, update
 from sopel.lifecycle import deprecated
 from sopel.tools.identifiers import Identifier, IdentifierFactory
 
+
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable
 

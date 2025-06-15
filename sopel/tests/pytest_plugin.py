@@ -10,7 +10,13 @@ import sys
 import pytest
 
 from sopel import bot, loader, plugins, trigger
-from .factories import BotFactory, ConfigFactory, IRCFactory, TriggerFactory, UserFactory
+from .factories import (
+    BotFactory,
+    ConfigFactory,
+    IRCFactory,
+    TriggerFactory,
+    UserFactory,
+)
 
 
 TEMPLATE_TEST_CONFIG = """

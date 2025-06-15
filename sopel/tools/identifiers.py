@@ -37,6 +37,7 @@ from __future__ import annotations
 import string
 from typing import Callable
 
+
 Casemapping = Callable[[str], str]
 """Type definition of a casemapping callable."""
 

@@ -19,6 +19,7 @@ import time
 from sopel import __version__, bot, config, logger
 from . import utils
 
+
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
 # from source on an unsupported version of Python.
