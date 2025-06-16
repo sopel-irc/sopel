@@ -10,6 +10,7 @@ import sys
 import pytest
 
 from sopel import bot, loader, plugins, trigger
+
 from .factories import (
     BotFactory,
     ConfigFactory,

@@ -17,6 +17,7 @@ import sys
 import time
 
 from sopel import __version__, bot, config, logger
+
 from . import utils
 
 
