@@ -3,8 +3,9 @@ coveralls>=2.0
 flake8>=5
 flake8-coding
 flake8-future-import
-# TODO: upgrade 'flake8-import-order' to 0.19 and address new ordering &
-# whitespace checks when dropping Python 3.8 from Sopel's support matrix
+# 'flake8-import-order' 0.19 adds slightly broken checks for TYPE_CHECKING
+# blocks; see https://github.com/PyCQA/flake8-import-order/issues/214
+# Pinned because of that, and because it drops support for Python 3.8
 flake8-import-order<0.19
 flake8-type-checking; python_version >= '3.8'
 # Sphinx theme
