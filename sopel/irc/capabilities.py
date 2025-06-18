@@ -24,7 +24,6 @@ from typing import (
     TYPE_CHECKING,
 )
 
-
 if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger

@@ -20,7 +20,6 @@ from typing import Optional, TYPE_CHECKING
 
 from .utils import safe
 
-
 if TYPE_CHECKING:
     from sopel.irc import AbstractBot
     from sopel.trigger import PreTrigger

@@ -10,7 +10,6 @@ import pytz
 from sopel.db import SopelDB
 from sopel.tools import time
 
-
 if TYPE_CHECKING:
     from sopel.config import Config
 

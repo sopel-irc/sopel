@@ -23,20 +23,21 @@ from typing import (
     Union,
 )
 
-# import and expose privileges as shortcut
+# used for backward compatibility; see below
 from sopel.privileges import AccessLevel
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from sopel.bot import SopelWrapper
+
+# expose privilege levels as module constants for backward compatibility
 VOICE = AccessLevel.VOICE
 HALFOP = AccessLevel.HALFOP
 OP = AccessLevel.OP
 ADMIN = AccessLevel.ADMIN
 OWNER = AccessLevel.OWNER
 OPER = AccessLevel.OPER
-
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from sopel.bot import SopelWrapper
 
 __all__ = [
     # constants

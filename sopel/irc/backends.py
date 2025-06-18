@@ -24,7 +24,6 @@ from typing import Any, Optional, TYPE_CHECKING
 
 from .abstract_backends import AbstractIRCBackend
 
-
 if TYPE_CHECKING:
     from sopel.irc import AbstractBot
     from sopel.trigger import PreTrigger

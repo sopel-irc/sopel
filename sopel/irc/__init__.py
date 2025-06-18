@@ -51,6 +51,7 @@ from .isupport import ISupport
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
     from sopel.config import Config
     from .abstract_backends import AbstractIRCBackend
     from .utils import MyInfo

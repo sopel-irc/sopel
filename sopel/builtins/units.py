@@ -13,7 +13,6 @@ from typing import Pattern, TYPE_CHECKING
 
 from sopel import plugin
 
-
 if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
