@@ -8,6 +8,7 @@ from sopel.privileges import AccessLevel
 from sopel.tools import memories
 from sopel.tools.identifiers import Identifier, IdentifierFactory
 
+
 if TYPE_CHECKING:
     import datetime
 

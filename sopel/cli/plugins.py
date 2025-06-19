@@ -6,6 +6,7 @@ import inspect
 import operator
 
 from sopel import config, plugins
+
 from . import utils
 
 

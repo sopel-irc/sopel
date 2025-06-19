@@ -43,6 +43,7 @@ import importlib_metadata
 
 from . import exceptions, handlers, rules  # noqa
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 

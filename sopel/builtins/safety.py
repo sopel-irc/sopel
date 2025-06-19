@@ -24,6 +24,7 @@ from sopel import plugin, tools
 from sopel.config import types
 from sopel.formatting import bold, color, colors
 
+
 if TYPE_CHECKING:
     from typing import Optional
 

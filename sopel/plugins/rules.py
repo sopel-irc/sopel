@@ -36,7 +36,11 @@ from urllib.parse import urlparse
 
 from sopel import tools
 from sopel.config.core_section import (
-    COMMAND_DEFAULT_HELP_PREFIX, COMMAND_DEFAULT_PREFIX, URL_DEFAULT_SCHEMES)
+    COMMAND_DEFAULT_HELP_PREFIX,
+    COMMAND_DEFAULT_PREFIX,
+    URL_DEFAULT_SCHEMES,
+)
+
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
