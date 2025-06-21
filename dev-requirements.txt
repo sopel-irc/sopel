@@ -3,7 +3,10 @@ coveralls>=2.0
 flake8>=5
 flake8-coding
 flake8-future-import
-flake8-import-order
+# 'flake8-import-order' 0.19 adds slightly broken checks for TYPE_CHECKING
+# blocks; see https://github.com/PyCQA/flake8-import-order/issues/214
+# Pinned because of that, and because it drops support for Python 3.8
+flake8-import-order<0.19
 flake8-type-checking; python_version >= '3.8'
 # Sphinx theme
 furo==2023.9.10
@@ -25,7 +28,8 @@ vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3
 # reverting to mainline vcrpy is tracked in #2456
 urllib3<2.3
 # type check
-mypy>=1.3,<2
+# often breaks CI on master, so pin and update deliberately, on our own terms
+mypy==1.11.2
 # for `pkg_resources`; first version in which it's typed
 # we don't use `pkg_resources` directly, but mypy still cares
 setuptools>=71.1
