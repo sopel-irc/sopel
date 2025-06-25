@@ -7,6 +7,7 @@ import pytest
 
 from sopel.irc.capabilities import Capabilities, CapabilityInfo
 
+
 if typing.TYPE_CHECKING:
     from sopel.tests.factories import TriggerFactory
 

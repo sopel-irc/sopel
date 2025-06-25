@@ -14,6 +14,7 @@ from typing_extensions import override
 
 from .identifiers import Identifier, IdentifierFactory
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
     from typing import Tuple

@@ -36,6 +36,7 @@ from sopel import config, plugin
 from sopel.irc import isupport, utils
 from sopel.tools import events, jobs, SopelMemory, target
 
+
 if TYPE_CHECKING:
     from sopel.bot import Sopel, SopelWrapper
     from sopel.tools import Identifier
