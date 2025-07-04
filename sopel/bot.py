@@ -24,7 +24,6 @@ from typing import (
     Sequence,
     TYPE_CHECKING,
     TypeVar,
-    Union,
 )
 
 from sopel import db, irc, logger, plugin, plugins, tools
