@@ -1138,11 +1138,18 @@ class Sopel(irc.AbstractBot):
                 return True
         return False
 
-    def _hostmask_blocked(self, hostmask: str) -> bool:
+    def _hostmask_blocked(self, hostmask: str | None) -> bool:
         """Check if a hostmask is blocked.
 
         :param hostmask: the hostmask to check
+
+        ``PreTrigger.hostmask`` can be ``None`` if the incoming line did not
+        include a source, in which case this method always returns ``False``.
         """
+        if not hostmask:
+            # None, or empty string, cannot match any masks
+            return False
+
         bad_masks = self.config.core.hostmask_blocks
         for bad_mask in bad_masks:
             bad_mask = bad_mask.strip()
