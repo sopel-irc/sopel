@@ -13,10 +13,15 @@
 # Licensed under the Eiffel Forum License 2.
 from __future__ import annotations
 
-import inspect
 import logging
 import threading
 import time
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from sopel.config import Config
+    from sopel.plugins.callables import PluginJob
 
 
 LOGGER = logging.getLogger(__name__)
@@ -252,7 +257,7 @@ class Job:
 
     """
     @classmethod
-    def kwargs_from_callable(cls, handler):
+    def kwargs_from_callable(cls, handler: PluginJob) -> dict:
         """Generate the keyword arguments to create a new instance.
 
         :param handler: callable used to generate keyword arguments
@@ -269,14 +274,14 @@ class Job:
         """
 
         return {
-            'plugin': getattr(handler, 'plugin_name', None),
-            'label': getattr(handler, 'rule_label', None),
-            'threaded': getattr(handler, 'thread', True),
-            'doc': inspect.getdoc(handler),
+            'plugin': handler.plugin_name,
+            'label': handler.label,
+            'threaded': handler.threaded,
+            'doc': handler.doc,
         }
 
     @classmethod
-    def from_callable(cls, settings, handler):
+    def from_callable(cls, settings: Config, handler: PluginJob) -> Job:
         """Instantiate a Job from the bot's ``settings`` and a ``handler``.
 
         :param settings: bot's settings
@@ -286,7 +291,7 @@ class Job:
         """
         kwargs = cls.kwargs_from_callable(handler)
         return cls(
-            set(handler.interval),
+            set(handler.intervals),
             handler=handler,
             **kwargs)
 
