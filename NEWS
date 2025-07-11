@@ -44,6 +44,18 @@ Housekeeping changes
 [#2674]: https://github.com/sopel-irc/sopel/pull/2674
 
 
+Changes between 8.0.2 and 8.0.3
+===============================
+
+Plugin changes
+--------------
+
+* lmgtfy:
+  * Updated to a working domain name [[#2658][]]
+
+[#2658]: https://github.com/sopel-irc/sopel/pull/2658
+
+
 Changes between 8.0.1 and 8.0.2
 ===============================
 
