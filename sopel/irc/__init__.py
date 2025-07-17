@@ -45,13 +45,17 @@ from typing import (
 from sopel import tools, trigger
 from sopel.lifecycle import deprecated
 from sopel.tools import identifiers, memories
+
 from .backends import AsyncioBackend, UninitializedBackend
 from .capabilities import Capabilities
 from .isupport import ISupport
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
     from sopel.config import Config
+
     from .abstract_backends import AbstractIRCBackend
     from .utils import MyInfo
 

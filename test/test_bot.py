@@ -16,7 +16,11 @@ from sopel.tools import Identifier, SopelMemory, target
 if typing.TYPE_CHECKING:
     from sopel.config import Config
     from sopel.tests.factories import (
-        BotFactory, ConfigFactory, IRCFactory, TriggerFactory, UserFactory,
+        BotFactory,
+        ConfigFactory,
+        IRCFactory,
+        TriggerFactory,
+        UserFactory,
     )
     from sopel.tests.mocks import MockIRCServer
 

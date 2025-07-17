@@ -14,6 +14,7 @@ import requests
 from sopel import plugin
 from sopel.tools import web
 
+
 PLUGIN_OUTPUT_PREFIX = '[wiktionary] '
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'

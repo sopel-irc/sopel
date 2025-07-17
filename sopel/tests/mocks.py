@@ -4,7 +4,6 @@
 """
 from __future__ import annotations
 
-
 from sopel.irc.abstract_backends import AbstractIRCBackend
 
 

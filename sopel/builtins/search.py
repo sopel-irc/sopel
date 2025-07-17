@@ -16,6 +16,7 @@ import xmltodict  # type: ignore[import]
 from sopel import plugin
 from sopel.tools import web
 
+
 PLUGIN_OUTPUT_PREFIX = '[search] '
 
 header_spoof = {

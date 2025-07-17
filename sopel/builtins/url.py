@@ -24,6 +24,7 @@ from urllib3.exceptions import LocationValueError  # type: ignore[import]
 from sopel import plugin, privileges, tools
 from sopel.config import types
 
+
 if TYPE_CHECKING:
     from collections.abc import Generator
     from typing import Iterable
