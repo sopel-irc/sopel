@@ -23,6 +23,7 @@ from sopel import formatting, tools
 from sopel.tools import web
 from sopel.tools.identifiers import Identifier, IdentifierFactory
 
+
 if TYPE_CHECKING:
     from sopel import config
 

@@ -54,6 +54,7 @@ import sys
 from typing import ClassVar, TYPE_CHECKING, TypedDict
 
 from sopel import __version__ as release, loader, plugin as plugin_decorators
+
 from . import exceptions
 
 

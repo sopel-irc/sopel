@@ -8,6 +8,7 @@ import pytest
 from sopel import config, plugin
 from sopel.tests import rawlist
 
+
 if TYPE_CHECKING:
     from sopel.bot import Sopel, SopelWrapper
     from sopel.config import Config

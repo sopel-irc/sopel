@@ -38,11 +38,13 @@ from sopel.plugins import (
 from sopel.tools import jobs as tools_jobs
 from sopel.trigger import Trigger
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     from sopel.plugins.handlers import (
-        AbstractPluginHandler, PluginMetaDescription,
+        AbstractPluginHandler,
+        PluginMetaDescription,
     )
     from sopel.trigger import PreTrigger
 

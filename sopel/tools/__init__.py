@@ -20,6 +20,8 @@ import sys
 
 # Don't delete `deprecated` import - maintains backward compatibility with pre-8.0 API
 from sopel.lifecycle import deprecated
+
+from . import time, web  # NOQA
 from ._events import events  # NOQA
 
 # shortcuts & backward compatibility with pre-8.0
@@ -29,7 +31,6 @@ from .memories import (  # NOQA
     SopelMemory,
     SopelMemoryWithDefault,
 )
-from . import time, web  # NOQA
 
 
 # Long kept for Python compatibility, but it's time we let these go.

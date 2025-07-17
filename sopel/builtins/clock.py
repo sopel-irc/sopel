@@ -14,8 +14,9 @@ from sopel.tools.time import (
     get_channel_timezone,
     get_nick_timezone,
     get_timezone,
-    validate_timezone
+    validate_timezone,
 )
+
 
 PLUGIN_OUTPUT_PREFIX = '[clock] '
 ERROR_NO_TIMEZONE = (

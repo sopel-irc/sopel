@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING
 from sopel import plugin
 from sopel.tools.calculation import eval_equation
 
+
 if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
