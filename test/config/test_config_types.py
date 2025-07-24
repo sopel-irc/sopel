@@ -384,6 +384,7 @@ def test_set_attribute():
         b
         c
         """)
+    assert isinstance(parsed, set)
     assert parsed == {'a', 'b', 'c'}
 
 
