@@ -2,7 +2,6 @@
 coveralls>=2.0
 flake8>=5
 flake8-coding
-flake8-future-import
 flake8-isort
 flake8-type-checking; python_version >= '3.8'
 # Sphinx theme
