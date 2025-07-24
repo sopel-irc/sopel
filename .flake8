@@ -1,5 +1,0 @@
-[flake8:local-plugins]
-extension =
-    FI = flake8_future_import:FutureImportChecker
-paths =
-    ./contrib
