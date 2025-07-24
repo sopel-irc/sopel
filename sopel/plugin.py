@@ -26,6 +26,7 @@ from typing import (
 # import and expose privileges as shortcut
 from sopel.privileges import AccessLevel
 
+
 VOICE = AccessLevel.VOICE
 HALFOP = AccessLevel.HALFOP
 OP = AccessLevel.OP
@@ -36,6 +37,7 @@ OPER = AccessLevel.OPER
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
     from sopel.bot import SopelWrapper
 
 __all__ = [

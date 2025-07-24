@@ -5,5 +5,5 @@ from .utils import (  # noqa
     add_common_arguments,
     enumerate_configs,
     find_config,
-    load_settings
+    load_settings,
 )

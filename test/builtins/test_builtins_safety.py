@@ -6,6 +6,7 @@ import pytest
 
 from sopel.builtins.safety import safeify_url
 
+
 URL_TESTS = (
     # Valid URLs
     ("http://example.com", ("hxxp://example[.]com")),

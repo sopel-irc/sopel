@@ -16,6 +16,7 @@ import logging
 from sopel import plugin
 from sopel.config import types
 
+
 LOGGER = logging.getLogger(__name__)
 
 ERROR_JOIN_NO_CHANNEL = 'Which channel should I join?'

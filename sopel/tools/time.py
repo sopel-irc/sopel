@@ -13,6 +13,7 @@ from typing import cast, NamedTuple, Optional, TYPE_CHECKING, Union
 
 import pytz
 
+
 if TYPE_CHECKING:
     from sopel.config import Config
     from sopel.db import SopelDB

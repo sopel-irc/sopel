@@ -10,6 +10,7 @@ from sopel.irc.modes import (
     parse_modestring,
 )
 
+
 ADDED = True
 REMOVED = False
 REQUIRED = True
