@@ -73,6 +73,36 @@ sopel-plugins = "sopel.cli.plugins:main"
 [project.entry-points.pytest11]
 pytest-sopel = "sopel.tests.pytest_plugin"
 
+[tool.flake8]
+max-line-length = 79
+no-accept-encodings = true
+type-checking-exempt-modules = "typing"
+exclude = [
+    ".venv",
+    "conftest.py",
+    "contrib",
+    "docs",
+    "env",
+]
+ignore = [
+    # Line length limit. Acceptable (for now).
+    "E501",
+    # Newline before binary operator. Sometimes this is more readable, e.g. in
+    # long arithmetic expressions.
+    "W503",
+    # Newline after binary operator. Ignored by default (which we want to keep)
+    "W504",
+    # These are forbidding certain __future__ imports. The future-import plugin
+    # has errors both for having and not having them; we want to have these until
+    # Sopel no longer supports Python versions that require them.
+    "FI58",
+    # These would require future imports that are not needed any more on Sopel's
+    # oldest supported Python version (3.8).
+    "FI10","FI11","FI12","FI13","FI14","FI15","FI16","FI17",
+    # We use postponed annotation evaluation
+    "TC2",
+]
+
 [tool.isort]
 combine_as_imports = true
 ensure_newline_before_comments = true
@@ -84,6 +114,10 @@ multi_line_output = 3
 order_by_type = false
 split_on_trailing_comma = true
 use_parentheses = true
+
+[tool.mypy]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+show_error_codes = true
 
 [tool.pytest.ini_options]
 # NOTE: sopel/ is included here to include dynamically-generated tests
