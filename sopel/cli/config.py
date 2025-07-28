@@ -166,18 +166,22 @@ def handle_edit(options):
     :return: 0 if everything went fine;
              1 if the specified config file doesn't exist;
              2 if the user doesn't have a valid ``$EDITOR``
+             3 if the editor exited with a non-zero status
     """
     editor = os.environ.get('EDITOR', None)
     if editor is None:
-        print('No $EDITOR found. Please configure your shell.')
+        utils.stderr('No $EDITOR found. Please configure your shell.')
         return 2
 
     config_filename = utils.find_config(options.configdir, options.config)
     if not os.path.isfile(config_filename):
-        print('No config file found at {}'.format(config_filename))
+        utils.stderr('No config file found at {}'.format(config_filename))
         return 1
 
-    subprocess.Popen([editor, config_filename])
+    ret = subprocess.call([editor, config_filename])
+    if ret != 0:
+        utils.stderr('Editor exited with status code: {}'.format(ret))
+        return 3
     return 0  # successful operation
 
 
