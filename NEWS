@@ -10,6 +10,9 @@ FIXME: Update heading before shipping final NEWS for 8.1.0
 Plugin changes
 --------------
 
+* safety:
+  * Plugin removed in favor of separately-maintained external package; see
+    [sopel-safety][] on PyPI [[#2678][]]
 * tld:
   * Plugin removed in favor of faster updates via external package; see
     [sopel-tld][] on PyPI [[#2673][]]
@@ -34,6 +37,7 @@ Housekeeping changes
 * Switch to improved tooling for import-order checks [[#2681][]]
 * Streamlining tool configuration under `pyproject.toml` [[#2682][]]
 
+[sopel-safety]: https://pypi.org/project/sopel-safety/
 [sopel-tld]: https://pypi.org/project/sopel-tld/
 [sopel-unicode]: https://pypi.org/project/sopel-unicode/
 
@@ -44,6 +48,7 @@ Housekeeping changes
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
 [#2673]: https://github.com/sopel-irc/sopel/pull/2673
 [#2674]: https://github.com/sopel-irc/sopel/pull/2674
+[#2678]: https://github.com/sopel-irc/sopel/pull/2678
 [#2681]: https://github.com/sopel-irc/sopel/pull/2681
 [#2682]: https://github.com/sopel-irc/sopel/pull/2682
 
