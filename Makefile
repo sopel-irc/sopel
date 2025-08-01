@@ -37,9 +37,9 @@ coverage_html:
 coverages: coverage_report coverage_html
 
 .PHONY: allclean clean cleanbuild cleancache cleancov
-allclean: clean cleancov clean_docs
+allclean: clean cleancache clean_docs
 
-clean: cleanbuild cleancache
+clean: cleanbuild cleancov
 
 cleanbuild:
 	rm -rf build/*
