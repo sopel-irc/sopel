@@ -36,6 +36,20 @@ coverage_html:
 
 coverages: coverage_report coverage_html
 
+.PHONY: allclean clean cleanbuild cleancache cleancov
+allclean: clean cleancache clean_docs
+
+clean: cleanbuild cleancov
+
+cleanbuild:
+	rm -rf build/*
+
+cleancache:
+	rm -rf **/__pycache__
+
+cleancov:
+	rm -rf .coverage coverage_html_report
+
 .PHONY: clean_docs build_docs docs cleandoc
 clean_docs:
 	$(MAKE) -C docs clean
