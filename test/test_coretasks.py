@@ -675,3 +675,49 @@ def test_handle_who_reply_botmode(mockbot):
         ':End of /WHO list.')
 
     assert mockbot.users['Internets'].is_bot is True
+
+
+def test_handle_who_reply_placeholder(mockbot):
+    """Ensure account & channel placeholders in WHO/WHOX reply are ignored."""
+    # no channel (WHO and WHOX both use `*` placeholder if channel is omitted)
+    # no account (regular WHO doesn't provide account name)
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel * '
+        'nesbitt harlow.new.town * Mr_Nesbitt H '
+        ':0 Mr. Nesbitt of Harlow New Town')
+    # yes channel
+    # no account (WHOX uses `0` placeholder if account not logged in)
+    mockbot.on_message(
+        ':some.irc.network 354 Sopel 999 #channel '
+        'kandrews leighton.road.slough Ken_Andrews G '
+        '0 :Ken Andrews')
+
+    assert len(mockbot.users) == 2
+
+    assert 'Mr_Nesbitt' in mockbot.users
+    assert mockbot.users['Mr_Nesbitt'].nick == 'Mr_Nesbitt'
+    assert mockbot.users['Mr_Nesbitt'].user == 'nesbitt'
+    assert mockbot.users['Mr_Nesbitt'].host == 'harlow.new.town'
+    assert mockbot.users['Mr_Nesbitt'].realname == 'Mr. Nesbitt of Harlow New Town'
+    assert mockbot.users['Mr_Nesbitt'].account is None
+    assert mockbot.users['Mr_Nesbitt'].away is False
+    assert mockbot.users['Mr_Nesbitt'].is_bot is None
+
+    assert 'Ken_Andrews' in mockbot.users
+    assert mockbot.users['Ken_Andrews'].nick == 'Ken_Andrews'
+    assert mockbot.users['Ken_Andrews'].user == 'kandrews'
+    assert mockbot.users['Ken_Andrews'].host == 'leighton.road.slough'
+    assert mockbot.users['Ken_Andrews'].realname == 'Ken Andrews'
+    assert mockbot.users['Ken_Andrews'].account is None
+    assert mockbot.users['Ken_Andrews'].away is True
+    assert mockbot.users['Ken_Andrews'].is_bot is None
+
+    assert len(mockbot.channels) == 1
+    assert '*' not in mockbot.channels
+    assert '#channel' in mockbot.channels
+    assert mockbot.channels['#channel']
+    assert len(mockbot.channels['#channel'].users) == 1
+    assert 'Ken_Andrews' in mockbot.channels['#channel'].users
+    assert (
+        mockbot.users['Ken_Andrews'] is mockbot.channels['#channel'].users['Ken_Andrews']
+    )
