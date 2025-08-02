@@ -1137,6 +1137,7 @@ def rate(
     server: int = 0,
     *,
     message: Optional[str] = None,
+    include_admins: Optional[bool] = False,
 ) -> Callable:
     """Decorate a function to be rate-limited.
 
@@ -1148,6 +1149,8 @@ def rate(
                    who triggered it or where
     :param message: optional keyword argument; default message sent as NOTICE
                     when a rate limit is reached
+    :param include_admins: optional boolean to include admins in the rate limit
+                           (default ``False``)
 
     How often a function can be triggered on a per-user basis, in a channel,
     or across the server (bot) can be controlled with this decorator. A value
@@ -1219,6 +1222,7 @@ def rate(
         if not hasattr(function, 'global_rate'):
             function.global_rate = server
         function.default_rate_message = message
+        function.rate_limit_admins = include_admins
         return function
     return add_attribute
 
@@ -1226,12 +1230,15 @@ def rate(
 def rate_user(
     rate: int,
     message: Optional[str] = None,
+    include_admins: Optional[bool] = False,
 ) -> Callable:
     """Decorate a function to be rate-limited for a user.
 
     :param rate: seconds between permitted calls of this function by the same
                  user
     :param message: optional; message sent as NOTICE when a user hits the limit
+    :param include_admins: optional boolean to include admins in the rate limit
+                           (default ``False``)
 
     This decorator can be used alone or with the :func:`rate` decorator, as it
     will always take precedence::
@@ -1260,6 +1267,7 @@ def rate_user(
     def add_attribute(function):
         function.user_rate = rate
         function.user_rate_message = message
+        function.rate_limit_admins = include_admins
         return function
     return add_attribute
 
@@ -1267,12 +1275,15 @@ def rate_user(
 def rate_channel(
     rate: int,
     message: Optional[str] = None,
+    include_admins: Optional[bool] = False,
 ) -> Callable:
     """Decorate a function to be rate-limited for a channel.
 
     :param rate: seconds between permitted calls of this function in the same
                  channel, regardless of triggering user
     :param message: optional; message sent as NOTICE when a user hits the limit
+    :param include_admins: optional boolean to include admins in the rate limit
+                           (default ``False``)
 
     This decorator can be used alone or with the :func:`rate` decorator, as it
     will always take precedence::
@@ -1304,6 +1315,7 @@ def rate_channel(
     def add_attribute(function):
         function.channel_rate = rate
         function.channel_rate_message = message
+        function.rate_limit_admins = include_admins
         return function
     return add_attribute
 
@@ -1311,12 +1323,15 @@ def rate_channel(
 def rate_global(
     rate: int,
     message: Optional[str] = None,
+    include_admins: Optional[bool] = False,
 ) -> Callable:
     """Decorate a function to be rate-limited for the whole server.
 
     :param rate: seconds between permitted calls of this function no matter who
                  triggered it or where
     :param message: optional; message sent as NOTICE when a user hits the limit
+    :param include_admins: optional boolean to include admins in the rate limit
+                           (default ``False``)
 
     This decorator can be used alone or with the :func:`rate` decorator, as it
     will always take precedence.
@@ -1347,6 +1362,7 @@ def rate_global(
     def add_attribute(function):
         function.global_rate = rate
         function.global_rate_message = message
+        function.rate_limit_admins = include_admins
         return function
     return add_attribute
 
