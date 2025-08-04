@@ -26,6 +26,9 @@ Plugin changes
 Core changes
 ------------
 
+* Added back `hostmask` block type [[#2687][]]
+  * Now `host` blocks operate on the hostname only, and `hostmask` blocks match
+    the full hostmask (`nick!user@host.name`), as expected.
 * Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 
 API changes
@@ -62,6 +65,7 @@ Housekeeping changes
 [#2678]: https://github.com/sopel-irc/sopel/pull/2678
 [#2681]: https://github.com/sopel-irc/sopel/pull/2681
 [#2682]: https://github.com/sopel-irc/sopel/pull/2682
+[#2687]: https://github.com/sopel-irc/sopel/pull/2687
 
 
 Changes between 8.0.2 and 8.0.3
