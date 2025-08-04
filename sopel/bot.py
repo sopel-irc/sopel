@@ -24,7 +24,6 @@ from typing import (
     Sequence,
     TYPE_CHECKING,
     TypeVar,
-    Union,
 )
 
 from sopel import db, irc, logger, plugin, plugins, tools
@@ -882,16 +881,18 @@ class Sopel(irc.AbstractBot):
     def _is_pretrigger_blocked(
         self,
         pretrigger: PreTrigger,
-    ) -> Union[tuple[bool, bool], tuple[None, None]]:
+    ) -> tuple[bool, bool, bool] | tuple[None, None, None]:
         if not (
             self.settings.core.nick_blocks
             or self.settings.core.host_blocks
+            or self.settings.core.hostmask_blocks
         ):
-            return (None, None)
+            return (None, None, None)
 
         nick_blocked = self._nick_blocked(pretrigger.nick)
         host_blocked = self._host_blocked(pretrigger.host)
-        return (nick_blocked, host_blocked)
+        hostmask_blocked = self._hostmask_blocked(pretrigger.hostmask)
+        return (nick_blocked, host_blocked, hostmask_blocked)
 
     def dispatch(self, pretrigger: PreTrigger) -> None:
         """Dispatch a parsed message to any registered callables.
@@ -915,8 +916,10 @@ class Sopel(irc.AbstractBot):
         # list of commands running in separate threads for this dispatch
         running_triggers = []
         # nickname/hostname blocking
-        nick_blocked, host_blocked = self._is_pretrigger_blocked(pretrigger)
-        blocked = bool(nick_blocked or host_blocked)
+        nick_blocked, host_blocked, hostmask_blocked = (
+            self._is_pretrigger_blocked(pretrigger)
+        )
+        blocked = bool(nick_blocked or host_blocked or hostmask_blocked)
         list_of_blocked_rules = set()
         # account info
         nick = pretrigger.nick
@@ -957,17 +960,18 @@ class Sopel(irc.AbstractBot):
         self._update_running_triggers(running_triggers)
 
         if list_of_blocked_rules:
-            if nick_blocked and host_blocked:
-                block_type = 'both blocklists'
-            elif nick_blocked:
-                block_type = 'nick blocklist'
-            else:
-                block_type = 'host blocklist'
+            block_types = []
+            if nick_blocked:
+                block_types.append('nick')
+            if host_blocked:
+                block_types.append('host')
+            if hostmask_blocked:
+                block_types.append('hostmask')
             LOGGER.debug(
-                "%s prevented from using %s by %s.",
+                "%s prevented from using %s by %s blocklist(s).",
                 pretrigger.nick,
                 ', '.join(list_of_blocked_rules),
-                block_type,
+                ', '.join(block_types),
             )
 
     @property
@@ -1135,6 +1139,28 @@ class Sopel(irc.AbstractBot):
                 continue
             if (re.match(bad_mask + '$', host, re.IGNORECASE) or
                     bad_mask == host):
+                return True
+        return False
+
+    def _hostmask_blocked(self, hostmask: str | None) -> bool:
+        """Check if a hostmask is blocked.
+
+        :param hostmask: the hostmask to check
+
+        ``PreTrigger.hostmask`` can be ``None`` if the incoming line did not
+        include a source, in which case this method always returns ``False``.
+        """
+        if not hostmask:
+            # None, or empty string, cannot match any masks
+            return False
+
+        bad_masks = self.config.core.hostmask_blocks
+        for bad_mask in bad_masks:
+            bad_mask = bad_mask.strip()
+            if not bad_mask:
+                continue
+            if (re.match(bad_mask + '$', hostmask, re.IGNORECASE) or
+                    bad_mask == hostmask):
                 return True
         return False
 

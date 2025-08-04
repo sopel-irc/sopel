@@ -1355,6 +1355,7 @@ def _get_sasl_pass_and_mech(bot):
 
 @plugin.commands('blocks')
 @plugin.example(r'.blocks del nick falsep0sitive', user_help=True)
+@plugin.example(r'.blocks add hostmask Guest.*!.*@public\.test\.client', user_help=True)
 @plugin.example(r'.blocks add host some\.malicious\.network', user_help=True)
 @plugin.example(r'.blocks add nick sp(a|4)mb(o|0)t\d*', user_help=True)
 @plugin.thread(False)
@@ -1364,19 +1365,21 @@ def _get_sasl_pass_and_mech(bot):
 def blocks(bot, trigger):
     """Manage Sopel's blocking features.
 
-    Full argspec: `list [nick|host]` or `[add|del] [nick|host] pattern`
+    Full argspec: `list [nick|host|hostmask]` or `[add|del] [nick|host|hostmask] pattern`
     """
     STRINGS = {
         "success_del": "Successfully deleted block: %s",
         "success_add": "Successfully added block: %s",
         "no_nick": "No matching nick block found for: %s",
         "no_host": "No matching host block found for: %s",
-        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host) sopel",
+        "no_hostmask": "No matching hostmask block found for: %s",
+        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host|hostmask) pattern",
         "invalid_display": "Invalid input for displaying blocks.",
         "nonelisted": "No %s listed in the blocklist.",
         'huh': "I could not figure out what you wanted to do.",
     }
 
+    hostmasks = set(s for s in bot.config.core.hostmask_blocks if s != '')
     hosts = set(s for s in bot.config.core.host_blocks if s != '')
     nicks = set(bot.make_identifier(nick)
                 for nick in bot.config.core.nick_blocks
@@ -1396,6 +1399,12 @@ def blocks(bot, trigger):
                 bot.say("Blocked nicks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('nicks'))
+        elif text[2] == "hostmask":
+            if len(hostmasks) > 0:
+                blocked = ', '.join(str(hostmask) for hostmask in hostmasks)
+                bot.say("Blocked hostmasks: {}".format(blocked))
+            else:
+                bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
         else:
             bot.reply(STRINGS['invalid_display'])
 
@@ -1407,6 +1416,10 @@ def blocks(bot, trigger):
         elif text[2] == "host":
             hosts.add(text[3].lower())
             bot.config.core.host_blocks = list(hosts)
+            bot.config.save()
+        elif text[2] == "hostmask":
+            hostmasks.add(text[3])
+            bot.config.core.hostmask_blocks = list(hostmasks)
             bot.config.save()
         else:
             bot.reply(STRINGS['invalid'] % ("adding"))
@@ -1431,6 +1444,15 @@ def blocks(bot, trigger):
                 return
             hosts.remove(host)
             bot.config.core.host_blocks = [str(m) for m in hosts]
+            bot.config.save()
+            bot.reply(STRINGS['success_del'] % (text[3]))
+        elif text[2] == "hostmask":
+            hostmask = text[3]
+            if hostmask not in hostmasks:
+                bot.reply(STRINGS['no_hostmask'] % (text[3]))
+                return
+            hostmasks.remove(hostmask)
+            bot.config.core.hostmask_blocks = [str(m) for m in hostmasks]
             bot.config.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:
