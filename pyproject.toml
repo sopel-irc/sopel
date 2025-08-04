@@ -77,12 +77,9 @@ pytest-sopel = "sopel.tests.pytest_plugin"
 max-line-length = 79
 no-accept-encodings = true
 type-checking-exempt-modules = "typing"
-exclude = [
-    ".venv",
-    "conftest.py",
-    "contrib",
-    "docs",
-    "env",
+filename = [
+    "./sopel/*.py",
+    "./test/*.py",
 ]
 ignore = [
     # Line length limit. Acceptable (for now).
