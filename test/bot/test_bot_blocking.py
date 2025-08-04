@@ -20,6 +20,7 @@ import pytest
 
 from sopel import bot, trigger
 
+
 if typing.TYPE_CHECKING:
     from sopel.config import Config
     from sopel.tests.factories import BotFactory, ConfigFactory
