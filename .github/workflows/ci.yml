@@ -32,12 +32,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install sopel (on py3.8)
+        if: matrix.python-version == '3.8'
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade -r dev-requirements.txt
+          python -m pip install dependency-groups
           python -m pip install -e .
+          pip-install-dependency-groups dev
+      - name: Install sopel
+        if: matrix.python-version != '3.8'
+        run: python -m pip install -e . --group dev
       - name: Run linters (code style and type check)
         run: make lint
       - name: Run pytest
