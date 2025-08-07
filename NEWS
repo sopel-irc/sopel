@@ -48,7 +48,7 @@ Housekeeping changes
 * Replace `bot.search_url_callbacks()` method usage in core [[#2635][]]
 * Satisfy type checker in `EntryPointPlugin` version handler [[#2670][]]
 * Switch to improved tooling for import-order checks [[#2681][]]
-* Streamlining tool configuration under `pyproject.toml` [[#2682][]]
+* Streamlining project config under `pyproject.toml` [[#2682][], [#2683][]]
 
 [sopel-safety]: https://pypi.org/project/sopel-safety/
 [sopel-tld]: https://pypi.org/project/sopel-tld/
@@ -65,6 +65,7 @@ Housekeeping changes
 [#2678]: https://github.com/sopel-irc/sopel/pull/2678
 [#2681]: https://github.com/sopel-irc/sopel/pull/2681
 [#2682]: https://github.com/sopel-irc/sopel/pull/2682
+[#2683]: https://github.com/sopel-irc/sopel/pull/2683
 [#2687]: https://github.com/sopel-irc/sopel/pull/2687
 
 
