@@ -169,6 +169,8 @@ use_parentheses = true
 
 [tool.mypy]
 plugins = ["sqlalchemy.ext.mypy.plugin"]
+check_untyped_defs = true
+disallow_incomplete_defs = true
 show_error_codes = true
 
 [tool.pytest.ini_options]
