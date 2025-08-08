@@ -74,7 +74,8 @@ def searchxkcd_search(query):
         first = hits[0]['objectID']
     except (JSONDecodeError, LookupError):
         msg = "Data format from searchxkcd API could not be understood."
-        LOGGER.debug(msg)
+        LOGGER.warning(msg)
+        LOGGER.debug("Response text: %r", response.text)
         raise ResponseFormatError(msg)
 
     return first
