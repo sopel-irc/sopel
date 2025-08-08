@@ -75,7 +75,7 @@ docs = [
 lint = [
     "flake8>=5",
     "flake8-coding",
-    "flake8-future-import",
+    "flake8-future-annotations",
     "flake8-isort",
     "flake8-pyproject",
     "flake8-type-checking; python_version >= '3.8'",
@@ -126,6 +126,7 @@ sopel-plugins = "sopel.cli.plugins:main"
 pytest-sopel = "sopel.tests.pytest_plugin"
 
 [tool.flake8]
+force-future-annotations = true
 max-line-length = 79
 no-accept-encodings = true
 type-checking-exempt-modules = "typing"
@@ -144,13 +145,6 @@ ignore = [
     "W503",
     # Newline after binary operator. Ignored by default (which we want to keep)
     "W504",
-    # These are forbidding certain __future__ imports. The future-import plugin
-    # has errors both for having and not having them; we want to have these until
-    # Sopel no longer supports Python versions that require them.
-    "FI58",
-    # These would require future imports that are not needed any more on Sopel's
-    # oldest supported Python version (3.8).
-    "FI10","FI11","FI12","FI13","FI14","FI15","FI16","FI17",
     # We use postponed annotation evaluation
     "TC2",
 ]
