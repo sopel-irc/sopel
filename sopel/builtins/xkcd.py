@@ -31,7 +31,7 @@ class SearchXkcdError(Exception):
     """Generic exception to raise if there was a problem contacting the API."""
 
 
-class SearchFailedError(SearchXkcdError):
+class SearchConnectionError(SearchXkcdError):
     """Couldn't reach the search endpoint."""
 
 
@@ -62,7 +62,7 @@ def searchxkcd_search(query):
         response = requests.post(SEARCHXKCD_API, params=parameters)
     except requests.exceptions.ConnectionError as e:
         LOGGER.debug("Unable to reach searchxkcd API: %s", e)
-        raise SearchFailedError(str(e))
+        raise SearchConnectionError(str(e))
     except Exception as e:
         LOGGER.debug("Unexpected error calling searchxkcd API: %s", e)
         raise SearchXkcdError(str(e))
