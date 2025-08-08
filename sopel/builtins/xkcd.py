@@ -124,7 +124,7 @@ def xkcd(bot, trigger):
                 except NoResultsError:
                     bot.reply("Sorry, I couldn't find any comics for that query.")
                     return
-                except (ResponseFormatError, SearchFailedError, SearchXkcdError):
+                except SearchXkcdError:
                     bot.reply(
                         "A technical problem prevented me from searching. "
                         "Please ask my owner to check my logs.")
