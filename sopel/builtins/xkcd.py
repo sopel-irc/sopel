@@ -127,6 +127,7 @@ def xkcd(bot, trigger):
                     bot.reply(
                         "A technical problem prevented me from searching. "
                         "Please ask my owner to check my logs.")
+                    return
 
                 requested = get_info(number)
 
