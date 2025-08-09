@@ -30,6 +30,7 @@ Core changes
   * Now `host` blocks operate on the hostname only, and `hostmask` blocks match
     the full hostmask (`nick!user@host.name`), as expected.
 * Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
+* Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 
 API changes
 -----------
@@ -63,6 +64,7 @@ Housekeeping changes
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
 [#2673]: https://github.com/sopel-irc/sopel/pull/2673
 [#2674]: https://github.com/sopel-irc/sopel/pull/2674
+[#2676]: https://github.com/sopel-irc/sopel/pull/2676
 [#2678]: https://github.com/sopel-irc/sopel/pull/2678
 [#2681]: https://github.com/sopel-irc/sopel/pull/2681
 [#2682]: https://github.com/sopel-irc/sopel/pull/2682
