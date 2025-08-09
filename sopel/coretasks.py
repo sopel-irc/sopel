@@ -1560,6 +1560,11 @@ def _record_who(
         usr.away = away
     if is_bot is not None:
         usr.is_bot = is_bot
+
+    # `*` placeholder is returned for users with no visible channels; see #2675
+    if channel == '*':
+        return
+
     priv = 0
     if modes:
         mapping = {
@@ -1572,6 +1577,7 @@ def _record_who(
         }
         for c in modes:
             priv = priv | mapping[c]
+
     if channel not in bot.channels:
         bot.channels[channel] = target.Channel(
             channel,
