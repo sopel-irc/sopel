@@ -78,6 +78,13 @@ def on_topic_command(bot):
 on_topic_command.event = ['TOPIC']
 on_topic_command._sopel_callable = True
 
+def mixed_rule_url(bot, trigger):
+    ...
+
+mixed_rule_url.rule = ['.*']
+mixed_rule_url.url_regex = [r'.\\.example\\.com']
+mixed_rule_url._sopel_callable = True
+
 def shutdown():
     pass
 
@@ -212,13 +219,14 @@ def test_clean_module(testplugin, tmpconfig):
 
     func_callables = [c.get_handler() for c in callables]
 
-    assert len(callables) == 6
+    assert len(callables) == 7
     assert test_mod.first_command in func_callables
     assert test_mod.second_command in func_callables
     assert test_mod.on_topic_command in func_callables
     assert test_mod.example_rule_lazy in func_callables
     assert test_mod.example_find_lazy in func_callables
     assert test_mod.example_search_lazy in func_callables
+    assert test_mod.mixed_rule_url in func_callables
 
     func_jobs = [c.get_handler() for c in jobs]
     assert len(jobs) == 2
@@ -229,9 +237,10 @@ def test_clean_module(testplugin, tmpconfig):
     assert test_mod.shutdown in shutdowns
 
     func_urls = [c.get_handler() for c in urls]
-    assert len(urls) == 2
+    assert len(urls) == 3
     assert test_mod.example_url in func_urls
     assert test_mod.example_url_lazy in func_urls
+    assert test_mod.mixed_rule_url in func_urls
 
     # assert is_triggerable behavior *after* clean_module has been called
     assert loader.is_triggerable(test_mod.first_command)
@@ -247,6 +256,9 @@ def test_clean_module(testplugin, tmpconfig):
     assert not loader.is_triggerable(test_mod.shutdown)
     assert not loader.is_triggerable(test_mod.example_url)
     assert not loader.is_triggerable(test_mod.example_url_lazy)
+
+    # mixing rule and URL callback is not supported through sopel.loader
+    assert not loader.is_triggerable(test_mod.mixed_rule_url)
 
     # ignored function is ignored
     assert test_mod.ignored not in callables
@@ -280,19 +292,19 @@ def test_clean_module_idempotency(testplugin, tmpconfig):
         test_mod, tmpconfig)
 
     # sanity assertions: check test_clean_module if any of these fails
-    assert len(callables) == 6
+    assert len(callables) == 7
     assert len(jobs) == 2
     assert len(shutdowns) == 1
-    assert len(urls) == 2
+    assert len(urls) == 3
 
     # recall clean_module, we should have the same result
     new_callables, new_jobs, new_shutdowns, new_urls = loader.clean_module(
         test_mod, tmpconfig)
 
-    assert len(new_callables) == 6
+    assert len(new_callables) == 7
     assert len(new_jobs) == 2
     assert len(new_shutdowns) == 1
-    assert len(new_urls) == 2
+    assert len(new_urls) == 3
 
     # assert is_triggerable behavior
     assert loader.is_triggerable(test_mod.first_command)

@@ -435,7 +435,8 @@ class PluginCallable(AbstractPluginObject):
         .. note::
 
             This will return true if no pattern is defined but at least an
-            event is required without the callable being a named rule.
+            event or a CTCP is required without the callable being a named
+            rule or an URL callback.
         """
         allowed = any([
             self.rules,
@@ -447,7 +448,10 @@ class PluginCallable(AbstractPluginObject):
         ])
 
         return allowed or bool(
-            self.events and not (self.is_named_rule or self.is_url_callback)
+            # has events or ctcp defined but no named/URL callback defined
+            (self.events or self.ctcp) and not (
+                self.is_named_rule or self.is_url_callback
+            )
         )
 
     @property
@@ -986,17 +990,20 @@ def clean_module(
 
             elif isinstance(handler, PluginCallable):
                 handler.setup(config)
-                if handler.is_url_callback:
-                    urls.append(handler)
-                elif handler.is_triggerable:
-                    # this is not a URL callback but it's still triggerable
-                    callables.append(handler)
-                else:
+
+                if not handler.is_triggerable:
                     LOGGER.warning(
                         'Plugin callable "%s" is not triggerable.',
                         handler.label,
                     )
                     continue
+
+                if handler.is_url_callback:
+                    urls.append(handler)
+
+                if handler.is_generic_rule or handler.is_named_rule:
+                    callables.append(handler)
+
             else:
                 # it's a subclass of AbstractPluginObject that isn't a
                 # plugin job or callable, and it cannot be handled
