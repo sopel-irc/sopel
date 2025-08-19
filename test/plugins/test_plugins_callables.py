@@ -121,6 +121,25 @@ def test_callable_properties_event_rules():
     assert plugin_callable.is_url_callback is False
 
 
+def test_callable_properties_ctcp_rules():
+    def handler(bot: SopelWrapper, trigger: Trigger):
+        return 'test value: %s' % str(trigger)
+
+    plugin_callable = PluginCallable(handler)
+    plugin_callable.ctcp.append('ACTION')
+
+    # generic properties
+    assert plugin_callable.is_triggerable is True
+    assert plugin_callable.is_limitable is True
+
+    # specific properties
+    assert plugin_callable.is_generic_rule is True, (
+        'CTCP without pattern is considered a generic rule.',
+    )
+    assert plugin_callable.is_named_rule is False
+    assert plugin_callable.is_url_callback is False
+
+
 def test_callable_properties_match_rules():
     def handler(bot: SopelWrapper, trigger: Trigger):
         return 'test value: %s' % str(trigger)

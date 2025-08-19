@@ -410,7 +410,11 @@ class Manager:
         # expose a copy of the registered generic rules
         return self._url_callbacks.items()
 
-    def get_triggered_rules(self, bot, pretrigger):
+    def get_triggered_rules(
+        self,
+        bot: Sopel,
+        pretrigger: PreTrigger,
+    ) -> tuple[tuple[AbstractRule, re.Match[str]], ...]:
         """Get triggered rules with their match objects, sorted by priorities.
 
         :param bot: Sopel instance
