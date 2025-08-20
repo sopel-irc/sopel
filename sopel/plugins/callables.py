@@ -18,6 +18,53 @@ plugin jobs. These objects are represented by instances of
 
     Do **not** build your plugin based on what is here, you do **not** need to.
 
+
+Create a plugin decorator
+=========================
+
+Under the hood each decorator of :mod:`sopel.plugin` creates an instance of
+:class:`PluginCallable` and sets various properties. Upon loading the plugin,
+Sopel will collect all instances of :class:`PluginCallable`, to create the
+appropriate rule handlers (see :mod:`sopel.plugins.rules`).
+
+The structure of a typical decorator without any parameter looks like this::
+
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
+        # ensure that you have an instance of PluginCallable
+        handler = PluginCallable.ensure_callable(function)
+
+        # do something with the handler
+        # ...
+
+        # return the PluginCallable
+        return handler
+
+The decorator can then be used like this::
+
+    @decorator
+    def some_plugin_function(bot: SopelWrapper, trigger: Trigger) -> None:
+        # do something here
+        ...
+
+The key elements of a plugin decorators are to:
+
+* ensure an instance of one of :class:`PluginCallable`, :class:`PluginJob`, or
+  :class:`PluginGeneric`
+* operate on the object
+* and to return it
+
+Everything else is mostly dealing with the various way you can use a decorator.
+
+.. seealso::
+
+    All the decorators in :mod:`sopel.plugin` follow this structure, and they
+    can be taken as example of implementation.
+
+
+References
+==========
 """
 # Copyright 2025, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
@@ -126,6 +173,8 @@ class TypedCallablePredicate(Protocol):
 class AbstractPluginObject(abc.ABC):
     """Abstract definition of a plugin object.
 
+    :param handler: the function to execute when calling the plugin object
+
     A plugin object encapsulates the logic and attributes required for a plugin
     to register and execute this object.
 
@@ -134,9 +183,19 @@ class AbstractPluginObject(abc.ABC):
     _sopel_callable = True
 
     plugin_name: str | None
+    """Name of the plugin that this plugin object is for.
+
+    Set automatically by Sopel when loading a plugin object.
+    """
     label: str | None
+    """Identifier of the plugin callable.
+
+    Can be set manually to define a human readable identifier.
+    """
     threaded: bool
+    """Flag that indicates if the object is non blocking."""
     doc: str | None
+    """Documentation of the plugin object."""
 
     @property
     @deprecated(
@@ -172,7 +231,7 @@ class AbstractPluginObject(abc.ABC):
 
         .. seealso::
 
-            The :py:deco:`~sopel.plugin.label` decorator returns a
+            The :func:`@label<sopel.plugin.label>` decorator returns a
             :class:`PluginGeneric` that needs to be converted into a plugin
             callable or a plugin job by this class method.
 
@@ -196,8 +255,31 @@ class AbstractPluginObject(abc.ABC):
         :return: the plugin object's handler
         """
 
+    @abc.abstractmethod
+    def replace_handler(self, handler: Callable) -> Callable:
+        """Replace this plugin object's hanler.
+
+        :return: the plugin object's previous handler
+        """
+
 
 class PluginGeneric(AbstractPluginObject):
+    """Generic plugin object, used as a container for common properties.
+
+    Some properties of a plugin object are not tied to a specific role, i.e.,
+    it is not possible to know what kind of object it is when setting these
+    properties. This is useful when creating decorators that need to set these:
+
+    * :attr:`AbstractPluginObject.label`
+    * :attr:`AbstractPluginObject.threaded`
+
+    .. note::
+
+        Other plugin object classes should not subclass ``PluginGeneric`` and
+        always subclass :class:`AbstractPluginObject` instead.
+
+    .. versionadded:: 8.1
+    """
     @classmethod
     def ensure_callable(
         cls: Type[PluginGeneric],
@@ -241,6 +323,12 @@ class PluginGeneric(AbstractPluginObject):
     @override
     def get_handler(self) -> Callable:
         return self._handler
+
+    @override
+    def replace_handler(self, handler: Callable) -> Callable:
+        previous_handler = self._handler
+        self._handler = handler
+        return previous_handler
 
 
 class PluginCallable(AbstractPluginObject):
@@ -505,44 +593,80 @@ class PluginCallable(AbstractPluginObject):
 
         # documentation
         self.examples: list[dict] = []
+        """List of examples (with usage and tests)."""
         self._docs: dict = {}
 
         # rules
-        self.events: list = []
-        self.ctcp: list = []
-        self.commands: list = []
-        self.nickname_commands: list = []
-        self.action_commands: list = []
-        self.rules: list = []
+        self.events: list[str] = []
+        """List of IRC event types that can trigger this callable."""
+        self.ctcp: list[str | re.Pattern] = []
+        """List of CTCP messages that can trigger this callable."""
+        self.commands: list[str] = []
+        """List of plugin commands."""
+        self.nickname_commands: list[str] = []
+        """List of plugin nick commands."""
+        self.action_commands: list[str] = []
+        """List of plugin action commands."""
+        self.rules: list[str | re.Pattern] = []
+        """List of match patterns."""
         self.rule_lazy_loaders: list = []
-        self.find_rules: list = []
+        """List of lazy loaders for match rules."""
+        self.find_rules: list[str | re.Pattern] = []
+        """List of find patterns."""
         self.find_rules_lazy_loaders: list = []
-        self.search_rules: list = []
+        """List of lazy loaders for find rules."""
+        self.search_rules: list[str | re.Pattern] = []
+        """List of search patterns."""
         self.search_rules_lazy_loaders: list = []
-        self.url_regex: list = []
+        """List of lazy loaders for search rules."""
+        self.url_regex: list[str | re.Pattern] = []
+        """List of URL callback patterns."""
         self.url_lazy_loaders: list = []
+        """List of lazy loaders for URL callbacks."""
 
         # allow special conditions
         self.allow_bots: bool = False
+        """Flag to indicate if a bot can trigger this callable."""
         self.allow_echo: bool = False
+        """Flag to indicate if an echo messages can trigger this callable."""
 
         # how to run it
         self.priority: Literal['low', 'medium', 'high'] = 'medium'
+        """Priority of execution.
+
+        Plugin callables with a high priority will be executed before medium
+        and low priority callables.
+        """
         self.unblockable: bool = False
+        """Flag to indicate if a blocked user can trigger this callable.
+
+        A user can be banned/ignored by the bot, however some callable must
+        always execute (such as ``JOIN`` events).
+        """
         self.predicates: list[TypedCallablePredicate] = []
+        """List of predicates used to allow or prevent execution."""
 
         # rate limiting
         self.rate_limit_admins: bool = False
+        """Flag to indicate if rate limits apply to the bot's admins."""
         self.user_rate: int | None = None
+        """Per user rate limit (in seconds)."""
         self.channel_rate: int | None = None
+        """Per channel rate limit (in seconds)."""
         self.global_rate: int | None = None
+        """Global rate limit (in seconds)."""
         self.default_rate_message: str | None = None
+        """Default message when a limit is reached."""
         self.user_rate_message: str | None = None
+        """Default message when a user limit is reached."""
         self.channel_rate_message: str | None = None
+        """Default message when a channel limit is reached."""
         self.global_rate_message: str | None = None
+        """Default message when the global limit is reached."""
 
         # output management
         self.output_prefix: str = ''
+        """Output prefix used when sending ``PRIVMSG`` or ``NOTICE``."""
 
     def __call__(
         self,
@@ -558,6 +682,15 @@ class PluginCallable(AbstractPluginObject):
     @override
     def get_handler(self) -> TypedPluginCallableHandler:
         return self._handler
+
+    @override
+    def replace_handler(
+        self,
+        handler: TypedPluginCallableHandler,
+    ) -> TypedPluginCallableHandler:
+        previous_handler = self._handler
+        self._handler = handler
+        return previous_handler
 
     def setup(self, settings: Config) -> None:
         """Setup of the plugin callable.
@@ -586,20 +719,14 @@ class PluginCallable(AbstractPluginObject):
             self.events = [event.upper() for event in self.events]
 
         if self.ctcp:
-            # Can be implementation-dependent
-            _regex_type = type(re.compile(''))
             self.ctcp = [
                 (ctcp_pattern
-                    if isinstance(ctcp_pattern, _regex_type)
+                    if isinstance(ctcp_pattern, re.Pattern)
                     else re.compile(ctcp_pattern, re.IGNORECASE))
                 for ctcp_pattern in self.ctcp
             ]
 
-        if not any([
-            self.commands,
-            self.action_commands,
-            self.nickname_commands,
-        ]):
+        if not self.is_named_rule:
             # no need to handle documentation for non-command
             return
 
@@ -685,6 +812,15 @@ class PluginJob(AbstractPluginObject):
     @override
     def get_handler(self) -> TypedPluginJobHandler:
         return self._handler
+
+    @override
+    def replace_handler(
+        self,
+        handler: TypedPluginJobHandler,
+    ) -> TypedPluginJobHandler:
+        previous_handler = self._handler
+        self._handler = handler
+        return previous_handler
 
     def setup(self, settings: Config) -> None:
         """Optional setup.
@@ -786,11 +922,9 @@ def clean_callable(func, config):
                 func._docs[command] = (doc, examples)
 
     if hasattr(func, 'ctcp'):
-        # Can be implementation-dependent
-        _regex_type = type(re.compile(''))
         func.ctcp = [
             (ctcp_pattern
-                if isinstance(ctcp_pattern, _regex_type)
+                if isinstance(ctcp_pattern, re.Pattern)
                 else re.compile(ctcp_pattern, re.IGNORECASE))
             for ctcp_pattern in func.ctcp
         ]
@@ -1051,9 +1185,9 @@ class CapabilityHandler(Protocol):
     """:class:`~typing.Protocol` definition for capability handler.
 
     When a plugin requests a capability, it can define a callback handler for
-    that request using :class:`capability` as a decorator. That handler will be
-    called upon Sopel receiving either an ``ACK`` (capability enabled) or a
-    ``NAK`` (capability denied) CAP message.
+    that request using the :func:`~sopel.plugin.capability` decorator. That
+    handler will be called upon Sopel receiving either an ``ACK`` (capability
+    enabled) or a ``NAK`` (capability denied) CAP message.
 
     Example::
 

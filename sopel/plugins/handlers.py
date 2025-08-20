@@ -392,8 +392,8 @@ class PyModulePlugin(AbstractPluginHandler):
         # plugin callables go through ``bot.add_plugin``
         rules, jobs, _, urls = callables.clean_module(self.module, bot.config)
         for part in itertools.chain(rules, jobs, urls):
-            # annotate all callables in relevant_parts with `plugin_name`
-            # attribute to make per-channel config work; see #1839
+            # annotate all plugin callables with a `plugin_name` attribute
+            # to make per-channel config work; see #1839
             setattr(part, 'plugin_name', self.name)
 
         bot.register_callables(rules)

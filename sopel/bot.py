@@ -598,18 +598,18 @@ class Sopel(irc.AbstractBot):
                     LOGGER.error('Cannot register search rule: %s', err)
 
             if commands:
-                rule = plugin_rules.Command.from_callable(settings, callbl)
-                self._rules_manager.register_command(rule)
+                command = plugin_rules.Command.from_callable(settings, callbl)
+                self._rules_manager.register_command(command)
 
             if nick_commands:
-                rule = plugin_rules.NickCommand.from_callable(
+                command = plugin_rules.NickCommand.from_callable(
                     settings, callbl)
-                self._rules_manager.register_nick_command(rule)
+                self._rules_manager.register_nick_command(command)
 
             if action_commands:
-                rule = plugin_rules.ActionCommand.from_callable(
+                command = plugin_rules.ActionCommand.from_callable(
                     settings, callbl)
-                self._rules_manager.register_action_command(rule)
+                self._rules_manager.register_action_command(command)
 
             if not is_command and not is_rule:
                 callbl.rules = [match_any]
@@ -1066,8 +1066,9 @@ class Sopel(irc.AbstractBot):
 
         This method must be used by plugins that declare a capability request
         with a handler that returns
-        :attr:`sopel.plugin.CapabilityNegotiation.CONTINUE` on acknowledgement
-        in order for the bot to resume and eventually close negotiation.
+        :attr:`~sopel.plugins.callables.CapabilityNegotiation.CONTINUE` on
+        acknowledgement in order for the bot to resume and eventually close
+        negotiation.
 
         For example, this is useful for SASL auth which happens while
         negotiating capabilities.
