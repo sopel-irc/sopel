@@ -176,7 +176,7 @@ def capability(
 
     .. warning::
 
-        The list of ``name``s is limited in size to prevent the bot from
+        The list of names (``name``) is limited in size to prevent the bot from
         separating the ``CAP REQ`` in multiple lines as the bot does not know
         how to call back the capability handler upon receiving the multi-line
         ``ACK * REQ``.
@@ -1840,7 +1840,7 @@ def url(
                 return url_handler(bot, trigger, match=trigger)
 
             if isinstance(function, AbstractPluginObject):
-                function._handler = wrapped_handler
+                function.replace_handler(wrapped_handler)
             else:
                 function = wrapped_handler
 

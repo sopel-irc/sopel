@@ -214,8 +214,8 @@ class Manager:
 
             Sopel cannot accept a request that is too long, because it does not
             know how to handle a multi-line ACK, and it would not know how to
-            call back the appropriate :class:`~sopel.plugin.capability`
-            handler.
+            call back the appropriate
+            :class:`~sopel.plugins.callables.Capability` handler.
 
         """
         cap_req = ' '.join(request.cap_req)
@@ -324,9 +324,10 @@ class Manager:
         .. important::
 
             When a request's callback returns
-            :attr:`~sopel.plugin.CapabilityNegotiation.CONTINUE`, this method
-            must be called later (once the plugin has finished its job) or the
-            bot will never send the ``CAP END`` command and hang forever.
+            :attr:`~sopel.plugins.callables.CapabilityNegotiation.CONTINUE`,
+            this method must be called later (once the plugin has finished
+            its job) or the bot will never send the ``CAP END`` command and
+            hang forever.
 
         .. seealso::
 
