@@ -67,8 +67,16 @@ plugin instead.
    Just like single file plugins, you *can* use extra dependencies with folder
    plugins; the same advice about ``requirements.txt`` and ``pip`` applies.
 
-Namespace package
------------------
+Namespace package (deprecated)
+------------------------------
+
+.. warning::
+
+   This type of package is deprecated in Sopel 8.1 and will be removed from
+   Sopel 9. Plugin authors can migrate their plugins to Sopel's Entry point
+   type of plugins if they wish to maintain a Sopel 9 compatible plugin.
+
+.. deprecated:: 8.1
 
 A **Namespace package** plugin is a Python :term:`namespace package`, using
 the namespace ``sopel_modules``. It must be installed in the Python environment
