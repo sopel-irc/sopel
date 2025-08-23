@@ -26,7 +26,6 @@ from sopel.config import types
 
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
     from typing import Iterable
 
     from sopel.bot import Sopel, SopelWrapper
@@ -377,9 +376,9 @@ class URLInfo(NamedTuple):
 def process_urls(
     bot: SopelWrapper,
     trigger: Trigger,
-    urls: list[str],
+    urls: Iterable[str],
     requested: bool = False,
-) -> Generator[URLInfo, None, None]:
+) -> Iterable[URLInfo]:
     """
     For each URL in the list, ensure it should be titled, and do so.
 
