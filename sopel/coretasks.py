@@ -216,7 +216,7 @@ def _join_event_processing(bot):
         _send_who(bot, channel)
 
 
-def auth_after_register(bot):
+def auth_after_register(bot: Sopel) -> None:
     """Do NickServ/AuthServ auth.
 
     :param bot: a connected Sopel instance
@@ -236,17 +236,17 @@ def auth_after_register(bot):
         ignored. If none is set, then this function does nothing.
 
     """
-    if bot.config.core.auth_method:
-        auth_method = bot.config.core.auth_method
-        auth_username = bot.config.core.auth_username
-        auth_password = bot.config.core.auth_password
-        auth_target = bot.config.core.auth_target
-    elif bot.config.core.nick_auth_method:
-        auth_method = bot.config.core.nick_auth_method
-        auth_username = (bot.config.core.nick_auth_username or
-                         bot.config.core.nick)
-        auth_password = bot.config.core.nick_auth_password
-        auth_target = bot.config.core.nick_auth_target
+    if bot.settings.core.auth_method:
+        auth_method = bot.settings.core.auth_method
+        auth_username = bot.settings.core.auth_username
+        auth_password = bot.settings.core.auth_password
+        auth_target = bot.settings.core.auth_target
+    elif bot.settings.core.nick_auth_method:
+        auth_method = bot.settings.core.nick_auth_method
+        auth_username = (bot.settings.core.nick_auth_username or
+                         bot.settings.core.nick)
+        auth_password = bot.settings.core.nick_auth_password
+        auth_target = bot.settings.core.nick_auth_target
     else:
         return
 
@@ -281,7 +281,7 @@ def _execute_perform(bot):
         # How did you even get this command, bot?
         raise Exception('Bot must be connected to server to perform commands.')
 
-    commands = bot.config.core.commands_on_connect
+    commands = bot.settings.core.commands_on_connect
     count = len(commands)
 
     if not count:
@@ -290,7 +290,7 @@ def _execute_perform(bot):
 
     LOGGER.info("Executing %d custom commands.", count)
     for i, command in enumerate(commands, 1):
-        command = command.replace('$nickname', bot.config.core.nick)
+        command = command.replace('$nickname', bot.settings.core.nick)
         LOGGER.debug("Executing custom command [%d/%d]: %s", i, count, command)
         bot.write((command,))
 
@@ -384,7 +384,7 @@ def startup(bot, trigger):
                 "and restart the bot." % (bot.nick, trigger.args[0])
             )
             LOGGER.critical(debug_msg)
-            bot.say(privmsg, bot.config.core.owner)
+            bot.say(privmsg, bot.settings.core.owner)
 
     # set flag
     bot._connection_registered.set()
@@ -393,7 +393,7 @@ def startup(bot, trigger):
     auth_after_register(bot)
 
     # set bot's MODE
-    modes = bot.config.core.modes
+    modes = bot.settings.core.modes
     if modes:
         if not modes.startswith(('+', '-')):
             # Assume "+" by default.
@@ -402,17 +402,17 @@ def startup(bot, trigger):
 
     # warn for insecure auth method if necessary
     if (
-        not bot.config.core.owner_account and
+        not bot.settings.core.owner_account and
         bot.capabilities.is_enabled('account-tag') and
-        '@' not in bot.config.core.owner
+        '@' not in bot.settings.core.owner
     ):
         msg = (
             "This network supports using network services to identify you as "
             "my owner, rather than just matching your nickname. This is much "
             "more secure. If you'd like to do this, make sure you're logged in "
             "and reply with \"{}useserviceauth\""
-        ).format(bot.config.core.help_prefix)
-        bot.say(msg, bot.config.core.owner)
+        ).format(bot.settings.core.help_prefix)
+        bot.say(msg, bot.settings.core.owner)
 
     # execute custom commands
     _execute_perform(bot)
@@ -467,9 +467,9 @@ def handle_isupport(bot, trigger):
     if not botmode_support and 'BOT' in bot.isupport:
         # yes it was! set our mode unless the config overrides it
         botmode = bot.isupport['BOT']
-        modes_setting = bot.config.core.modes
+        modes_setting = bot.settings.core.modes
 
-        if not modes_setting or botmode not in bot.config.core.modes:
+        if not modes_setting or botmode not in bot.settings.core.modes:
             bot.write(('MODE', bot.nick, '+' + botmode))
 
     # was NAMESX support status updated?
@@ -495,13 +495,13 @@ def handle_isupport(bot, trigger):
 @plugin.priority('medium')
 def join_channels(bot, trigger):
     # join channels
-    channels = bot.config.core.channels
+    channels = bot.settings.core.channels
     if not channels:
         LOGGER.info("No initial channels to JOIN.")
 
-    elif bot.config.core.throttle_join:
-        throttle_rate = int(bot.config.core.throttle_join)
-        throttle_wait = max(bot.config.core.throttle_wait, 1)
+    elif bot.settings.core.throttle_join:
+        throttle_rate = int(bot.settings.core.throttle_join)
+        throttle_wait = max(bot.settings.core.throttle_wait, 1)
         channels_joined = 0
 
         LOGGER.info(
@@ -523,7 +523,7 @@ def join_channels(bot, trigger):
             "this may take a moment.",
             len(channels))
 
-        for channel in bot.config.core.channels:
+        for channel in bot.settings.core.channels:
             bot.join(channel)
 
 
@@ -557,7 +557,7 @@ def enable_service_auth(bot, trigger):
 
     This doesn't work if the ``account-tag`` capability is not available.
     """
-    if bot.config.core.owner_account:
+    if bot.settings.core.owner_account:
         return
     if not bot.capabilities.is_enabled('account-tag'):
         bot.say('This server does not fully support services auth, so this '
@@ -567,8 +567,8 @@ def enable_service_auth(bot, trigger):
         bot.say('You must be logged in to network services before using this '
                 'command.')
         return
-    bot.config.core.owner_account = trigger.account
-    bot.config.save()
+    bot.settings.core.owner_account = trigger.account
+    bot.settings.save()
     bot.say('Success! I will now use network services to identify you as my '
             'owner.')
     LOGGER.info(
@@ -815,7 +815,7 @@ def track_nicks(bot, trigger):
     if old == bot.nick and new != bot.nick:
         # Is this the original nick being regained?
         # e.g. by ZNC's keepnick module running in front of Sopel
-        if old != bot.config.core.nick and new == bot.config.core.nick:
+        if old != bot.settings.core.nick and new == bot.settings.core.nick:
             LOGGER.info(
                 "Regained configured nick. Restarting is still recommended.")
         else:
@@ -825,13 +825,13 @@ def track_nicks(bot, trigger):
                 "You'll probably want to restart me, and figure out what made "
                 "that happen so you can stop it happening again. (Usually, it "
                 "means you tried to give me a nick that's protected by NickServ.)"
-            ) % bot.config.core.nick
+            ) % bot.settings.core.nick
             debug_msg = (
                 "Nick changed by server. This can cause unexpected behavior. "
                 "Please restart the bot."
             )
             LOGGER.critical(debug_msg)
-            bot.say(privmsg, bot.config.core.owner)
+            bot.say(privmsg, bot.settings.core.owner)
 
         # Always update bot.nick anyway so Sopel doesn't lose its self-identity.
         # This should cut down the number of "weird things" that happen while
@@ -1242,10 +1242,10 @@ def auth_proceed(bot, trigger):
         be ignored. If none is set, then this function does nothing.
 
     """
-    if bot.config.core.auth_method == 'sasl':
-        mech = bot.config.core.auth_target or 'PLAIN'
-    elif bot.config.core.server_auth_method == 'sasl':
-        mech = bot.config.core.server_auth_sasl_mech or 'PLAIN'
+    if bot.settings.core.auth_method == 'sasl':
+        mech = bot.settings.core.auth_target or 'PLAIN'
+    elif bot.settings.core.server_auth_method == 'sasl':
+        mech = bot.settings.core.server_auth_sasl_mech or 'PLAIN'
     else:
         return
 
@@ -1259,12 +1259,12 @@ def auth_proceed(bot, trigger):
         bot.write(('AUTHENTICATE', token))
         return
 
-    if bot.config.core.auth_method == 'sasl':
-        sasl_username = bot.config.core.auth_username
-        sasl_password = bot.config.core.auth_password
-    elif bot.config.core.server_auth_method == 'sasl':
-        sasl_username = bot.config.core.server_auth_username
-        sasl_password = bot.config.core.server_auth_password
+    if bot.settings.core.auth_method == 'sasl':
+        sasl_username = bot.settings.core.auth_username
+        sasl_password = bot.settings.core.auth_password
+    elif bot.settings.core.server_auth_method == 'sasl':
+        sasl_username = bot.settings.core.server_auth_username
+        sasl_password = bot.settings.core.server_auth_password
     else:
         # How did we get here? I am not good with computer
         return
@@ -1374,12 +1374,12 @@ def _get_sasl_pass_and_mech(bot):
     password = None
     mech = None
 
-    if bot.config.core.auth_method == 'sasl':
-        password = bot.config.core.auth_password
-        mech = bot.config.core.auth_target
-    elif bot.config.core.server_auth_method == 'sasl':
-        password = bot.config.core.server_auth_password
-        mech = bot.config.core.server_auth_sasl_mech
+    if bot.settings.core.auth_method == 'sasl':
+        password = bot.settings.core.auth_password
+        mech = bot.settings.core.auth_target
+    elif bot.settings.core.server_auth_method == 'sasl':
+        password = bot.settings.core.server_auth_password
+        mech = bot.settings.core.server_auth_sasl_mech
 
     mech = 'PLAIN' if mech is None else mech.upper()
 
@@ -1415,10 +1415,10 @@ def blocks(bot, trigger):
         'huh': "I could not figure out what you wanted to do.",
     }
 
-    hostmasks = set(s for s in bot.config.core.hostmask_blocks if s != '')
-    hosts = set(s for s in bot.config.core.host_blocks if s != '')
+    hostmasks = set(s for s in bot.settings.core.hostmask_blocks if s != '')
+    hosts = set(s for s in bot.settings.core.host_blocks if s != '')
     nicks = set(bot.make_identifier(nick)
-                for nick in bot.config.core.nick_blocks
+                for nick in bot.settings.core.nick_blocks
                 if nick != '')
     text = trigger.group().split()
 
@@ -1447,16 +1447,16 @@ def blocks(bot, trigger):
     elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
             nicks.add(text[3])
-            bot.config.core.nick_blocks = nicks
-            bot.config.save()
+            bot.settings.core.nick_blocks = nicks
+            bot.settings.save()
         elif text[2] == "host":
             hosts.add(text[3].lower())
-            bot.config.core.host_blocks = list(hosts)
-            bot.config.save()
+            bot.settings.core.host_blocks = list(hosts)
+            bot.settings.save()
         elif text[2] == "hostmask":
             hostmasks.add(text[3])
-            bot.config.core.hostmask_blocks = list(hostmasks)
-            bot.config.save()
+            bot.settings.core.hostmask_blocks = list(hostmasks)
+            bot.settings.save()
         else:
             bot.reply(STRINGS['invalid'] % ("adding"))
             return
@@ -1470,8 +1470,8 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
             nicks.remove(nick)
-            bot.config.core.nick_blocks = [str(n) for n in nicks]
-            bot.config.save()
+            bot.settings.core.nick_blocks = [str(n) for n in nicks]
+            bot.settings.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "host":
             host = text[3].lower()
@@ -1479,8 +1479,8 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_host'] % (text[3]))
                 return
             hosts.remove(host)
-            bot.config.core.host_blocks = [str(m) for m in hosts]
-            bot.config.save()
+            bot.settings.core.host_blocks = [str(m) for m in hosts]
+            bot.settings.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "hostmask":
             hostmask = text[3]
@@ -1488,8 +1488,8 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_hostmask'] % (text[3]))
                 return
             hostmasks.remove(hostmask)
-            bot.config.core.hostmask_blocks = [str(m) for m in hostmasks]
-            bot.config.save()
+            bot.settings.core.hostmask_blocks = [str(m) for m in hostmasks]
+            bot.settings.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:
             bot.reply(STRINGS['invalid'] % ("deleting"))
