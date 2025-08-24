@@ -50,7 +50,7 @@ RFC1459_STRICT_TABLE = str.maketrans(
     string.ascii_uppercase + '[]\\',
     string.ascii_lowercase + '{}|',
 )
-DEFAULT_CHANTYPES = ('#', '&', '+', '!')
+DEFAULT_CHANTYPES = ('#', '&')  # RFC1459 baseline
 
 
 def ascii_lower(text: str) -> str:
@@ -135,12 +135,12 @@ class Identifier(str):
         identifier: str,
         *,
         casemapping: Casemapping = rfc1459_lower,
-        chantypes: tuple = DEFAULT_CHANTYPES,
+        chantypes: tuple | None = DEFAULT_CHANTYPES,
     ) -> None:
         super().__init__()
         self.casemapping: Casemapping = casemapping
         """Casemapping function to lower the identifier."""
-        self.chantypes = chantypes
+        self.chantypes = tuple() if chantypes is None else chantypes
         """Tuple of prefixes used for channels."""
         self._lowered = self.casemapping(identifier)
 
