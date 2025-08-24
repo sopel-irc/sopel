@@ -53,14 +53,14 @@ def pretrigger_pm():
 @pytest.fixture
 def trigger_owner(bot):
     line = ':Bar!bar@example.com PRIVMSG #Sopel :Hello, world'
-    return Trigger(bot.config, PreTrigger(tools.Identifier('Bar'), line), None)
+    return Trigger(bot.settings, PreTrigger(tools.Identifier('Bar'), line), None)
 
 
 @pytest.fixture
 def trigger_account(bot):
     line = '@account=egg :egg!egg@eg.gs PRIVMSG #Sopel :Hello, world'
     return Trigger(
-        bot.config,
+        bot.settings,
         PreTrigger(tools.Identifier('egg'), line),
         None,
         'egg')
@@ -68,12 +68,12 @@ def trigger_account(bot):
 
 @pytest.fixture
 def trigger(bot, pretrigger):
-    return Trigger(bot.config, pretrigger, None)
+    return Trigger(bot.settings, pretrigger, None)
 
 
 @pytest.fixture
 def trigger_pm(bot, pretrigger_pm):
-    return Trigger(bot.config, pretrigger_pm, None)
+    return Trigger(bot.settings, pretrigger_pm, None)
 
 
 def test_unblockable():
