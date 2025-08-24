@@ -73,7 +73,7 @@ def invite(bot, trigger):
         if trigger.is_privmsg:
             return bot.say(
                 "Channel is required ({}invite user #channel) when inviting from queries."
-                .format(bot.config.core.help_prefix))
+                .format(bot.settings.core.help_prefix))
         channel = trigger.sender
 
     try:

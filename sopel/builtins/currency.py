@@ -81,7 +81,7 @@ def configure(config):
 
 
 def setup(bot):
-    bot.config.define_section('currency', CurrencySection)
+    bot.settings.define_section('currency', CurrencySection)
 
 
 class FixerError(Exception):
@@ -261,7 +261,7 @@ def exchange_cmd(bot, trigger):
     """Show the exchange rate between two currencies."""
     if not trigger.group(2):
         bot.reply("No search term. Usage: {}cur 100 usd in btc cad eur"
-                  .format(bot.config.core.help_prefix))
+                  .format(bot.settings.core.help_prefix))
         return
 
     match = EXCHANGE_REGEX.match(trigger.group(2))
@@ -272,7 +272,7 @@ def exchange_cmd(bot, trigger):
 @plugin.example('100 usd in btc cad eur')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def exchange_re(bot, trigger):
-    if bot.config.currency.auto_convert:
+    if bot.settings.currency.auto_convert:
         match = EXCHANGE_REGEX.match(trigger)
         exchange(bot, match)
 
