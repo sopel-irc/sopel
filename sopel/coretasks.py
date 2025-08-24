@@ -862,11 +862,12 @@ def handle_setname(bot, trigger):
         )
         return
 
+    new_realname = str(trigger)
     LOGGER.info(
         "User named %r changed realname to %r.",
-        str(user.realname), str(trigger),
+        str(user.realname), new_realname,
     )
-    user.realname = trigger
+    user.realname = new_realname
 
 
 @plugin.rule('(.*)')
