@@ -752,8 +752,8 @@ class Sopel(irc.AbstractBot):
             return
 
         # channel config
-        if is_channel and context in self.config:
-            channel_config = self.config[context]
+        if is_channel and context in self.settings:
+            channel_config = self.settings[context]
             plugin_name = rule.get_plugin_name()
 
             # disable listed plugins completely on provided channel
@@ -845,8 +845,8 @@ class Sopel(irc.AbstractBot):
         # if channel has its own config section, check for excluded plugins/plugin methods,
         # but only if the source plugin is NOT coretasks, because we NEED those handlers.
         # Normal, whole-bot configuration will not let you disable coretasks either.
-        if trigger.sender in self.config and func.plugin_name != 'coretasks':
-            channel_config = self.config[trigger.sender]
+        if trigger.sender in self.settings and func.plugin_name != 'coretasks':
+            channel_config = self.settings[trigger.sender]
             LOGGER.debug(
                 "Evaluating configuration for %s.%s in channel %s",
                 func.plugin_name, func.__name__, trigger.sender
@@ -1149,7 +1149,7 @@ class Sopel(irc.AbstractBot):
 
         :param host: the hostname to check
         """
-        bad_masks = self.config.core.host_blocks
+        bad_masks = self.settings.core.host_blocks
         for bad_mask in bad_masks:
             bad_mask = bad_mask.strip()
             if not bad_mask:
@@ -1171,7 +1171,7 @@ class Sopel(irc.AbstractBot):
             # None, or empty string, cannot match any masks
             return False
 
-        bad_masks = self.config.core.hostmask_blocks
+        bad_masks = self.settings.core.hostmask_blocks
         for bad_mask in bad_masks:
             bad_mask = bad_mask.strip()
             if not bad_mask:
@@ -1186,7 +1186,7 @@ class Sopel(irc.AbstractBot):
 
         :param nick: the nickname to check
         """
-        bad_nicks = self.config.core.nick_blocks
+        bad_nicks = self.settings.core.nick_blocks
         for bad_nick in bad_nicks:
             bad_nick = bad_nick.strip()
             if not bad_nick:
