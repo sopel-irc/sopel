@@ -11,13 +11,15 @@ As an example, if one wanted to define the ``[spam]`` section as having an
     >>> class SpamSection(StaticSection):
     ...     eggs = ListAttribute('eggs')
     ...
-    >>> SpamSection(config, 'spam')
-    >>> print(config.spam.eggs)
+    >>> from sopel import config
+    >>> settings = config.Config('/sopel/config.cfg')
+    >>> SpamSection(settings, 'spam')
+    >>> print(settings.spam.eggs)
     []
-    >>> config.spam.eggs = ['goose', 'turkey', 'duck', 'chicken', 'quail']
-    >>> print(config.spam.eggs)
+    >>> settings.spam.eggs = ['goose', 'turkey', 'duck', 'chicken', 'quail']
+    >>> print(settings.spam.eggs)
     ['goose', 'turkey', 'duck', 'chicken', 'quail']
-    >>> config.spam.eggs = 'herring'
+    >>> settings.spam.eggs = 'herring'
     Traceback (most recent call last):
         ...
     ValueError: ListAttribute value must be a list.
