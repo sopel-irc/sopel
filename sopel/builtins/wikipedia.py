@@ -14,7 +14,7 @@ from urllib.parse import quote, unquote, urlparse
 
 from requests import get
 
-from sopel import plugin
+from sopel import __version__ as sopel_version, plugin
 from sopel.config import types
 
 
@@ -22,6 +22,11 @@ LOGGER = logging.getLogger(__name__)
 
 REDIRECT = re.compile(r'^REDIRECT (.*)')
 PLUGIN_OUTPUT_PREFIX = '[wikipedia] '
+PLUGIN_USER_AGENT = 'sopel-wikipedia/{version} (https://sopel.chat/)'.format(
+    version=sopel_version)
+WIKI_REQUEST_HEADERS = {
+    'User-Agent': PLUGIN_USER_AGENT,
+}
 
 
 class WikiParser(HTMLParser):
@@ -169,7 +174,7 @@ def mw_search(server, query, num):
                   '&list=search&srlimit=%d&srprop=timestamp&srwhat=text'
                   '&srsearch=') % (server, num)
     search_url += query
-    query = get(search_url).json()
+    query = get(search_url, headers=WIKI_REQUEST_HEADERS).json()
     if 'query' in query:
         query = query['query']['search']
         return [r['title'] for r in query]
@@ -213,7 +218,7 @@ def mw_snippet(server, query):
                    '&action=query&prop=extracts&exintro&explaintext'
                    '&exchars=500&redirects&titles=')
     snippet_url += query
-    snippet = get(snippet_url).json()
+    snippet = get(snippet_url, headers=WIKI_REQUEST_HEADERS).json()
     snippet = snippet['query']['pages']
 
     # For some reason, the API gives the page *number* as the key, so we just
@@ -244,7 +249,7 @@ def mw_section(server, query, section):
     sections_url = ('https://{0}/w/api.php?format=json&redirects'
                     '&action=parse&prop=sections&page={1}'
                     .format(server, query))
-    sections = get(sections_url).json()
+    sections = get(sections_url, headers=WIKI_REQUEST_HEADERS).json()
 
     fetch_title = section_number = None
 
@@ -265,7 +270,7 @@ def mw_section(server, query, section):
                    '&action=parse&page={1}&prop=text'
                    '&section={2}').format(server, quote(fetch_title), section_number)
 
-    data = get(snippet_url).json()
+    data = get(snippet_url, headers=WIKI_REQUEST_HEADERS).json()
 
     parser = WikiParser(section.replace('_', ' '))
     parser.feed(data['parse']['text']['*'])
@@ -296,7 +301,7 @@ def mw_image_description(server, image):
     ])
     url = "https://{server}/w/api.php?{params}".format(server=server, params=params)
 
-    response = get(url)
+    response = get(url, headers=WIKI_REQUEST_HEADERS)
     json = response.json()
 
     try:
