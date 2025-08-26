@@ -74,6 +74,20 @@ Housekeeping changes
 [#2694]: https://github.com/sopel-irc/sopel/pull/2694
 
 
+Changes between 8.0.3 and 8.0.4
+===============================
+
+Plugin changes
+--------------
+
+* wikipedia:
+  * Comply with Wikimedia Foundation user-agent policy [[#2702][]]
+* wiktionary:
+  * Comply with Wikimedia Foundation user-agent policy [[#2702][]]
+
+[#2702]: https://github.com/sopel-irc/sopel/pull/2702
+
+
 Changes between 8.0.2 and 8.0.3
 ===============================
 
