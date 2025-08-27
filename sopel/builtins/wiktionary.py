@@ -11,10 +11,15 @@ import re
 
 import requests
 
-from sopel import plugin
+from sopel import __version__ as sopel_version, plugin
 from sopel.tools import web
 
 PLUGIN_OUTPUT_PREFIX = '[wiktionary] '
+PLUGIN_USER_AGENT = 'sopel-wiktionary/{version} (https://sopel.chat/)'.format(
+    version=sopel_version)
+WIKI_REQUEST_HEADERS = {
+    'User-Agent': PLUGIN_USER_AGENT,
+}
 
 uri = 'https://en.wiktionary.org/w/index.php?title=%s&printable=yes'
 r_sup = re.compile(r'<sup[^>]+>.+?</sup>')  # Superscripts that are references only, not ordinal indicators, etc...
@@ -53,7 +58,10 @@ def text(html):
 
 
 def wikt(word):
-    bytes = requests.get(uri % web.quote(word)).text
+    bytes = requests.get(
+        uri % web.quote(word),
+        headers=WIKI_REQUEST_HEADERS,
+    ).text
     bytes = r_ul.sub('', bytes)
 
     mode = None
