@@ -53,14 +53,15 @@ if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
 
-    TypedCallableDecorator = Callable[
-        [TypedPluginCallableHandler | AbstractPluginObject],
-        PluginCallable,
-    ]
-    TypedJobDecorator = Callable[
-        [TypedPluginJobHandler | AbstractPluginObject],
-        PluginJob,
-    ]
+
+TypedCallableDecorator = Callable[
+    [Union[TypedPluginCallableHandler, AbstractPluginObject]],
+    PluginCallable,
+]
+TypedJobDecorator = Callable[
+    [Union[TypedPluginJobHandler, AbstractPluginObject]],
+    PluginJob,
+]
 
 
 __all__ = [
