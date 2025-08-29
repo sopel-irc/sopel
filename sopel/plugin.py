@@ -31,6 +31,8 @@ from sopel.plugins.callables import (
     PluginCallable,
     PluginGeneric,
     PluginJob,
+    TypedPluginCallableHandler,
+    TypedPluginJobHandler,
 )
 from sopel.plugins.rules import IGNORE_RATE_LIMIT
 from sopel.privileges import AccessLevel
@@ -50,6 +52,15 @@ if TYPE_CHECKING:
 
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
+
+    TypedCallableDecorator = Callable[
+        [TypedPluginCallableHandler | AbstractPluginObject],
+        PluginCallable,
+    ]
+    TypedJobDecorator = Callable[
+        [TypedPluginJobHandler | AbstractPluginObject],
+        PluginJob,
+    ]
 
 
 __all__ = [
@@ -190,9 +201,19 @@ def capability(
     return Capability(*name, handler=handler)
 
 
+@overload
 def unblockable(
-    function: Optional[Callable] = None,
-) -> Callable:
+    function: TypedPluginCallableHandler | AbstractPluginObject,
+) -> PluginCallable:
+    ...
+
+
+@overload
+def unblockable(function: None = None) -> TypedCallableDecorator:
+    ...
+
+
+def unblockable(function=None):
     """Decorate a function to exempt it from Sopel's ignore system.
 
     For example, this can be used to ensure that important events such as
@@ -213,7 +234,9 @@ def unblockable(
         Sopel's :meth:`~sopel.bot.Sopel.dispatch` method.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.unblockable = True
         return handler
@@ -225,7 +248,7 @@ def unblockable(
     return decorator
 
 
-def interval(*intervals: Union[int, float]) -> Callable[[Callable], PluginJob]:
+def interval(*intervals: Union[int, float]) -> TypedJobDecorator:
     """Decorate a function to be called by the bot every *n* seconds.
 
     :param intervals: one or more duration(s), in seconds
@@ -252,7 +275,9 @@ def interval(*intervals: Union[int, float]) -> Callable[[Callable], PluginJob]:
                 bot.say("It has been five seconds!", "#here")
 
     """
-    def decorator(function: Callable) -> PluginJob:
+    def decorator(
+        function: TypedPluginJobHandler | AbstractPluginObject,
+    ) -> PluginJob:
         handler = PluginJob.ensure_callable(function)
 
         for arg in intervals:
@@ -264,9 +289,7 @@ def interval(*intervals: Union[int, float]) -> Callable[[Callable], PluginJob]:
     return decorator
 
 
-def rule(
-    *patterns: Union[str, Pattern],
-) -> Callable[[Callable], PluginCallable]:
+def rule(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
     """Decorate a function to be called when a line matches the given pattern.
 
     :param patterns: one or more regular expression(s)
@@ -309,7 +332,9 @@ def rule(
         use the :func:`search` decorator instead.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for value in patterns:
@@ -321,9 +346,7 @@ def rule(
     return decorator
 
 
-def rule_lazy(
-    *loaders: Callable,
-) -> Callable[[Callable], PluginCallable]:
+def rule_lazy(*loaders: Callable) -> TypedCallableDecorator:
     """Decorate a callable as a rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -361,7 +384,9 @@ def rule_lazy(
         with the :func:`sopel.tools.chain_loaders` function.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.rule_lazy_loaders.extend(loaders)
         return handler
@@ -369,9 +394,7 @@ def rule_lazy(
     return decorator
 
 
-def find(
-    *patterns: Union[str, Pattern],
-) -> Callable[[Callable], PluginCallable]:
+def find(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
     """Decorate a function to be called for each time a pattern is found in a line.
 
     :param patterns: one or more regular expression(s)
@@ -414,7 +437,9 @@ def find(
         use the :func:`rule` decorator instead.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for value in patterns:
@@ -426,9 +451,7 @@ def find(
     return decorator
 
 
-def find_lazy(
-    *loaders: Callable,
-) -> Callable[[Callable], PluginCallable]:
+def find_lazy(*loaders: Callable) -> TypedCallableDecorator:
     """Decorate a callable as a find rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -466,7 +489,9 @@ def find_lazy(
         with the :func:`sopel.tools.chain_loaders` function.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.find_rules_lazy_loaders.extend(loaders)
         return handler
@@ -474,9 +499,7 @@ def find_lazy(
     return decorator
 
 
-def search(
-    *patterns: Union[str, Pattern],
-) -> Callable[[Callable], PluginCallable]:
+def search(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
     """Decorate a function to be called when a pattern matches anywhere in a line.
 
     :param patterns: one or more regular expression(s)
@@ -522,7 +545,9 @@ def search(
         use the :func:`rule` decorator instead.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         for value in patterns:
             if value not in handler.search_rules:
@@ -532,9 +557,7 @@ def search(
     return decorator
 
 
-def search_lazy(
-    *loaders: Callable,
-) -> Callable[[Callable], PluginCallable]:
+def search_lazy(*loaders: Callable) -> TypedCallableDecorator:
     """Decorate a callable as a search rule with lazy loading.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -572,7 +595,9 @@ def search_lazy(
         with the :func:`sopel.tools.chain_loaders` function.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.search_rules_lazy_loaders.extend(loaders)
         return handler
@@ -580,7 +605,7 @@ def search_lazy(
     return decorator
 
 
-def thread(value: bool) -> Callable[[Callable], PluginCallable]:
+def thread(value: bool) -> TypedCallableDecorator:
     """Decorate a function to specify if it should be run in a separate thread.
 
     :param value: if ``True``, the function is called in a separate thread;
@@ -593,7 +618,9 @@ def thread(value: bool) -> Callable[[Callable], PluginCallable]:
     """
     threaded = bool(value)
 
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.threaded = threaded
         return handler
@@ -602,12 +629,14 @@ def thread(value: bool) -> Callable[[Callable], PluginCallable]:
 
 
 @overload
-def allow_bots(function: Callable) -> PluginCallable:
+def allow_bots(
+    function: TypedPluginCallableHandler | AbstractPluginObject,
+) -> PluginCallable:
     ...
 
 
 @overload
-def allow_bots(function: None = None) -> Callable[[Callable], PluginCallable]:
+def allow_bots(function: None = None) -> TypedCallableDecorator:
     ...
 
 
@@ -621,7 +650,9 @@ def allow_bots(function=None):
 
     .. __: https://ircv3.net/specs/extensions/bot-mode
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject,
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.allow_bots = True
         return handler
@@ -635,12 +666,14 @@ def allow_bots(function=None):
 
 
 @overload
-def echo(function: Callable) -> PluginCallable:
+def echo(
+    function: TypedPluginCallableHandler | AbstractPluginObject,
+) -> PluginCallable:
     ...
 
 
 @overload
-def echo(function: None = None) -> Callable[[Callable], PluginCallable]:
+def echo(function: None = None) -> TypedCallableDecorator:
     ...
 
 
@@ -657,7 +690,9 @@ def echo(function=None):
         creating feedback loops when using this feature.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.allow_echo = True
         return handler
@@ -669,7 +704,7 @@ def echo(function=None):
     return decorator
 
 
-def command(*command_list: str) -> Callable[[Callable], PluginCallable]:
+def command(*command_list: str) -> TypedCallableDecorator:
     """Decorate a function to set one or more commands that should trigger it.
 
     :param command_list: one or more command name(s) to match
@@ -750,7 +785,9 @@ def command(*command_list: str) -> Callable[[Callable], PluginCallable]:
         * use a :func:`rule` instead
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for command in command_list:
@@ -766,9 +803,7 @@ commands = command
 """Alias to :func:`command`."""
 
 
-def nickname_command(
-    *command_list: str,
-) -> Callable[[Callable], PluginCallable]:
+def nickname_command(*command_list: str) -> TypedCallableDecorator:
     """Decorate a function to trigger on lines starting with "$nickname: command".
 
     :param command_list: one or more command name(s) to match
@@ -806,7 +841,9 @@ def nickname_command(
                 # command would match the rest of the line.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for cmd in command_list:
@@ -822,9 +859,7 @@ nickname_commands = nickname_command
 """Alias to :func:`nickname_command`."""
 
 
-def action_command(
-    *command_list: str,
-) -> Callable[[Callable], PluginCallable]:
+def action_command(*command_list: str) -> TypedCallableDecorator:
     """Decorate a function to trigger on CTCP ACTION lines.
 
     :param command_list: one or more command name(s) to match
@@ -861,7 +896,9 @@ def action_command(
                 # Would trigger on "/me hello!" and "/me hello"
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for cmd in command_list:
@@ -877,7 +914,9 @@ action_commands = action_command
 """Alias to :func:`action_command`."""
 
 
-def label(value: str) -> Callable[[Callable], AbstractPluginObject]:
+def label(
+    value: str,
+) -> Callable[[Callable | AbstractPluginObject], AbstractPluginObject]:
     """Decorate a function to add a rule label.
 
     :param value: a label for the rule
@@ -897,7 +936,9 @@ def label(value: str) -> Callable[[Callable], AbstractPluginObject]:
         some name that isn't tied to an identifier in the source code.
 
     """
-    def decorator(function: Callable) -> AbstractPluginObject:
+    def decorator(
+        function: Callable | AbstractPluginObject,
+    ) -> AbstractPluginObject:
         handler = PluginGeneric.ensure_callable(function)
         handler.label = value
         return handler
@@ -907,7 +948,7 @@ def label(value: str) -> Callable[[Callable], AbstractPluginObject]:
 
 def priority(
     value: Literal['low', 'medium', 'high'],
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to be executed with higher or lower priority.
 
     :param value: one of ``high``, ``medium``, or ``low``
@@ -916,7 +957,9 @@ def priority(
     if your plugin needs it. If a callable does not specify its ``priority``,
     Sopel assumes ``medium``.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.priority = value
         return handler
@@ -924,7 +967,7 @@ def priority(
     return decorator
 
 
-def event(*event_list: str) -> Callable[[Callable], PluginCallable]:
+def event(*event_list: str) -> TypedCallableDecorator:
     """Decorate a function to be triggered on specific IRC events.
 
     :param event_list: one or more event name(s) on which to trigger
@@ -941,7 +984,9 @@ def event(*event_list: str) -> Callable[[Callable], PluginCallable]:
         numeric events, which may help your code be clearer.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for name in event_list:
@@ -954,24 +999,18 @@ def event(*event_list: str) -> Callable[[Callable], PluginCallable]:
 
 
 @overload
-def ctcp(
-    function: None = None,
-    *command_list: str,
-) -> Callable[[Callable], PluginCallable]:
+def ctcp(function: None = None, *command_list: str) -> TypedCallableDecorator:
+    ...
+
+
+@overload
+def ctcp(function: str, *command_list: str) -> TypedCallableDecorator:
     ...
 
 
 @overload
 def ctcp(
-    function: str,
-    *command_list: str,
-) -> Callable[[Callable], PluginCallable]:
-    ...
-
-
-@overload
-def ctcp(
-    function: Callable,
+    function: TypedPluginCallableHandler | AbstractPluginObject,
     *command_list: str,
 ) -> PluginCallable:
     ...
@@ -1030,7 +1069,9 @@ def ctcp(function=None, *command_list):
     # called as ``@ctcp('ACTION', ...)``
     ctcp_commands = (function,) + command_list
 
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
 
         for name in ctcp_commands:
@@ -1049,7 +1090,7 @@ def rate(
     *,
     message: str | None = None,
     include_admins: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to be rate-limited.
 
     :param user: seconds between permitted calls of this function by the same
@@ -1125,7 +1166,9 @@ def rate(
         :func:`rate_global`.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         if handler.user_rate is None:
             handler.user_rate = user
@@ -1147,7 +1190,7 @@ def rate_user(
     rate: int,
     message: str | None = None,
     include_admins: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to be rate-limited for a user.
 
     :param rate: seconds between permitted calls of this function by the same
@@ -1180,7 +1223,9 @@ def rate_user(
         limits.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.user_rate = rate
         handler.user_rate_message = message
@@ -1194,7 +1239,7 @@ def rate_channel(
     rate: int,
     message: str | None = None,
     include_admins: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to be rate-limited for a channel.
 
     :param rate: seconds between permitted calls of this function in the same
@@ -1230,7 +1275,9 @@ def rate_channel(
         limits.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.channel_rate = rate
         handler.channel_rate_message = message
@@ -1244,7 +1291,7 @@ def rate_global(
     rate: int,
     message: str | None = None,
     include_admins: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to be rate-limited for the whole server.
 
     :param rate: seconds between permitted calls of this function no matter who
@@ -1279,7 +1326,9 @@ def rate_global(
         limits.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.global_rate = rate
         handler.global_rate_message = message
@@ -1290,7 +1339,10 @@ def rate_global(
 
 
 @overload
-def require_privmsg(message: Callable, reply: bool = False) -> PluginCallable:
+def require_privmsg(
+    message: TypedPluginCallableHandler | AbstractPluginObject,
+    reply: bool = False,
+) -> PluginCallable:
     ...
 
 
@@ -1298,7 +1350,7 @@ def require_privmsg(message: Callable, reply: bool = False) -> PluginCallable:
 def require_privmsg(
     message: str | None = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     ...
 
 
@@ -1338,7 +1390,9 @@ def require_privmsg(message=None, reply=False):
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             if trigger.is_privmsg:
                 return True
@@ -1363,7 +1417,10 @@ def require_privmsg(message=None, reply=False):
 
 
 @overload
-def require_chanmsg(message: Callable, reply: bool = False) -> PluginCallable:
+def require_chanmsg(
+    message: TypedPluginCallableHandler | AbstractPluginObject,
+    reply: bool = False,
+) -> PluginCallable:
     ...
 
 
@@ -1371,7 +1428,7 @@ def require_chanmsg(message: Callable, reply: bool = False) -> PluginCallable:
 def require_chanmsg(
     message: str | None = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     ...
 
 
@@ -1410,7 +1467,9 @@ def require_chanmsg(message=None, reply=False):
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             if not trigger.is_privmsg:
                 return True
@@ -1434,7 +1493,10 @@ def require_chanmsg(message=None, reply=False):
 
 
 @overload
-def require_account(message: Callable, reply: bool = False) -> PluginCallable:
+def require_account(
+    message: TypedPluginCallableHandler | AbstractPluginObject,
+    reply: bool = False,
+) -> PluginCallable:
     ...
 
 
@@ -1442,7 +1504,7 @@ def require_account(message: Callable, reply: bool = False) -> PluginCallable:
 def require_account(
     message: str | None = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     ...
 
 
@@ -1496,7 +1558,9 @@ def require_account(message=None, reply=False):
         support to allow Sopel to fetch account information.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             if trigger.account:
                 return True
@@ -1524,7 +1588,7 @@ def require_privilege(
     level: AccessLevel,
     message: Optional[str] = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to require at least the given channel permission.
 
     :param level: required privilege level to use this command
@@ -1546,7 +1610,9 @@ def require_privilege(
     .. versionchanged:: 8.0
         Decorated callables no longer run in response to private messages.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             # If this is a privmsg, do not trigger
             if trigger.is_privmsg:
@@ -1573,7 +1639,10 @@ def require_privilege(
 
 
 @overload
-def require_admin(message: Callable, reply: bool = False) -> PluginCallable:
+def require_admin(
+    message: TypedPluginCallableHandler | AbstractPluginObject,
+    reply: bool = False,
+) -> PluginCallable:
     ...
 
 
@@ -1581,7 +1650,7 @@ def require_admin(message: Callable, reply: bool = False) -> PluginCallable:
 def require_admin(
     message: str | None = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     ...
 
 
@@ -1622,7 +1691,9 @@ def require_admin(message=None, reply=False):
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             if trigger.admin:
                 return True
@@ -1647,7 +1718,10 @@ def require_admin(message=None, reply=False):
 
 
 @overload
-def require_owner(message: Callable, reply: bool = False) -> PluginCallable:
+def require_owner(
+    message: TypedPluginCallableHandler | AbstractPluginObject,
+    reply: bool = False,
+) -> PluginCallable:
     ...
 
 
@@ -1655,7 +1729,7 @@ def require_owner(message: Callable, reply: bool = False) -> PluginCallable:
 def require_owner(
     message: str | None = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     ...
 
 
@@ -1694,7 +1768,9 @@ def require_owner(message=None, reply=False):
     .. versionchanged:: 7.0
         Added the ``reply`` parameter.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             if trigger.owner:
                 return True
@@ -1721,7 +1797,7 @@ def require_bot_privilege(
     level: AccessLevel,
     message: Optional[str] = None,
     reply: bool = False,
-) -> Callable[[Callable], PluginCallable]:
+) -> TypedCallableDecorator:
     """Decorate a function to require a minimum channel privilege for the bot.
 
     :param level: minimum channel privilege the bot needs for this function
@@ -1742,7 +1818,9 @@ def require_bot_privilege(
     .. versionchanged:: 8.0
         Decorated callables no longer run in response to private messages.
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         def predicate(bot: SopelWrapper, trigger: Trigger) -> bool:
             # If this is a privmsg, do not trigger
             if trigger.is_privmsg:
@@ -1766,9 +1844,7 @@ def require_bot_privilege(
     return decorator
 
 
-def url(
-    *url_rules: str,
-) -> Callable[[Callable | PluginGeneric], PluginCallable]:
+def url(*url_rules: str) -> TypedCallableDecorator:
     """Decorate a function to handle URLs.
 
     :param url_rules: one or more regex pattern(s) to match URLs
@@ -1816,7 +1892,7 @@ def url(
 
     """
     def decorator(
-        function: Callable | PluginGeneric,
+        function: TypedPluginCallableHandler | AbstractPluginObject,
     ) -> PluginCallable:
         # do we need to handle the match parameter?
         # old style URL callback: callable(bot, trigger, match)
@@ -1856,7 +1932,7 @@ def url(
     return decorator
 
 
-def url_lazy(*loaders: Callable) -> Callable[[Callable], PluginCallable]:
+def url_lazy(*loaders: Callable) -> TypedCallableDecorator:
     """Decorate a function to handle URL, using lazy-loading for its regex.
 
     :param loaders: one or more functions to generate a list of **compiled**
@@ -1893,7 +1969,9 @@ def url_lazy(*loaders: Callable) -> Callable[[Callable], PluginCallable]:
         with the :func:`sopel.tools.chain_loaders` function.
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.url_lazy_loaders.extend(loaders)
         return handler
@@ -2007,7 +2085,7 @@ class example:
 
     def __call__(
         self,
-        func: Callable | PluginCallable,
+        func: TypedPluginCallableHandler | AbstractPluginObject,
     ) -> PluginCallable:
         import sys
 
@@ -2060,7 +2138,7 @@ class example:
         return handler
 
 
-def output_prefix(prefix: str) -> Callable[[Callable], PluginCallable]:
+def output_prefix(prefix: str) -> TypedCallableDecorator:
     """Decorate a function to add a prefix on its output.
 
     :param prefix: the prefix to add (must include trailing whitespace if
@@ -2072,7 +2150,9 @@ def output_prefix(prefix: str) -> Callable[[Callable], PluginCallable]:
     * :meth:`bot.notice <sopel.bot.SopelWrapper.notice>`
 
     """
-    def decorator(function: Callable) -> PluginCallable:
+    def decorator(
+        function: TypedPluginCallableHandler | AbstractPluginObject
+    ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
         handler.output_prefix = prefix
         return handler
