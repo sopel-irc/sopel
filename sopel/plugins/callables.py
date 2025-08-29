@@ -284,7 +284,7 @@ class PluginGeneric(AbstractPluginObject):
     def ensure_callable(
         cls: Type[PluginGeneric],
         obj: Callable | AbstractPluginObject,
-    ) -> AbstractPluginObject:
+    ) -> PluginGeneric | AbstractPluginObject:
         """Ensure that ``obj`` is a proper plugin object.
 
         :param obj: a function or a plugin object
