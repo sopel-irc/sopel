@@ -29,6 +29,7 @@ Core changes
 * Added back `hostmask` block type [[#2687][]]
   * Now `host` blocks operate on the hostname only, and `hostmask` blocks match
     the full hostmask (`nick!user@host.name`), as expected.
+* Added `setname` support [[#2578][]]
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 
 API changes
@@ -57,6 +58,7 @@ Housekeeping changes
 [sopel-unicode]: https://pypi.org/project/sopel-unicode/
 
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
+[#2578]: https://github.com/sopel-irc/sopel/pull/2578
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
 [#2636]: https://github.com/sopel-irc/sopel/pull/2636
