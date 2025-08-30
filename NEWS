@@ -29,7 +29,6 @@ Core changes
 * Added back `hostmask` block type [[#2687][]]
   * Now `host` blocks operate on the hostname only, and `hostmask` blocks match
     the full hostmask (`nick!user@host.name`), as expected.
-* Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 
 API changes
@@ -41,6 +40,7 @@ API changes
     owner and admins.
   * Available for `@plugin.rate`, `@plugin.rate_user`, `@plugin.rate_channel`,
     and `@plugin.rate_global`.
+* Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 
 Housekeeping changes
 --------------------
