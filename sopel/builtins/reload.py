@@ -75,7 +75,7 @@ def f_load(bot, trigger):
         bot.reply('Plugin already loaded; use the `reload` command.')
         return
 
-    usable_plugins = plugins.get_usable_plugins(bot.config)
+    usable_plugins = plugins.get_usable_plugins(bot.settings)
     if name not in usable_plugins:
         bot.reply('Plugin %s not found' % name)
         return

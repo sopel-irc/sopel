@@ -391,7 +391,7 @@ class PyModulePlugin(AbstractPluginHandler):
 
         callables, jobs, _, urls = loader.clean_module(
             self.module,
-            bot.config,
+            bot.settings,
         )
 
         for part in itertools.chain(callables, jobs, urls):
