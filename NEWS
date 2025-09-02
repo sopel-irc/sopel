@@ -31,6 +31,8 @@ Core changes
 * Added back `hostmask` block type [[#2687][]]
   * Now `host` blocks operate on the hostname only, and `hostmask` blocks match
     the full hostmask (`nick!user@host.name`), as expected.
+* Added `edit` subcommand to `sopel-config` [[#2595][]]
+  * Opens the given config file in the user's `$EDITOR`
 * Added `setname` support [[#2578][]]
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 
@@ -62,6 +64,7 @@ Housekeeping changes
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
 [#2578]: https://github.com/sopel-irc/sopel/pull/2578
 [#2586]: https://github.com/sopel-irc/sopel/pull/2586
+[#2595]: https://github.com/sopel-irc/sopel/pull/2595
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
 [#2636]: https://github.com/sopel-irc/sopel/pull/2636
