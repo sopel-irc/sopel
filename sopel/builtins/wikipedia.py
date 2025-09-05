@@ -134,7 +134,7 @@ class WikipediaSection(types.StaticSection):
 
 
 def setup(bot):
-    bot.config.define_section('wikipedia', WikipediaSection)
+    bot.settings.define_section('wikipedia', WikipediaSection)
 
 
 def configure(config):
@@ -161,7 +161,7 @@ def choose_lang(bot, trigger):
         if channel_lang:
             return channel_lang
 
-    return bot.config.wikipedia.default_lang
+    return bot.settings.wikipedia.default_lang
 
 
 def mw_search(server, query, num):
@@ -402,7 +402,7 @@ def wplang(bot, trigger):
             .format(
                 bot.db.get_nick_value(
                     trigger.nick, 'wikipedia_lang',
-                    bot.config.wikipedia.default_lang)
+                    bot.settings.wikipedia.default_lang)
             )
         )
         return
@@ -430,7 +430,7 @@ def wpclang(bot, trigger):
                 trigger.sender,
                 bot.db.get_nick_value(
                     trigger.nick, 'wikipedia_lang',
-                    bot.config.wikipedia.default_lang)
+                    bot.settings.wikipedia.default_lang)
             )
         )
         return
