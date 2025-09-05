@@ -51,6 +51,56 @@ In that case, it will use a match-all regex (``r'.*'``)::
    def on_join(bot, trigger):
       pass
 
+Mixing generic rules, commands, and URL callbacks
+-------------------------------------------------
+
+A callable can be decorated to become a command, rule, and URL callback at the
+same time::
+
+   from sopel import plugin
+
+   @plugin.command('example')
+   @plugin.find(r'(?<!\S)example\b')
+   @plugin.url(r'http://example\.com')
+   def example(bot, trigger):
+      pass
+
+This will create three different rules:
+
+* a named rule, reacting to ``.example``
+* a generic rule, reacting to the word ``example`` anywhere in a message
+* a URL callback, reacting to the URL ``http://example.com`` in a message
+
+The following decorators can be used without causing conflict:
+
+* :func:`~sopel.plugin.command`
+* :func:`~sopel.plugin.nickname_command`
+* :func:`~sopel.plugin.action_command`
+* :func:`~sopel.plugin.rule` and :func:`~sopel.plugin.rule_lazy`
+* :func:`~sopel.plugin.find` and :func:`~sopel.plugin.find_lazy`
+* :func:`~sopel.plugin.search` and :func:`~sopel.plugin.search_lazy`
+* :func:`~sopel.plugin.url` and :func:`~sopel.plugin.url_lazy`
+
+.. note::
+
+   Be careful when using a generic rule with a URL Callback: if the regex of
+   the rule would match when the URL would, Sopel will trigger the callable
+   multiple times.
+
+   You can use a *negative lookbehind* (``(?<!\S)``) and a *word boundary*
+   (``\b``) to isolate a word that would otherwise match the URL, as shown in
+   the example above.
+
+.. note::
+
+   If you use :func:`~sopel.plugin.event` or :func:`~sopel.plugin.ctcp`, they
+   will apply a filter for all defined rules on the callable.
+
+.. versionchanged:: 8.1
+
+   Before Sopel 8.1, rules (generic and named) were incompatible with URL
+   callbacks.
+
 Channel vs. private messages
 ----------------------------
 
