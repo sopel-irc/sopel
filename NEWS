@@ -13,6 +13,9 @@ Plugin changes
 * safety:
   * Plugin removed in favor of separately-maintained external package; see
     [sopel-safety][] on PyPI [[#2678][]]
+* search:
+  * Plugin removed in favor of separately-maintained external package; see
+    [sopel-search][] on PyPI [[#2613][]]
 * tld:
   * Plugin removed in favor of faster updates via external package; see
     [sopel-tld][] on PyPI [[#2673][]]
@@ -24,6 +27,8 @@ Plugin changes
   * Housekeeping of deprecated internal API usage [[#2635][]]
 * version:
   * Support reading Git commit from a worktree [[#2586][]]
+* xkcd:
+  * Removed `searchxkcd.com` fallback using `search` plugin [[#2613][]]
 
 Core changes
 ------------
@@ -58,6 +63,7 @@ Housekeeping changes
   [#2694][]]
 
 [sopel-safety]: https://pypi.org/project/sopel-safety/
+[sopel-search]: https://pypi.org/project/sopel-search/
 [sopel-tld]: https://pypi.org/project/sopel-tld/
 [sopel-unicode]: https://pypi.org/project/sopel-unicode/
 
@@ -65,6 +71,7 @@ Housekeeping changes
 [#2578]: https://github.com/sopel-irc/sopel/pull/2578
 [#2586]: https://github.com/sopel-irc/sopel/pull/2586
 [#2595]: https://github.com/sopel-irc/sopel/pull/2595
+[#2613]: https://github.com/sopel-irc/sopel/pull/2613
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
 [#2636]: https://github.com/sopel-irc/sopel/pull/2636
