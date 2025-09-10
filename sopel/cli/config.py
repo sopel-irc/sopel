@@ -8,14 +8,16 @@ import subprocess
 from . import utils
 
 
-def build_parser():
+def build_parser(prog: str = 'sopel-config') -> argparse.ArgumentParser:
     """Build and configure an argument parser for ``sopel-config``.
 
     :return: the argument parser
     :rtype: :class:`argparse.ArgumentParser`
     """
     parser = argparse.ArgumentParser(
-        description='Sopel configuration tool')
+        prog=prog,
+        description='Sopel configuration tool',
+    )
 
     # Subparser: sopel-config <sub-parser> <sub-options>
     subparsers = parser.add_subparsers(
