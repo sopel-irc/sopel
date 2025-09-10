@@ -11,7 +11,6 @@
     Do **not** build your plugin based on what is here, you do **not** need to.
 
 """
-
 from __future__ import annotations
 
 import logging
@@ -26,7 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
 
     from sopel.bot import Sopel, SopelWrapper
-    from sopel.plugin import capability, CapabilityNegotiation
+    from sopel.plugins.callables import Capability, CapabilityNegotiation
 
 
 LOGGER = logging.getLogger(__name__)
@@ -60,7 +59,7 @@ class Manager:
             # CAP REQ :<text>
             tuple[str, ...],
             # mapping (plugin, request + status)
-            dict[str, tuple[capability, bool]],
+            dict[str, tuple[Capability, bool]],
         ] = {}
         self._requested: set[tuple[str, ...]] = set()
         self._acknowledged: set[tuple[str, ...]] = set()
@@ -185,7 +184,7 @@ class Manager:
 
     # register, request, resume, acknowledge, deny, etc.
 
-    def register(self, plugin_name: str, request: capability) -> None:
+    def register(self, plugin_name: str, request: Capability) -> None:
         """Register a capability ``request`` for ``plugin_name``.
 
         :param request: the capability request to register for later
@@ -215,8 +214,8 @@ class Manager:
 
             Sopel cannot accept a request that is too long, because it does not
             know how to handle a multi-line ACK, and it would not know how to
-            call back the appropriate :class:`~sopel.plugin.capability`
-            handler.
+            call back the appropriate
+            :class:`~sopel.plugins.callables.Capability` handler.
 
         """
         cap_req = ' '.join(request.cap_req)
@@ -325,9 +324,10 @@ class Manager:
         .. important::
 
             When a request's callback returns
-            :attr:`~sopel.plugin.CapabilityNegotiation.CONTINUE`, this method
-            must be called later (once the plugin has finished its job) or the
-            bot will never send the ``CAP END`` command and hang forever.
+            :attr:`~sopel.plugins.callables.CapabilityNegotiation.CONTINUE`,
+            this method must be called later (once the plugin has finished
+            its job) or the bot will never send the ``CAP END`` command and
+            hang forever.
 
         .. seealso::
 
@@ -341,7 +341,7 @@ class Manager:
         if cap_req not in self._requested:
             return was_completed, was_completed
 
-        handler_info: Optional[tuple[capability, bool]] = self._registered.get(
+        handler_info: Optional[tuple[Capability, bool]] = self._registered.get(
             cap_req, {},
         ).get(
             plugin_name, None,
@@ -429,7 +429,7 @@ class Manager:
         acknowledged: bool,
     ) -> list[tuple[bool, Optional[CapabilityNegotiation]]]:
         # call back request handlers
-        plugin_requests: dict[str, tuple[capability, bool]] = self._registered.get(
+        plugin_requests: dict[str, tuple[Capability, bool]] = self._registered.get(
             cap_req, {},
         )
         return [
@@ -440,7 +440,7 @@ class Manager:
     def _callback(
         self,
         plugin_name: str,
-        handler_info: tuple[capability, bool],
+        handler_info: tuple[Capability, bool],
         bot: SopelWrapper,
         acknowledged: bool,
     ) -> tuple[bool, Optional[CapabilityNegotiation]]:
@@ -455,7 +455,7 @@ class Manager:
         cap_req: tuple[str, ...],
         *,
         plugins: Union[list[str], tuple[str, ...], set[str]] = (),
-    ) -> Generator[tuple[str, capability], None, None]:
+    ) -> Generator[tuple[str, Capability], None, None]:
         """Retrieve the registered request handlers for a capability request.
 
         :param cap_req: the capability request to retrieve handlers for
