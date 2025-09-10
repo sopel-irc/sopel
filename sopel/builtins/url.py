@@ -122,10 +122,10 @@ def configure(config: Config) -> None:
 
 
 def setup(bot: Sopel) -> None:
-    bot.config.define_section('url', UrlSection)
+    bot.settings.define_section('url', UrlSection)
 
-    if bot.config.url.exclude:
-        regexes = [re.compile(s) for s in bot.config.url.exclude]
+    if bot.settings.url.exclude:
+        regexes = [re.compile(s) for s in bot.settings.url.exclude]
     else:
         regexes = []
 
@@ -165,7 +165,7 @@ def _user_can_change_excludes(bot: SopelWrapper, trigger: Trigger) -> bool:
     if trigger.admin:
         return True
 
-    required_access = bot.config.url.exclude_required_access
+    required_access = bot.settings.url.exclude_required_access
     channel = bot.channels[trigger.sender]
     user_access = channel.privileges[trigger.nick]
 
@@ -193,7 +193,7 @@ def url_ban(bot: SopelWrapper, trigger: Trigger) -> None:
     if not _user_can_change_excludes(bot, trigger):
         bot.reply(
             'Only admins and channel members with %s access or higher may '
-            'modify URL excludes.' % bot.config.url.exclude_required_access)
+            'modify URL excludes.' % bot.settings.url.exclude_required_access)
         return
 
     if trigger.group(1) in ['urlpexclude', 'urlpban']:
@@ -244,7 +244,7 @@ def url_unban(bot: SopelWrapper, trigger: Trigger) -> None:
     if not _user_can_change_excludes(bot, trigger):
         bot.reply(
             'Only admins and channel members with %s access or higher may '
-            'modify URL excludes.' % bot.config.url.exclude_required_access)
+            'modify URL excludes.' % bot.settings.url.exclude_required_access)
         return
 
     if trigger.group(1) in ['urlpallow', 'urlpunban']:
@@ -339,11 +339,11 @@ def title_auto(bot: SopelWrapper, trigger: Trigger) -> None:
         return
 
     # Avoid fetching links from another command
-    if re.match(bot.config.core.prefix + r'\S+', trigger):
+    if re.match(bot.settings.core.prefix + r'\S+', trigger):
         return
 
     urls = tools.web.search_urls(
-        trigger, exclusion_char=bot.config.url.exclusion_char, clean=True)
+        trigger, exclusion_char=bot.settings.url.exclusion_char, clean=True)
 
     for url, title, domain, tinyurl, ignored in process_urls(bot, trigger, urls):
         if not ignored:
@@ -408,10 +408,10 @@ def process_urls(
         redirected to from URLs passed to this function. See #2432, #2230.
 
     """
-    shorten_url_length = bot.config.url.shorten_url_length
+    shorten_url_length = bot.settings.url.shorten_url_length
     for url in urls:
         # Exclude URLs that start with the exclusion char
-        if not requested and url.startswith(bot.config.url.exclusion_char):
+        if not requested and url.startswith(bot.settings.url.exclusion_char):
             continue
 
         if check_callbacks(bot, url, use_excludes=not requested):
@@ -427,7 +427,7 @@ def process_urls(
         ]
         title_results = find_title(
             url,
-            allow_local=bot.config.url.enable_private_resolution,
+            allow_local=bot.settings.url.enable_private_resolution,
             unsafe_urls=unsafe_urls,
             unsafe_domains=bot.memory.get("safety_cache_local", set()),
         )
@@ -437,7 +437,7 @@ def process_urls(
             continue
         title, final_hostname = title_results
 
-        # If the URL is over bot.config.url.shorten_url_length, shorten the URL
+        # If the URL is over bot.settings.url.shorten_url_length, shorten the URL
         tinyurl = None
         if (shorten_url_length > 0) and (len(url) > shorten_url_length):
             tinyurl = get_or_create_shorturl(bot, url)
