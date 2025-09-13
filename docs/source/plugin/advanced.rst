@@ -163,20 +163,18 @@ it is still recommended to prevent any race condition.
 Re-using commands from other plugins
 ====================================
 
-.. TODO: this example should be updated when the Wikipedia plugin is removed
-.. as part of https://github.com/sopel-irc/sopel/issues/1291
-
 Because plugins are just Python modules it is possible to import functionality
 from other plugins, including commands. For example, this can be used to add
 an alias for an existing command::
 
     from sopel import plugin
-    from sopel.builtins import wikipedia as wp
 
-    @plugin.command("wiki")
-    @plugin.output_prefix(wp.wikipedia.output_prefix)
-    def wiki_alias(bot, trigger):
-        wp.wikipedia(bot, trigger)
+    import sopel_someplugin as sp
+
+    @plugin.command("new_command")
+    @plugin.output_prefix(sp.PLUGIN_OUTPUT_PREFIX)
+    def someplugin_alias(bot, trigger):
+        sp.plugin_command(bot, trigger)
 
 .. warning::
 
@@ -187,9 +185,9 @@ an alias for an existing command::
 
 .. warning::
 
-    While this example shows off loading a built-in plugin, some plugins may
-    not be as easy to import. For example, a :term:`Single file plugin` may
-    not be available on ``sys.path`` without extra handling not shown here.
+    Some plugins may not be as easy to import as the example shown here.
+    For example, a :term:`Single file plugin` may not be available on
+    ``sys.path`` without extra handling not shown here.
 
 Managing Capability negotiation
 ===============================
