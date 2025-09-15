@@ -27,6 +27,12 @@ Plugin changes
   * Housekeeping of deprecated internal API usage [[#2635][]]
 * version:
   * Support reading Git commit from a worktree [[#2586][]]
+* wikipedia:
+  * Plugin removed in favor of separately-maintained external package; see
+    [sopel-wikimedia][] on PyPI [[#2705][]]
+* wiktionary:
+  * Plugin removed in favor of separately-maintained external package; see
+    [sopel-wikimedia][] on PyPI [[#2705][]]
 * xkcd:
   * Removed `searchxkcd.com` fallback using `search` plugin [[#2613][]]
 
@@ -66,6 +72,7 @@ Housekeeping changes
 [sopel-search]: https://pypi.org/project/sopel-search/
 [sopel-tld]: https://pypi.org/project/sopel-tld/
 [sopel-unicode]: https://pypi.org/project/sopel-unicode/
+[sopel-wikimedia]: https://pypi.org/project/sopel-wikimedia/
 
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
 [#2578]: https://github.com/sopel-irc/sopel/pull/2578
@@ -88,6 +95,7 @@ Housekeeping changes
 [#2692]: https://github.com/sopel-irc/sopel/pull/2692
 [#2694]: https://github.com/sopel-irc/sopel/pull/2694
 [#2695]: https://github.com/sopel-irc/sopel/pull/2695
+[#2705]: https://github.com/sopel-irc/sopel/pull/2705
 
 
 Changes between 8.0.3 and 8.0.4
