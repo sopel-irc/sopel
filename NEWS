@@ -10,6 +10,8 @@ FIXME: Update heading before shipping final NEWS for 8.1.0
 Plugin changes
 --------------
 
+* admin:
+  * Only auto-accept INVITE events directed at the bot [[#2637][]]
 * safety:
   * Plugin removed in favor of separately-maintained external package; see
     [sopel-safety][] on PyPI [[#2678][]]
@@ -45,6 +47,7 @@ Core changes
 * Added `edit` subcommand to `sopel-config` [[#2595][]]
   * Opens the given config file in the user's `$EDITOR`
 * Added `setname` support [[#2578][]]
+* Added `invite-notify` support [[#2637][]]
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 
 API changes
@@ -82,6 +85,7 @@ Housekeeping changes
 [#2628]: https://github.com/sopel-irc/sopel/pull/2628
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
 [#2636]: https://github.com/sopel-irc/sopel/pull/2636
+[#2637]: https://github.com/sopel-irc/sopel/pull/2637
 [#2652]: https://github.com/sopel-irc/sopel/pull/2652
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
 [#2673]: https://github.com/sopel-irc/sopel/pull/2673
