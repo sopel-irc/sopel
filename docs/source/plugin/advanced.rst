@@ -189,6 +189,7 @@ an alias for an existing command::
     For example, a :term:`Single file plugin` may not be available on
     ``sys.path`` without extra handling not shown here.
 
+
 Managing Capability negotiation
 ===============================
 
@@ -220,9 +221,11 @@ And before:
 Declaring requests: the ``capability`` decorator
 ------------------------------------------------
 
-In :mod:`sopel.plugin` there is an advanced :class:`~sopel.plugin.capability`
-decorator: it is a class that declares a capability request and an optional
-handler to run after the capability is acknowledged or denied by the server::
+In :mod:`sopel.plugin` there is an advanced :func:`~sopel.plugin.capability`
+decorator. This decorator returns an instance of
+:class:`~sopel.plugins.callables.Capability` that declares a capability request
+and an optional handler to run after the capability is acknowledged or denied
+by the server::
 
     """Sample plugin file"""
 
@@ -237,16 +240,7 @@ handler to run after the capability is acknowledged or denied by the server::
         # do something if message-prefix is ACK or NAK
         ...
 
-.. autoclass:: sopel.plugin.capability
-   :members:
-
-.. autoclass:: sopel.plugin.CapabilityNegotiation
-   :members:
-
-.. autoclass:: sopel.plugin.CapabilityHandler
-   :members:
-   :special-members: __call__
-
+.. autofunction:: sopel.plugin.capability
 
 Working with capabilities
 -------------------------
@@ -279,8 +273,8 @@ Ending negotiations
 Sopel automatically sends a ``CAP END`` message when all requests are handled.
 However in some cases, a plugin author may need to delay the end of CAP
 negotiation to perform an action that must be done first. In that case, a
-plugin must return :attr:`~sopel.plugin.CapabilityNegotiation.CONTINUE` in its
-callback.
+plugin must return
+:attr:`~sopel.plugins.callables.CapabilityNegotiation.CONTINUE` in its callback.
 
 This is the case for SASL authentication, as seen in the ``coretasks``
 internal plugin that manages that:

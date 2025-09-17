@@ -41,7 +41,7 @@ from typing import TYPE_CHECKING, Union
 # py3.10 envs include old versions of this backport.
 import importlib_metadata
 
-from . import exceptions, handlers, rules  # noqa
+from . import callables, exceptions, handlers, rules  # noqa
 
 
 if TYPE_CHECKING:
