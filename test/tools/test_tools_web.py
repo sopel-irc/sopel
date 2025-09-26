@@ -67,6 +67,26 @@ def test_search_urls_with_text():
     assert 'http://example.com' in urls
 
 
+def test_search_urls_strict():
+    urls = list(search_urls('beforehttp://example.com'))
+    assert len(urls) == 0
+
+
+def test_search_urls_strict_exclusion():
+    urls = list(search_urls('before!http://example.com'))
+    assert len(urls) == 0
+
+
+def test_search_urls_strict_multiple_urls():
+    urls = list(search_urls(
+        'beforehttp://example.com/a '
+        'exc!http://example.com/b '
+        'but c is OK: http://example.com/c and will be found!'
+    ))
+    assert len(urls) == 1
+    assert urls[0] == 'http://example.com/c'
+
+
 def test_search_urls_multiple_urls():
     urls = list(search_urls('http://a.com/ http://b.com/'))
     assert len(urls) == 2, 'Must find 2 URLs, found %d' % len(urls)
