@@ -12,6 +12,7 @@ Plugin changes
 
 * admin:
   * Only auto-accept INVITE events directed at the bot [[#2637][]]
+  * Add feedback to `require_privmsg` commands [[#2641][]]
 * safety:
   * Plugin removed in favor of separately-maintained external package; see
     [sopel-safety][] on PyPI [[#2678][]]
@@ -86,6 +87,7 @@ Housekeeping changes
 [#2635]: https://github.com/sopel-irc/sopel/pull/2635
 [#2636]: https://github.com/sopel-irc/sopel/pull/2636
 [#2637]: https://github.com/sopel-irc/sopel/pull/2637
+[#2641]: https://github.com/sopel-irc/sopel/pull/2641
 [#2652]: https://github.com/sopel-irc/sopel/pull/2652
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
 [#2673]: https://github.com/sopel-irc/sopel/pull/2673
