@@ -24,6 +24,12 @@ for more possibilities.
 The ``sopel`` command
 =====================
 
+.. versionchanged:: 8.1
+
+    Since Sopel 8.1, you can now invoke the ``sopel`` command with::
+
+        python3 -m sopel [options]
+
 .. autoprogram:: sopel.cli.run:build_parser()
     :prog: sopel
     :maxdepth: 1
@@ -53,6 +59,12 @@ The ``sopel-config`` command
    The command ``sopel-config`` and its subcommands have been added in
    Sopel 7.0.
 
+.. versionchanged:: 8.1
+
+    Since Sopel 8.1, you can now invoke the ``sopel-config`` command with::
+
+        python3 -m sopel.config [options]
+
 .. autoprogram:: sopel.cli.config:build_parser()
     :prog: sopel-config
 
@@ -64,6 +76,12 @@ The ``sopel-plugins`` command
 
    The command ``sopel-plugins`` and its subcommands have been added in
    Sopel 7.0.
+
+.. versionchanged:: 8.1
+
+    Since Sopel 8.1, you can now invoke the ``sopel-plugins`` command with::
+
+        python3 -m sopel.plugins [options]
 
 .. autoprogram:: sopel.cli.plugins:build_parser()
     :prog: sopel-plugins
