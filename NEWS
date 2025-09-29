@@ -28,6 +28,8 @@ Plugin changes
 * url:
   * Improve private IP protection [[#2285][]]
   * Housekeeping of deprecated internal API usage [[#2635][]]
+  * Extract to separately-maintained external package; see [sopel-url][]
+    on PyPI [[#2706][]]
 * version:
   * Support reading Git commit from a worktree [[#2586][]]
 * wikipedia:
@@ -76,6 +78,7 @@ Housekeeping changes
 [sopel-search]: https://pypi.org/project/sopel-search/
 [sopel-tld]: https://pypi.org/project/sopel-tld/
 [sopel-unicode]: https://pypi.org/project/sopel-unicode/
+[sopel-url]: https://pypi.org/project/sopel-url/
 [sopel-wikimedia]: https://pypi.org/project/sopel-wikimedia/
 
 [#2285]: https://github.com/sopel-irc/sopel/pull/2285
@@ -102,6 +105,7 @@ Housekeeping changes
 [#2694]: https://github.com/sopel-irc/sopel/pull/2694
 [#2695]: https://github.com/sopel-irc/sopel/pull/2695
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
+[#2706]: https://github.com/sopel-irc/sopel/pull/2706
 
 
 Changes between 8.0.3 and 8.0.4
