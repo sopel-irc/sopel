@@ -730,9 +730,9 @@ class Sopel(irc.AbstractBot):
         is_channel = context and not context.is_nick()
 
         limited, limit_msg = self.rate_limit_info(rule, trigger)
-        if limit_msg:
-            sopel.notice(limit_msg, destination=nick)
         if limited:
+            if limit_msg:
+                sopel.notice(limit_msg, destination=nick)
             return
 
         # channel config
