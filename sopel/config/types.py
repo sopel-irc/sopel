@@ -5,15 +5,28 @@ any number of subclasses of :class:`BaseValidated` (a few common ones of which
 are available in this module) are assigned as attributes. These descriptors
 define how to read values from, and write values to, the config file.
 
-As an example, if one wanted to define the ``[spam]`` section as having an
-``eggs`` option, which contains a list of values, they could do this:
+As an example, if one wanted to create a section with an ``eggs`` option, which
+contains a list of values, they can create a subclass of
+:class:`StaticSection`::
 
-    >>> class SpamSection(StaticSection):
+    >>> from sopel.config import types
+    >>> class SpamSection(types.StaticSection):
     ...     eggs = ListAttribute('eggs')
     ...
+
+To use that section for the configuration file at ``/etc/sopel/default.cfg``,
+they must define the ``[spam]`` section on the settings with
+:meth:`~sopel.config.Config.define_section`::
+
     >>> from sopel import config
-    >>> settings = config.Config('/sopel/config.cfg')
-    >>> SpamSection(settings, 'spam')
+    >>> settings = config.Config('/etc/sopel/default.cfg')
+    >>> settings.define_section('spam', SpamSection)
+
+Without that, Sopel's configuration won't recognize the type of ``spam.eggs``
+properly, which can lead to invalid values.
+
+Then, it becomes possible to inspect and play with the section directly::
+
     >>> print(settings.spam.eggs)
     []
     >>> settings.spam.eggs = ['goose', 'turkey', 'duck', 'chicken', 'quail']
@@ -24,7 +37,6 @@ As an example, if one wanted to define the ``[spam]`` section as having an
         ...
     ValueError: ListAttribute value must be a list.
 """
-
 from __future__ import annotations
 
 import abc
