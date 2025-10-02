@@ -73,8 +73,9 @@ Namespace package (deprecated)
 .. warning::
 
    This type of package is deprecated in Sopel 8.1 and will be removed from
-   Sopel 9. Plugin authors can migrate their plugins to Sopel's Entry point
-   type of plugins if they wish to maintain a Sopel 9 compatible plugin.
+   Sopel 9. Plugin authors can migrate their plugins to Sopel's
+   :ref:`Entry point` type of plugins if they wish to maintain a Sopel 9
+   compatible plugin.
 
 .. deprecated:: 8.1
 
