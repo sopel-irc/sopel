@@ -660,11 +660,19 @@ class Sopel(irc.AbstractBot):
         trigger: Trigger,
     ) -> tuple[bool, Optional[str]]:
         if rule.is_unblockable():
-            return False, None
-        if trigger.admin and not rule.is_admin_rate_limited():
+            LOGGER.debug(
+                "Skipping rate limit checks for unblockable rule %s", rule)
             return False, None
 
         nick = trigger.nick
+        if trigger.admin and not rule.is_admin_rate_limited():
+            LOGGER.debug(
+                "Skipping rate limit checks for %s on rule %s: "
+                "rule does not rate-limit admins",
+                nick, rule,
+            )
+            return False, None
+
         is_channel = trigger.sender and not trigger.sender.is_nick()
         channel = trigger.sender if is_channel else None
 
@@ -688,7 +696,7 @@ class Sopel(irc.AbstractBot):
             return False, None
 
         if not metrics.last_time:
-            # you and I know that is_limited() will never return True if
+            # you and I know that is_*_rate_limited() will never return True if
             # last_time is None, but the type-checker doesn't
             return False, None
 
@@ -715,6 +723,10 @@ class Sopel(irc.AbstractBot):
                 rate_limit_type=rate_limit_type,
             )
 
+        LOGGER.debug(
+            "%s hit %s rate limit in %s for rule %s; %s / %s remaining",
+            nick, rate_limit_type, channel or 'PM', rule, time_left, rate_limit,
+        )
         return True, message
 
     # message dispatch
