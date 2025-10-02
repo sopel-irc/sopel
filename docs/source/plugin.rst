@@ -117,11 +117,15 @@ Plugin glossary
       :term:`Entry point plugin` should be used instead.
 
    Namespace package plugin
-      A plugin that is a Python namespace package, i.e. a package within a
+      A plugin that is a Python namespace package, i.e., a package within a
       specific namespace (``sopel_modules.<name>``, where ``sopel_modules`` is
       the namespace, and ``<name>`` is the plugin's name). This is the old way
-      to distribute plugins and is not recommended; :term:`Entry point plugin`
+      to distribute plugins and is now deprecated; :term:`Entry point plugin`
       should be used instead.
+
+      .. deprecated:: 8.1
+
+         This type of plugin is deprecated and will be removed from Sopel 9.
 
    Entry point plugin
       A plugin that is an installed Python package and exposed through the
