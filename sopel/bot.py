@@ -34,14 +34,13 @@ from sopel.plugins import (
     jobs as plugin_jobs,
     rules as plugin_rules,
 )
-from sopel.tools import jobs as tools_jobs
 from sopel.trigger import Trigger
 
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from sopel.plugins.callables import PluginCallable
+    from sopel.plugins.callables import PluginCallable, PluginJob
     from sopel.plugins.handlers import (
         AbstractPluginHandler,
         PluginMetaDescription,
@@ -442,7 +441,7 @@ class Sopel(irc.AbstractBot):
         self,
         plugin: AbstractPluginHandler,
         callables: Sequence[PluginCallable],
-        jobs: Sequence[Callable],
+        jobs: Sequence[PluginJob],
         shutdowns: Sequence[Callable],
         urls: Sequence[PluginCallable],
     ) -> None:
@@ -619,14 +618,10 @@ class Sopel(irc.AbstractBot):
                 self._rules_manager.register(
                     plugin_rules.Rule.from_callable(self.settings, callbl))
 
-    def register_jobs(self, jobs: Iterable) -> None:
+    def register_jobs(self, jobs: Iterable[PluginJob]) -> None:
         for func in jobs:
-            job = tools_jobs.Job.from_callable(self.settings, func)
+            job = plugin_jobs.Job.from_callable(self.settings, func)
             self._scheduler.register(job)
-
-    def unregister_jobs(self, jobs: Iterable) -> None:
-        for job in jobs:
-            self._scheduler.remove_callable_job(job)
 
     def register_shutdowns(self, shutdowns: Iterable) -> None:
         # Append plugin's shutdown function to the bot's list of functions to
@@ -1104,7 +1099,7 @@ class Sopel(irc.AbstractBot):
     def on_job_error(
         self,
         scheduler: plugin_jobs.Scheduler,
-        job: tools_jobs.Job,
+        job: plugin_jobs.Job,
         exc: BaseException,
     ) -> None:
         """Called when a job from the Job Scheduler fails.
