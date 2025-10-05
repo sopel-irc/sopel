@@ -63,6 +63,8 @@ API changes
   * Available for `@plugin.rate`, `@plugin.rate_user`, `@plugin.rate_channel`,
     and `@plugin.rate_global`.
 * Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
+* Changed `tools.web.search_urls()` to be stricter about ensuring there's a word
+  boundary before what looks like a URL [[#2697][]]
 
 Housekeeping changes
 --------------------
@@ -104,6 +106,7 @@ Housekeeping changes
 [#2692]: https://github.com/sopel-irc/sopel/pull/2692
 [#2694]: https://github.com/sopel-irc/sopel/pull/2694
 [#2695]: https://github.com/sopel-irc/sopel/pull/2695
+[#2697]: https://github.com/sopel-irc/sopel/pull/2697
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
 
