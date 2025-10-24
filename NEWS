@@ -52,6 +52,8 @@ Core changes
 * Added `setname` support [[#2578][]]
 * Added `invite-notify` support [[#2637][]]
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
+* Correct handling of empty CHANTYPES feature token [[#2701][]]
+* Correct default CHANTYPES when feature token is not advertised [[#2701][]]
 
 API changes
 -----------
@@ -108,6 +110,7 @@ Housekeeping changes
 [#2694]: https://github.com/sopel-irc/sopel/pull/2694
 [#2695]: https://github.com/sopel-irc/sopel/pull/2695
 [#2697]: https://github.com/sopel-irc/sopel/pull/2697
+[#2701]: https://github.com/sopel-irc/sopel/pull/2701
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
 [#2715]: https://github.com/sopel-irc/sopel/pull/2715
