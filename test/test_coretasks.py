@@ -371,11 +371,11 @@ def test_handle_isupport_casemapping_identifiermemory(mockbot):
 
 
 def test_handle_isupport_chantypes(mockbot):
-    # check default behavior (chantypes allows #, &, +, and !)
+    # check default behavior (unadvertised CHANTYPES token assumes # and &)
     assert not mockbot.make_identifier('#channel').is_nick()
     assert not mockbot.make_identifier('&channel').is_nick()
-    assert not mockbot.make_identifier('+channel').is_nick()
-    assert not mockbot.make_identifier('!channel').is_nick()
+    assert mockbot.make_identifier('+channel').is_nick()
+    assert mockbot.make_identifier('!channel').is_nick()
 
     # now the bot "connects" to a server using `CHANTYPES=#`
     mockbot.on_message(
@@ -386,6 +386,21 @@ def test_handle_isupport_chantypes(mockbot):
         ':are supported by this server')
 
     assert not mockbot.make_identifier('#channel').is_nick()
+    assert mockbot.make_identifier('&channel').is_nick()
+    assert mockbot.make_identifier('+channel').is_nick()
+    assert mockbot.make_identifier('!channel').is_nick()
+
+
+def test_handle_isupport_chantypes_empty(mockbot):
+    # "connect" to a server that advertises empty CHANTYPES token
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'CHANTYPES EXCEPTS INVEX CHANMODES=eIbq,k,flj,CFLMPQScgimnprstz '
+        'CHANLIMIT=#:120 PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 '
+        'NETWORK=example STATUSMSG=@+ CALLERID=g CASEMAPPING=ascii '
+        ':are supported by this server')
+
+    assert mockbot.make_identifier('#channel').is_nick()
     assert mockbot.make_identifier('&channel').is_nick()
     assert mockbot.make_identifier('+channel').is_nick()
     assert mockbot.make_identifier('!channel').is_nick()
