@@ -614,7 +614,7 @@ def test_join_time(mockbot):
 
 def test_handle_rpl_namreply_with_malformed_uhnames(mockbot, caplog):
     """Make sure Sopel can cope with expected but missing hostmask in 353"""
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.DEBUG, logger='sopel.coretasks')
     mockbot.on_message(
         ':somenet.behind.znc 005 Sopel '
         'UHNAMES '
@@ -781,7 +781,7 @@ def test_handle_setname(mockbot):
 
 def test_handle_setname_no_user(mockbot, caplog):
     """Make sure Sopel ignores SETNAME message for unknown user"""
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.DEBUG, logger='sopel.coretasks')
     mockbot.on_message(':Akarin!yuruyuri@hajimaru.yo SETNAME :Bun Bazooka')
 
     assert len(caplog.messages) == 1
