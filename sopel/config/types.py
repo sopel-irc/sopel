@@ -25,6 +25,13 @@ they must define the ``[spam]`` section on the settings with
 Without that, Sopel's configuration won't recognize the type of ``spam.eggs``
 properly, which can lead to invalid values.
 
+.. note::
+
+    The :meth:`~sopel.config.Config.define_section` is usually used in the
+    plugin's ``setup`` and ``configure`` functions. You can read more about
+    the ways to :ref:`configure your plugin <plugin-anatomy-config>` in the
+    plugin section of the documentation.
+
 Then, it becomes possible to inspect and play with the section directly::
 
     >>> print(settings.spam.eggs)
