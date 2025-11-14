@@ -183,7 +183,7 @@ def insert_into_module(func, module_name, base_name, prefix):
 
 
 @pytest.fixture
-def botfactory():
+def botfactory() -> BotFactory:
     """Fixture to get a Bot factory.
 
     :return: a factory to create a mocked bot instance
@@ -217,7 +217,7 @@ def configfactory(tmpdir):
 
 
 @pytest.fixture
-def triggerfactory():
+def triggerfactory() -> TriggerFactory:
     """Fixture to get a trigger factory.
 
     :return: a factory to create triggers
@@ -227,7 +227,7 @@ def triggerfactory():
 
 
 @pytest.fixture
-def ircfactory():
+def ircfactory() -> IRCFactory:
     """Fixture to get an IRC factory.
 
     :return: a factory to create mock IRC servers
@@ -253,7 +253,7 @@ def ircfactory():
 
 
 @pytest.fixture
-def userfactory():
+def userfactory() -> UserFactory:
     """Fixture to get a user factory.
 
     :return: a factory to create mock users
