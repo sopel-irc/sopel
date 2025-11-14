@@ -54,6 +54,7 @@ Core changes
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 * Correct handling of empty CHANTYPES feature token [[#2701][]]
 * Correct default CHANTYPES when feature token is not advertised [[#2701][]]
+* Restore debug logging of rate-limit checks and restrictions [[#2713][]]
 
 API changes
 -----------
@@ -113,6 +114,7 @@ Housekeeping changes
 [#2701]: https://github.com/sopel-irc/sopel/pull/2701
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
+[#2713]: https://github.com/sopel-irc/sopel/pull/2713
 [#2715]: https://github.com/sopel-irc/sopel/pull/2715
 
 
