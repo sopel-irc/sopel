@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sopel import bot, config, plugins, trigger
 
@@ -17,7 +17,12 @@ if TYPE_CHECKING:
 
 
 class BotFactory:
-    """Factory to create bot.
+    """Factory to create bots.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`~sopel.bot.Sopel` with a fake connection backend. It requires an
+    instance of :class:`~sopel.config.Config`, which can be obtained through
+    the :class:`ConfigFactory`.
 
     .. seealso::
 
@@ -27,15 +32,13 @@ class BotFactory:
     def preloaded(
         self,
         settings: config.Config,
-        preloads: Optional[Iterable[str]] = None,
+        preloads: Iterable[str] | None = None,
     ) -> bot.Sopel:
         """Create a bot and preload its plugins.
 
         :param settings: Sopel's configuration for testing purposes
-        :type settings: :class:`sopel.config.Config`
-        :param list preloads: list of plugins to preload, setup, and register
+        :param preloads: list of plugins to preload, setup, and register
         :return: a test instance of the bot
-        :rtype: :class:`sopel.bot.Sopel`
 
         This will instantiate a :class:`~sopel.bot.Sopel` object, replace its
         backend with a :class:`~.mocks.MockIRCBackend`, and then preload
@@ -67,6 +70,16 @@ class BotFactory:
         return mockbot
 
     def __call__(self, settings: config.Config) -> bot.Sopel:
+        """Create a test Sopel instance.
+
+        :param settings: test settings used by the test bot
+        :return: an instance of Sopel ready for testing purpose
+
+        This method will create an instance of :class:`~sopel.bot.Sopel` using
+        the ``settings`` provided and a
+        :class:`~sopel.tests.mocks.MockIRCBackend` that can be used to fake
+        messages received from an IRC server.
+        """
         obj = bot.Sopel(settings, daemon=False)
         obj.backend = MockIRCBackend(obj)
         return obj
@@ -74,6 +87,9 @@ class BotFactory:
 
 class ConfigFactory:
     """Factory to create settings.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`~sopel.config.Config`.
 
     .. seealso::
 
@@ -84,13 +100,25 @@ class ConfigFactory:
         self.tmpdir = tmpdir
 
     def __call__(self, name: str, data: str) -> config.Config:
+        """Call the factory with the settings to create.
+
+        :param name: filename of the configuration file; should ends with the
+                     ``.cfg`` file extension
+        :param data: settings content as per Sopel's configuration file format
+        :return: an instance of test configuration
+        """
         tmpfile = self.tmpdir.join(name)
         tmpfile.write(data)
         return config.Config(tmpfile.strpath)
 
 
 class TriggerFactory:
-    """Factory to create trigger.
+    """Factory to create triggers.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`sopel.trigger.Trigger`. It requires an instance of
+    Sopel, which can be obtained through the :class:`BotFactory`, as well as
+    the trigger's content.
 
     .. seealso::
 
@@ -101,8 +129,18 @@ class TriggerFactory:
         self,
         mockbot: bot.Sopel,
         raw: str,
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
     ) -> bot.SopelWrapper:
+        """Create a trigger and return a wrapped instance of Sopel.
+
+        :param mockbot: a test instance of Sopel
+        :param raw: the raw trigger's content
+        :param pattern: an optional regex pattern (default to ``.*``)
+        :return: a wrapped instance of Sopel with the created trigger
+
+        This method is a shortcut over calling the factory to create a trigger
+        and get an instance of :class:`~sopel.bot.SopelWrapper` with it.
+        """
         trigger = self(mockbot, raw, pattern=pattern)
         return bot.SopelWrapper(mockbot, trigger)
 
@@ -110,8 +148,15 @@ class TriggerFactory:
         self,
         mockbot: bot.Sopel,
         raw: str,
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
     ) -> trigger.Trigger:
+        """Call the factory with a test bot to return a test trigger message.
+
+        :param mockbot: a test instance of Sopel
+        :param raw: the raw trigger's content
+        :param pattern: an optional regex pattern (default to ``.*``)
+        :return: an instance of a test server
+        """
         match = re.match(pattern or r'.*', raw)
         if match is None:
             raise ValueError(
@@ -129,7 +174,11 @@ class TriggerFactory:
 
 
 class IRCFactory:
-    """Factory to create mock IRC server.
+    """Factory to create mock IRC servers.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`sopel.tests.mocks.MockIRCServer`. It requires an instance of
+    Sopel, which can be obtained through the :class:`BotFactory`.
 
     .. seealso::
 
@@ -141,11 +190,22 @@ class IRCFactory:
         mockbot: bot.Sopel,
         join_threads: bool = True,
     ) -> MockIRCServer:
+        """Call the factory with a test bot to return a test server.
+
+        :param mockbot: a test instance of Sopel
+        :param join_threads: an optional flag to wait on running triggers
+                             (default to true)
+        :return: an instance of a test server
+        """
         return MockIRCServer(mockbot, join_threads)
 
 
 class UserFactory:
-    """Factory to create mock user.
+    """Factory to create mock users.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`sopel.tests.mocks.MockUser`. It requires the information of the
+    test user such as its nick, account, and hostname.
 
     .. seealso::
 
@@ -154,8 +214,15 @@ class UserFactory:
     """
     def __call__(
         self,
-        nick: Optional[str] = None,
-        user: Optional[str] = None,
-        host: Optional[str] = None,
+        nick: str | None = None,
+        user: str | None = None,
+        host: str | None = None,
     ) -> MockUser:
+        """Call the factory with a nick to create a test user.
+
+        :param nick: a user's nick
+        :param user: a user's account
+        :param host: a user's hostname
+        :return: an instance of a test user
+        """
         return MockUser(nick, user, host)

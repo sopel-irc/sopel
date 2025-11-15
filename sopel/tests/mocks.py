@@ -26,16 +26,19 @@ class MockIRCBackend(AbstractIRCBackend):
 
     You can use the :func:`~sopel.tests.rawlist` function to compare the
     messages easily, and the :meth:`clear_message_sent` method to clear
-    previous messages::
+    previous messages.
 
-        >>> from sopel.tests import rawlist, mocks
-        >>> backend = mocks.MockIRCBackend(bot=None)
-        >>> backend.irc_send(b'PRIVMSG #channel :Hi!\\r\\n')
-        >>> backend.message_sent == rawlist('PRIVMSG #channel :Hi!')
+    Assuming you have a properly configured ``bot`` (i.e., an instance of
+    :class:`~sopel.bot.Sopel` with this fake ``backend``), you can access the
+    message sent like this::
+
+        >>> from sopel.tests import rawlist
+        >>> bot.backend.irc_send(b'PRIVMSG #channel :Hi!\\r\\n')
+        >>> bot.backend.message_sent == rawlist('PRIVMSG #channel :Hi!')
         True
-        >>> backend.clear_message_sent()
+        >>> bot.backend.clear_message_sent()
         [b'PRIVMSG #channel :Hi!\\r\\n']
-        >>> backend.message_sent
+        >>> bot.backend.message_sent
         []
 
     .. seealso::
@@ -44,6 +47,12 @@ class MockIRCBackend(AbstractIRCBackend):
         :class:`parent class <sopel.irc.abstract_backends.AbstractIRCBackend>`
         contains all the methods that can be used on this test backend.
 
+    .. seealso::
+
+        The :class:`~sopel.tests.factories.BotFactory` automatically uses this
+        fake backend when creating an instance of :class:`~sopel.bot.Sopel`.
+        As a result, it should be the preferred method of creating a test
+        instance of Sopel with this fake connection backend.
     """
     def __init__(self, bot: AbstractBot) -> None:
         super().__init__(bot)
@@ -95,43 +104,59 @@ class MockIRCServer:
     """Fake IRC Server that can send messages to a test bot.
 
     :param bot: test bot instance to send messages to
-    :type bot: :class:`sopel.bot.Sopel`
-    :param bool join_threads: whether message functions should join running
-                              threads before returning (default: ``True``)
+    :param join_threads: whether message functions should join running threads
+                         before returning (default: ``True``)
 
     This mock object helps developers when they want to simulate an IRC server
-    sending messages to the bot.
+    sending messages to the bot (e.g., using its :meth:`message` method or
+    its more specific methods).
 
-    The default ``join_threads`` behavior is suitable for testing most common
-    plugin callables, and ensures that all callables dispatched by the ``bot``
-    in response to messages sent via this ``MockIRCServer`` are finished
-    running before execution can continue. If set to ``False``, the mock
-    server will not wait for the bot to finish processing threaded
-    :term:`callables <Plugin callable>` before returning.
+    .. versionchanged:: 7.1
 
-    .. note::
+        The ``join_threads`` parameter has been added.
 
-        You can override ``join_threads`` on a per-method-call basis with the
-        ``blocking`` arguments to the instance methods below.
+    .. seealso::
 
-    The :class:`~sopel.tests.factories.IRCFactory` factory can be used to
-    create such mock object, either directly or by using ``pytest`` and the
-    :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
+        The :class:`~sopel.tests.factories.IRCFactory` factory can be used to
+        create such mock object, either directly or by using ``pytest`` and the
+        :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
 
-    .. versionadded:: 7.1
-
-        The ``join_threads`` parameter.
     """
     def __init__(self, bot: Sopel, join_threads: bool = True) -> None:
         self.bot: Sopel = bot
+        """The bot instance used by the server to send messages.
+
+        .. note::
+
+            The bot instance should use a :class:`MockIRCBackend` for testing
+            purpose.
+        """
         self.join_threads: bool = join_threads
+        """Flag if the server should wait on running triggers.
+
+        The default ``join_threads`` behavior is suitable for testing most
+        common plugin callables, and ensures that all callables dispatched by
+        the :attr:`bot` in response to messages sent via this ``MockIRCServer``
+        are finished running before execution can continue.
+
+        If set to ``False``, the mock server will not wait for the bot to
+        finish processing threaded :term:`callables <Plugin callable>` before
+        returning.
+
+        .. versionadded:: 7.1
+
+        .. note::
+
+            You can override ``join_threads`` on a per-method-call basis with
+            the ``blocking`` arguments to the instance methods.
+        """
 
     @property
     def chanserv(self) -> str:
         """ChanServ's message prefix."""
         return 'ChanServ!ChanServ@services.'
 
-    def message(self, raw: str, *, blocking: bool | None = None):
+    def message(self, raw: str, *, blocking: bool | None = None) -> None:
         """Send a ``raw`` message as if the bot received it.
 
         :param raw: an IRC event from the server as seen by the bot
@@ -152,6 +177,10 @@ class MockIRCServer:
         ``join_threads`` argument will be obeyed.
 
         .. versionadded:: 8.1
+
+        .. seealso::
+
+            The ``join_threads`` argument to :class:`MockIRCServer`.
         """
         self.bot.on_message(raw)
 
@@ -247,9 +276,9 @@ class MockIRCServer:
         this step. If not specified, this :class:`MockIRCServer` instance's
         ``join_threads`` argument will be obeyed.
 
-        .. versionadded:: 7.1
+        .. versionchanged:: 7.1
 
-            The ``blocking`` parameter.
+            The ``blocking`` parameter has been added.
 
         .. seealso::
 
@@ -308,9 +337,9 @@ class MockIRCServer:
         this step. If not specified, this :class:`MockIRCServer` instance's
         ``join_threads`` argument will be obeyed.
 
-        .. versionadded:: 7.1
+        .. versionchanged:: 7.1
 
-            The ``blocking`` parameter.
+            The ``blocking`` parameter has been added.
 
         .. seealso::
 
@@ -350,9 +379,9 @@ class MockIRCServer:
         this step. If not specified, this :class:`MockIRCServer` instance's
         ``join_threads`` argument will be obeyed.
 
-        .. versionadded:: 7.1
+        .. versionchanged:: 7.1
 
-            The ``blocking`` parameter.
+            The ``blocking`` parameter has been added.
 
         .. seealso::
 
@@ -391,9 +420,9 @@ class MockIRCServer:
         this step. If not specified, this :class:`MockIRCServer` instance's
         ``join_threads`` argument will be obeyed.
 
-        .. versionadded:: 7.1
+        .. versionchanged:: 7.1
 
-            The ``blocking`` parameter.
+            The ``blocking`` parameter has been added.
 
         .. seealso::
 
@@ -430,9 +459,9 @@ class MockIRCServer:
         this step. If not specified, this :class:`MockIRCServer` instance's
         ``join_threads`` argument will be obeyed.
 
-        .. versionadded:: 7.1
+        .. versionchanged:: 7.1
 
-            The ``blocking`` parameter.
+            The ``blocking`` parameter has been added.
 
         .. seealso::
 
