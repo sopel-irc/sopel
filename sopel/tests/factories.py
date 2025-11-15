@@ -1,6 +1,16 @@
 """Test factories: they create objects for testing purposes.
 
 .. versionadded:: 7.0
+
+.. important::
+
+    These factories are documented to help plugin authors to use them. However
+    Sopel recommends the usage of `pytest`__ and provides a set of fixtures
+    to get properly configurated factories in :mod:`sopel.tests.pytest_plugin`,
+    instead of trying to instanciate the factories manually.
+
+    .. __: https://docs.pytest.org/en/stable/
+
 """
 from __future__ import annotations
 
@@ -14,6 +24,7 @@ from .mocks import MockIRCBackend, MockIRCServer, MockUser
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    import pathlib
 
 
 class BotFactory:
@@ -88,16 +99,23 @@ class BotFactory:
 class ConfigFactory:
     """Factory to create settings.
 
+    :param tmpdir: a test folder to store documentation files
+
     An instance of this factory can be used as a callable to create an instance
     of :class:`~sopel.config.Config`.
+
+    .. versionchanged:: 8.1
+
+        This factory used to depend on pytest's fixture ``tmpdir``, but is now
+        using Python's standard :class:`pathlib.Path` instead.
 
     .. seealso::
 
         The :func:`~sopel.tests.pytest_plugin.configfactory` fixture can be
         used to instantiate this factory.
     """
-    def __init__(self, tmpdir):
-        self.tmpdir = tmpdir
+    def __init__(self, tmpdir: pathlib.Path) -> None:
+        self.tmpdir: pathlib.Path = tmpdir
 
     def __call__(self, name: str, data: str) -> config.Config:
         """Call the factory with the settings to create.
@@ -107,9 +125,9 @@ class ConfigFactory:
         :param data: settings content as per Sopel's configuration file format
         :return: an instance of test configuration
         """
-        tmpfile = self.tmpdir.join(name)
-        tmpfile.write(data)
-        return config.Config(tmpfile.strpath)
+        tmpfile = self.tmpdir / name
+        tmpfile.write_text(data, encoding='utf-8')
+        return config.Config(str(tmpfile))
 
 
 class TriggerFactory:

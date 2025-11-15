@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 import sys
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -18,6 +19,10 @@ from .factories import (
     TriggerFactory,
     UserFactory,
 )
+
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 TEMPLATE_TEST_CONFIG = """
@@ -205,14 +210,16 @@ def botfactory() -> BotFactory:
 
 
 @pytest.fixture
-def configfactory(tmpdir):
+def configfactory(tmp_path: pathlib.Path) -> ConfigFactory:
     """Fixture to get a config factory.
 
+    :param tmp_path: a temporary path directory
     :return: a factory to create test settings
-    :rtype: :class:`sopel.tests.factories.ConfigFactory`
 
     The factory will be automatically configured with a ``tmpdir`` object.
     """
+    tmpdir = tmp_path / 'sopel'
+    tmpdir.mkdir()
     return ConfigFactory(tmpdir)
 
 
