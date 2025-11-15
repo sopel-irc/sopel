@@ -48,6 +48,12 @@ def on_message(bot: Sopel, message: str) -> None:
     ``bot.on_message``, including potential echo messages.
 
     .. versionadded:: 8.1
+
+    .. seealso::
+
+        A test IRC server can be used instead with its
+        :meth:`~sopel.tests.mocks.MockIRCServer.message` method.
+
     """
     bot.on_message(message)
 

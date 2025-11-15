@@ -131,6 +131,35 @@ class MockIRCServer:
         """ChanServ's message prefix."""
         return 'ChanServ!ChanServ@services.'
 
+    def message(self, raw: str, *, blocking: bool | None = None):
+        """Send a ``raw`` message as if the bot received it.
+
+        :param raw: an IRC event from the server as seen by the bot
+        :param blocking: whether to block until all triggered threads
+                         have finished (optional)
+
+        This is a shortcut to calling Sopel's
+        :meth:`~sopel.irc.AbstractBot.on_message` method and dealing with
+        running triggers' threads.
+
+        It can be used with any messages (``PRIVMSG``, numeric events, etc.)
+        the bot would receive from a server in order to test the bot and its
+        plugins' behavior.
+
+        If ``blocking`` is ``True``, this method will wait to join all running
+        triggers' threads before returning. Setting it to ``False`` will skip
+        this step. If not specified, this :class:`MockIRCServer` instance's
+        ``join_threads`` argument will be obeyed.
+
+        .. versionadded:: 8.1
+        """
+        self.bot.on_message(raw)
+
+        if (blocking is None and self.join_threads) or blocking:
+            while threads := self.bot.running_triggers:
+                for t in threads:
+                    t.join()
+
     def invite(
         self,
         user: MockUser,
@@ -175,13 +204,8 @@ class MockIRCServer:
             To add a user (that is **not** the bot itself) to a channel after
             using this method, you should use the :meth:`join` method.
         """
-        message = f':{user.prefix} INVITE {nick} {channel}'
-        self.bot.on_message(message)
-
-        if (blocking is None and self.join_threads) or blocking:
-            while threads := self.bot.running_triggers:
-                for t in threads:
-                    t.join()
+        raw = f':{user.prefix} INVITE {nick} {channel}'
+        self.message(raw)
 
     def channel_joined(
         self,
@@ -239,26 +263,23 @@ class MockIRCServer:
         # automatically add the bot's nick to the list
         users = set(users or [])
         users.add(self.bot.nick)
-        message = ':irc.example.com 353 {bot} = {channel} :{users}'.format(
+        raw = ':irc.example.com 353 {bot} = {channel} :{users}'.format(
             bot=self.bot.nick,
             users=' '.join(list(users)),
             channel=channel,
         )
-        self.bot.on_message(message)
+        # not blocking: it's up to plugin callables to make sure they properly
+        # handle concurrency (with things like ``@plugin.thread(False)``)
+        self.message(raw, blocking=False)
 
-        message = (
+        raw = (
             ':irc.example.com 366 {bot} = {channel} '
             ':End of /NAMES list.'
         ).format(
             bot=self.bot.nick,
             channel=channel,
         )
-        self.bot.on_message(message)
-
-        if (blocking is None and self.join_threads) or blocking:
-            while threads := self.bot.running_triggers:
-                for t in threads:
-                    t.join()
+        self.message(raw)
 
     def mode_set(
         self,
@@ -297,18 +318,13 @@ class MockIRCServer:
 
         .. __: https://tools.ietf.org/html/rfc1459#section-4.2.3
         """
-        message = ':{chanserv} MODE {channel} {flags} {users}'.format(
+        raw = ':{chanserv} MODE {channel} {flags} {users}'.format(
             chanserv=self.chanserv,
             channel=channel,
             flags=flags,
             users=' '.join(users),
         )
-        self.bot.on_message(message)
-
-        if (blocking is None and self.join_threads) or blocking:
-            while threads := self.bot.running_triggers:
-                for t in threads:
-                    t.join()
+        self.message(raw)
 
     def join(
         self,
@@ -347,12 +363,7 @@ class MockIRCServer:
             This function is a shortcut to call the bot with the result from
             the user factory's :meth:`~MockUser.join` method.
         """
-        self.bot.on_message(user.join(channel))
-
-        if (blocking is None and self.join_threads) or blocking:
-            while threads := self.bot.running_triggers:
-                for t in threads:
-                    t.join()
+        self.message(user.join(channel))
 
     def say(
         self,
@@ -393,12 +404,7 @@ class MockIRCServer:
             This function is a shortcut to call the bot with the result from
             the user's :meth:`~MockUser.privmsg` method.
         """
-        self.bot.on_message(user.privmsg(channel, text))
-
-        if (blocking is None and self.join_threads) or blocking:
-            while threads := self.bot.running_triggers:
-                for t in threads:
-                    t.join()
+        self.message(user.privmsg(channel, text))
 
     def pm(
         self,
@@ -438,12 +444,7 @@ class MockIRCServer:
             the user factory's :meth:`~MockUser.privmsg` method, using the
             bot's nick as recipient.
         """
-        self.bot.on_message(user.privmsg(self.bot.nick, text))
-
-        if (blocking is None and self.join_threads) or blocking:
-            while threads := self.bot.running_triggers:
-                for t in threads:
-                    t.join()
+        self.message(user.privmsg(self.bot.nick, text))
 
 
 class MockUser:
