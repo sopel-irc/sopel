@@ -95,13 +95,16 @@ def run(settings, pid_file, daemon=False):
         time.sleep(delay)
 
 
-def build_parser():
+def build_parser(prog: str = 'sopel') -> argparse.ArgumentParser:
     """Build an argument parser for the bot.
 
     :return: the argument parser
     :rtype: :class:`argparse.ArgumentParser`
     """
-    parser = argparse.ArgumentParser(description='Sopel IRC Bot')
+    parser = argparse.ArgumentParser(
+        prog=prog,
+        description='Sopel IRC Bot',
+    )
 
     parser.add_argument('-V', '--version', action='store_true',
                         dest='version',
