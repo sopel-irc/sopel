@@ -80,12 +80,12 @@ def check_version(bot):
         bot.say(
             "[update] I haven't been able to check for updates in a while. "
             "Please verify that {} is working and I can reach it."
-            .format(version_url), bot.config.core.owner)
+            .format(version_url), bot.settings.core.owner)
         bot.say(
             "[update] If this issue persists, please alert the Sopel dev team "
             "in #sopel on Libera Chat, or open a GitHub issue: "
             "https://github.com/sopel-irc/sopel/issues",
-            bot.config.core.owner)
+            bot.settings.core.owner)
         return
 
     _check_succeeded(bot)
@@ -104,4 +104,4 @@ def check_version(bot):
 
     if version < latest_version:
         msg = message.format(latest, current_version, notes)
-        bot.say('[update] ' + msg, bot.config.core.owner)
+        bot.say('[update] ' + msg, bot.settings.core.owner)

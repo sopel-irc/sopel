@@ -243,11 +243,18 @@ class Config:
         :raise ValueError: if the section ``name`` has been defined already with
                            a different ``cls_``
 
-        If ``validate`` is ``True``, the section's values will be validated, and
-        an exception (usually :class:`ValueError` or :class:`AttributeError`)
-        raised if they are invalid. This is desirable in a plugin's
-        :func:`setup` function, for example, but might not be in the
-        :func:`configure` function.
+        When a plugin needs to add a section to the config file, either in
+        their ``configure(settings)`` hook or in their ``setup(bot)`` hook,
+        they must use this method::
+
+            def setup(bot):
+                bot.settings.define_section(MyPluginSection, 'myplugin')
+
+        If ``validate`` is ``True``, the section's values will be validated,
+        and an exception (usually :class:`ValueError` or
+        :class:`AttributeError`) raised if they are invalid. This is desirable
+        in a plugin's :func:`setup` function, for example, but might not be in
+        the :func:`configure` function.
 
         .. important::
 
@@ -262,6 +269,10 @@ class Config:
               using the :class:`~.Config` object's attributes
             * :ref:`overriding the section's values <Overriding individual
               settings>` using environment variables
+
+        .. seealso::
+
+            The definition of a :class:`~.types.StaticSection`.
 
         """
         if not issubclass(cls_, types.StaticSection):

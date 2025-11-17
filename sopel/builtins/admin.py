@@ -36,22 +36,26 @@ class AdminSection(types.StaticSection):
     """Auto-join channels when invited"""
 
 
-def configure(config):
+def configure(settings):
     """
     | name | example | purpose |
     | ---- | ------- | ------- |
     | hold\\_ground | False | Auto-rejoin the channel after being kicked. |
     | auto\\_accept\\_invite | True | Auto-join channels when invited. |
     """
-    config.define_section('admin', AdminSection)
-    config.admin.configure_setting('hold_ground',
-                                   "Automatically re-join after being kicked?")
-    config.admin.configure_setting('auto_accept_invite',
-                                   'Automatically join channels when invited?')
+    settings.define_section('admin', AdminSection)
+    settings.admin.configure_setting(
+        'hold_ground',
+        "Automatically re-join after being kicked?",
+    )
+    settings.admin.configure_setting(
+        'auto_accept_invite',
+        'Automatically join channels when invited?',
+    )
 
 
 def setup(bot):
-    bot.config.define_section('admin', AdminSection)
+    bot.settings.define_section('admin', AdminSection)
 
 
 class InvalidSection(Exception):
@@ -77,11 +81,11 @@ def _get_config_channels(channels):
 
 
 def _set_config_channels(bot, channels):
-    bot.config.core.channels = [
+    bot.settings.core.channels = [
         ' '.join([part for part in items if part])
         for items in channels.items()
     ]
-    bot.config.save()
+    bot.settings.save()
 
 
 def _join(bot, channel, key=None, save=True):
@@ -94,7 +98,7 @@ def _join(bot, channel, key=None, save=True):
         bot.join(channel, key)
 
     if save:
-        channels = dict(_get_config_channels(bot.config.core.channels))
+        channels = dict(_get_config_channels(bot.settings.core.channels))
         # save only if channel is new or key has been changed
         if channel not in channels or channels[channel] != key:
             channels[channel] = key
@@ -106,7 +110,7 @@ def _part(bot, channel, msg=None, save=True):
     bot.part(channel, msg or None)
 
     if save:
-        channels = dict(_get_config_channels(bot.config.core.channels))
+        channels = dict(_get_config_channels(bot.settings.core.channels))
         if channel in channels:
             del channels[channel]
             _set_config_channels(bot, channels)
@@ -303,7 +307,7 @@ def invite_join(bot, trigger):
         LOGGER.info(
             'Got invited to "%s" by an admin.', channel)
         bot.join(channel)
-    elif bot.config.admin.auto_accept_invite:
+    elif bot.settings.admin.auto_accept_invite:
         LOGGER.info(
             'Got invited to "%s"; admin.auto_accept_invite is on', channel)
         bot.join(channel)
@@ -327,7 +331,7 @@ def hold_ground(bot, trigger):
         return
 
     channel = trigger.sender
-    if bot.config.admin.hold_ground:
+    if bot.settings.admin.hold_ground:
         LOGGER.info('Got kicked from "%s"; admin.hold_ground is on.', channel)
         bot.join(channel)
     else:
@@ -409,9 +413,9 @@ def set_config(bot, trigger):
     If value is not provided, the current value will be displayed.
     """
     try:
-        section, section_name, static_sec, option, value = parse_section_option_value(bot.config, trigger)
+        section, section_name, static_sec, option, value = parse_section_option_value(bot.settings, trigger)
     except ValueError:
-        bot.say('Usage: {}set section.option [value]'.format(bot.config.core.help_prefix))
+        bot.say('Usage: {}set section.option [value]'.format(bot.settings.core.help_prefix))
         return
     except (InvalidSection, InvalidSectionOption) as exc:
         bot.say(exc.args[1])
@@ -446,7 +450,7 @@ def set_config(bot, trigger):
     # Otherwise, set the value to one given
     if descriptor is not None:
         try:
-            value = descriptor._parse(value, bot.config, section)
+            value = descriptor._parse(value, bot.settings, section)
         except ValueError as exc:
             bot.say("Can't set attribute: " + str(exc))
             return
@@ -471,9 +475,9 @@ def unset_config(bot, trigger):
     If there is no section, section will default to "core".
     """
     try:
-        section, section_name, static_sec, option, value = parse_section_option_value(bot.config, trigger)
+        section, section_name, static_sec, option, value = parse_section_option_value(bot.settings, trigger)
     except ValueError:
-        bot.say('Usage: {}unset section.option [value]'.format(bot.config.core.help_prefix))
+        bot.say('Usage: {}unset section.option [value]'.format(bot.settings.core.help_prefix))
         return
     except (InvalidSection, InvalidSectionOption) as exc:
         bot.say(exc.args[1])
@@ -497,6 +501,6 @@ def unset_config(bot, trigger):
 @plugin.example('.save')
 def save_config(bot, trigger):
     """Save state of Sopel's config object to the configuration file."""
-    bot.config.save()
+    bot.settings.save()
     LOGGER.info('Configuration file saved.')
     bot.say('Configuration file saved.')
