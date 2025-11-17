@@ -3,4 +3,4 @@ Fixtures with pytest
 ====================
 
 .. automodule:: sopel.tests.pytest_plugin
-   :members:
+   :members: botfactory,configfactory,triggerfactory,ircfactory,userfactory
