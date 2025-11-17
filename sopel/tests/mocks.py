@@ -108,8 +108,8 @@ class MockIRCServer:
                          before returning (default: ``True``)
 
     This mock object helps developers when they want to simulate an IRC server
-    sending messages to the bot (e.g., using its :meth:`message` method or
-    its more specific methods).
+    sending messages to the :attr:`bot` (e.g., using its :meth:`message` method
+    or its more specific methods).
 
     .. versionchanged:: 7.1
 
@@ -121,35 +121,61 @@ class MockIRCServer:
         create such mock object, either directly or by using ``pytest`` and the
         :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
 
+    .. important::
+
+        This fake IRC server does not generate any network activity, and it
+        does not react to anything the :attr:`bot` may send, as it is **not**
+        an actual IRC server implementation.
+
+    .. important::
+
+        Sending messages to the bot may result in running threads: the bot uses
+        threads to run triggers in parallel. This fake IRC server tries to join
+        these threads after sending messages to the bot.
+
+        While this is not ideal for testing purpose, this behavior can be
+        controlled in two ways:
+
+        * set :attr:`join_threads` to ``True`` (the default) to automatically
+          join threads after sending messages
+        * use the ``blocking`` optional argument of each methods to override
+          ``join_threads``
+
+        Plugin authors should be wary of turning auto-join off, as this may
+        result in unpredictible behaviors and flaky tests.
     """
+    bot: Sopel
+    """The bot instance used by the server to send messages.
+
+    .. note::
+
+        The bot instance should use a :class:`MockIRCBackend` for testing
+        purpose.
+    """
+
+    join_threads: bool
+    """Flag if the server should wait on running triggers.
+
+    The default ``join_threads`` behavior is suitable for testing most
+    common plugin callables, and ensures that all callables dispatched by
+    the :attr:`bot` in response to messages sent via this ``MockIRCServer``
+    are finished running before execution can continue.
+
+    If set to ``False``, the mock server will not wait for the bot to
+    finish processing threaded :term:`callables <Plugin callable>` before
+    returning.
+
+    .. versionadded:: 7.1
+
+    .. note::
+
+        You can override ``join_threads`` on a per-method-call basis with
+        the ``blocking`` arguments to the instance methods.
+    """
+
     def __init__(self, bot: Sopel, join_threads: bool = True) -> None:
         self.bot: Sopel = bot
-        """The bot instance used by the server to send messages.
-
-        .. note::
-
-            The bot instance should use a :class:`MockIRCBackend` for testing
-            purpose.
-        """
         self.join_threads: bool = join_threads
-        """Flag if the server should wait on running triggers.
-
-        The default ``join_threads`` behavior is suitable for testing most
-        common plugin callables, and ensures that all callables dispatched by
-        the :attr:`bot` in response to messages sent via this ``MockIRCServer``
-        are finished running before execution can continue.
-
-        If set to ``False``, the mock server will not wait for the bot to
-        finish processing threaded :term:`callables <Plugin callable>` before
-        returning.
-
-        .. versionadded:: 7.1
-
-        .. note::
-
-            You can override ``join_threads`` on a per-method-call basis with
-            the ``blocking`` arguments to the instance methods.
-        """
 
     @property
     def chanserv(self) -> str:
@@ -173,14 +199,10 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionadded:: 8.1
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
         """
         self.bot.on_message(raw)
 
@@ -214,14 +236,10 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionadded:: 8.1
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. note::
 
@@ -273,16 +291,12 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionchanged:: 7.1
 
             The ``blocking`` parameter has been added.
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. note::
 
@@ -334,16 +348,12 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionchanged:: 7.1
 
             The ``blocking`` parameter has been added.
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. __: https://tools.ietf.org/html/rfc1459#section-4.2.3
         """
@@ -376,16 +386,12 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionchanged:: 7.1
 
             The ``blocking`` parameter has been added.
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. seealso::
 
@@ -417,16 +423,12 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionchanged:: 7.1
 
             The ``blocking`` parameter has been added.
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. seealso::
 
@@ -456,16 +458,12 @@ class MockIRCServer:
 
         If ``blocking`` is ``True``, this method will wait to join all running
         triggers' threads before returning. Setting it to ``False`` will skip
-        this step. If not specified, this :class:`MockIRCServer` instance's
-        ``join_threads`` argument will be obeyed.
+        this step. If not specified, the :attr:`join_threads` attribute will be
+        obeyed.
 
         .. versionchanged:: 7.1
 
             The ``blocking`` parameter has been added.
-
-        .. seealso::
-
-            The ``join_threads`` argument to :class:`MockIRCServer`.
 
         .. seealso::
 

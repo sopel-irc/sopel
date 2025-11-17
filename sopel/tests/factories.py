@@ -31,41 +31,64 @@ class BotFactory:
     """Factory to create bots.
 
     An instance of this factory can be used as a callable to create an instance
-    of :class:`~sopel.bot.Sopel` with a fake connection backend. It requires an
-    instance of :class:`~sopel.config.Config`, which can be obtained through
-    the :class:`ConfigFactory`.
+    of :class:`~sopel.bot.Sopel` with a **fake** connection backend. It
+    requires an instance of :class:`~sopel.config.Config`, which can be
+    obtained through the :class:`ConfigFactory`.
 
     .. seealso::
 
         The :func:`~sopel.tests.pytest_plugin.botfactory` fixture can be used
         to instantiate this factory.
+
+    .. seealso::
+
+        The created instance will use the
+        :class:`~sopel.tests.mocks.MockIRCBackend` which does not generate
+        network activity and stores messages sent by the bot in-memory.
+
+    .. note::
+
+        The created instance does **not** connect to an external server: it
+        uses a fake backend (:class:`~sopel.tests.mocks.MockIRCBackend`), that
+        implements the same interface but stores the messages in-memory instead
+        of sending them through the wire. This allows plugin authors to inspect
+        the message sent by the bot.
     """
     def preloaded(
         self,
         settings: config.Config,
         preloads: Iterable[str] | None = None,
     ) -> bot.Sopel:
-        """Create a bot and preload its plugins.
+        """Create a test bot with a fake backend and preload its plugins.
 
         :param settings: Sopel's configuration for testing purposes
         :param preloads: list of plugins to preload, setup, and register
         :return: a test instance of the bot
 
-        This will instantiate a :class:`~sopel.bot.Sopel` object, replace its
-        backend with a :class:`~.mocks.MockIRCBackend`, and then preload
-        plugins. This will automatically load the ``coretasks`` plugin, and
-        every other plugin from ``preloads``::
+        This method will create an instance of :class:`~sopel.bot.Sopel` using
+        the ``settings`` provided and a fake backend which collect all messages
+        sent by the bot.
+
+        This will automatically load the ``coretasks`` plugin, and every other
+        plugin from ``preloads``::
 
             factory = BotFactory()
             bot = factory.preloaded(settings, ['emoticons', 'remind'])
 
+        .. seealso::
+
+            The created instance will use the
+            :class:`~sopel.tests.mocks.MockIRCBackend` which does not generate
+            network activity and stores messages sent by the bot in-memory.
+
         .. note::
 
             This will automatically setup plugins: be careful with plugins that
-            require access to external services on setup.
+            require access to external services or network connectivity on
+            setup.
 
             You may also need to manually call shutdown routines for the
-            loaded plugins.
+            loaded plugins once the tests are concluded.
 
         """
         preloads = set(preloads or []) | {'coretasks'}
@@ -81,15 +104,20 @@ class BotFactory:
         return mockbot
 
     def __call__(self, settings: config.Config) -> bot.Sopel:
-        """Create a test Sopel instance.
+        """Create a test bot with a fake backend without any plugins.
 
         :param settings: test settings used by the test bot
         :return: an instance of Sopel ready for testing purpose
 
         This method will create an instance of :class:`~sopel.bot.Sopel` using
-        the ``settings`` provided and a
-        :class:`~sopel.tests.mocks.MockIRCBackend` that can be used to fake
-        messages received from an IRC server.
+        the ``settings`` provided and a fake backend which collect all messages
+        sent by the bot.
+
+        .. seealso::
+
+            The created instance will use the
+            :class:`~sopel.tests.mocks.MockIRCBackend` which does not generate
+            network activity and stores messages sent by the bot in-memory.
         """
         obj = bot.Sopel(settings, daemon=False)
         obj.backend = MockIRCBackend(obj)
