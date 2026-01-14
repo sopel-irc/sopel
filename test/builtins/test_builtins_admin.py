@@ -56,7 +56,7 @@ def owner(userfactory: UserFactory) -> MockUser:
 
 @pytest.fixture
 def henry(userfactory: UserFactory) -> MockUser:
-    return userfactory('Henry', 'king', 'example.com')
+    return userfactory('Henry', 'king', 'palace.example.com')
 
 
 def test_invite_accept_admin(irc: MockIRCServer, owner: MockUser) -> None:

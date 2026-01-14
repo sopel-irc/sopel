@@ -52,7 +52,7 @@ class BotFactory:
         uses a fake backend (:class:`~sopel.tests.mocks.MockIRCBackend`), that
         implements the same interface but stores the messages in-memory instead
         of sending them through the wire. This allows plugin authors to inspect
-        the message sent by the bot.
+        messages sent by the bot.
     """
     def preloaded(
         self,
@@ -66,7 +66,7 @@ class BotFactory:
         :return: a test instance of the bot
 
         This method will create an instance of :class:`~sopel.bot.Sopel` using
-        the ``settings`` provided and a fake backend which collect all messages
+        the ``settings`` provided and a fake backend which collects all messages
         sent by the bot.
 
         This will automatically load the ``coretasks`` plugin, and every other
@@ -84,7 +84,7 @@ class BotFactory:
         .. note::
 
             This will automatically setup plugins: be careful with plugins that
-            require access to external services or network connectivity on
+            require access to external services or network connectivity during
             setup.
 
             You may also need to manually call shutdown routines for the
@@ -107,10 +107,10 @@ class BotFactory:
         """Create a test bot with a fake backend without any plugins.
 
         :param settings: test settings used by the test bot
-        :return: an instance of Sopel ready for testing purpose
+        :return: an instance of Sopel ready for use in tests
 
-        This method will create an instance of :class:`~sopel.bot.Sopel` using
-        the ``settings`` provided and a fake backend which collect all messages
+        This factory creates an instance of :class:`~sopel.bot.Sopel` using
+        the ``settings`` provided and a fake backend which collects all messages
         sent by the bot.
 
         .. seealso::
@@ -148,7 +148,7 @@ class ConfigFactory:
     def __call__(self, name: str, data: str) -> config.Config:
         """Call the factory with the settings to create.
 
-        :param name: filename of the configuration file; should ends with the
+        :param name: filename of the configuration file; should end with the
                      ``.cfg`` file extension
         :param data: settings content as per Sopel's configuration file format
         :return: an instance of test configuration
@@ -201,7 +201,7 @@ class TriggerFactory:
         :param mockbot: a test instance of Sopel
         :param raw: the raw trigger's content
         :param pattern: an optional regex pattern (default to ``.*``)
-        :return: an instance of a test server
+        :return: an instance of a test trigger
         """
         match = re.match(pattern or r'.*', raw)
         if match is None:
@@ -240,7 +240,7 @@ class IRCFactory:
 
         :param mockbot: a test instance of Sopel
         :param join_threads: an optional flag to wait on running triggers
-                             (default to true)
+                             (defaults to ``True``)
         :return: an instance of a test server
         """
         return MockIRCServer(mockbot, join_threads)

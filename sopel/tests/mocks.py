@@ -29,8 +29,8 @@ class MockIRCBackend(AbstractIRCBackend):
     previous messages.
 
     Assuming you have a properly configured ``bot`` (i.e., an instance of
-    :class:`~sopel.bot.Sopel` with this fake ``backend``), you can access the
-    message sent like this::
+    :class:`~sopel.bot.Sopel` with this fake ``backend``), you can access its
+    sent messages like this::
 
         >>> from sopel.tests import rawlist
         >>> bot.backend.irc_send(b'PRIVMSG #channel :Hi!\\r\\n')
@@ -118,7 +118,7 @@ class MockIRCServer:
     .. seealso::
 
         The :class:`~sopel.tests.factories.IRCFactory` factory can be used to
-        create such mock object, either directly or by using ``pytest`` and the
+        create such a mock object, either directly or by using ``pytest`` and the
         :func:`~sopel.tests.pytest_plugin.ircfactory` fixture.
 
     .. important::
@@ -133,24 +133,23 @@ class MockIRCServer:
         threads to run triggers in parallel. This fake IRC server tries to join
         these threads after sending messages to the bot.
 
-        While this is not ideal for testing purpose, this behavior can be
-        controlled in two ways:
+        To provide for those rarer test cases where this behavior is not
+        desirable, it can be controlled in two ways:
 
         * set :attr:`join_threads` to ``True`` (the default) to automatically
           join threads after sending messages
-        * use the ``blocking`` optional argument of each methods to override
+        * use the ``blocking`` optional argument of each method to override
           ``join_threads``
 
         Plugin authors should be wary of turning auto-join off, as this may
-        result in unpredictible behaviors and flaky tests.
+        result in unpredictable behaviors and flaky tests.
     """
     bot: Sopel
     """The bot instance used by the server to send messages.
 
     .. note::
 
-        The bot instance should use a :class:`MockIRCBackend` for testing
-        purpose.
+        The bot instance should use a :class:`MockIRCBackend` for testing.
     """
 
     join_threads: bool
@@ -246,10 +245,8 @@ class MockIRCServer:
             To add **the bot** to a channel after using this method, you should
             use the :meth:`channel_joined` method.
 
-        .. note::
-
-            To add a user (that is **not** the bot itself) to a channel after
-            using this method, you should use the :meth:`join` method.
+            To add **a different user** to a channel after using this method,
+            you should use the :meth:`join` method.
         """
         raw = f':{user.prefix} INVITE {nick} {channel}'
         self.message(raw)
@@ -486,7 +483,8 @@ class MockUser:
     :func:`~sopel.tests.pytest_plugin.userfactory` fixture.
     """
     def __init__(
-        self, nick: str | None = None,
+        self,
+        nick: str | None = None,
         user: str | None = None,
         host: str | None = None,
     ) -> None:
