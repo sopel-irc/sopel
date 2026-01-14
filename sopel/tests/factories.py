@@ -154,7 +154,7 @@ class ConfigFactory:
         :return: an instance of test configuration
         """
         tmpfile = self.tmpdir / name
-        tmpfile.write_text(data, encoding='utf-8')
+        tmpfile.write_text(data)
         return config.Config(str(tmpfile))
 
 
