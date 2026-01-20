@@ -68,6 +68,9 @@ API changes
 * Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 * Changed `tools.web.search_urls()` to be stricter about ensuring there's a word
   boundary before what looks like a URL [[#2697][]]
+* Updated test tools [[#2716][]]
+  * Added `sopel.tests.on_message()` helper function
+  * Added `message()` and `invite()` methods to the `MockIRCServer`
 
 Housekeeping changes
 --------------------
@@ -79,6 +82,7 @@ Housekeeping changes
 * Switch to improved tooling for import checks [[#2681][], [#2692][]]
 * Streamlining tool configs and moving everything into `pyproject.toml`
   [[#2682][], [#2683][], [#2694][], [#2695][]]
+* Improved test tools documentation and type hinting [[#2716][]]
 
 [sopel-safety]: https://pypi.org/project/sopel-safety/
 [sopel-search]: https://pypi.org/project/sopel-search/
@@ -116,6 +120,7 @@ Housekeeping changes
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
 [#2713]: https://github.com/sopel-irc/sopel/pull/2713
 [#2715]: https://github.com/sopel-irc/sopel/pull/2715
+[#2716]: https://github.com/sopel-irc/sopel/pull/2716
 
 
 Changes between 8.0.3 and 8.0.4
