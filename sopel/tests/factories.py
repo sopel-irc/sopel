@@ -1,11 +1,21 @@
 """Test factories: they create objects for testing purposes.
 
 .. versionadded:: 7.0
+
+.. important::
+
+    These factories are documented to help plugin authors to use them. However
+    Sopel recommends the usage of `pytest`__ and provides a set of fixtures
+    to get properly configurated factories in :mod:`sopel.tests.pytest_plugin`,
+    instead of trying to instanciate the factories manually.
+
+    .. __: https://docs.pytest.org/en/stable/
+
 """
 from __future__ import annotations
 
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sopel import bot, config, plugins, trigger
 
@@ -14,44 +24,71 @@ from .mocks import MockIRCBackend, MockIRCServer, MockUser
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    import pathlib
 
 
 class BotFactory:
-    """Factory to create bot.
+    """Factory to create bots.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`~sopel.bot.Sopel` with a **fake** connection backend. It
+    requires an instance of :class:`~sopel.config.Config`, which can be
+    obtained through the :class:`ConfigFactory`.
 
     .. seealso::
 
         The :func:`~sopel.tests.pytest_plugin.botfactory` fixture can be used
         to instantiate this factory.
+
+    .. seealso::
+
+        The created instance will use the
+        :class:`~sopel.tests.mocks.MockIRCBackend` which does not generate
+        network activity and stores messages sent by the bot in-memory.
+
+    .. note::
+
+        The created instance does **not** connect to an external server: it
+        uses a fake backend (:class:`~sopel.tests.mocks.MockIRCBackend`), that
+        implements the same interface but stores the messages in-memory instead
+        of sending them through the wire. This allows plugin authors to inspect
+        messages sent by the bot.
     """
     def preloaded(
         self,
         settings: config.Config,
-        preloads: Optional[Iterable[str]] = None,
+        preloads: Iterable[str] | None = None,
     ) -> bot.Sopel:
-        """Create a bot and preload its plugins.
+        """Create a test bot with a fake backend and preload its plugins.
 
         :param settings: Sopel's configuration for testing purposes
-        :type settings: :class:`sopel.config.Config`
-        :param list preloads: list of plugins to preload, setup, and register
+        :param preloads: list of plugins to preload, setup, and register
         :return: a test instance of the bot
-        :rtype: :class:`sopel.bot.Sopel`
 
-        This will instantiate a :class:`~sopel.bot.Sopel` object, replace its
-        backend with a :class:`~.mocks.MockIRCBackend`, and then preload
-        plugins. This will automatically load the ``coretasks`` plugin, and
-        every other plugin from ``preloads``::
+        This method will create an instance of :class:`~sopel.bot.Sopel` using
+        the ``settings`` provided and a fake backend which collects all messages
+        sent by the bot.
+
+        This will automatically load the ``coretasks`` plugin, and every other
+        plugin from ``preloads``::
 
             factory = BotFactory()
             bot = factory.preloaded(settings, ['emoticons', 'remind'])
 
+        .. seealso::
+
+            The created instance will use the
+            :class:`~sopel.tests.mocks.MockIRCBackend` which does not generate
+            network activity and stores messages sent by the bot in-memory.
+
         .. note::
 
             This will automatically setup plugins: be careful with plugins that
-            require access to external services on setup.
+            require access to external services or network connectivity during
+            setup.
 
             You may also need to manually call shutdown routines for the
-            loaded plugins.
+            loaded plugins once the tests are concluded.
 
         """
         preloads = set(preloads or []) | {'coretasks'}
@@ -67,6 +104,21 @@ class BotFactory:
         return mockbot
 
     def __call__(self, settings: config.Config) -> bot.Sopel:
+        """Create a test bot with a fake backend without any plugins.
+
+        :param settings: test settings used by the test bot
+        :return: an instance of Sopel ready for use in tests
+
+        This factory creates an instance of :class:`~sopel.bot.Sopel` using
+        the ``settings`` provided and a fake backend which collects all messages
+        sent by the bot.
+
+        .. seealso::
+
+            The created instance will use the
+            :class:`~sopel.tests.mocks.MockIRCBackend` which does not generate
+            network activity and stores messages sent by the bot in-memory.
+        """
         obj = bot.Sopel(settings, daemon=False)
         obj.backend = MockIRCBackend(obj)
         return obj
@@ -75,22 +127,44 @@ class BotFactory:
 class ConfigFactory:
     """Factory to create settings.
 
+    :param tmpdir: a test folder to store documentation files
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`~sopel.config.Config`.
+
+    .. versionchanged:: 8.1
+
+        This factory used to depend on pytest's fixture ``tmpdir``, but is now
+        using Python's standard :class:`pathlib.Path` instead.
+
     .. seealso::
 
         The :func:`~sopel.tests.pytest_plugin.configfactory` fixture can be
         used to instantiate this factory.
     """
-    def __init__(self, tmpdir):
-        self.tmpdir = tmpdir
+    def __init__(self, tmpdir: pathlib.Path) -> None:
+        self.tmpdir: pathlib.Path = tmpdir
 
     def __call__(self, name: str, data: str) -> config.Config:
-        tmpfile = self.tmpdir.join(name)
-        tmpfile.write(data)
-        return config.Config(tmpfile.strpath)
+        """Call the factory with the settings to create.
+
+        :param name: filename of the configuration file; should end with the
+                     ``.cfg`` file extension
+        :param data: settings content as per Sopel's configuration file format
+        :return: an instance of test configuration
+        """
+        tmpfile = self.tmpdir / name
+        tmpfile.write_text(data)
+        return config.Config(str(tmpfile))
 
 
 class TriggerFactory:
-    """Factory to create trigger.
+    """Factory to create triggers.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`sopel.trigger.Trigger`. It requires an instance of
+    Sopel, which can be obtained through the :class:`BotFactory`, as well as
+    the trigger's content.
 
     .. seealso::
 
@@ -101,8 +175,18 @@ class TriggerFactory:
         self,
         mockbot: bot.Sopel,
         raw: str,
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
     ) -> bot.SopelWrapper:
+        """Create a trigger and return a wrapped instance of Sopel.
+
+        :param mockbot: a test instance of Sopel
+        :param raw: the raw trigger's content
+        :param pattern: an optional regex pattern (default to ``.*``)
+        :return: a wrapped instance of Sopel with the created trigger
+
+        This method is a shortcut over calling the factory to create a trigger
+        and get an instance of :class:`~sopel.bot.SopelWrapper` with it.
+        """
         trigger = self(mockbot, raw, pattern=pattern)
         return bot.SopelWrapper(mockbot, trigger)
 
@@ -110,8 +194,15 @@ class TriggerFactory:
         self,
         mockbot: bot.Sopel,
         raw: str,
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
     ) -> trigger.Trigger:
+        """Call the factory with a test bot to return a test trigger message.
+
+        :param mockbot: a test instance of Sopel
+        :param raw: the raw trigger's content
+        :param pattern: an optional regex pattern (default to ``.*``)
+        :return: an instance of a test trigger
+        """
         match = re.match(pattern or r'.*', raw)
         if match is None:
             raise ValueError(
@@ -129,7 +220,11 @@ class TriggerFactory:
 
 
 class IRCFactory:
-    """Factory to create mock IRC server.
+    """Factory to create mock IRC servers.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`sopel.tests.mocks.MockIRCServer`. It requires an instance of
+    Sopel, which can be obtained through the :class:`BotFactory`.
 
     .. seealso::
 
@@ -141,11 +236,22 @@ class IRCFactory:
         mockbot: bot.Sopel,
         join_threads: bool = True,
     ) -> MockIRCServer:
+        """Call the factory with a test bot to return a test server.
+
+        :param mockbot: a test instance of Sopel
+        :param join_threads: an optional flag to wait on running triggers
+                             (defaults to ``True``)
+        :return: an instance of a test server
+        """
         return MockIRCServer(mockbot, join_threads)
 
 
 class UserFactory:
-    """Factory to create mock user.
+    """Factory to create mock users.
+
+    An instance of this factory can be used as a callable to create an instance
+    of :class:`sopel.tests.mocks.MockUser`. It requires the information of the
+    test user such as its nick, account, and hostname.
 
     .. seealso::
 
@@ -154,8 +260,15 @@ class UserFactory:
     """
     def __call__(
         self,
-        nick: Optional[str] = None,
-        user: Optional[str] = None,
-        host: Optional[str] = None,
+        nick: str | None = None,
+        user: str | None = None,
+        host: str | None = None,
     ) -> MockUser:
+        """Call the factory with a nick to create a test user.
+
+        :param nick: a user's nick
+        :param user: a user's account
+        :param host: a user's hostname
+        :return: an instance of a test user
+        """
         return MockUser(nick, user, host)

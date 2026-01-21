@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 import sys
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -18,6 +19,10 @@ from .factories import (
     TriggerFactory,
     UserFactory,
 )
+
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 TEMPLATE_TEST_CONFIG = """
@@ -183,7 +188,7 @@ def insert_into_module(func, module_name, base_name, prefix):
 
 
 @pytest.fixture
-def botfactory():
+def botfactory() -> BotFactory:
     """Fixture to get a Bot factory.
 
     :return: a factory to create a mocked bot instance
@@ -205,19 +210,21 @@ def botfactory():
 
 
 @pytest.fixture
-def configfactory(tmpdir):
+def configfactory(tmp_path: pathlib.Path) -> ConfigFactory:
     """Fixture to get a config factory.
 
+    :param tmp_path: a temporary path directory
     :return: a factory to create test settings
-    :rtype: :class:`sopel.tests.factories.ConfigFactory`
 
     The factory will be automatically configured with a ``tmpdir`` object.
     """
+    tmpdir = tmp_path / 'sopel'
+    tmpdir.mkdir()
     return ConfigFactory(tmpdir)
 
 
 @pytest.fixture
-def triggerfactory():
+def triggerfactory() -> TriggerFactory:
     """Fixture to get a trigger factory.
 
     :return: a factory to create triggers
@@ -227,7 +234,7 @@ def triggerfactory():
 
 
 @pytest.fixture
-def ircfactory():
+def ircfactory() -> IRCFactory:
     """Fixture to get an IRC factory.
 
     :return: a factory to create mock IRC servers
@@ -253,7 +260,7 @@ def ircfactory():
 
 
 @pytest.fixture
-def userfactory():
+def userfactory() -> UserFactory:
     """Fixture to get a user factory.
 
     :return: a factory to create mock users
