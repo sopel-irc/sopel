@@ -11,11 +11,11 @@ Plugin Internal Machinery
 .. toctree::
     :maxdepth: 2
 
-    loader
     plugins/plugins
+    plugins/callables
     plugins/capabilities
     plugins/exceptions
     plugins/handlers
     plugins/jobs
     plugins/rules
-    plugins/callables
+    loader
