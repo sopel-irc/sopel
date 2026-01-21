@@ -543,29 +543,30 @@ class Sopel(irc.AbstractBot):
 
         for callbl in callables:
             rules = callbl.rules
-            lazy_rules = callbl.rule_lazy_loaders
+            rules_lazy_loaders = callbl.rule_lazy_loaders
             find_rules = callbl.find_rules
-            lazy_find_rules = callbl.find_rules_lazy_loaders
+            find_rules_lazy_loaders = callbl.find_rules_lazy_loaders
             search_rules = callbl.search_rules
-            lazy_search_rules = callbl.search_rules_lazy_loaders
+            search_rules_lazy_loaders = callbl.search_rules_lazy_loaders
             commands = callbl.commands
             nick_commands = callbl.nickname_commands
             action_commands = callbl.action_commands
             is_rule = any([
                 rules,
-                lazy_rules,
+                rules_lazy_loaders,
                 find_rules,
-                lazy_find_rules,
+                find_rules_lazy_loaders,
                 search_rules,
-                lazy_search_rules,
+                search_rules_lazy_loaders,
             ])
             is_command = any([commands, nick_commands, action_commands])
 
+            # register generic rules and lazy generic rules
             if rules:
                 rule = plugin_rules.Rule.from_callable(settings, callbl)
                 self._rules_manager.register(rule)
 
-            if lazy_rules:
+            if rules_lazy_loaders:
                 try:
                     rule = plugin_rules.Rule.from_callable_lazy(
                         settings, callbl)
@@ -577,7 +578,7 @@ class Sopel(irc.AbstractBot):
                 rule = plugin_rules.FindRule.from_callable(settings, callbl)
                 self._rules_manager.register(rule)
 
-            if lazy_find_rules:
+            if find_rules_lazy_loaders:
                 try:
                     rule = plugin_rules.FindRule.from_callable_lazy(
                         settings, callbl)
@@ -589,7 +590,7 @@ class Sopel(irc.AbstractBot):
                 rule = plugin_rules.SearchRule.from_callable(settings, callbl)
                 self._rules_manager.register(rule)
 
-            if lazy_search_rules:
+            if search_rules_lazy_loaders:
                 try:
                     rule = plugin_rules.SearchRule.from_callable_lazy(
                         settings, callbl)
@@ -597,6 +598,7 @@ class Sopel(irc.AbstractBot):
                 except plugins.exceptions.PluginError as err:
                     LOGGER.error('Cannot register search rule: %s', err)
 
+            # register named rules
             if commands:
                 command = plugin_rules.Command.from_callable(settings, callbl)
                 self._rules_manager.register_command(command)
@@ -611,6 +613,7 @@ class Sopel(irc.AbstractBot):
                     settings, callbl)
                 self._rules_manager.register_action_command(command)
 
+            # register generic rules that match any trigger
             if not is_command and not is_rule:
                 callbl.rules = [match_any]
                 self._rules_manager.register(
