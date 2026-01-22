@@ -44,6 +44,9 @@ Plugin changes
 Core changes
 ------------
 
+* Support `python -m` invocations of Sopel command-line interfaces [[#2698][]]
+  * Applies to `sopel`, `sopel-config` (as `sopel.config`), and `sopel.plugins`
+    (as `sopel.plugins`)
 * Added back `hostmask` block type [[#2687][]]
   * Now `host` blocks operate on the hostname only, and `hostmask` blocks match
     the full hostmask (`nick!user@host.name`), as expected.
@@ -115,6 +118,7 @@ Housekeeping changes
 [#2694]: https://github.com/sopel-irc/sopel/pull/2694
 [#2695]: https://github.com/sopel-irc/sopel/pull/2695
 [#2697]: https://github.com/sopel-irc/sopel/pull/2697
+[#2698]: https://github.com/sopel-irc/sopel/pull/2698
 [#2701]: https://github.com/sopel-irc/sopel/pull/2701
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
