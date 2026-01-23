@@ -377,6 +377,18 @@ class PluginCallable(AbstractPluginObject):
     def rule(self):
         return self.rules
 
+    @property
+    @deprecated(
+        reason=(
+            '`rule_lazy_loaders` is replaced by the '
+            '`rules_lazy_loaders` attribute'
+        ),
+        version='8.1',
+        removed_in='9.0',
+    )
+    def rule_lazy_loaders(self):
+        return self.rules_lazy_loaders
+
     @classmethod
     def ensure_callable(
         cls: Type[PluginCallable],
@@ -416,8 +428,8 @@ class PluginCallable(AbstractPluginObject):
         handler.events = getattr(obj, 'event', handler.events)
         handler.ctcp = getattr(obj, 'ctcp', handler.ctcp)
         handler.rules = getattr(obj, 'rule', handler.rules)
-        handler.rule_lazy_loaders = getattr(
-            obj, 'rule_lazy_loaders', handler.rule_lazy_loaders)
+        handler.rules_lazy_loaders = getattr(
+            obj, 'rule_lazy_loaders', handler.rules_lazy_loaders)
         handler.find_rules = getattr(obj, 'find_rules', handler.find_rules)
         handler.search_rules = getattr(
             obj, 'search_rules', handler.search_rules)
@@ -462,7 +474,7 @@ class PluginCallable(AbstractPluginObject):
         """
         return any([
             self.rules,
-            self.rule_lazy_loaders,
+            self.rules_lazy_loaders,
             self.find_rules,
             self.find_rules_lazy_loaders,
             self.search_rules,
@@ -495,7 +507,7 @@ class PluginCallable(AbstractPluginObject):
         """
         return any([
             self.rules,
-            self.rule_lazy_loaders,
+            self.rules_lazy_loaders,
             self.find_rules,
             self.find_rules_lazy_loaders,
             self.search_rules,
@@ -524,7 +536,7 @@ class PluginCallable(AbstractPluginObject):
         """
         is_a_rule = any([
             self.rules,
-            self.rule_lazy_loaders,
+            self.rules_lazy_loaders,
             self.find_rules,
             self.find_rules_lazy_loaders,
             self.search_rules,
@@ -601,7 +613,7 @@ class PluginCallable(AbstractPluginObject):
         """List of plugin action commands."""
         self.rules: list[str | re.Pattern] = []
         """List of match patterns."""
-        self.rule_lazy_loaders: list = []
+        self.rules_lazy_loaders: list = []
         """List of lazy loaders for match rules."""
         self.find_rules: list[str | re.Pattern] = []
         """List of find patterns."""

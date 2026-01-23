@@ -224,7 +224,7 @@ def test_rule_lazy():
     def mock(bot, trigger):
         return True
 
-    assert mock.rule_lazy_loaders == [loader]
+    assert mock.rules_lazy_loaders == [loader]
     assert mock.rules == []
 
 
@@ -239,7 +239,7 @@ def test_rule_lazy_args():
     def mock(bot, trigger):
         return True
 
-    assert mock.rule_lazy_loaders == [loader_1, loader_2]
+    assert mock.rules_lazy_loaders == [loader_1, loader_2]
     assert mock.rules == []
 
 
@@ -255,7 +255,7 @@ def test_rule_lazy_multiple():
     def mock(bot, trigger):
         return True
 
-    assert mock.rule_lazy_loaders == [loader_1, loader_2]
+    assert mock.rules_lazy_loaders == [loader_1, loader_2]
     assert mock.rules == []
 
 

@@ -390,7 +390,7 @@ def rule_lazy(*loaders: Callable) -> TypedCallableDecorator:
         function: TypedPluginCallableHandler | AbstractPluginObject
     ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
-        handler.rule_lazy_loaders.extend(loaders)
+        handler.rules_lazy_loaders.extend(loaders)
         return handler
 
     return decorator

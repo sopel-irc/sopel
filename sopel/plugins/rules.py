@@ -927,7 +927,7 @@ class Rule(AbstractRule):
     """
 
     REGEX_ATTRIBUTE = 'rules'
-    LAZY_ATTRIBUTE = 'rule_lazy_loaders'
+    LAZY_ATTRIBUTE = 'rules_lazy_loaders'
 
     @classmethod
     def kwargs_from_callable(cls, handler: PluginCallable) -> dict:

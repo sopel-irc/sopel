@@ -386,7 +386,7 @@ def test_callable_ensure_callable_function():
     assert plugin_callable.nickname_commands == []
     assert plugin_callable.action_commands == []
     assert plugin_callable.rules == []
-    assert plugin_callable.rule_lazy_loaders == []
+    assert plugin_callable.rules_lazy_loaders == []
     assert plugin_callable.find_rules == []
     assert plugin_callable.find_rules_lazy_loaders == []
     assert plugin_callable.search_rules == []

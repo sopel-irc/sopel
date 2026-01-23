@@ -543,7 +543,7 @@ class Sopel(irc.AbstractBot):
 
         for callbl in callables:
             rules = callbl.rules
-            rules_lazy_loaders = callbl.rule_lazy_loaders
+            rules_lazy_loaders = callbl.rules_lazy_loaders
             find_rules = callbl.find_rules
             find_rules_lazy_loaders = callbl.find_rules_lazy_loaders
             search_rules = callbl.search_rules
