@@ -173,6 +173,40 @@ def test_search_multiple():
     assert mock.search_rules == [r'\w+', '.*', r'\d+']
 
 
+def test_url():
+    @plugin.url('pattern')
+    def mock(bot, trigger):
+        return True
+    patterns = [regex.pattern for regex in mock.url_regex]
+    assert len(patterns) == 1
+    assert 'pattern' in patterns
+
+
+def test_url_args():
+    @plugin.url('first', 'second')
+    def mock(bot, trigger):
+        return True
+
+    patterns = [regex.pattern for regex in mock.url_regex]
+    assert len(patterns) == 2
+    assert 'first' in patterns
+    assert 'second' in patterns
+
+
+def test_url_multiple():
+    @plugin.url('first', 'second')
+    @plugin.url('second')
+    @plugin.url('third')
+    def mock(bot, trigger):
+        return True
+
+    patterns = [regex.pattern for regex in mock.url_regex]
+    assert len(patterns) == 3
+    assert 'first' in patterns
+    assert 'second' in patterns
+    assert 'third' in patterns
+
+
 def test_url_lazy():
     def loader(settings):
         return [r'\w+', '.*', r'\d+']

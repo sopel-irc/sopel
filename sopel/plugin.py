@@ -23,6 +23,7 @@ from typing import (
     Union,
 )
 
+from sopel.lifecycle import deprecated
 from sopel.plugins.callables import (
     AbstractPluginObject,
     Capability,
@@ -1919,7 +1920,8 @@ def url(*url_rules: str) -> TypedCallableDecorator:
 
         argspec = inspect.getfullargspec(url_handler)
 
-        if len(argspec.args) >= match_count:
+        has_match_arg = len(argspec.args) >= match_count
+        if has_match_arg:
             @functools.wraps(url_handler)
             def wrapped_handler(bot, trigger):
                 return url_handler(bot, trigger, match=trigger)
@@ -1930,6 +1932,17 @@ def url(*url_rules: str) -> TypedCallableDecorator:
                 function = wrapped_handler
 
         handler = PluginCallable.ensure_callable(function)
+
+        if has_match_arg:
+            deprecated(
+                (
+                    'The `match` parameter for "%s" is obsolete; '
+                    'use the `trigger` parameter instead'
+                ) % handler.label,
+                version='8.1',
+                removed_in='9.0',
+                func=lambda *args: ...,
+            )()
 
         for url_rule in url_rules:
             url_regex = re.compile(url_rule)
