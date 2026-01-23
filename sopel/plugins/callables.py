@@ -460,7 +460,7 @@ class PluginCallable(AbstractPluginObject):
         all must pass through Sopel's rate-limiting machinery during
         dispatching.
         """
-        allowed = any([
+        return any([
             self.rules,
             self.rule_lazy_loaders,
             self.find_rules,
@@ -475,8 +475,6 @@ class PluginCallable(AbstractPluginObject):
             self.url_regex,
             self.url_lazy_loaders,
         ])
-
-        return allowed
 
     @property
     def is_triggerable(self) -> bool:
@@ -495,7 +493,7 @@ class PluginCallable(AbstractPluginObject):
             decorated function a triggerable object.
 
         """
-        allowed = any([
+        return any([
             self.rules,
             self.rule_lazy_loaders,
             self.find_rules,
@@ -511,8 +509,6 @@ class PluginCallable(AbstractPluginObject):
             self.url_lazy_loaders,
         ])
 
-        return allowed
-
     @property
     def is_generic_rule(self) -> bool:
         """Check if the callable is a generic rule.
@@ -526,7 +522,7 @@ class PluginCallable(AbstractPluginObject):
             event or a CTCP is required without the callable being a named
             rule or an URL callback.
         """
-        allowed = any([
+        is_a_rule = any([
             self.rules,
             self.rule_lazy_loaders,
             self.find_rules,
@@ -535,7 +531,7 @@ class PluginCallable(AbstractPluginObject):
             self.search_rules_lazy_loaders,
         ])
 
-        return allowed or bool(
+        return is_a_rule or bool(
             # has events or ctcp defined but no named/URL callback defined
             (self.events or self.ctcp) and not (
                 self.is_named_rule or self.is_url_callback
@@ -549,13 +545,11 @@ class PluginCallable(AbstractPluginObject):
         A named rule is anything with a name in it: commands, nickname
         commands, or action commands.
         """
-        allowed = any([
+        return any([
             self.commands,
             self.nickname_commands,
             self.action_commands,
         ])
-
-        return allowed
 
     @property
     def is_url_callback(self) -> bool:
@@ -572,12 +566,10 @@ class PluginCallable(AbstractPluginObject):
             the decorated function a URL callback handler.
 
         """
-        allowed = any([
+        return any([
             self.url_regex,
             self.url_lazy_loaders,
         ])
-
-        return allowed
 
     def __init__(
         self,
