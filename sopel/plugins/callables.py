@@ -1,4 +1,4 @@
-"""Plugin objects' definition.
+"""Plugin object definitions.
 
 .. versionadded:: 8.1
 
@@ -27,7 +27,7 @@ Under the hood each decorator of :mod:`sopel.plugin` creates an instance of
 Sopel will collect all instances of :class:`PluginCallable`, to create the
 appropriate rule handlers (see :mod:`sopel.plugins.rules`).
 
-The structure of a typical decorator without any parameter looks like this::
+The structure of a typical decorator without any parameters looks like this::
 
     def decorator(
         function: TypedPluginCallableHandler | AbstractPluginObject
@@ -48,23 +48,23 @@ The decorator can then be used like this::
         # do something here
         ...
 
-The key elements of a plugin decorators are to:
+The key behaviors of a plugin decorator are to:
 
 * ensure an instance of one of :class:`PluginCallable`, :class:`PluginJob`, or
   :class:`PluginGeneric`
 * operate on the object
-* and to return it
+* return the updated object
 
 Everything else is mostly dealing with the various way you can use a decorator.
 
 .. seealso::
 
     All the decorators in :mod:`sopel.plugin` follow this structure, and they
-    can be taken as example of implementation.
+    can be taken as implementation examples.
 
 
-References
-==========
+Plugin object reference
+=======================
 """
 # Copyright 2025, Florian Strzelecki <florian.strzelecki@gmail.com>
 #
@@ -257,7 +257,7 @@ class AbstractPluginObject(abc.ABC):
 
     @abc.abstractmethod
     def replace_handler(self, handler: Callable) -> Callable:
-        """Replace this plugin object's hanler.
+        """Replace this plugin object's handler.
 
         :return: the plugin object's previous handler
         """
@@ -387,8 +387,8 @@ class PluginCallable(AbstractPluginObject):
         :param obj: a function or a plugin object
         :return: a properly defined plugin callable
 
-        If ``obj`` is already an instance of ``AbstractPluginObject``, it
-        converts it into a plugin callable. Otherwise, a new plugin callable is
+        If ``obj`` is already an instance of ``AbstractPluginObject``, it is
+        converted into a plugin callable. Otherwise, a new plugin callable is
         created, using the ``obj`` as its handler.
         """
         if isinstance(obj, cls):
@@ -628,7 +628,7 @@ class PluginCallable(AbstractPluginObject):
         self.allow_bots: bool = False
         """Flag to indicate if a bot can trigger this callable."""
         self.allow_echo: bool = False
-        """Flag to indicate if an echo messages can trigger this callable."""
+        """Flag to indicate if an echo message can trigger this callable."""
 
         # how to run it
         self.priority: Literal['low', 'medium', 'high'] = 'medium'
@@ -640,7 +640,7 @@ class PluginCallable(AbstractPluginObject):
         self.unblockable: bool = False
         """Flag to indicate if a blocked user can trigger this callable.
 
-        A user can be banned/ignored by the bot, however some callable must
+        A user can be banned/ignored by the bot, however some callables must
         always execute (such as ``JOIN`` events).
         """
         self.predicates: list[TypedCallablePredicate] = []
@@ -775,8 +775,8 @@ class PluginJob(AbstractPluginObject):
         :param obj: a function or a plugin object
         :return: a properly defined plugin job
 
-        If ``obj`` is already an instance of ``AbstractPluginObject``, it
-        converts it into a plugin job. Otherwise, a new plugin job is created,
+        If ``obj`` is already an instance of ``AbstractPluginObject``, it is
+        converted into a plugin job. Otherwise, a new plugin job is created,
         using the ``obj`` as its handler.
         """
         if isinstance(obj, cls):
@@ -833,7 +833,6 @@ class PluginJob(AbstractPluginObject):
 
             This method is a no-op. It exists for subclasses that may need to
             perform operations before registration.
-
         """
 
 
@@ -857,8 +856,8 @@ def clean_callable(func, config):
 
     .. versionchanged:: 8.1
 
-        This function used to be defined in ``sopel.loader`` and now sit with
-        the Sopel plugin's internal machinery.
+        This function used to be defined in ``sopel.loader`` but was moved
+        into the ``sopel.plugins`` internal machinery.
     """
     nick = config.core.nick
     help_prefix = config.core.help_prefix
@@ -1083,8 +1082,8 @@ def clean_module(
 
     .. versionchanged:: 8.1
 
-        This function used to be defined in ``sopel.loader`` and now sit with
-        the Sopel plugin's internal machinery.
+        This function used to be defined in ``sopel.loader`` but was moved
+        into the ``sopel.plugins`` internal machinery.
     """
     callables: list[PluginCallable] = []
     jobs: list[PluginJob] = []
