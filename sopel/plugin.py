@@ -243,6 +243,7 @@ def unblockable(function=None):
         return handler
 
     # hack to allow both @unblockable and @unblockable() to work
+    # this requires the two @overload signatures above
     if callable(function):
         return decorator(function)
 
@@ -629,6 +630,8 @@ def thread(value: bool) -> TypedCallableDecorator:
     return decorator
 
 
+# Overloads allow both `@allow_bots` and `@allow_bots()` to work
+# without angering the type checker
 @overload
 def allow_bots(
     function: TypedPluginCallableHandler | AbstractPluginObject,
@@ -699,6 +702,7 @@ def echo(function=None):
         return handler
 
     # hack to allow both @echo and @echo() to work
+    # this requires the two @overload signatures above
     if callable(function):
         return decorator(function)
 
@@ -1411,6 +1415,7 @@ def require_privmsg(message=None, reply=False):
         return handler
 
     # Hack to allow decorator without parens
+    # this requires the two @overload signatures above
     if callable(message):
         return decorator(message)
 
@@ -1488,6 +1493,7 @@ def require_chanmsg(message=None, reply=False):
         return handler
 
     # Hack to allow decorator without parens
+    # this requires the two @overload signatures above
     if callable(message):
         return decorator(message)
     return decorator
@@ -1712,6 +1718,7 @@ def require_admin(message=None, reply=False):
         return handler
 
     # Hack to allow decorator without parens
+    # this requires the two @overload signatures above
     if callable(message):
         return decorator(message)
 
@@ -1789,6 +1796,7 @@ def require_owner(message=None, reply=False):
         return handler
 
     # Hack to allow decorator without parens
+    # this requires the two @overload signatures above
     if callable(message):
         return decorator(message)
     return decorator
