@@ -203,6 +203,8 @@ def capability(
     return Capability(*name, handler=handler)
 
 
+# Overloads allow both `@unblockable` and `@unblockable()` to work
+# without angering the type checker
 @overload
 def unblockable(
     function: TypedPluginCallableHandler | AbstractPluginObject,
@@ -670,6 +672,8 @@ def allow_bots(function=None):
     return decorator
 
 
+# Overloads allow both `@echo` and `@echo()` to work
+# without angering the type checker
 @overload
 def echo(
     function: TypedPluginCallableHandler | AbstractPluginObject,
@@ -1004,6 +1008,8 @@ def event(*event_list: str) -> TypedCallableDecorator:
     return decorator
 
 
+# Overloads allow both `@ctcp` and `@ctcp()` to work
+# without angering the type checker
 @overload
 def ctcp(function: None = None, *command_list: str) -> TypedCallableDecorator:
     ...
@@ -1064,6 +1070,8 @@ def ctcp(function=None, *command_list):
     """
     default_commands = ('ACTION',) + command_list
 
+    # hack to allow both @ctcp and @ctcp(...) to work
+    # requires the @overload signatures above
     if function is None:
         return ctcp(*default_commands)  # called as ``@ctcp()``
     elif callable(function):
@@ -1344,6 +1352,8 @@ def rate_global(
     return decorator
 
 
+# Overloads allow both `@require_privmsg` and `@require_privmsg()` to work
+# without angering the type checker
 @overload
 def require_privmsg(
     message: TypedPluginCallableHandler | AbstractPluginObject,
@@ -1423,6 +1433,8 @@ def require_privmsg(message=None, reply=False):
     return decorator
 
 
+# Overloads allow both `@require_chanmsg` and `@require_chanmsg()` to work
+# without angering the type checker
 @overload
 def require_chanmsg(
     message: TypedPluginCallableHandler | AbstractPluginObject,
@@ -1500,6 +1512,8 @@ def require_chanmsg(message=None, reply=False):
     return decorator
 
 
+# Overloads allow both `@require_account` and `@require_account()` to work
+# without angering the type checker
 @overload
 def require_account(
     message: TypedPluginCallableHandler | AbstractPluginObject,
@@ -1646,6 +1660,8 @@ def require_privilege(
     return decorator
 
 
+# Overloads allow both `@require_admin` and `@require_admin()` to work
+# without angering the type checker
 @overload
 def require_admin(
     message: TypedPluginCallableHandler | AbstractPluginObject,
@@ -1726,6 +1742,8 @@ def require_admin(message=None, reply=False):
     return decorator
 
 
+# Overloads allow both `@require_owner` and `@require_owner()` to work
+# without angering the type checker
 @overload
 def require_owner(
     message: TypedPluginCallableHandler | AbstractPluginObject,
