@@ -1959,6 +1959,7 @@ def url(*url_rules: str) -> TypedCallableDecorator:
                 ) % handler.label,
                 version='8.1',
                 removed_in='9.0',
+                stack_frame=-2,
                 func=lambda *args: ...,
             )()
 
