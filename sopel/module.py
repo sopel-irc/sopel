@@ -48,6 +48,7 @@ deprecated(
     'sopel.module has been replaced by sopel.plugin',
     version='8.0',
     removed_in='9.0',
+    stack_frame=-7,
     func=lambda *args: ...,
 )()
 
