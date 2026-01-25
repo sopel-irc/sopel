@@ -108,7 +108,7 @@ def deprecated(
         Moved out of :mod:`sopel.tools` to resolve circular dependency issues.
 
     .. versionchanged:: 8.1
-        Added ``None`` as a valid ``stack_frame`` value to disable its output.
+        Added the ``stack_output`` argument.
 
     """
     if not any([reason, version, removed_in, warning_in, func]):
