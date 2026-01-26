@@ -71,6 +71,7 @@ API changes
 * Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 * Changed `tools.web.search_urls()` to be stricter about ensuring there's a word
   boundary before what looks like a URL [[#2697][]]
+* Added `stack_output` optional parameter to `lifecycle.deprecated` [[#2712][]]
 * Updated test tools [[#2716][]]
   * Added `sopel.tests.on_message()` helper function
   * Added `message()` and `invite()` methods to the `MockIRCServer`
@@ -122,6 +123,7 @@ Housekeeping changes
 [#2701]: https://github.com/sopel-irc/sopel/pull/2701
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
+[#2712]: https://github.com/sopel-irc/sopel/pull/2712
 [#2713]: https://github.com/sopel-irc/sopel/pull/2713
 [#2715]: https://github.com/sopel-irc/sopel/pull/2715
 [#2716]: https://github.com/sopel-irc/sopel/pull/2716
