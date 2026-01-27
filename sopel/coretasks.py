@@ -34,6 +34,7 @@ from typing import Callable, Optional, TYPE_CHECKING
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
+from sopel.plugins import callables
 from sopel.tools import events, jobs, SopelMemory, target
 
 
@@ -66,9 +67,9 @@ MODE_PREFIX_PRIVILEGES = {
 
 def _handle_account_and_extjoin_capabilities(
     cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
-) -> plugin.CapabilityNegotiation:
+) -> callables.CapabilityNegotiation:
     if acknowledged:
-        return plugin.CapabilityNegotiation.DONE
+        return callables.CapabilityNegotiation.DONE
 
     name = ', '.join(cap_req)
     owner_account = bot.settings.core.owner_account
@@ -86,12 +87,12 @@ def _handle_account_and_extjoin_capabilities(
             name,
         )
 
-    return plugin.CapabilityNegotiation.DONE
+    return callables.CapabilityNegotiation.DONE
 
 
 def _handle_sasl_capability(
     cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
-) -> plugin.CapabilityNegotiation:
+) -> callables.CapabilityNegotiation:
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
     server_auth_method = bot.settings.core.server_auth_method
@@ -99,14 +100,14 @@ def _handle_sasl_capability(
 
     if not is_required:
         # not required: we are fine, available or not
-        return plugin.CapabilityNegotiation.DONE
+        return callables.CapabilityNegotiation.DONE
     elif not acknowledged:
         # required but not available: error, we must stop here
         LOGGER.error(
             'SASL capability is not enabled; '
             'cannot authenticate with SASL.',
         )
-        return plugin.CapabilityNegotiation.ERROR
+        return callables.CapabilityNegotiation.ERROR
 
     # Check SASL configuration (password is required for PLAIN/SCRAM)
     password, mech = _get_sasl_pass_and_mech(bot)
@@ -142,7 +143,7 @@ def _handle_sasl_capability(
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
-    return plugin.CapabilityNegotiation.CONTINUE
+    return callables.CapabilityNegotiation.CONTINUE
 
 
 CAP_ECHO_MESSAGE = plugin.capability('echo-message')
@@ -1067,11 +1068,11 @@ def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
 def _handle_cap_acknowledgement(
     bot: SopelWrapper,
     cap_req: tuple[str, ...],
-    results: list[tuple[bool, Optional[plugin.CapabilityNegotiation]]],
+    results: list[tuple[bool, Optional[callables.CapabilityNegotiation]]],
     was_completed: bool,
 ) -> None:
     if any(
-        callback_result[1] == plugin.CapabilityNegotiation.ERROR
+        callback_result[1] == callables.CapabilityNegotiation.ERROR
         for callback_result in results
     ):
         # error: a plugin needs something and the bot cannot function properly
@@ -1094,7 +1095,7 @@ def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
 
     try:
         result: Optional[
-            list[tuple[bool, Optional[plugin.CapabilityNegotiation]]]
+            list[tuple[bool, Optional[callables.CapabilityNegotiation]]]
         ] = bot.cap_requests.acknowledge(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
@@ -1129,7 +1130,7 @@ def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
 
     try:
         result: Optional[
-            list[tuple[bool, Optional[plugin.CapabilityNegotiation]]]
+            list[tuple[bool, Optional[callables.CapabilityNegotiation]]]
         ] = bot.cap_requests.deny(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(

@@ -18,15 +18,12 @@ from __future__ import annotations
 
 import abc
 import datetime
-import functools
-import inspect
 import itertools
 import logging
 import re
 import threading
 from typing import (
     Any,
-    Callable,
     Optional,
     Type,
     TYPE_CHECKING,
@@ -43,10 +40,11 @@ from sopel.config.core_section import (
 
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterable
+    from collections.abc import Iterable, Sequence
 
     from sopel.bot import Sopel
     from sopel.config import Config
+    from sopel.plugins.callables import PluginCallable
     from sopel.tools.identifiers import Identifier
     from sopel.trigger import PreTrigger
 
@@ -78,7 +76,7 @@ a different subclass of ``AbstractRule``.
 
 LOGGER = logging.getLogger(__name__)
 
-IGNORE_RATE_LIMIT = 1  # equivalent to sopel.plugin.NOLIMIT
+IGNORE_RATE_LIMIT = 1
 """Return value used to indicate that rate-limiting should be ignored."""
 PRIORITY_HIGH = 'high'
 """Highest rule priority."""
@@ -93,20 +91,25 @@ PRIORITY_SCALES = {
 }
 """Mapping of priority label to priority scale."""
 
-# Can be implementation-dependent
-_regex_type = type(re.compile(''))
 
-
-def _clean_rules(rules, nick, aliases):
+def _clean_rules(
+    rules: Iterable[str | re.Pattern],
+    nick: str,
+    aliases: Iterable[str],
+) -> Iterable[re.Pattern]:
     for pattern in rules:
-        if isinstance(pattern, _regex_type):
+        if isinstance(pattern, re.Pattern):
             # already a compiled regex
             yield pattern
         else:
             yield _compile_pattern(pattern, nick, aliases)
 
 
-def _compile_pattern(pattern, nick, aliases=None):
+def _compile_pattern(
+    pattern: str,
+    nick: str,
+    aliases: Iterable[str] | None = None,
+) -> re.Pattern:
     if aliases:
         nick = '(?:%s)' % '|'.join(re.escape(n) for n in (nick, *aliases))
     else:
@@ -122,8 +125,12 @@ def _compile_pattern(pattern, nick, aliases=None):
     return re.compile(pattern, flags)
 
 
-def _has_labeled_rule(registry, label, plugin=None):
-    rules = (
+def _has_labeled_rule(
+    registry: dict[str, list[AbstractRule]],
+    label: str,
+    plugin: str | None = None,
+) -> bool:
+    rules: Iterable[AbstractRule] = (
         itertools.chain(*registry.values())
         if plugin is None
         else registry.get(plugin, [])
@@ -131,8 +138,17 @@ def _has_labeled_rule(registry, label, plugin=None):
     return any(rule.get_rule_label() == label for rule in rules)
 
 
-def _has_named_rule(registry, name, follow_alias=False, plugin=None):
-    rules = registry.values() if plugin is None else [registry.get(plugin, {})]
+def _has_named_rule(
+    registry: dict[str, dict[str, AbstractNamedRule]],
+    name: str,
+    follow_alias: bool = False,
+    plugin: str | None = None,
+) -> bool:
+    rules: Iterable[dict[str, AbstractNamedRule]] = (
+        registry.values()
+        if plugin is None else
+        [registry.get(plugin, {})]
+    )
 
     has_name = any(
         (name in plugin_rules)
@@ -147,7 +163,7 @@ def _has_named_rule(registry, name, follow_alias=False, plugin=None):
     return has_name or (follow_alias and any(aliases))
 
 
-def _clean_callable_examples(examples):
+def _clean_callable_examples(examples: Iterable[dict]) -> tuple[dict, ...]:
     valid_keys = [
         # message
         'example',
@@ -196,12 +212,11 @@ class Manager:
         self._url_callbacks = tools.SopelMemoryWithDefault(list)
         self._register_lock = threading.Lock()
 
-    def unregister_plugin(self, plugin_name):
+    def unregister_plugin(self, plugin_name: str) -> int:
         """Unregister all the rules from a plugin.
 
         :param str plugin_name: the name of the plugin to remove
         :return: the number of rules unregistered for this plugin
-        :rtype: int
 
         All rules, commands, nick commands, and action commands of that plugin
         will be removed from the manager.
@@ -228,39 +243,36 @@ class Manager:
 
         return unregistered_rules
 
-    def register(self, rule):
+    def register(self, rule: Rule) -> None:
         """Register a plugin rule.
 
         :param rule: the rule to register
-        :type rule: :class:`Rule`
         """
         with self._register_lock:
             self._rules[rule.get_plugin_name()].append(rule)
         LOGGER.debug('Rule registered: %s', str(rule))
 
-    def register_command(self, command):
+    def register_command(self, command: Command) -> None:
         """Register a plugin command.
 
         :param command: the command to register
-        :type command: :class:`Command`
         """
         with self._register_lock:
             plugin = command.get_plugin_name()
             self._commands[plugin][command.name] = command
         LOGGER.debug('Command registered: %s', str(command))
 
-    def register_nick_command(self, command):
+    def register_nick_command(self, command: NickCommand) -> None:
         """Register a plugin nick command.
 
         :param command: the nick command to register
-        :type command: :class:`NickCommand`
         """
         with self._register_lock:
             plugin = command.get_plugin_name()
             self._nick_commands[plugin][command.name] = command
         LOGGER.debug('Nick Command registered: %s', str(command))
 
-    def register_action_command(self, command):
+    def register_action_command(self, command: NickCommand) -> None:
         """Register a plugin action command.
 
         :param command: the action command to register
@@ -271,7 +283,7 @@ class Manager:
             self._action_commands[plugin][command.name] = command
         LOGGER.debug('Action Command registered: %s', str(command))
 
-    def register_url_callback(self, url_callback):
+    def register_url_callback(self, url_callback: URLCallback) -> None:
         """Register a plugin URL callback.
 
         :param url_callback: the URL callback to register
@@ -282,7 +294,7 @@ class Manager:
             self._url_callbacks[plugin].append(url_callback)
         LOGGER.debug('URL callback registered: %s', str(url_callback))
 
-    def has_rule(self, label, plugin=None):
+    def has_rule(self, label: str, plugin: str | None = None) -> bool:
         """Tell if the manager knows a rule with this ``label``.
 
         :param str label: the label of the rule to look for
@@ -295,7 +307,12 @@ class Manager:
         """
         return _has_labeled_rule(self._rules, label, plugin)
 
-    def has_command(self, name, follow_alias=True, plugin=None):
+    def has_command(
+        self,
+        name: str,
+        follow_alias: bool = True,
+        plugin: str | None = None,
+    ) -> bool:
         """Tell if the manager knows a command with this ``name``.
 
         :param str label: the label of the rule to look for
@@ -322,7 +339,12 @@ class Manager:
         """
         return _has_named_rule(self._commands, name, follow_alias, plugin)
 
-    def has_nick_command(self, name, follow_alias=True, plugin=None):
+    def has_nick_command(
+        self,
+        name: str,
+        follow_alias: bool = True,
+        plugin: str | None = None,
+    ) -> bool:
         """Tell if the manager knows a nick command with this ``name``.
 
         :param str label: the label of the rule to look for
@@ -335,7 +357,12 @@ class Manager:
         """
         return _has_named_rule(self._nick_commands, name, follow_alias, plugin)
 
-    def has_action_command(self, name, follow_alias=True, plugin=None):
+    def has_action_command(
+        self,
+        name: str,
+        follow_alias: bool = True,
+        plugin: str | None = None,
+    ) -> bool:
         """Tell if the manager knows an action command with this ``name``.
 
         :param str label: the label of the rule to look for
@@ -349,7 +376,7 @@ class Manager:
         return _has_named_rule(
             self._action_commands, name, follow_alias, plugin)
 
-    def has_url_callback(self, label, plugin=None):
+    def has_url_callback(self, label: str, plugin: str | None = None) -> bool:
         """Tell if the manager knows a URL callback with this ``label``.
 
         :param str label: the label of the URL callback to look for
@@ -412,7 +439,11 @@ class Manager:
         # expose a copy of the registered generic rules
         return self._url_callbacks.items()
 
-    def get_triggered_rules(self, bot, pretrigger):
+    def get_triggered_rules(
+        self,
+        bot: Sopel,
+        pretrigger: PreTrigger,
+    ) -> tuple[tuple[AbstractRule, re.Match[str]], ...]:
         """Get triggered rules with their match objects, sorted by priorities.
 
         :param bot: Sopel instance
@@ -553,23 +584,20 @@ class AbstractRule(abc.ABC):
     def from_callable(
         cls: Type[TypedRule],
         settings: Config,
-        handler: Callable,
+        handler: PluginCallable,
     ) -> TypedRule:
         """Instantiate a rule object from ``settings`` and ``handler``.
 
         :param settings: Sopel's settings
-        :param handler: a function-based rule handler
+        :param handler: a plugin callable object
         :return: an instance of this class created from the ``handler``
 
-        Sopel's function-based rule handlers are simple callables, decorated
-        with :mod:`sopel.plugin`'s decorators to add attributes, such as rate
-        limit, threaded execution, output prefix, priority, and so on. In order
-        to load these functions as rule objects, this class method can be used;
-        it takes the bot's ``settings`` and a cleaned ``handler``.
+        .. seealso::
 
-        A "cleaned handler" is a function, decorated appropriately, and passed
-        through the filter of the
-        :func:`loader's clean<sopel.loader.clean_callable>` function.
+            The :class:`~sopel.plugins.callables.PluginCallable` class from the
+            :mod:`sopel.plugins.callables` module defines the interface and
+            properties that are expected from a plugin callable.
+
         """
 
     @property
@@ -668,7 +696,7 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match(self, bot: Sopel, pretrigger: PreTrigger) -> Iterable:
+    def match(self, bot: Sopel, pretrigger: PreTrigger) -> Iterable[re.Match]:
         """Match a pretrigger according to the rule.
 
         :param bot: Sopel instance
@@ -855,10 +883,10 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def parse(self, text: str) -> Generator:
+    def parse(self, text: str) -> Iterable[re.Match]:
         """Parse ``text`` and yield matches.
 
-        :param str text: text to parse by the rule
+        :param text: text to parse by the rule
         :return: yield a list of match object
         :rtype: generator of `re.match`__
 
@@ -898,11 +926,11 @@ class Rule(AbstractRule):
     have names and aliases.
     """
 
-    REGEX_ATTRIBUTE = 'rule'
-    LAZY_ATTRIBUTE = 'rule_lazy_loaders'
+    REGEX_ATTRIBUTE = 'rules'
+    LAZY_ATTRIBUTE = 'rules_lazy_loaders'
 
     @classmethod
-    def kwargs_from_callable(cls, handler):
+    def kwargs_from_callable(cls, handler: PluginCallable) -> dict:
         """Generate the keyword arguments to create a new instance.
 
         :param callable handler: callable used to generate keyword arguments
@@ -919,8 +947,7 @@ class Rule(AbstractRule):
         # manage examples:
         # - usages are for documentation only
         # - tests are examples that can be run and tested
-        examples = _clean_callable_examples(
-            getattr(handler, 'example', None) or tuple())
+        examples = _clean_callable_examples(handler.examples)
 
         usages = tuple(
             example
@@ -930,35 +957,35 @@ class Rule(AbstractRule):
         tests = tuple(example for example in examples if example.get('result'))
 
         return {
-            'plugin': getattr(handler, 'plugin_name', None),
-            'label': getattr(handler, 'rule_label', None),
-            'priority': getattr(handler, 'priority', PRIORITY_MEDIUM),
-            'events': getattr(handler, 'event', []),
-            'ctcp': getattr(handler, 'ctcp', []),
-            'allow_bots': getattr(handler, 'allow_bots', False),
-            'allow_echo': getattr(handler, 'echo', False),
-            'threaded': getattr(handler, 'thread', True),
-            'output_prefix': getattr(handler, 'output_prefix', ''),
-            'unblockable': getattr(handler, 'unblockable', False),
-            'rate_limit_admins': getattr(handler, 'rate_limit_admins', False),
-            'user_rate_limit': getattr(handler, 'user_rate', 0),
-            'channel_rate_limit': getattr(handler, 'channel_rate', 0),
-            'global_rate_limit': getattr(handler, 'global_rate', 0),
-            'user_rate_message': getattr(
-                handler, 'user_rate_message', None),
-            'channel_rate_message': getattr(
-                handler, 'channel_rate_message', None),
-            'global_rate_message': getattr(
-                handler, 'global_rate_message', None),
-            'default_rate_message': getattr(
-                handler, 'default_rate_message', None),
+            'plugin': handler.plugin_name,
+            'label': handler.label,
+            'priority': handler.priority,
+            'events': handler.events,
+            'ctcp': handler.ctcp,
+            'allow_bots': handler.allow_bots,
+            'allow_echo': handler.allow_echo,
+            'threaded': handler.threaded,
+            'output_prefix': handler.output_prefix or '',
+            'unblockable': handler.unblockable,
+            'rate_limit_admins': handler.rate_limit_admins,
+            'user_rate_limit': handler.user_rate or 0,
+            'channel_rate_limit': handler.channel_rate or 0,
+            'global_rate_limit': handler.global_rate or 0,
+            'user_rate_message': handler.user_rate_message,
+            'channel_rate_message': handler.channel_rate_message,
+            'global_rate_message': handler.global_rate_message,
+            'default_rate_message': handler.default_rate_message,
             'usages': usages or tuple(),
             'tests': tests,
-            'doc': inspect.getdoc(handler),
+            'doc': handler.doc,
         }
 
     @classmethod
-    def regex_from_callable(cls, settings, handler):
+    def regex_from_callable(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> tuple[re.Pattern, ...]:
         regexes = getattr(handler, cls.REGEX_ATTRIBUTE, []) or []
         if not regexes:
             raise RuntimeError(
@@ -971,7 +998,11 @@ class Rule(AbstractRule):
         ))
 
     @classmethod
-    def regex_from_callable_lazy(cls, settings, handler):
+    def regex_from_callable_lazy(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> Sequence[re.Pattern]:
         lazy_loaders = getattr(handler, cls.LAZY_ATTRIBUTE, [])
         if not lazy_loaders:
             raise RuntimeError(
@@ -987,7 +1018,11 @@ class Rule(AbstractRule):
         return regexes
 
     @classmethod
-    def from_callable(cls, settings, handler):
+    def from_callable(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> Rule:
         regexes = cls.regex_from_callable(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
         kwargs['handler'] = handler
@@ -995,7 +1030,11 @@ class Rule(AbstractRule):
         return cls(regexes, **kwargs)
 
     @classmethod
-    def from_callable_lazy(cls, settings, handler):
+    def from_callable_lazy(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> Rule:
         """Instantiate a rule object from a handler with lazy-loaded regexes.
 
         :param settings: Sopel's settings
@@ -1026,36 +1065,38 @@ class Rule(AbstractRule):
 
         return cls(regexes, **kwargs)
 
-    def __init__(self,
-                 regexes,
-                 plugin=None,
-                 label=None,
-                 priority=PRIORITY_MEDIUM,
-                 handler=None,
-                 events=None,
-                 ctcp=None,
-                 allow_bots=False,
-                 allow_echo=False,
-                 threaded=True,
-                 output_prefix=None,
-                 unblockable=False,
-                 rate_limit_admins=False,
-                 user_rate_limit=0,
-                 channel_rate_limit=0,
-                 global_rate_limit=0,
-                 user_rate_message=None,
-                 channel_rate_message=None,
-                 global_rate_message=None,
-                 default_rate_message=None,
-                 usages=None,
-                 tests=None,
-                 doc=None):
+    def __init__(
+        self,
+        regexes: Sequence[re.Pattern],
+        plugin: str | None = None,
+        label: str | None = None,
+        priority: str | None = PRIORITY_MEDIUM,
+        handler: PluginCallable | None = None,
+        events: list[str] | None = None,
+        ctcp: list[re.Pattern] | None = None,
+        allow_bots: bool = False,
+        allow_echo: bool = False,
+        threaded: bool = True,
+        output_prefix: str | None = None,
+        unblockable: bool = False,
+        rate_limit_admins: bool = False,
+        user_rate_limit: int = 0,
+        channel_rate_limit: int = 0,
+        global_rate_limit: int = 0,
+        user_rate_message: str | None = None,
+        channel_rate_message: str | None = None,
+        global_rate_message: str | None = None,
+        default_rate_message: str | None = None,
+        usages: tuple[dict, ...] | None = None,
+        tests: tuple[str, ...] | None = None,
+        doc: str | None = None,
+    ) -> None:
         # core
-        self._regexes = regexes
-        self._plugin_name = plugin
-        self._label = label
-        self._priority = priority or PRIORITY_MEDIUM
-        self._handler = handler
+        self._regexes: Sequence[re.Pattern] = regexes
+        self._plugin_name: str | None = plugin
+        self._label: str | None = label
+        self._priority: str = priority or PRIORITY_MEDIUM
+        self._handler: PluginCallable | None = handler
 
         # filters
         self._events: list[str] = events or ['PRIVMSG']
@@ -1070,13 +1111,13 @@ class Rule(AbstractRule):
         # rate limiting
         self._unblockable = bool(unblockable)
         self._rate_limit_admins = bool(rate_limit_admins)
-        self._user_rate_limit = user_rate_limit
-        self._channel_rate_limit = channel_rate_limit
-        self._global_rate_limit = global_rate_limit
-        self._user_rate_message = user_rate_message
-        self._channel_rate_message = channel_rate_message
-        self._global_rate_message = global_rate_message
-        self._default_rate_message = default_rate_message
+        self._user_rate_limit: int = user_rate_limit
+        self._channel_rate_limit: int = channel_rate_limit
+        self._global_rate_limit: int = global_rate_limit
+        self._user_rate_message: str | None = user_rate_message
+        self._channel_rate_message: str | None = channel_rate_message
+        self._global_rate_message: str | None = global_rate_message
+        self._default_rate_message: str | None = default_rate_message
 
         # metrics
         self._metrics_nick: dict[Identifier, RuleMetrics] = {}
@@ -1115,8 +1156,8 @@ class Rule(AbstractRule):
         if self._label:
             return self._label
 
-        if self._handler and self._handler.__name__:
-            return self._handler.__name__
+        if self._handler is not None:
+            return self._handler.label
 
         raise RuntimeError('Undefined rule label')
 
@@ -1178,7 +1219,7 @@ class Rule(AbstractRule):
             ) and (not is_echo_message or self.allow_echo())
         )
 
-    def parse(self, text):
+    def parse(self, text: str) -> Iterable[re.Match]:
         for regex in self._regexes:
             result = regex.match(text)
             if result:
@@ -1305,17 +1346,26 @@ class AbstractNamedRule(Rule):
 
     A named rule can be invoked by using one of its aliases, also.
     """
-    def __init__(self, name, aliases=None, **kwargs):
+    def __init__(
+        self,
+        name: str, aliases:
+        Iterable[str] | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__([], **kwargs)
-        self._name = name
-        self._aliases = tuple(aliases) if aliases is not None else tuple()
+        self._name: str = name
+        self._aliases: tuple[str, ...] = (
+            tuple(aliases)
+            if aliases is not None
+            else tuple()
+        )
 
     @property
     def name(self):
         return self._name
 
     @property
-    def aliases(self):
+    def aliases(self) -> tuple[str, ...]:
         return self._aliases
 
     def get_rule_label(self):
@@ -1383,7 +1433,7 @@ class Command(AbstractNamedRule):
     def from_callable(cls, settings, handler):
         prefix = settings.core.prefix
         help_prefix = settings.core.help_prefix
-        commands = getattr(handler, 'commands', [])
+        commands = handler.commands
         if not commands:
             raise RuntimeError('Invalid command callable: %s' % handler)
 
@@ -1506,10 +1556,14 @@ class NickCommand(AbstractNamedRule):
     """
 
     @classmethod
-    def from_callable(cls, settings, handler):
+    def from_callable(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> NickCommand:
         nick = settings.core.nick
         nick_aliases = tuple(settings.core.alias_nicks)
-        commands = getattr(handler, 'nickname_commands', [])
+        commands = handler.nickname_commands
         if not commands:
             raise RuntimeError('Invalid nick command callable: %s' % handler)
 
@@ -1623,8 +1677,12 @@ class ActionCommand(AbstractNamedRule):
     """
 
     @classmethod
-    def from_callable(cls, settings, handler):
-        commands = getattr(handler, 'action_commands', [])
+    def from_callable(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> ActionCommand:
+        commands = handler.action_commands
         if not commands:
             raise RuntimeError('Invalid action command callable: %s' % handler)
 
@@ -1787,40 +1845,27 @@ class URLCallback(Rule):
     LAZY_ATTRIBUTE = 'url_lazy_loaders'
 
     @classmethod
-    def from_callable(cls, settings, handler):
+    def from_callable(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> URLCallback:
         regexes = cls.regex_from_callable(settings, handler)
         kwargs = cls.kwargs_from_callable(handler)
 
-        # do we need to handle the match parameter?
-        # old style URL callback: callable(bot, trigger, match)
-        # new style: callable(bot, trigger)
-        match_count = 3
-        if inspect.ismethod(handler):
-            # account for the 'self' parameter when the handler is a method
-            match_count = 4
-
-        execute_handler = handler
-        argspec = inspect.getfullargspec(handler)
-
-        if len(argspec.args) >= match_count:
-            @functools.wraps(handler)
-            def handler_match_wrapper(bot, trigger):
-                return handler(bot, trigger, match=trigger)
-
-            # don't directly `def execute_handler` to override it;
-            # doing incurs the wrath of pyflakes in the form of
-            # "F811: Redefinition of unused name"
-            execute_handler = handler_match_wrapper
-
         kwargs.update({
-            'handler': execute_handler,
+            'handler': handler,
             'schemes': settings.core.auto_url_schemes,
         })
 
         return cls(regexes, **kwargs)
 
     @classmethod
-    def from_callable_lazy(cls, settings, handler):
+    def from_callable_lazy(
+        cls,
+        settings: Config,
+        handler: PluginCallable,
+    ) -> URLCallback:
         """Instantiate a rule object from a handler with lazy-loaded regexes.
 
         :param settings: Sopel's settings
@@ -1853,21 +1898,21 @@ class URLCallback(Rule):
 
         return cls(regexes, **kwargs)
 
-    def __init__(self,
-                 regexes,
-                 schemes=None,
-                 **kwargs):
+    def __init__(
+        self,
+        regexes: Sequence[re.Pattern],
+        schemes: Iterable[str] | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(regexes, **kwargs)
         # prevent mutability of registered schemes
-        self._schemes = tuple(schemes or URL_DEFAULT_SCHEMES)
+        self._schemes: tuple[str, ...] = tuple(schemes or URL_DEFAULT_SCHEMES)
 
-    def match(self, bot, pretrigger):
+    def match(self, bot: Sopel, pretrigger: PreTrigger) -> Iterable[re.Match]:
         """Match URL(s) in a pretrigger according to the rule.
 
         :param bot: Sopel instance
-        :type bot: :class:`sopel.bot.Sopel`
         :param pretrigger: line to match
-        :type pretrigger: :class:`sopel.trigger.PreTrigger`
 
         This method looks for :attr:`URLs in the IRC line
         <sopel.trigger.PreTrigger.urls>`, and for each it yields
@@ -1895,7 +1940,7 @@ class URLCallback(Rule):
 
             yield from self.parse(url)
 
-    def parse(self, text):
+    def parse(self, text: str) -> Iterable[re.Match]:
         for regex in self._regexes:
             result = regex.search(text)
             if result:

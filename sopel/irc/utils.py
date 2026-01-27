@@ -60,7 +60,7 @@ class CapReq:
 
     .. deprecated:: 8.0
 
-        This class is deprecated. See :class:`sopel.plugin.capability` instead.
+        This class is deprecated. See :func:`sopel.plugin.capability` instead.
 
         This will be removed in Sopel 9.
 

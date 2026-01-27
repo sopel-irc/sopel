@@ -7,7 +7,7 @@ import typing
 
 import pytest
 
-from sopel import bot, loader, plugin, plugins, trigger
+from sopel import bot, plugin, plugins, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 from sopel.tools import Identifier, SopelMemory, target
@@ -48,6 +48,12 @@ def nick_command_info(bot, trigger):
 
 @plugin.action_commands("tell")
 def action_command_tell(bot, trigger):
+    pass
+
+
+@plugin.url('https://example.com/')
+@plugin.rule('example website')
+def mixed_rule_url(bot, trigger):
     pass
 
 
@@ -369,6 +375,12 @@ def test_register_plugin(tmpconfig, mockplugin):
     assert sopel.rules.has_url_callback('example_url')
     assert sopel.rules.has_url_callback('example_url', plugin='mockplugin')
 
+    # check the mixed rule/url callable
+    assert sopel.rules.has_rule('mixed_rule_url')
+    assert sopel.rules.has_rule('mixed_rule_url', plugin='mockplugin')
+    assert sopel.rules.has_url_callback('mixed_rule_url')
+    assert sopel.rules.has_url_callback('mixed_rule_url', plugin='mockplugin')
+
 
 def test_register_unregister_plugin(tmpconfig, mockplugin):
     sopel = bot.Sopel(tmpconfig, daemon=False)
@@ -514,7 +526,7 @@ def test_register_callables(tmpconfig):
     # clean callables and set plugin name by hand
     # since the loader and plugin handlers are excluded here
     for handler in callables:
-        loader.clean_callable(handler, tmpconfig)
+        handler.setup(tmpconfig)
         handler.plugin_name = 'testplugin'
 
     # register callables
@@ -655,7 +667,7 @@ def test_register_urls(tmpconfig):
     # clean callables and set plugin name by hand
     # since the loader and plugin handlers are excluded here
     for handler in callables:
-        loader.clean_callable(handler, tmpconfig)
+        handler.setup(tmpconfig)
         handler.plugin_name = 'testplugin'
 
     # register callables
@@ -676,6 +688,71 @@ def test_register_urls(tmpconfig):
     matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
     assert len(matches) == 1
     assert matches[0][0].get_rule_label() == 'handle_urls_http'
+
+
+def test_register_mixed_callable_url(tmpconfig: Config):
+    sopel = bot.Sopel(tmpconfig)
+
+    @plugin.url(
+        r'https://reddit.com/(?P<prefix>r|u)/(?P<id>[a-zA-Z0-9-_]+)/?$'
+    )
+    @plugin.find(r'(?<!\S)/?(?P<prefix>r|u)/(?P<id>[a-zA-Z0-9-_]+)\b')
+    @plugin.label('reddit_board_url')
+    def handler(bot: bot.SopelWrapper, trigger: trigger.Trigger) -> None:
+        return {
+            'prefix': trigger.group('prefix'),
+            'id': trigger.group('id'),
+        }
+
+    # prepare callables to be registered
+    # clean callables and set plugin name by hand
+    # since the loader and plugin handlers are excluded here
+    handler.setup(tmpconfig)
+    handler.plugin_name = 'testplugin'
+
+    # register callables
+    sopel.register_callables([handler])
+    sopel.register_urls([handler])
+
+    # trigger URL callback version
+    line = ':Foo!foo@example.com PRIVMSG #sopel :https://reddit.com/r/python'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1, 'Only one of the callable must match'
+
+    callable, match = matches[0]
+    wrap_trigger = trigger.Trigger(tmpconfig, pretrigger, match)
+    wrapper = bot.SopelWrapper(sopel, wrap_trigger)
+
+    assert callable.get_rule_label() == 'reddit_board_url'
+    assert isinstance(matches[0][0], rules.URLCallback), (
+        'Only the URL callback should match when using the full URL'
+    )
+    assert callable.execute(wrapper, wrap_trigger) == {
+        'prefix': 'r',
+        'id': 'python',
+    }
+
+    # trigger rule version
+    line = ':Foo!foo@example.com PRIVMSG #sopel :r/python'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1, 'Only one of the callable must match'
+
+    callable, match = matches[0]
+    wrap_trigger = trigger.Trigger(tmpconfig, pretrigger, match)
+    wrapper = bot.SopelWrapper(sopel, wrap_trigger)
+
+    assert callable.get_rule_label() == 'reddit_board_url'
+    assert isinstance(callable, rules.FindRule), (
+        'Only the find rule should match when using the r/board pattern'
+    )
+    assert callable.execute(wrapper, wrap_trigger) == {
+        'prefix': 'r',
+        'id': 'python',
+    }
 
 
 # -----------------------------------------------------------------------------
@@ -1796,6 +1873,7 @@ def test_ignore_replay_servertime(mockbot):
     def ping(bot, trigger):
         bot.say(trigger.nick + "!")
 
+    ping.setup(mockbot.settings)
     ping.plugin_name = "testplugin"
     mockbot.register_callables([ping])
 

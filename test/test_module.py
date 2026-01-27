@@ -196,7 +196,7 @@ def test_commands():
     def mock(bot, trigger, match):
         return True
     assert mock.commands == ['sopel']
-    assert not hasattr(mock, 'rule')
+    assert not mock.rules
 
 
 def test_commands_args():
@@ -204,7 +204,7 @@ def test_commands_args():
     def mock(bot, trigger, match):
         return True
     assert mock.commands == ['sopel', 'bot']
-    assert not hasattr(mock, 'rule')
+    assert not mock.rules
 
 
 def test_commands_multiple():
@@ -214,7 +214,7 @@ def test_commands_multiple():
     def mock(bot, trigger, match):
         return True
     assert mock.commands == ['robot', 'bot', 'sopel']
-    assert not hasattr(mock, 'rule')
+    assert not mock.rules
 
 
 def test_nickname_commands():
@@ -222,7 +222,7 @@ def test_nickname_commands():
     def mock(bot, trigger, match):
         return True
     assert mock.nickname_commands == ['sopel']
-    assert not hasattr(mock, 'rule')
+    assert not mock.rules
 
 
 def test_nickname_commands_args():
@@ -230,7 +230,7 @@ def test_nickname_commands_args():
     def mock(bot, trigger, match):
         return True
     assert mock.nickname_commands == ['sopel', 'bot']
-    assert not hasattr(mock, 'rule')
+    assert not mock.rules
 
 
 def test_nickname_commands_multiple():
@@ -240,7 +240,7 @@ def test_nickname_commands_multiple():
     def mock(bot, trigger, match):
         return True
     assert mock.nickname_commands == ['robot', 'bot', 'sopel']
-    assert not hasattr(mock, 'rule')
+    assert not mock.rules
 
 
 def test_action_commands():
@@ -248,8 +248,8 @@ def test_action_commands():
     def mock(bot, trigger, match):
         return True
     assert mock.action_commands == ['sopel']
-    assert not hasattr(mock, 'ctcp')
-    assert not hasattr(mock, 'rule')
+    assert not mock.ctcp
+    assert not mock.rules
 
 
 def test_action_commands_args():
@@ -257,8 +257,8 @@ def test_action_commands_args():
     def mock(bot, trigger, match):
         return True
     assert mock.action_commands == ['sopel', 'bot']
-    assert not hasattr(mock, 'ctcp')
-    assert not hasattr(mock, 'rule')
+    assert not mock.ctcp
+    assert not mock.rules
 
 
 def test_action_commands_multiple():
@@ -268,8 +268,8 @@ def test_action_commands_multiple():
     def mock(bot, trigger, match):
         return True
     assert mock.action_commands == ['robot', 'bot', 'sopel']
-    assert not hasattr(mock, 'ctcp')
-    assert not hasattr(mock, 'rule')
+    assert not mock.ctcp
+    assert not mock.rules
 
 
 def test_all_commands():
@@ -282,8 +282,8 @@ def test_all_commands():
     assert mock.commands == ['sopel']
     assert mock.action_commands == ['me_sopel']
     assert mock.nickname_commands == ['name_sopel']
-    assert not hasattr(mock, 'ctcp')
-    assert not hasattr(mock, 'rule')
+    assert not mock.ctcp
+    assert not mock.rules
 
 
 def test_priority():
