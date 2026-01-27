@@ -65,6 +65,7 @@ Core changes
 API changes
 -----------
 
+* Deprecated `sopel_modules.*` namespace plugins [[#2699][]]
 * Added optional `include_admins` argument to rate-limit decorators [[#2652][]]
   * This is `False` by default to match existing behavior. Set it to `True` if
     your command/handler function's rate limit should also apply to the bot's
@@ -126,6 +127,7 @@ Housekeeping changes
 [#2695]: https://github.com/sopel-irc/sopel/pull/2695
 [#2697]: https://github.com/sopel-irc/sopel/pull/2697
 [#2698]: https://github.com/sopel-irc/sopel/pull/2698
+[#2699]: https://github.com/sopel-irc/sopel/pull/2699
 [#2701]: https://github.com/sopel-irc/sopel/pull/2701
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
