@@ -125,6 +125,7 @@ def find_sopel_modules_plugins():
                 ),
                 version='8.1',
                 removed_in='9.0',
+                stack_output=False,
                 func=lambda *args: ...,
             )()
 
