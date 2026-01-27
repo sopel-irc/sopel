@@ -58,6 +58,9 @@ Core changes
 * Correct handling of empty CHANTYPES feature token [[#2701][]]
 * Correct default CHANTYPES when feature token is not advertised [[#2701][]]
 * Restore debug logging of rate-limit checks and restrictions [[#2713][]]
+* Refactored plugin callables to a class-based system [[#2669][]]
+* Moved capability-handling types into `sopel.plugins.callables` [[#2669[]]]
+* Deprecated internal submodule `sopel.loader` [[#2669][]]
 
 API changes
 -----------
@@ -69,6 +72,8 @@ API changes
   * Available for `@plugin.rate`, `@plugin.rate_user`, `@plugin.rate_channel`,
     and `@plugin.rate_global`.
 * Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
+* Added deprecation warning for `match` parameter formerly used for `@url`
+  handlers [[#2669][]]
 * Changed `tools.web.search_urls()` to be stricter about ensuring there's a word
   boundary before what looks like a URL [[#2697][]]
 * Added `stack_output` optional parameter to `lifecycle.deprecated` [[#2712][]]
@@ -106,6 +111,7 @@ Housekeeping changes
 [#2637]: https://github.com/sopel-irc/sopel/pull/2637
 [#2641]: https://github.com/sopel-irc/sopel/pull/2641
 [#2652]: https://github.com/sopel-irc/sopel/pull/2652
+[#2669]: https://github.com/sopel-irc/sopel/pull/2669
 [#2670]: https://github.com/sopel-irc/sopel/pull/2670
 [#2673]: https://github.com/sopel-irc/sopel/pull/2673
 [#2674]: https://github.com/sopel-irc/sopel/pull/2674
