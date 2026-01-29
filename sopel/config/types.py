@@ -11,7 +11,7 @@ contains a list of values, they can create a subclass of
 
     >>> from sopel.config import types
     >>> class SpamSection(types.StaticSection):
-    ...     eggs = ListAttribute('eggs')
+    ...     eggs = types.ListAttribute('eggs')
     ...
 
 To use that section for the configuration file at ``/etc/sopel/default.cfg``,
