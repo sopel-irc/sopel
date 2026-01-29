@@ -112,7 +112,7 @@ def deprecated(
 
         Removed "magic" determination of logger name to use. Deprecation
         warnings triggered by code outside of ``sopel.*`` now log to the
-        ``sopel.plugins`` logger.
+        ``sopel.thirdparty`` logger.
     """
     if not any([reason, version, removed_in, warning_in, func]):
         # common usage: @deprecated()
@@ -169,8 +169,8 @@ def deprecated(
                     # core, or plugin from builtins
                     logger = logging.getLogger(module_name)
                 else:
-                    # probably a plugin; assume generic "plugins" context
-                    logger = logging.getLogger('sopel.plugins')
+                    # probably a plugin; assume generic external-code context
+                    logger = logging.getLogger('sopel.thirdparty')
             else:
                 # couldn't determine the module/plugin name, but get *something*
                 # to make sure the log line is still output
