@@ -239,7 +239,7 @@ def get_logger(plugin_name):
     is equivalent to this::
 
         import logging
-        LOGGER = logging.getLogger('sopel.externals.my_custom_plugin')
+        LOGGER = logging.getLogger('sopel.thirdparty.my_custom_plugin')
 
     Internally, Sopel configures logging for the ``sopel`` namespace, so
     external plugins can't benefit from it with ``logging.getLogger(__name__)``
@@ -247,8 +247,11 @@ def get_logger(plugin_name):
     ``plugin_name`` with a prefix inside this namespace.
 
     .. versionadded:: 7.0
+    .. versionchanged:: 8.1
+        Moved plugin loggers from ``sopel.externals`` namespace to
+        ``sopel.thirdparty``, aligning with :func:`sopel.lifecycle.deprecated`.
     """
-    return logging.getLogger('sopel.externals.%s' % plugin_name)
+    return logging.getLogger('sopel.thirdparty.%s' % plugin_name)
 
 
 def chain_loaders(*lazy_loaders):

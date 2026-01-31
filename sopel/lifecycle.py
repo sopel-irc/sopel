@@ -110,6 +110,9 @@ def deprecated(
     .. versionchanged:: 8.1
         Added the ``stack_output`` argument.
 
+        Removed "magic" determination of logger name to use. Deprecation
+        warnings triggered by code outside of ``sopel.*`` now log to the
+        ``sopel.thirdparty`` logger.
     """
     if not any([reason, version, removed_in, warning_in, func]):
         # common usage: @deprecated()
@@ -163,22 +166,14 @@ def deprecated(
                 module_name = mod.__name__
             if module_name:
                 if module_name.startswith('sopel.'):
-                    # core, or core plugin
+                    # core, or plugin from builtins
                     logger = logging.getLogger(module_name)
                 else:
-                    # probably a plugin; try to handle most cases sanely
-                    if module_name.startswith('sopel_modules.'):
-                        # namespace package plugins have a prefix, obviously
-                        # they will use Sopel's namespace; other won't
-                        module_name = module_name.replace(
-                            'sopel_modules.',
-                            'sopel.externals.',
-                            1,
-                        )
-                    logger = logging.getLogger(module_name)
+                    # probably a plugin; assume generic external-code context
+                    logger = logging.getLogger('sopel.thirdparty')
             else:
-                # don't know the module/plugin name, but we want to make sure
-                # the log line is still output, so just get *something*
+                # couldn't determine the module/plugin name, but get *something*
+                # to make sure the log line is still output
                 logger = logging.getLogger(__name__)
 
             # Format only the desired stack frame, if enabled
