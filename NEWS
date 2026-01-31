@@ -88,6 +88,7 @@ Housekeeping changes
 * Start testing on Python 3.13, and fix deprecation warnings [[#2628][]]
 * Start testing on Python 3.14 [[#2715][]]
 * Replace `bot.search_url_callbacks()` method usage in core [[#2635][]]
+* Switch from `bot.config` to `bot.settings` in core code and docs [[#2700][]]
 * Satisfy type checker in `EntryPointPlugin` version handler [[#2670][]]
 * Switch to improved tooling for import checks [[#2681][], [#2692][]]
 * Streamlining tool configs and moving everything into `pyproject.toml`
@@ -128,6 +129,7 @@ Housekeeping changes
 [#2697]: https://github.com/sopel-irc/sopel/pull/2697
 [#2698]: https://github.com/sopel-irc/sopel/pull/2698
 [#2699]: https://github.com/sopel-irc/sopel/pull/2699
+[#2700]: https://github.com/sopel-irc/sopel/pull/2700
 [#2701]: https://github.com/sopel-irc/sopel/pull/2701
 [#2705]: https://github.com/sopel-irc/sopel/pull/2705
 [#2706]: https://github.com/sopel-irc/sopel/pull/2706
