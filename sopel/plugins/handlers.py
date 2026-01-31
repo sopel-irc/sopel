@@ -504,7 +504,7 @@ class PyFilePlugin(PyModulePlugin):
         self.filename = filename
         self.path = filename
         self.module_spec = spec
-        self.file_mtime: float | None = None
+        self.file_mtime: float = os.path.getmtime(self.filename)
 
         super().__init__(name)
 
@@ -551,7 +551,7 @@ class PyFilePlugin(PyModulePlugin):
         method uses the file's last modification date as the version string.
         """
         version = super().get_version()
-        if version is None and self.file_mtime is not None:
+        if version is None:
             # use file modification date as version string
             dt = datetime.fromtimestamp(self.file_mtime)
             version = dt.strftime("%Y.%m.%d")
