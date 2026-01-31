@@ -552,7 +552,7 @@ class PyFilePlugin(PyModulePlugin):
         """
         version = super().get_version()
         if version is None and self.file_mtime is not None:
-            # try to get version from file metadata
+            # use file modification date as version string
             dt = datetime.fromtimestamp(self.file_mtime)
             version = dt.strftime("%Y.%m.%d")
 
