@@ -69,7 +69,7 @@ def handle_isup(bot, trigger, secure=True):
     except requests.exceptions.SSLError:
         bot.say(
             '{} looks down to me (SSL error). Try using `{}isupinsecure`.'
-            .format(site, bot.config.core.help_prefix))
+            .format(site, bot.settings.core.help_prefix))
     except requests.HTTPError:
         bot.say(
             '{} looks down to me (HTTP {} "{}").'

@@ -5,24 +5,47 @@ any number of subclasses of :class:`BaseValidated` (a few common ones of which
 are available in this module) are assigned as attributes. These descriptors
 define how to read values from, and write values to, the config file.
 
-As an example, if one wanted to define the ``[spam]`` section as having an
-``eggs`` option, which contains a list of values, they could do this:
+As an example, if one wanted to create a section with an ``eggs`` option, which
+contains a list of values, they can create a subclass of
+:class:`StaticSection`::
 
-    >>> class SpamSection(StaticSection):
-    ...     eggs = ListAttribute('eggs')
+    >>> from sopel.config import types
+    >>> class SpamSection(types.StaticSection):
+    ...     eggs = types.ListAttribute('eggs')
     ...
-    >>> SpamSection(config, 'spam')
-    >>> print(config.spam.eggs)
+
+To use that section for the configuration file at ``/etc/sopel/default.cfg``,
+they must define the ``[spam]`` section on the settings with
+:meth:`~sopel.config.Config.define_section`::
+
+    >>> from sopel import config
+    >>> settings = config.Config('/etc/sopel/default.cfg')
+    >>> settings.define_section('spam', SpamSection)
+
+Without that, Sopel's configuration won't recognize the type of ``spam.eggs``
+properly, which can lead to invalid values.
+
+.. note::
+
+    The :meth:`~sopel.config.Config.define_section` method is usually used in
+    the plugin's ``setup`` (via the provided ``bot`` parameter's
+    :attr:`~sopel.bot.Sopel.settings` attribute) and ``configure`` (via the
+    provided ``config`` parameter) functions. You can read more about the
+    :ref:`ways to configure your plugin <plugin-anatomy-config>` in the plugin
+    section of the documentation.
+
+Then, it becomes possible to inspect and play with the section directly::
+
+    >>> print(settings.spam.eggs)
     []
-    >>> config.spam.eggs = ['goose', 'turkey', 'duck', 'chicken', 'quail']
-    >>> print(config.spam.eggs)
+    >>> settings.spam.eggs = ['goose', 'turkey', 'duck', 'chicken', 'quail']
+    >>> print(settings.spam.eggs)
     ['goose', 'turkey', 'duck', 'chicken', 'quail']
-    >>> config.spam.eggs = 'herring'
+    >>> settings.spam.eggs = 'herring'
     Traceback (most recent call last):
         ...
     ValueError: ListAttribute value must be a list.
 """
-
 from __future__ import annotations
 
 import abc

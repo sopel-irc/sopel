@@ -82,7 +82,7 @@ class AbstractBot(abc.ABC):
         """IRC Connection Backend."""
         self._connection_registered = threading.Event()
         """Flag stating whether the IRC connection is registered yet."""
-        self.settings = settings
+        self.settings: Config = settings
         """The bot's settings.
 
         .. versionadded:: 7.0

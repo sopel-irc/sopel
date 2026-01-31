@@ -390,7 +390,10 @@ class PyModulePlugin(AbstractPluginHandler):
             bot.cap_requests.register(self.name, cap_request)
 
         # plugin callables go through ``bot.add_plugin``
-        rules, jobs, _, urls = callables.clean_module(self.module, bot.config)
+        rules, jobs, _, urls = callables.clean_module(
+            self.module,
+            bot.settings,
+        )
         for part in itertools.chain(rules, jobs, urls):
             # annotate all plugin callables with a `plugin_name` attribute
             # to make per-channel config work; see #1839

@@ -221,7 +221,7 @@ def test_execute_perform_send_commands(mockbot):
         'OPER oper_username oper_password',
     ]
 
-    mockbot.config.core.commands_on_connect = commands
+    mockbot.settings.core.commands_on_connect = commands
     # For testing, pretend connection already happened
     mockbot.backend.connected = True
     mockbot._connection_registered.set()
@@ -233,9 +233,9 @@ def test_execute_perform_send_commands(mockbot):
 def test_execute_perform_replaces_nickname(mockbot):
     """Confirm that bot replaces ``$nickname`` placeholder in commands."""
     command = 'MODE $nickname +Xxw'
-    sent_command = 'MODE {} +Xxw'.format(mockbot.config.core.nick)
+    sent_command = 'MODE {} +Xxw'.format(mockbot.settings.core.nick)
 
-    mockbot.config.core.commands_on_connect = [command, ]
+    mockbot.settings.core.commands_on_connect = [command, ]
     # For testing, pretend connection already happened
     mockbot.backend.connected = True
     mockbot._connection_registered.set()
@@ -408,7 +408,7 @@ def test_handle_isupport_chantypes_empty(mockbot):
 
 @pytest.mark.parametrize('modes', [None, '', 'Rw'])
 def test_handle_isupport_bot_mode(mockbot, modes):
-    mockbot.config.core.modes = modes
+    mockbot.settings.core.modes = modes
 
     mockbot.on_message(
         ':irc.example.com 005 Sopel '
@@ -437,7 +437,7 @@ def test_handle_isupport_bot_mode(mockbot, modes):
 
 @pytest.mark.parametrize('modes', ['B', 'RBw'])
 def test_handle_isupport_bot_mode_override(mockbot, modes):
-    mockbot.config.core.modes = modes
+    mockbot.settings.core.modes = modes
 
     mockbot.on_message(
         ':irc.example.com 005 Sopel '

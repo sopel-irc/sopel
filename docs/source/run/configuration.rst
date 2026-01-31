@@ -176,7 +176,7 @@ nick-based matching, but the IRC server must support accounts.
     The :attr:`~CoreSection.owner` setting should **always** contain the bot
     owner's nickname, even when using :attr:`~CoreSection.owner_account`. Both
     Sopel and plugins may send important messages or notices to the owner
-    using ``bot.config.core.owner`` as the recipient.
+    using ``bot.settings.core.owner`` as the recipient.
 
 
 IRC Server
