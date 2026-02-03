@@ -112,9 +112,6 @@ __all__ = [
 ]
 
 
-LOGGER = logging.getLogger(__name__)
-
-
 NOLIMIT = IGNORE_RATE_LIMIT
 """Return value for ``callable``\\s, which suppresses rate limiting.
 
