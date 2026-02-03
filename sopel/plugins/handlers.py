@@ -44,6 +44,7 @@ away from the rest of the application.
 from __future__ import annotations
 
 import abc
+from datetime import datetime
 import importlib
 import importlib.util
 import inspect
@@ -503,6 +504,7 @@ class PyFilePlugin(PyModulePlugin):
         self.filename = filename
         self.path = filename
         self.module_spec = spec
+        self.file_mtime: float = os.path.getmtime(self.filename)
 
         super().__init__(name)
 
@@ -540,8 +542,26 @@ class PyFilePlugin(PyModulePlugin):
         })
         return data
 
+    def get_version(self) -> str | None:
+        """Retrieve the plugin's version.
+
+        :return: the plugin's version string
+
+        If the plugin module doesn't have a ``__version__`` attribute, this
+        method uses the file's last modification date as the version string.
+        """
+        version = super().get_version()
+        if version is None:
+            # use file modification date as version string
+            dt = datetime.fromtimestamp(self.file_mtime)
+            version = dt.strftime("%Y.%m.%d")
+
+        return version
+
     def load(self) -> None:
         self._module = self._load()
+        # update cached file modification time after successful loading
+        self.file_mtime = os.path.getmtime(self.filename)
 
     def reload(self) -> None:
         """Reload the plugin.
@@ -551,6 +571,8 @@ class PyFilePlugin(PyModulePlugin):
         module might not be available through ``sys.path``.
         """
         self._module = self._load()
+        # update cached file modification time after successful reload
+        self.file_mtime = os.path.getmtime(self.filename)
 
 
 class EntryPointPlugin(PyModulePlugin):
