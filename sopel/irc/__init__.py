@@ -424,6 +424,7 @@ class AbstractBot(abc.ABC):
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
 
+        self.log_raw(message, '<<')
         self.last_raw_line = message
 
         pretrigger = trigger.PreTrigger(
