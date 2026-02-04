@@ -1,6 +1,8 @@
 """Tests for core ``sopel.irc``"""
 from __future__ import annotations
 
+import logging
+
 import pytest
 
 from sopel.tests import rawlist
@@ -505,3 +507,18 @@ def test_say_antiloop_deactivated(bot):
     assert bot.backend.message_sent == rawlist(*expected), (
         'When antiloop is deactivated, messages must not be replaced.'
     )
+
+
+def test_log_raw(configfactory, botfactory, ircfactory, caplog):
+    log_raw_config = TMP_CONFIG + "\nlog_raw = on\n"
+    config = configfactory('conf.ini', log_raw_config)
+    bot = botfactory.preloaded(config)
+    irc = ircfactory(bot)
+    assert bot.settings.core.log_raw is True
+
+    with caplog.at_level(logging.DEBUG, logger='sopel.raw'):
+        bot.write(('WHOIS', 'datboi'))
+        irc.message(':irc.example.com 317 Sopel dgw 255 586396800 :seconds idle, signon time\r\n')
+    assert len(caplog.messages) == 2
+    assert caplog.messages[0] == ">>\t'WHOIS datboi\\r\\n'"
+    assert caplog.messages[1] == "<<\t':irc.example.com 317 Sopel dgw 255 586396800 :seconds idle, signon time\\r\\n'"

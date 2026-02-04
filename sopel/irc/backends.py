@@ -337,7 +337,6 @@ class AsyncioBackend(AbstractIRCBackend):
 
             # use bot's callbacks
             try:
-                self.bot.log_raw(data, '<<')
                 self.bot.on_message(data)
             except Exception:
                 LOGGER.exception('Unexpected exception on message handling.')
