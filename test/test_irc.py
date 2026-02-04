@@ -518,7 +518,7 @@ def test_log_raw(configfactory, botfactory, ircfactory, caplog):
 
     with caplog.at_level(logging.DEBUG, logger='sopel.raw'):
         bot.write(('WHOIS', 'datboi'))
-        irc.message(':irc.example.com 317 Sopel dgw 255 586396800 :seconds idle, signon time')
+        irc.message(':irc.example.com 317 Sopel dgw 255 586396800 :seconds idle, signon time\r\n')
     assert len(caplog.messages) == 2
     assert caplog.messages[0] == ">>\t'WHOIS datboi\\r\\n'"
-    assert caplog.messages[1] == "<<\t':irc.example.com 317 Sopel dgw 255 586396800 :seconds idle, signon time'"
+    assert caplog.messages[1] == "<<\t':irc.example.com 317 Sopel dgw 255 586396800 :seconds idle, signon time\\r\\n'"
