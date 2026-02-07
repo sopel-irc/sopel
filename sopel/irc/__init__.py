@@ -816,6 +816,11 @@ class AbstractBot(abc.ABC):
         if self.backend is None:
             raise RuntimeError(ERR_BACKEND_NOT_INITIALIZED)
 
+        # The type hints say we should never get `None`, but edge cases exist.
+        # Empty strings are also not useful.
+        if not recipient:
+            raise ValueError('Message recipient cannot be empty.')
+
         excess = ''
 
         if not isinstance(text, str):

@@ -1481,6 +1481,11 @@ class SopelWrapper:
         if destination is None:
             destination = self.default_destination
 
+        # because `self.default_destination` is allowed to return None,
+        # and also a defense in case we are passed the empty string
+        if not destination:
+            raise ValueError('Message destination cannot be empty.')
+
         self._bot.say(
             self._out_pfx + message,
             destination,
@@ -1506,6 +1511,11 @@ class SopelWrapper:
         if destination is None:
             destination = self.default_destination
 
+        # because `self.default_destination` is allowed to return None,
+        # and also a defense in case we are passed the empty string
+        if not destination:
+            raise ValueError('Message destination cannot be empty.')
+
         self._bot.action(message, destination)
 
     def notice(self, message, destination=None):
@@ -1524,6 +1534,11 @@ class SopelWrapper:
         """
         if destination is None:
             destination = self.default_destination
+
+        # because `self.default_destination` is allowed to return None,
+        # and also a defense in case we are passed the empty string
+        if not destination:
+            raise ValueError('Message destination cannot be empty.')
 
         self._bot.notice(self._out_pfx + message, destination)
 
@@ -1549,8 +1564,17 @@ class SopelWrapper:
         if destination is None:
             destination = self.default_destination
 
+        # because `self.default_destination` is allowed to return None,
+        # and also a defense in case we are passed the empty string
+        if not destination:
+            raise ValueError('Message destination cannot be empty.')
+
         if reply_to is None:
             reply_to = self._trigger.nick
+
+        # because the trigger might not have a nick (e.g. it's a raw numeric)
+        if not reply_to:
+            raise ValueError('Reply target cannot be empty.')
 
         self._bot.reply(message, destination, reply_to, notice)
 
