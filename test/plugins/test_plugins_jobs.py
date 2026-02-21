@@ -33,13 +33,65 @@ def mockconfig(configfactory: ConfigFactory) -> Config:
     return configfactory('config.cfg', TMP_CONFIG)
 
 
+@pytest.fixture
+def mockbot(mockconfig: Config, botfactory: BotFactory) -> Sopel:
+    return botfactory(mockconfig)
+
+
 @plugin.interval(5)
 def mock_job(bot: Sopel) -> None:
     pass
 
 
-def test_jobscheduler_stop(mockconfig: Config, botfactory: BotFactory) -> None:
-    mockbot = botfactory(mockconfig)
+def test_jobscheduler_register(mockbot: Sopel) -> None:
+    job = jobs.Job.from_callable(mockbot.settings, mock_job)
+    scheduler = jobs.Scheduler(mockbot)
+    assert len(scheduler.jobs) == 0, 'Sanity check failed'
+
+    scheduler.register(job)
+    expected_key = job.get_plugin_name()
+
+    assert expected_key in scheduler.jobs, (
+        'Job must be registered by its plugin'
+    )
+    assert job in scheduler.jobs[expected_key], 'Job must be registered'
+    assert len(scheduler.jobs[expected_key]) == 1, (
+        'There must be one and only one registered job'
+    )
+
+
+def test_jobscheduler_unregister(mockbot: Sopel) -> None:
+    job = jobs.Job.from_callable(mockbot.settings, mock_job)
+    plugin_name = job.get_plugin_name()
+
+    scheduler = jobs.Scheduler(mockbot)
+    assert len(scheduler.jobs) == 0, 'Sanity check failed'
+    assert scheduler.unregister_plugin(plugin_name) == 0, (
+        'No job registered to unregister for that plugin'
+    )
+
+    scheduler.register(job)
+    assert len(scheduler.jobs) == 1, 'Sanity check failed'
+    assert scheduler.unregister_plugin(plugin_name) == 1, (
+        'There was one registered job to unregister'
+    )
+    assert len(scheduler.jobs) == 0, 'There should not be any jobs left.'
+    assert plugin_name not in scheduler.jobs, (
+        'Unregistered plugin must be unknown'
+    )
+
+
+def test_jobscheduler_clear_job(mockbot: Sopel) -> None:
+    job = jobs.Job.from_callable(mockbot.settings, mock_job)
+    scheduler = jobs.Scheduler(mockbot)
+    scheduler.register(job)
+    assert len(scheduler.jobs) == 1, 'Sanity check failed'
+
+    scheduler.clear_jobs()
+    assert len(scheduler.jobs) == 0, 'Job storage must be cleared by now'
+
+
+def test_jobscheduler_stop(mockbot: Sopel) -> None:
     scheduler = jobs.Scheduler(mockbot)
     assert not scheduler.stopping.is_set(), 'Stopping must not be set at init'
 

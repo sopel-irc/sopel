@@ -2,6 +2,12 @@
 
 .. versionadded:: 7.1
 
+.. versionchanged:: 8.1
+
+    This module used to depends on ``sopel.tools.job`` but this module and
+    its content have been removed or moved. The class ``Job`` is now defined
+    here as :class:`sopel.plugins.jobs.Job`.
+
 .. important::
 
     This is all fresh and new. Its usage and documentation is for Sopel core
@@ -20,6 +26,7 @@ import itertools
 import logging
 import threading
 import time
+import types
 from typing import Any, TYPE_CHECKING, TypeVar
 
 from sopel import tools
@@ -64,8 +71,8 @@ class Scheduler(threading.Thread):
         Thread safety is ensured with threading's :class:`~threading.Lock`
         and :class:`~threading.Event` when:
 
-        * a job is :meth:`registered <register>` or
-          :meth:`removed <remove_callable_job>`
+        * a job is :meth:`registered <register>`
+        * a plugin is :meth:`unregistered <unregister_plugin>`
         * the scheduler is :meth:`cleared <clear_jobs>` or
           :meth:`stopped <stop>`
         * the scheduler gets jobs that are ready for execution
@@ -99,18 +106,26 @@ class Scheduler(threading.Thread):
     """
     def __init__(self, manager: Sopel) -> None:
         super().__init__()
+        self._jobs: dict[str, list[Job]] = tools.SopelMemoryWithDefault(list)
+        self._mutex = threading.Lock()
+
+        # public attributes
         self.manager = manager
         """Job manager, used as argument for jobs."""
         self.stopping = threading.Event()
         """Stopping flag. See :meth:`stop`."""
-        self._jobs: dict[str, list] = tools.SopelMemoryWithDefault(list)
-        self._mutex = threading.Lock()
+        self.jobs: types.MappingProxyType[
+            str, list[Job]
+        ] = types.MappingProxyType(self._jobs)
+        """Read-only dict of registered plugin jobs.
+
+        .. versionadded:: 8.1
+        """
 
     def register(self, job: Job) -> None:
         """Register a Job to the current job queue.
 
         :param job: job to register
-        :type job: :class:`sopel.tools.jobs.Job`
 
         This method is thread safe.
         """
@@ -121,7 +136,7 @@ class Scheduler(threading.Thread):
     def unregister_plugin(self, plugin_name: str) -> int:
         """Unregister all the jobs from a plugin.
 
-        :param str plugin_name: the name of the plugin to remove
+        :param plugin_name: the name of the plugin to remove
         :return: the number of jobs unregistered for this plugin
 
         All jobs of that plugin will be removed from the scheduler.
@@ -150,6 +165,7 @@ class Scheduler(threading.Thread):
         """
         with self._mutex:
             self._jobs = tools.SopelMemoryWithDefault(list)
+            self.jobs = types.MappingProxyType(self._jobs)
 
         LOGGER.debug('Successfully unregistered all jobs')
 
@@ -250,7 +266,8 @@ class Job:
     :param str plugin: optional plugin name to which the job belongs
     :param str label: optional label (name) for the job
     :param handler: function to be called when the job is ready to execute
-    :type handler: :term:`function`
+    :type handler: :class:`sopel.plugins.callables.PluginJob`
+    :param bool threaded: run the job in a separate thread
     :param str doc: optional documentation for the job
 
     Job is a simple structure that holds information about when a function
@@ -288,6 +305,7 @@ class Job:
 
         # outside of the with statement, the job is not running anymore
 
+    .. versionadded:: 8.1
     """
     @classmethod
     def kwargs_from_callable(cls, handler: PluginJob) -> dict:
@@ -393,9 +411,7 @@ class Job:
         """
         label = self._label
         plugin_name = self.get_plugin_name()
-
-        if plugin_name:
-            label = '%s.%s' % (plugin_name, label)
+        label = '%s.%s' % (plugin_name, label)
 
         return "<Job %s [%s]>" % (
             label,
@@ -405,11 +421,11 @@ class Job:
     def get_plugin_name(self) -> str:
         """Get the job's plugin name.
 
-        :rtype: str
-
         The job's plugin name will be used in various places to select,
         register, unregister, and manipulate the job based on its plugin, which
         is referenced by its name.
+
+        If the plugin is unknown, ``"__anonymous_plugin__"`` is used instead.
         """
         return self._plugin_name or '__anonymous_plugin__'
 
