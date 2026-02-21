@@ -11,7 +11,6 @@ these utility features have been collected into submodules for convenience:
    tools/calculation
    tools/events
    tools/identifiers
-   tools/jobs
    tools/memories
    tools/target
    tools/time
