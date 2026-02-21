@@ -1,12 +1,19 @@
-"""Tests for Job Scheduler"""
+"""Tests for the ``sopel.plugins.jobs`` module."""
 from __future__ import annotations
 
 import time
+import typing
 
 import pytest
 
 from sopel import plugin
-from sopel.tools import jobs
+from sopel.plugins import jobs
+
+
+if typing.TYPE_CHECKING:
+    from sopel.bot import Sopel
+    from sopel.config import Config
+    from sopel.tests.factories import BotFactory, ConfigFactory
 
 
 TMP_CONFIG = """
@@ -22,12 +29,69 @@ class WithJobMockException(Exception):
 
 
 @pytest.fixture
-def mockconfig(configfactory):
+def mockconfig(configfactory: ConfigFactory) -> Config:
     return configfactory('config.cfg', TMP_CONFIG)
 
 
-def test_jobscheduler_stop(mockconfig, botfactory):
-    mockbot = botfactory(mockconfig)
+@pytest.fixture
+def mockbot(mockconfig: Config, botfactory: BotFactory) -> Sopel:
+    return botfactory(mockconfig)
+
+
+@plugin.interval(5)
+def mock_job(bot: Sopel) -> None:
+    pass
+
+
+def test_jobscheduler_register(mockbot: Sopel) -> None:
+    job = jobs.Job.from_callable(mockbot.settings, mock_job)
+    scheduler = jobs.Scheduler(mockbot)
+    assert len(scheduler.jobs) == 0, 'Sanity check failed'
+
+    scheduler.register(job)
+    expected_key = job.get_plugin_name()
+
+    assert expected_key in scheduler.jobs, (
+        'Job must be registered by its plugin'
+    )
+    assert job in scheduler.jobs[expected_key], 'Job must be registered'
+    assert len(scheduler.jobs[expected_key]) == 1, (
+        'There must be one and only one registered job'
+    )
+
+
+def test_jobscheduler_unregister(mockbot: Sopel) -> None:
+    job = jobs.Job.from_callable(mockbot.settings, mock_job)
+    plugin_name = job.get_plugin_name()
+
+    scheduler = jobs.Scheduler(mockbot)
+    assert len(scheduler.jobs) == 0, 'Sanity check failed'
+    assert scheduler.unregister_plugin(plugin_name) == 0, (
+        'No job registered to unregister for that plugin'
+    )
+
+    scheduler.register(job)
+    assert len(scheduler.jobs) == 1, 'Sanity check failed'
+    assert scheduler.unregister_plugin(plugin_name) == 1, (
+        'There was one registered job to unregister'
+    )
+    assert len(scheduler.jobs) == 0, 'There should not be any jobs left.'
+    assert plugin_name not in scheduler.jobs, (
+        'Unregistered plugin must be unknown'
+    )
+
+
+def test_jobscheduler_clear_job(mockbot: Sopel) -> None:
+    job = jobs.Job.from_callable(mockbot.settings, mock_job)
+    scheduler = jobs.Scheduler(mockbot)
+    scheduler.register(job)
+    assert len(scheduler.jobs) == 1, 'Sanity check failed'
+
+    scheduler.clear_jobs()
+    assert len(scheduler.jobs) == 0, 'Job storage must be cleared by now'
+
+
+def test_jobscheduler_stop(mockbot: Sopel) -> None:
     scheduler = jobs.Scheduler(mockbot)
     assert not scheduler.stopping.is_set(), 'Stopping must not be set at init'
 
@@ -37,65 +101,59 @@ def test_jobscheduler_stop(mockconfig, botfactory):
 
 def test_job_is_ready_to_run():
     now = time.time()
-    job = jobs.Job([5])
+    job = jobs.Job(
+        [5],
+        plugin=mock_job.plugin_name,
+        label=mock_job.label,
+        handler=mock_job,
+    )
 
     assert job.is_ready_to_run(now + 20)
     assert not job.is_ready_to_run(now - 20)
 
 
 def test_job_str():
-    job = jobs.Job([5])
-    expected = '<Job (unknown) [5s]>'
+    job = jobs.Job(
+        [5],
+        plugin=None,
+        label=mock_job.label,
+        handler=mock_job,
+    )
+    expected = '<Job __anonymous_plugin__.mock_job [5s]>'
 
     assert str(job) == expected
 
 
 def test_job_str_intervals():
-    job = jobs.Job([5, 60, 30])
-    expected = '<Job (unknown) [5s, 30s, 60s]>'
+    job = jobs.Job(
+        [5, 60, 30],
+        plugin=None,
+        label=mock_job.label,
+        handler=mock_job,
+    )
+    expected = '<Job __anonymous_plugin__.mock_job [5s, 30s, 60s]>'
 
     assert str(job) == expected
 
 
-def test_job_str_handler():
-    def handler():
-        pass
-
-    job = jobs.Job([5], handler=handler)
-    expected = '<Job handler [5s]>'
-
-    assert str(job) == expected
-
-
-def test_job_str_handler_plugin():
-    def handler():
-        pass
-
-    job = jobs.Job([5], plugin='testplugin', handler=handler)
-    expected = '<Job testplugin.handler [5s]>'
-
-    assert str(job) == expected
-
-
-def test_job_str_label():
-    def handler():
-        pass
-
-    job = jobs.Job([5], label='testhandler', handler=handler)
-    expected = '<Job testhandler [5s]>'
+def test_job_str_plugin():
+    job = jobs.Job(
+        [5],
+        plugin='testplugin',
+        label=mock_job.label,
+        handler=mock_job,
+    )
+    expected = '<Job testplugin.mock_job [5s]>'
 
     assert str(job) == expected
 
 
 def test_job_str_label_plugin():
-    def handler():
-        pass
-
     job = jobs.Job(
         [5],
         label='testhandler',
         plugin='testplugin',
-        handler=handler,
+        handler=mock_job,
     )
     expected = '<Job testplugin.testhandler [5s]>'
 
@@ -103,14 +161,11 @@ def test_job_str_label_plugin():
 
 
 def test_job_str_label_plugin_intervals():
-    def handler():
-        pass
-
     job = jobs.Job(
         [5, 3600, 60],
         label='testhandler',
         plugin='testplugin',
-        handler=handler,
+        handler=mock_job,
     )
     expected = '<Job testplugin.testhandler [5s, 60s, 3600s]>'
 
@@ -119,7 +174,12 @@ def test_job_str_label_plugin_intervals():
 
 def test_job_next():
     timestamp = 523549800
-    job = jobs.Job([5])
+    job = jobs.Job(
+        [5],
+        label=mock_job.label,
+        plugin=mock_job.plugin_name,
+        handler=mock_job,
+    )
     job.next_times[5] = timestamp
 
     job.next(timestamp)
@@ -153,7 +213,12 @@ def test_job_next():
 
 def test_job_next_many():
     timestamp = 523549800
-    job = jobs.Job([5, 30])
+    job = jobs.Job(
+        [5, 30],
+        label=mock_job.label,
+        plugin=mock_job.plugin_name,
+        handler=mock_job,
+    )
     job.next_times[5] = timestamp + 5
     job.next_times[30] = timestamp + 30
 
@@ -201,7 +266,7 @@ def test_job_next_many():
 def test_job_from_callable(mockconfig):
     @plugin.interval(5)
     @plugin.label('testjob')
-    def handler(manager):
+    def handler(bot: Sopel):
         """The job's docstring."""
         return 'tested'
 
@@ -222,7 +287,12 @@ def test_job_from_callable(mockconfig):
 
 
 def test_job_with():
-    job = jobs.Job([5])
+    job = jobs.Job(
+        [5],
+        label=mock_job.label,
+        plugin=mock_job.plugin_name,
+        handler=mock_job,
+    )
     # play with time: move 1s back in the future
     last_time = job.next_times[5] = time.time() - 1
 
@@ -238,7 +308,12 @@ def test_job_with():
 
 
 def test_job_with_exception():
-    job = jobs.Job([5])
+    job = jobs.Job(
+        [5],
+        label=mock_job.label,
+        plugin=mock_job.plugin_name,
+        handler=mock_job,
+    )
     # play with time: move 1s back in the future
     last_time = job.next_times[5] = time.time() - 1
 

@@ -35,7 +35,7 @@ from typing import Callable, Optional, TYPE_CHECKING
 from sopel import config, plugin
 from sopel.irc import isupport, utils
 from sopel.plugins import callables
-from sopel.tools import events, jobs, SopelMemory, target
+from sopel.tools import events, SopelMemory, target
 
 
 if TYPE_CHECKING:
@@ -177,15 +177,14 @@ def setup(bot: Sopel) -> None:
     # Manage JOIN flood protection
     if bot.settings.core.throttle_join:
         wait_interval = max(bot.settings.core.throttle_wait, 1)
-        job = jobs.Job(
-            [wait_interval],
-            plugin='coretasks',
-            label='throttle_join',
-            handler=_join_event_processing,
-            threaded=True,
-            doc=None,
+
+        handler = plugin.interval(wait_interval)(
+            plugin.label('throttle_join')(
+                _join_event_processing
+            )
         )
-        bot.scheduler.register(job)
+        handler.plugin_name = 'coretasks'
+        bot.register_jobs([handler])
 
 
 def shutdown(bot):
