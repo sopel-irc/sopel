@@ -52,7 +52,9 @@ if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
 
-
+# TODO: replace Union by | when dropping support for Python 3.9
+# Type aliases are evaluated at import time so unlike type annotation
+# Python 3.8 and 3.9 don't support the | operator.
 TypedCallableDecorator = Callable[
     [Union[TypedPluginCallableHandler, AbstractPluginObject]],
     PluginCallable,
@@ -248,7 +250,7 @@ def unblockable(function=None):
     return decorator
 
 
-def interval(*intervals: Union[int, float]) -> TypedJobDecorator:
+def interval(*intervals: int | float) -> TypedJobDecorator:
     """Decorate a function to be called by the bot every *n* seconds.
 
     :param intervals: one or more duration(s), in seconds
@@ -289,7 +291,7 @@ def interval(*intervals: Union[int, float]) -> TypedJobDecorator:
     return decorator
 
 
-def rule(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
+def rule(*patterns: str | Pattern) -> TypedCallableDecorator:
     """Decorate a function to be called when a line matches the given pattern.
 
     :param patterns: one or more regular expression(s)
@@ -394,7 +396,7 @@ def rule_lazy(*loaders: Callable) -> TypedCallableDecorator:
     return decorator
 
 
-def find(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
+def find(*patterns: str | Pattern) -> TypedCallableDecorator:
     """Decorate a function to be called for each time a pattern is found in a line.
 
     :param patterns: one or more regular expression(s)
@@ -499,7 +501,7 @@ def find_lazy(*loaders: Callable) -> TypedCallableDecorator:
     return decorator
 
 
-def search(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
+def search(*patterns: str | Pattern) -> TypedCallableDecorator:
     """Decorate a function to be called when a pattern matches anywhere in a line.
 
     :param patterns: one or more regular expression(s)
