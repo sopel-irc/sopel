@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import cast, NamedTuple, Optional, TYPE_CHECKING, Union
+from typing import cast, NamedTuple, TYPE_CHECKING, Union
 
 import pytz
 
@@ -57,7 +57,7 @@ class Duration(NamedTuple):
     """Seconds spent."""
 
 
-def validate_timezone(zone: Optional[str]) -> str:
+def validate_timezone(zone: str | None) -> str:
     """Normalize and validate an IANA timezone name.
 
     :param zone: in a strict or a human-friendly format
@@ -115,7 +115,7 @@ def validate_format(tformat: str) -> str:
     return tformat
 
 
-def get_nick_timezone(db: SopelDB, nick: str) -> Optional[str]:
+def get_nick_timezone(db: SopelDB, nick: str) -> str | None:
     """Get a nick's timezone from database.
 
     :param db: Bot's database handler (usually ``bot.db``)
@@ -133,7 +133,7 @@ def get_nick_timezone(db: SopelDB, nick: str) -> Optional[str]:
         return None
 
 
-def get_channel_timezone(db: SopelDB, channel: str) -> Optional[str]:
+def get_channel_timezone(db: SopelDB, channel: str) -> str | None:
     """Get a channel's timezone from database.
 
     :param db: Bot's database handler (usually ``bot.db``)
@@ -152,12 +152,12 @@ def get_channel_timezone(db: SopelDB, channel: str) -> Optional[str]:
 
 
 def get_timezone(
-    db: Optional[SopelDB] = None,
-    config: Optional[Config] = None,
-    zone: Optional[str] = None,
-    nick: Optional[str] = None,
-    channel: Optional[str] = None,
-) -> Optional[str]:
+    db: SopelDB | None = None,
+    config: Config | None = None,
+    zone: str | None = None,
+    nick: str | None = None,
+    channel: str | None = None,
+) -> str | None:
     """Find, and return, the appropriate timezone.
 
     :param db: bot database object (optional)
@@ -188,13 +188,13 @@ def get_timezone(
        formatting of the timezone.
 
     """
-    def _check(zone: Optional[str]) -> Optional[str]:
+    def _check(zone: str | None) -> str | None:
         try:
             return validate_timezone(zone)
         except ValueError:
             return None
 
-    tz: Optional[str] = None
+    tz: str | None = None
 
     if zone:
         tz = _check(zone)
@@ -217,12 +217,12 @@ def get_timezone(
 
 
 def format_time(
-    db: Optional[SopelDB] = None,
-    config: Optional[Config] = None,
-    zone: Optional[str] = None,
-    nick: Optional[str] = None,
-    channel: Optional[str] = None,
-    time: Optional[datetime.datetime] = None,
+    db: SopelDB | None = None,
+    config: Config | None = None,
+    zone: str | None = None,
+    nick: str | None = None,
+    channel: str | None = None,
+    time: datetime.datetime | None = None,
 ) -> str:
     """Return a formatted string of the given time in the given zone.
 
@@ -254,7 +254,7 @@ def format_time(
     ``config`` is not given, step 3 will be skipped.
     """
     target_tz: datetime.tzinfo = pytz.utc
-    tformat: Optional[str] = None
+    tformat: str | None = None
 
     # get an aware datetime
     if not time:

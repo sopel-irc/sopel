@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import functools
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Any, TYPE_CHECKING, Union
 
 from sopel.privileges import AccessLevel
 from sopel.tools import memories
@@ -29,25 +29,25 @@ class User:
     def __init__(
         self,
         nick: Identifier,
-        user: Optional[str],
-        host: Optional[str],
+        user: str | None,
+        host: str | None,
     ) -> None:
         assert isinstance(nick, Identifier)
         self.nick: Identifier = nick
         """The user's nickname."""
-        self.user: Optional[str] = user
+        self.user: str | None = user
         """The user's local username.
 
         Will be ``None`` if Sopel has not yet received complete user
         information from the IRC server.
         """
-        self.host: Optional[str] = host
+        self.host: str | None = host
         """The user's hostname.
 
         Will be ``None`` if Sopel has not yet received complete user
         information from the IRC server.
         """
-        self.realname: Optional[str] = None
+        self.realname: str | None = None
         """The user's realname.
 
         Will be ``None`` if Sopel has not yet received complete user
@@ -59,7 +59,7 @@ class User:
         This maps channel name :class:`~sopel.tools.identifiers.Identifier`\\s
         to :class:`Channel` objects.
         """
-        self.account: Optional[str] = None
+        self.account: str | None = None
         """The IRC services account of the user.
 
         This relies on IRCv3 account tracking being enabled.
@@ -67,13 +67,13 @@ class User:
         Will be ``None`` if the user is not logged into an account (including
         when account tracking is not supported by the IRC server.)
         """
-        self.away: Optional[bool] = None
+        self.away: bool | None = None
         """Whether the user is marked as away.
 
         Will be ``None`` if the user's current away state hasn't been
         established yet (via WHO or other means such as ``away-notify``).
         """
-        self.is_bot: Optional[bool] = None
+        self.is_bot: bool | None = None
         """Whether the user is flagged as a bot.
 
         Will be ``None`` if the user hasn't yet been WHOed, or if the IRC
@@ -177,10 +177,10 @@ class Channel:
             does not automatically populate all modes and lists.
         """
 
-        self.last_who: Optional[datetime.datetime] = None
+        self.last_who: datetime.datetime | None = None
         """The last time a WHO was requested for the channel."""
 
-        self.join_time: Optional[datetime.datetime] = None
+        self.join_time: datetime.datetime | None = None
         """The time the server acknowledged our JOIN message.
 
         Based on server-reported time if the ``server-time`` IRCv3 capability
