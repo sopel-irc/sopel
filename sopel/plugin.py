@@ -15,7 +15,6 @@ import re
 from typing import (
     Callable,
     Literal,
-    Optional,
     overload,
     Pattern,
     TYPE_CHECKING,
@@ -1604,7 +1603,7 @@ def require_account(message=None, reply=False):
 
 def require_privilege(
     level: AccessLevel,
-    message: Optional[str] = None,
+    message: str | None = None,
     reply: bool = False,
 ) -> TypedCallableDecorator:
     """Decorate a function to require at least the given channel permission.
@@ -1819,7 +1818,7 @@ def require_owner(message=None, reply=False):
 
 def require_bot_privilege(
     level: AccessLevel,
-    message: Optional[str] = None,
+    message: str | None = None,
     reply: bool = False,
 ) -> TypedCallableDecorator:
     """Decorate a function to require a minimum channel privilege for the bot.
@@ -2085,19 +2084,19 @@ class example:
     def __init__(
         self,
         msg: str,
-        result: Optional[Union[str, Iterable[str]]] = None,
+        result: str | Iterable[str] | None = None,
         privmsg: bool = False,
         admin: bool = False,
         owner: bool = False,
         repeat: int = 1,
         re: bool = False,
-        ignore: Optional[Union[str, Iterable[str]]] = None,
+        ignore: str | Iterable[str] | None = None,
         user_help: bool = False,
         online: bool = False,
         vcr: bool = False,
     ):
         # Wrap result into a list for get_example_test
-        self.result: Optional[list[str]] = None
+        self.result: list[str] | None = None
         if isinstance(result, str):
             self.result = [result]
         elif result is not None:
