@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import functools
-from typing import Any, TYPE_CHECKING, Union
+from typing import Any, TYPE_CHECKING
 
 from sopel.privileges import AccessLevel
 from sopel.tools import memories
@@ -164,7 +164,7 @@ class Channel:
         self.topic: str = ''
         """The topic of the channel."""
 
-        self.modes: dict[str, Union[set, str, bool]] = {}
+        self.modes: dict[str, set | str | bool] = {}
         """The channel's modes.
 
         For type A modes (nick/address list), the value is a set. For type B

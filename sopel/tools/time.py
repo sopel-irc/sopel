@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import cast, NamedTuple, TYPE_CHECKING, Union
+from typing import cast, NamedTuple, TYPE_CHECKING
 
 import pytz
 
@@ -386,7 +386,7 @@ def get_time_unit(
 
 
 def seconds_to_human(
-    secs: Union[datetime.timedelta, float, int],
+    secs: datetime.timedelta | float | int,
     granularity: int = 2,
 ) -> str:
     """Format :class:`~datetime.timedelta` as a human-readable relative time.

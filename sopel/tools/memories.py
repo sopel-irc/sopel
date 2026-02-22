@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
     from typing import Tuple
 
+    # TODO: replace Union by | when dropping support for Python 3.9
+    # Type aliases are evaluated at import time so unlike type annotation
+    # Python 3.8 and 3.9 don't support the | operator.
     MemoryConstructorInput = Union[
         Mapping[str, Any],
         Iterable[Tuple[str, Any]],
