@@ -14,10 +14,7 @@
 from __future__ import annotations
 
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Union,
-)
+from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -453,7 +450,7 @@ class Manager:
         self,
         cap_req: tuple[str, ...],
         *,
-        plugins: Union[list[str], tuple[str, ...], set[str]] = (),
+        plugins: list[str] | tuple[str, ...] | set[str] = (),
     ) -> Generator[tuple[str, Capability], None, None]:
         """Retrieve the registered request handlers for a capability request.
 
