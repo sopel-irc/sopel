@@ -30,7 +30,7 @@ import functools
 import logging
 import re
 import time
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
@@ -1068,7 +1068,7 @@ def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
 def _handle_cap_acknowledgement(
     bot: SopelWrapper,
     cap_req: tuple[str, ...],
-    results: list[tuple[bool, Optional[callables.CapabilityNegotiation]]],
+    results: list[tuple[bool, callables.CapabilityNegotiation | None]],
     was_completed: bool,
 ) -> None:
     if any(
@@ -1094,9 +1094,9 @@ def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
     cap_ack: tuple[str, ...] = bot.capabilities.handle_ack(bot, trigger)
 
     try:
-        result: Optional[
-            list[tuple[bool, Optional[callables.CapabilityNegotiation]]]
-        ] = bot.cap_requests.acknowledge(bot, cap_ack)
+        result: list[
+            tuple[bool, callables.CapabilityNegotiation | None]
+        ] | None = bot.cap_requests.acknowledge(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
             'Configuration error on ACK capability "%s": %s',
@@ -1129,9 +1129,9 @@ def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
     cap_ack = bot.capabilities.handle_nak(bot, trigger)
 
     try:
-        result: Optional[
-            list[tuple[bool, Optional[callables.CapabilityNegotiation]]]
-        ] = bot.cap_requests.deny(bot, cap_ack)
+        result: list[
+            tuple[bool, callables.CapabilityNegotiation | None]
+        ] | None = bot.cap_requests.deny(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
             'Configuration error on NAK capability "%s": %s',
@@ -1568,11 +1568,11 @@ def _record_who(
     user: str,
     host: str,
     nick: str,
-    realname: Optional[str] = None,
-    account: Optional[str] = None,
-    away: Optional[bool] = None,
-    is_bot: Optional[bool] = None,
-    modes: Optional[str] = None,
+    realname: str | None = None,
+    account: str | None = None,
+    away: bool | None = None,
+    is_bot: bool | None = None,
+    modes: str | None = None,
 ) -> None:
     nick = bot.make_identifier(nick)
     channel = bot.make_identifier(channel)
