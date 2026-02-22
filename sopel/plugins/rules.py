@@ -24,7 +24,6 @@ import re
 import threading
 from typing import (
     Any,
-    Optional,
     Type,
     TYPE_CHECKING,
     TypeVar,
@@ -506,8 +505,8 @@ class Manager:
 class RuleMetrics:
     """Tracker of a rule's usage."""
     def __init__(self) -> None:
-        self.started_at: Optional[datetime.datetime] = None
-        self.ended_at: Optional[datetime.datetime] = None
+        self.started_at: datetime.datetime | None = None
+        self.ended_at: datetime.datetime | None = None
         self.last_return_value: Any = None
 
     def start(self) -> None:
@@ -523,7 +522,7 @@ class RuleMetrics:
         self.last_return_value = value
 
     @property
-    def last_time(self) -> Optional[datetime.datetime]:
+    def last_time(self) -> datetime.datetime | None:
         """Last recorded start/end time for the associated rule."""
         # detect if we just started something or if it ended
         if (self.started_at and self.ended_at) and (self.started_at < self.ended_at):
@@ -553,9 +552,9 @@ class RuleMetrics:
 
     def __exit__(
         self,
-        type: Optional[Any],
-        value: Optional[Any],
-        traceback: Optional[Any],
+        type: Any,
+        value: Any,
+        traceback: Any,
     ) -> None:
         self.end()
 
@@ -716,7 +715,7 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match_ctcp(self, command: Optional[str]) -> bool:
+    def match_ctcp(self, command: str | None) -> bool:
         """Tell if the rule matches this CTCP ``command``.
 
         :param command: potential matching CTCP command
@@ -851,7 +850,7 @@ class AbstractRule(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def user_rate_template(self) -> Optional[str]:
+    def user_rate_template(self) -> str | None:
         """Give the message template to send with a NOTICE to ``nick``.
 
         :return: A formatted string, or ``None`` if no message is set.
@@ -862,7 +861,7 @@ class AbstractRule(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def channel_rate_template(self) -> Optional[str]:
+    def channel_rate_template(self) -> str | None:
         """Give the message template to send with a NOTICE to ``nick``.
 
         :return: A formatted string, or ``None`` if no message is set.
@@ -873,7 +872,7 @@ class AbstractRule(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def global_rate_template(self) -> Optional[str]:
+    def global_rate_template(self) -> str | None:
         """Give the message to send with a NOTICE to ``nick``.
 
         :return: A formatted string, or ``None`` if no message is set.
@@ -1303,17 +1302,17 @@ class Rule(AbstractRule):
         return metrics.is_limited(at_time - self.global_rate_limit)
 
     @property
-    def user_rate_template(self) -> Optional[str]:
+    def user_rate_template(self) -> str | None:
         template = self._user_rate_message or self._default_rate_message
         return template
 
     @property
-    def channel_rate_template(self) -> Optional[str]:
+    def channel_rate_template(self) -> str | None:
         template = self._channel_rate_message or self._default_rate_message
         return template
 
     @property
-    def global_rate_template(self) -> Optional[str]:
+    def global_rate_template(self) -> str | None:
         template = self._global_rate_message or self._default_rate_message
         return template
 
@@ -1726,7 +1725,7 @@ class ActionCommand(AbstractNamedRule):
         pattern = self.PATTERN_TEMPLATE.format(command=pattern)
         return re.compile(pattern, re.IGNORECASE | re.VERBOSE)
 
-    def match_ctcp(self, command: Optional[str]) -> bool:
+    def match_ctcp(self, command: str | None) -> bool:
         """Tell if ``command`` is an ``ACTION``.
 
         :param command: potential matching CTCP command

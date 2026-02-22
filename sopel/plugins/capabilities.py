@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import logging
 from typing import (
-    Optional,
     TYPE_CHECKING,
     Union,
 )
@@ -341,7 +340,7 @@ class Manager:
         if cap_req not in self._requested:
             return was_completed, was_completed
 
-        handler_info: Optional[tuple[Capability, bool]] = self._registered.get(
+        handler_info: tuple[Capability, bool] | None = self._registered.get(
             cap_req, {},
         ).get(
             plugin_name, None,
@@ -357,7 +356,7 @@ class Manager:
         self,
         bot: SopelWrapper,
         cap_req: tuple[str, ...],
-    ) -> Optional[list[tuple[bool, Optional[CapabilityNegotiation]]]]:
+    ) -> list[tuple[bool, CapabilityNegotiation | None]] | None:
         """Acknowledge a capability request and execute handlers.
 
         :param bot: bot instance to manage the capabilities for
@@ -392,7 +391,7 @@ class Manager:
         self,
         bot: SopelWrapper,
         cap_req: tuple[str, ...],
-    ) -> Optional[list[tuple[bool, Optional[CapabilityNegotiation]]]]:
+    ) -> list[tuple[bool, CapabilityNegotiation | None]] | None:
         """Deny a capability request and execute handlers.
 
         :param bot: bot instance to manage the capabilities for
@@ -427,7 +426,7 @@ class Manager:
         bot: SopelWrapper,
         cap_req: tuple[str, ...],
         acknowledged: bool,
-    ) -> list[tuple[bool, Optional[CapabilityNegotiation]]]:
+    ) -> list[tuple[bool, CapabilityNegotiation | None]]:
         # call back request handlers
         plugin_requests: dict[str, tuple[Capability, bool]] = self._registered.get(
             cap_req, {},
@@ -443,7 +442,7 @@ class Manager:
         handler_info: tuple[Capability, bool],
         bot: SopelWrapper,
         acknowledged: bool,
-    ) -> tuple[bool, Optional[CapabilityNegotiation]]:
+    ) -> tuple[bool, CapabilityNegotiation | None]:
         handler = handler_info[0]
         is_done, result = handler.callback(bot, acknowledged)
         # update done status in registered
