@@ -104,6 +104,7 @@ Housekeeping changes
 * Streamlining tool configs and moving everything into `pyproject.toml`
   [[#2682][], [#2683][], [#2694][], [#2695][]]
 * Improved test tools documentation and type hinting [[#2716][]]
+* Removed unused linting tools [[#2727][]]
 
 [sopel-safety]: https://pypi.org/project/sopel-safety/
 [sopel-search]: https://pypi.org/project/sopel-search/
@@ -149,6 +150,7 @@ Housekeeping changes
 [#2715]: https://github.com/sopel-irc/sopel/pull/2715
 [#2716]: https://github.com/sopel-irc/sopel/pull/2716
 [#2720]: https://github.com/sopel-irc/sopel/pull/2720
+[#2727]: https://github.com/sopel-irc/sopel/pull/2727
 
 
 Changes between 8.0.3 and 8.0.4
