@@ -197,8 +197,13 @@ def enumerate_plugins(settings):
     source_dirs = [
         os.path.join(settings.homedir, 'plugins'),
     ]
-    if settings.core.extra:
-        source_dirs = source_dirs + settings.core.extra
+    for extra_dir in (settings.core.extra or []):
+        if not os.path.isdir(extra_dir):
+            LOGGER.warning(
+                'Extra plugin directory "%s" does not exist',
+                extra_dir,
+            )
+        source_dirs += extra_dir
 
     from_directories = [
         find_directory_plugins(source_dir)
