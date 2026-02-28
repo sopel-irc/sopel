@@ -61,6 +61,7 @@ Core changes
 * Refactored plugin callables to a class-based system [[#2669][]]
 * Moved capability-handling types into `sopel.plugins.callables` [[#2669[]]]
 * Deprecated internal submodule `sopel.loader` [[#2669][]]
+* Added unit testing of raw logs [[#2723][]]
 
 API changes
 -----------
@@ -150,6 +151,7 @@ Housekeeping changes
 [#2715]: https://github.com/sopel-irc/sopel/pull/2715
 [#2716]: https://github.com/sopel-irc/sopel/pull/2716
 [#2720]: https://github.com/sopel-irc/sopel/pull/2720
+[#2723]: https://github.com/sopel-irc/sopel/pull/2723
 [#2727]: https://github.com/sopel-irc/sopel/pull/2727
 
 
