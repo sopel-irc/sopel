@@ -105,7 +105,7 @@ Housekeeping changes
 * Switch to improved tooling for import checks [[#2681][], [#2692][]]
 * Streamlining tool configs and moving everything into `pyproject.toml`
   [[#2682][], [#2683][], [#2694][], [#2695][]]
-* Improved test tools documentation and type hinting [[#2716][]]
+* Improved test tools documentation and type hinting [[#2716][], [#2726][]]
 * Removed unused linting tools [[#2727][]]
 
 [sopel-safety]: https://pypi.org/project/sopel-safety/
@@ -153,6 +153,7 @@ Housekeeping changes
 [#2716]: https://github.com/sopel-irc/sopel/pull/2716
 [#2720]: https://github.com/sopel-irc/sopel/pull/2720
 [#2723]: https://github.com/sopel-irc/sopel/pull/2723
+[#2726]: https://github.com/sopel-irc/sopel/pull/2726
 [#2727]: https://github.com/sopel-irc/sopel/pull/2727
 [#2730]: https://github.com/sopel-irc/sopel/pull/2730
 
