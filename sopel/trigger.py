@@ -14,7 +14,6 @@ import re
 from typing import (
     cast,
     Match,
-    Optional,
     Sequence,
     TYPE_CHECKING,
 )
@@ -162,7 +161,7 @@ class PreTrigger:
         self,
         own_nick: Identifier,
         line: str,
-        url_schemes: Optional[Sequence] = None,
+        url_schemes: Sequence | None = None,
         identifier_factory: IdentifierFactory = Identifier,
         statusmsg_prefixes: tuple[str, ...] = tuple(),
     ):
@@ -171,10 +170,10 @@ class PreTrigger:
         self.line: str = line
         self.urls: tuple[str, ...] = tuple()
         self.plain: str = ''
-        self.ctcp: Optional[str] = None
+        self.ctcp: str | None = None
 
         # Break off IRCv3 message tags, if present
-        self.tags: dict[str, Optional[str]] = {}
+        self.tags: dict[str, str | None] = {}
         if line.startswith('@'):
             tagstring, line = line.split(' ', 1)
             for raw_tag in tagstring[1:].split(';'):
@@ -201,7 +200,7 @@ class PreTrigger:
         # Example: line = ':Sopel!foo@bar PRIVMSG #sopel :foobar!'
         #          print(hostmask)  # Sopel!foo@bar
         # All lines start with ":" except PING.
-        self.hostmask: Optional[str]
+        self.hostmask: str | None
         if line.startswith(':'):
             self.hostmask, line = line[1:].split(' ', 1)
         else:
@@ -236,8 +235,8 @@ class PreTrigger:
 
         # If we have arguments, the first one is *usually* the sender,
         # most numerics and certain general events (e.g. QUIT) excepted
-        target: Optional[Identifier] = None
-        status_prefix: Optional[str] = None
+        target: Identifier | None = None
+        status_prefix: str | None = None
 
         if self.args and self.event in COMMANDS_WITH_CONTEXT:
             raw_target = self.args[0]
@@ -347,7 +346,7 @@ class Trigger(str):
     status_prefix = property(lambda self: self._pretrigger.status_prefix)
     """The prefix used for the :attr:`sender` for status-specific messages.
 
-    :type: Optional[str]
+    :type: str | None
 
     This will be ``None`` by default. If a message is sent to a channel, it may
     have a status prefix for status-specific messages. In that case, the prefix
@@ -530,7 +529,7 @@ class Trigger(str):
         settings: config.Config,
         message: PreTrigger,
         match: Match,
-        account: Optional[str] = None,
+        account: str | None = None,
     ) -> 'Trigger':
         return str.__new__(cls, message.args[-1] if message.args else '')
 
@@ -539,7 +538,7 @@ class Trigger(str):
         settings: config.Config,
         message: PreTrigger,
         match: Match,
-        account: Optional[str] = None,
+        account: str | None = None,
     ) -> None:
         self._account = account
         self._pretrigger = message

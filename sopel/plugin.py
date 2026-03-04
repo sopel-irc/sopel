@@ -15,7 +15,6 @@ import re
 from typing import (
     Callable,
     Literal,
-    Optional,
     overload,
     Pattern,
     TYPE_CHECKING,
@@ -53,7 +52,9 @@ if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
 
-
+# TODO: replace Union by | when dropping support for Python 3.9
+# Type aliases are evaluated at import time so unlike type annotation
+# Python 3.8 and 3.9 don't support the | operator.
 TypedCallableDecorator = Callable[
     [Union[TypedPluginCallableHandler, AbstractPluginObject]],
     PluginCallable,
@@ -249,7 +250,7 @@ def unblockable(function=None):
     return decorator
 
 
-def interval(*intervals: Union[int, float]) -> TypedJobDecorator:
+def interval(*intervals: int | float) -> TypedJobDecorator:
     """Decorate a function to be called by the bot every *n* seconds.
 
     :param intervals: one or more duration(s), in seconds
@@ -290,7 +291,7 @@ def interval(*intervals: Union[int, float]) -> TypedJobDecorator:
     return decorator
 
 
-def rule(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
+def rule(*patterns: str | Pattern) -> TypedCallableDecorator:
     """Decorate a function to be called when a line matches the given pattern.
 
     :param patterns: one or more regular expression(s)
@@ -395,7 +396,7 @@ def rule_lazy(*loaders: Callable) -> TypedCallableDecorator:
     return decorator
 
 
-def find(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
+def find(*patterns: str | Pattern) -> TypedCallableDecorator:
     """Decorate a function to be called for each time a pattern is found in a line.
 
     :param patterns: one or more regular expression(s)
@@ -500,7 +501,7 @@ def find_lazy(*loaders: Callable) -> TypedCallableDecorator:
     return decorator
 
 
-def search(*patterns: Union[str, Pattern]) -> TypedCallableDecorator:
+def search(*patterns: str | Pattern) -> TypedCallableDecorator:
     """Decorate a function to be called when a pattern matches anywhere in a line.
 
     :param patterns: one or more regular expression(s)
@@ -1604,7 +1605,7 @@ def require_account(message=None, reply=False):
 
 def require_privilege(
     level: AccessLevel,
-    message: Optional[str] = None,
+    message: str | None = None,
     reply: bool = False,
 ) -> TypedCallableDecorator:
     """Decorate a function to require at least the given channel permission.
@@ -1819,7 +1820,7 @@ def require_owner(message=None, reply=False):
 
 def require_bot_privilege(
     level: AccessLevel,
-    message: Optional[str] = None,
+    message: str | None = None,
     reply: bool = False,
 ) -> TypedCallableDecorator:
     """Decorate a function to require a minimum channel privilege for the bot.
@@ -2085,19 +2086,19 @@ class example:
     def __init__(
         self,
         msg: str,
-        result: Optional[Union[str, Iterable[str]]] = None,
+        result: str | Iterable[str] | None = None,
         privmsg: bool = False,
         admin: bool = False,
         owner: bool = False,
         repeat: int = 1,
         re: bool = False,
-        ignore: Optional[Union[str, Iterable[str]]] = None,
+        ignore: str | Iterable[str] | None = None,
         user_help: bool = False,
         online: bool = False,
         vcr: bool = False,
     ):
         # Wrap result into a list for get_example_test
-        self.result: Optional[list[str]] = None
+        self.result: list[str] | None = None
         if isinstance(result, str):
             self.result = [result]
         elif result is not None:

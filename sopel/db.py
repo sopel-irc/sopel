@@ -526,8 +526,8 @@ class SopelDB:
         self,
         nick: str,
         key: str,
-        default: typing.Optional[typing.Any] = None
-    ) -> typing.Optional[typing.Any]:
+        default: typing.Any = None
+    ) -> typing.Any:
         """Get a value from the key-value store for ``nick``.
 
         :param nick: the nickname whose values to access
@@ -790,7 +790,7 @@ class SopelDB:
         self,
         channel: str,
         key: str,
-        default: typing.Optional[typing.Any] = None,
+        default: typing.Any = None,
     ) -> typing.Any:
         """Get a value from the key-value store for ``channel``.
 
@@ -922,8 +922,8 @@ class SopelDB:
         self,
         plugin: str,
         key: str,
-        default: typing.Optional[typing.Any] = None,
-    ) -> typing.Optional[typing.Any]:
+        default: typing.Any = None,
+    ) -> typing.Any:
         """Get a value from the key-value store for ``plugin``.
 
         :param plugin: the plugin name whose values to access
@@ -983,8 +983,8 @@ class SopelDB:
         self,
         name: str,
         key: str,
-        default: typing.Any | None = None
-    ) -> typing.Any | None:
+        default: typing.Any = None
+    ) -> typing.Any:
         """Get a value from the key-value store for ``name``.
 
         :param name: nick or channel whose values to access
@@ -1009,10 +1009,10 @@ class SopelDB:
             :meth:`get_channel_value`.
 
         """
-        if not isinstance(name, Identifier):
-            identifier = self.make_identifier(name)
+        if isinstance(name, Identifier):
+            identifier = name
         else:
-            identifier = typing.cast('Identifier', name)
+            identifier = self.make_identifier(name)
 
         if identifier.is_nick():
             return self.get_nick_value(identifier, key, default)
@@ -1023,7 +1023,7 @@ class SopelDB:
         self,
         names: Iterable[str],
         key: str,
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """Get a value for the first name which has it set.
 
         :param names: a list of channel names and/or nicknames

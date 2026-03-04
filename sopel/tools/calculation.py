@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from typing import Callable, Optional
+    from typing import Callable
 
 __all__ = ['eval_equation']
 
@@ -37,8 +37,8 @@ class ExpressionEvaluator:
 
     def __init__(
         self,
-        bin_ops: Optional[dict[type[ast.operator], Callable]] = None,
-        unary_ops: Optional[dict[type[ast.unaryop], Callable]] = None
+        bin_ops: dict[type[ast.operator], Callable] | None = None,
+        unary_ops: dict[type[ast.unaryop], Callable] | None = None
     ):
         self.binary_ops = bin_ops or {}
         self.unary_ops = unary_ops or {}

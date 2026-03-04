@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from .utils import safe
 
@@ -102,7 +102,7 @@ class AbstractIRCBackend(abc.ABC):
 
         return data
 
-    def send_command(self, *args: str, text: Optional[str] = None) -> None:
+    def send_command(self, *args: str, text: str | None = None) -> None:
         """Send a command through the IRC connection.
 
         :param args: IRC command to send with its argument(s)
@@ -126,7 +126,7 @@ class AbstractIRCBackend(abc.ABC):
         self.irc_send(raw_command.encode('utf-8'))
         self.bot.on_message_sent(raw_command)
 
-    def prepare_command(self, *args: str, text: Optional[str] = None) -> str:
+    def prepare_command(self, *args: str, text: str | None = None) -> str:
         """Prepare an IRC command from ``args`` and optional ``text``.
 
         :param args: arguments of the IRC command to send
@@ -210,7 +210,7 @@ class AbstractIRCBackend(abc.ABC):
         """
         self.send_command('PASS', password)
 
-    def send_join(self, channel: str, password: Optional[str] = None) -> None:
+    def send_join(self, channel: str, password: str | None = None) -> None:
         """Send a ``JOIN`` command to ``channel`` with optional ``password``.
 
         :param channel: channel to join
@@ -221,7 +221,7 @@ class AbstractIRCBackend(abc.ABC):
         else:
             self.send_command('JOIN', channel, password)
 
-    def send_part(self, channel: str, reason: Optional[str] = None) -> None:
+    def send_part(self, channel: str, reason: str | None = None) -> None:
         """Send a ``PART`` command to ``channel``.
 
         :param channel: the channel to part
@@ -229,7 +229,7 @@ class AbstractIRCBackend(abc.ABC):
         """
         self.send_command('PART', channel, text=reason)
 
-    def send_quit(self, reason: Optional[str] = None) -> None:
+    def send_quit(self, reason: str | None = None) -> None:
         """Send a ``QUIT`` command.
 
         :param reason: optional text for leaving the server
@@ -243,7 +243,7 @@ class AbstractIRCBackend(abc.ABC):
         self,
         channel: str,
         nick: str,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ) -> None:
         """Send a ``KICK`` command for ``nick`` in ``channel`` .
 

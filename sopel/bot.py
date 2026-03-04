@@ -20,7 +20,6 @@ from types import MappingProxyType
 from typing import (
     Any,
     Callable,
-    Optional,
     Sequence,
     TYPE_CHECKING,
     TypeVar,
@@ -187,7 +186,7 @@ class Sopel(irc.AbstractBot):
         )
 
     @property
-    def hostmask(self) -> Optional[str]:
+    def hostmask(self) -> str | None:
         """The current hostmask for the bot :class:`~sopel.tools.target.User`.
 
         :return: the bot's current hostmask if the bot is connected and in
@@ -662,7 +661,7 @@ class Sopel(irc.AbstractBot):
         self,
         rule: AbstractRuleType,
         trigger: Trigger,
-    ) -> tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         if rule.is_unblockable():
             LOGGER.debug(
                 "Skipping rate limit checks for unblockable rule %s", rule)
@@ -711,7 +710,7 @@ class Sopel(irc.AbstractBot):
             )
         )
 
-        message: Optional[str] = None
+        message: str | None = None
 
         if template:
             message = template.format(
@@ -1121,8 +1120,8 @@ class Sopel(irc.AbstractBot):
 
     def error(
         self,
-        trigger: Optional[Trigger] = None,
-        exception: Optional[BaseException] = None,
+        trigger: Trigger | None = None,
+        exception: BaseException | None = None,
     ) -> None:
         """Called internally when a plugin causes an error.
 
@@ -1427,7 +1426,7 @@ class SopelWrapper:
         return setattr(self._bot, attr, value)
 
     @property
-    def default_destination(self) -> Optional[str]:
+    def default_destination(self) -> str | None:
         """Default say/reply destination for the associated Trigger.
 
         :return: the channel (with status prefix) or nick to send messages to

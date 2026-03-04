@@ -34,9 +34,9 @@ import enum
 import logging
 from typing import (
     NamedTuple,
-    Optional,
     Tuple,
     TYPE_CHECKING,
+    Union,
 )
 
 
@@ -55,7 +55,11 @@ parsing a modestring like ``+abc-efg``. In that example mode ``a`` and mode
 ``f`` would be represented as these tuples: ``('a', True)`` and
 ``('f', False)``.
 """
-ModeDetails = Tuple[str, str, bool, Optional[str]]
+
+# TODO: replace Union by | when dropping support for Python 3.9
+# Type aliases are evaluated at import time unlike type annotation
+# Python 3.8 and 3.9 don't support the | operator.
+ModeDetails = Tuple[str, str, bool, Union[str, None]]
 """Tuple of mode details as ``(letter, mode, is_added, param)``.
 
 Where ``type`` is the mode type (such as A, B, C, D); ``mode`` is the mode
@@ -327,7 +331,7 @@ class ModeParser:
                     priv_param: str = next(iparams)
                     privileges.append((mode, is_added, priv_param))
                 else:
-                    mode_param: Optional[str] = None
+                    mode_param: str | None = None
                     letter, required = self.get_mode_info(mode, is_added)
                     if required:
                         mode_param = next(iparams)
