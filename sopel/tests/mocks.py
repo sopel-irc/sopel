@@ -203,6 +203,10 @@ class MockIRCServer:
 
         .. versionadded:: 8.1
         """
+        # ensure the `raw` message ends with \r\n, for protocol compliance
+        # the bot doesn't actually care (it just .strip()s the line endings),
+        # but our tests should be consistent with real IRC messages
+        raw = raw.rstrip('\r\n') + '\r\n'
         self.bot.on_message(raw)
 
         if (blocking is None and self.join_threads) or blocking:
