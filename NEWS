@@ -62,6 +62,7 @@ Core changes
 * Moved capability-handling types into `sopel.plugins.callables` [[#2669[]]]
 * Deprecated internal submodule `sopel.loader` [[#2669][]]
 * Added unit testing of raw logs [[#2723][]]
+* Enforce `\r\n` message delimiter in `MockIRCServer` [[#2730][]]
 
 API changes
 -----------
@@ -153,6 +154,7 @@ Housekeeping changes
 [#2720]: https://github.com/sopel-irc/sopel/pull/2720
 [#2723]: https://github.com/sopel-irc/sopel/pull/2723
 [#2727]: https://github.com/sopel-irc/sopel/pull/2727
+[#2730]: https://github.com/sopel-irc/sopel/pull/2730
 
 
 Changes between 8.0.3 and 8.0.4
