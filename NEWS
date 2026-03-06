@@ -52,6 +52,7 @@ Core changes
     the full hostmask (`nick!user@host.name`), as expected.
 * Added `edit` subcommand to `sopel-config` [[#2595][]]
   * Opens the given config file in the user's `$EDITOR`
+* Warn if config specifies a nonexistent `core.extra` directory [[#2731][]]
 * Added `setname` support [[#2578][]]
 * Added `invite-notify` support [[#2637][]]
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
@@ -156,6 +157,7 @@ Housekeeping changes
 [#2726]: https://github.com/sopel-irc/sopel/pull/2726
 [#2727]: https://github.com/sopel-irc/sopel/pull/2727
 [#2730]: https://github.com/sopel-irc/sopel/pull/2730
+[#2731]: https://github.com/sopel-irc/sopel/pull/2731
 
 
 Changes between 8.0.3 and 8.0.4
