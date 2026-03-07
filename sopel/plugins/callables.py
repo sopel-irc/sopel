@@ -79,7 +79,6 @@ import re
 from typing import (
     Any,
     Callable,
-    Literal,
     Protocol,
     Type,
     TYPE_CHECKING,
@@ -168,6 +167,72 @@ class TypedCallablePredicate(Protocol):
     """
     def __call__(self, bot: SopelWrapper, trigger: Trigger) -> bool:
         ...
+
+
+# TODO: replace str, enum.Enum to enum.StrEnum when dropping Python 3.10
+class Priority(str, enum.Enum):
+    """Plugin callable priorities.
+
+    The values are ordered from lower to higher and can be compared::
+
+        >>> from sopel.plugins.callables import Priority
+        >>> Priority.LOW < Priority.MEDIUM < Priority.HIGH
+        True
+        >>> Priority.MEDIUM > Priority.HIGH
+        False
+        >>> Priority.HIGH <= Priority.HIGH
+        True
+
+    This enum is used to replace string literal: the bot will convert priority
+    value from string to the enum or raise an error.
+
+    .. versionadded:: 8.1
+    """
+    LOW = 'low'
+    """Low priority callables are exected last."""
+
+    MEDIUM = 'medium'
+    """Medium priority callables are exected after first and before last."""
+
+    HIGH = 'high'
+    """High priority callables are exected first."""
+
+    @property
+    def level(self) -> int:
+        """Priority's level as an integer.
+
+        The priority's level allows to order priorities properly.
+        """
+        # TODO: replace with match (type safety) when dropping Python 3.9
+        return {
+            self.LOW: 0,
+            self.MEDIUM: 100,
+            self.HIGH: 1000,
+        }.get(self, 100)
+
+    def __ge__(self, other: str) -> bool:
+        if isinstance(other, Priority):
+            return self.level >= other.level
+
+        return NotImplemented
+
+    def __gt__(self, other: str) -> bool:
+        if isinstance(other, Priority):
+            return self.level > other.level
+
+        return NotImplemented
+
+    def __le__(self, other: str) -> bool:
+        if isinstance(other, Priority):
+            return self.level <= other.level
+
+        return NotImplemented
+
+    def __lt__(self, other: str) -> bool:
+        if isinstance(other, Priority):
+            return self.level < other.level
+
+        return NotImplemented
 
 
 class AbstractPluginObject(abc.ABC):
@@ -635,7 +700,7 @@ class PluginCallable(AbstractPluginObject):
         """Flag to indicate if an echo message can trigger this callable."""
 
         # how to run it
-        self.priority: Literal['low', 'medium', 'high'] = 'medium'
+        self.priority: Priority = Priority.MEDIUM
         """Priority of execution.
 
         Plugin callables with a high priority will be executed before medium

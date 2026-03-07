@@ -128,10 +128,10 @@ Before event
 To handle an event before Sopel records any change, you should use these
 decorators together::
 
-    @plugin.event('event-name')  # replace by your event
-    @plugin.priority('high')     # ensure execution before Sopel
-    @plugin.thread(False)        # ensure sequential execution
-    @plugin.unblockable          # optional
+    @plugin.event('event-name')             # replace by your event
+    @plugin.priority(plugin.Priority.HIGH)  # ensure execution before Sopel
+    @plugin.thread(False)                   # ensure sequential execution
+    @plugin.unblockable                     # optional
     def before_event_name(bot, trigger):
         # the bot is not updated yet
 
@@ -145,10 +145,10 @@ After event
 To handle an event after Sopel recorded any change, you should use these
 decorators together::
 
-    @plugin.event('event-name')  # replace by your event
-    @plugin.priority('low')      # ensure execution after Sopel
-    @plugin.thread(False)        # optional
-    @plugin.unblockable          # optional
+    @plugin.event('event-name')             # replace by your event
+    @plugin.priority(plugin.Priority.LOW)   # ensure execution after Sopel
+    @plugin.thread(False)                   # optional
+    @plugin.unblockable                     # optional
     def after_event_name(bot, trigger):
         # the bot has been updated already
 
@@ -302,7 +302,7 @@ automatically:
     @plugin.event(events.RPL_SASLSUCCESS)
     @plugin.thread(False)
     @plugin.unblockable
-    @plugin.priority('medium')
+    @plugin.priority(plugin.Priority.MEDIUM)
     def sasl_success(bot: SopelWrapper, trigger: Trigger):
         """Resume capability negotiation on successful SASL auth."""
         LOGGER.info("Successful SASL Auth.")

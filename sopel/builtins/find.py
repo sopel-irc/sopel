@@ -34,7 +34,7 @@ def shutdown(bot):
 
 @plugin.echo
 @plugin.rule('.*')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.require_chanmsg
 @plugin.unblockable
 def collectlines(bot, trigger):
@@ -74,7 +74,7 @@ def _cleanup_nickname(bot, nick, channel=None):
 
 @plugin.echo
 @plugin.event('PART')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.unblockable
 def part_cleanup(bot, trigger):
     """Clean up cached data when a user leaves a channel."""
@@ -88,7 +88,7 @@ def part_cleanup(bot, trigger):
 
 @plugin.echo
 @plugin.event('QUIT')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.unblockable
 def quit_cleanup(bot, trigger):
     """Clean up cached data after a user quits IRC."""
@@ -98,7 +98,7 @@ def quit_cleanup(bot, trigger):
 
 @plugin.echo
 @plugin.event('KICK')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.unblockable
 def kick_cleanup(bot, trigger):
     """Clean up cached data when a user is kicked from a channel."""
@@ -146,7 +146,7 @@ def kick_cleanup(bot, trigger):
                 (?P<flags>\S+)
              )?
             """)
-@plugin.priority('high')
+@plugin.priority(plugin.Priority.HIGH)
 def findandreplace(bot, trigger):
     # Don't bother in PM
     if trigger.is_privmsg:

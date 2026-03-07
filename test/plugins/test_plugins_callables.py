@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from sopel.plugins.callables import PluginCallable, PluginGeneric, PluginJob
+from sopel.plugins.callables import (
+    PluginCallable,
+    PluginGeneric,
+    PluginJob,
+    Priority,
+)
 from sopel.tests import rawlist
 
 
@@ -35,6 +40,144 @@ def tmpconfig(configfactory: ConfigFactory) -> Config:
 @pytest.fixture
 def mockbot(tmpconfig: Config, botfactory: BotFactory) -> Sopel:
     return botfactory(tmpconfig)
+
+
+# Test plugin Priority
+
+def test_priority_compare_eq():
+    assert Priority.LOW == Priority.LOW
+    assert Priority.LOW == 'low'
+    assert Priority.MEDIUM == Priority.MEDIUM
+    assert Priority.MEDIUM == 'medium'
+    assert Priority.HIGH == Priority.HIGH
+    assert Priority.HIGH == 'high'
+
+
+def test_priority_level():
+    assert Priority.LOW.level == 0
+    assert Priority.MEDIUM.level == 100
+    assert Priority.HIGH.level == 1000
+
+
+def test_priority_compare_lt():
+    assert Priority.LOW < Priority.MEDIUM
+    assert Priority.MEDIUM < Priority.HIGH
+    assert Priority.LOW < Priority.HIGH
+    assert Priority.LOW < Priority.MEDIUM < Priority.HIGH
+
+    assert (Priority.LOW < Priority.LOW) is False
+    assert (Priority.MEDIUM < Priority.MEDIUM) is False
+    assert (Priority.HIGH < Priority.HIGH) is False
+
+    assert (Priority.MEDIUM < Priority.LOW) is False
+    assert (Priority.HIGH < Priority.MEDIUM) is False
+    assert (Priority.HIGH < Priority.LOW) is False
+    assert (Priority.HIGH < Priority.MEDIUM < Priority.LOW) is False
+
+    with pytest.raises(TypeError):
+        assert Priority.LOW < 50
+
+    with pytest.raises(TypeError):
+        assert Priority.MEDIUM < 50
+
+    with pytest.raises(TypeError):
+        assert Priority.HIGH < 50
+
+
+def test_priority_compare_le():
+    assert Priority.LOW <= Priority.MEDIUM
+    assert Priority.MEDIUM <= Priority.HIGH
+    assert Priority.LOW <= Priority.HIGH
+    assert Priority.LOW <= Priority.MEDIUM <= Priority.HIGH
+
+    assert Priority.LOW <= Priority.LOW
+    assert Priority.MEDIUM <= Priority.MEDIUM
+    assert Priority.HIGH <= Priority.HIGH
+
+    assert (Priority.MEDIUM <= Priority.LOW) is False
+    assert (Priority.HIGH <= Priority.MEDIUM) is False
+    assert (Priority.HIGH <= Priority.LOW) is False
+    assert (Priority.HIGH <= Priority.MEDIUM <= Priority.LOW) is False
+
+    with pytest.raises(TypeError):
+        assert Priority.LOW <= 50
+
+    with pytest.raises(TypeError):
+        assert Priority.MEDIUM <= 50
+
+    with pytest.raises(TypeError):
+        assert Priority.HIGH <= 50
+
+
+def test_priority_compare_gt():
+    assert Priority.HIGH > Priority.MEDIUM
+    assert Priority.MEDIUM > Priority.LOW
+    assert Priority.HIGH > Priority.LOW
+    assert Priority.HIGH > Priority.MEDIUM > Priority.LOW
+
+    assert (Priority.LOW > Priority.LOW) is False
+    assert (Priority.MEDIUM > Priority.MEDIUM) is False
+    assert (Priority.HIGH > Priority.HIGH) is False
+
+    assert (Priority.LOW > Priority.MEDIUM) is False
+    assert (Priority.MEDIUM > Priority.HIGH) is False
+    assert (Priority.LOW > Priority.HIGH) is False
+    assert (Priority.LOW > Priority.MEDIUM > Priority.HIGH) is False
+
+    with pytest.raises(TypeError):
+        assert Priority.LOW > 50
+
+    with pytest.raises(TypeError):
+        assert Priority.MEDIUM > 50
+
+    with pytest.raises(TypeError):
+        assert Priority.HIGH > 50
+
+
+def test_priority_compare_ge():
+    assert Priority.HIGH >= Priority.MEDIUM
+    assert Priority.MEDIUM >= Priority.LOW
+    assert Priority.HIGH >= Priority.LOW
+    assert Priority.HIGH >= Priority.MEDIUM >= Priority.LOW
+
+    assert Priority.LOW >= Priority.LOW
+    assert Priority.MEDIUM >= Priority.MEDIUM
+    assert Priority.HIGH >= Priority.HIGH
+
+    assert (Priority.LOW >= Priority.MEDIUM) is False
+    assert (Priority.MEDIUM >= Priority.HIGH) is False
+    assert (Priority.LOW >= Priority.HIGH) is False
+    assert (Priority.LOW >= Priority.MEDIUM >= Priority.HIGH) is False
+
+    with pytest.raises(TypeError):
+        assert Priority.LOW >= 50
+
+    with pytest.raises(TypeError):
+        assert Priority.MEDIUM >= 50
+
+    with pytest.raises(TypeError):
+        assert Priority.HIGH >= 50
+
+
+def test_priority_sorting():
+    assert sorted(
+        [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+    ) == [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+    assert sorted(
+        [Priority.LOW, Priority.HIGH, Priority.MEDIUM]
+    ) == [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+    assert sorted(
+        [Priority.MEDIUM, Priority.LOW, Priority.HIGH]
+    ) == [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+    assert sorted(
+        [Priority.MEDIUM, Priority.HIGH, Priority.LOW]
+    ) == [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+    assert sorted(
+        [Priority.HIGH, Priority.LOW, Priority.MEDIUM]
+    ) == [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+    assert sorted(
+        [Priority.HIGH, Priority.MEDIUM, Priority.LOW]
+    ) == [Priority.LOW, Priority.MEDIUM, Priority.HIGH]
 
 
 # Test plugin generic

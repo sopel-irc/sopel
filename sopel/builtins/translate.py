@@ -85,7 +85,7 @@ def translate(text, in_lang='auto', out_lang='en'):
 
 @plugin.rule(r'$nickname[,:]\s+(?:([a-z]{2}) +)?(?:([a-z]{2}|en-raw) +)?["“](.+?)["”]\? *$')
 @plugin.example('$nickname: "mon chien"? or $nickname: fr "mon chien"?')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
 def tr(bot, trigger):
     """Translates a phrase, with an optional language hint."""
@@ -289,7 +289,7 @@ def mangle(bot, trigger):
 
 
 @plugin.rule('(.*)')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.unblockable
 def collect_mangle_lines(bot, trigger):
     bot.memory['mangle_lines'][trigger.sender] = "%s said '%s'" % (
