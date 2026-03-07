@@ -3,6 +3,13 @@ The ``tools.web`` package contains utility functions for interaction with web
 applications, APIs, or websites in your plugins.
 
 .. versionadded:: 7.0
+
+.. versionchanged:: 8.1
+
+    Several utility functions are now deprecated due to Python's builtin
+    library containing the appropriate functions. These functions will be
+    removed in Sopel 9.
+
 """
 # Copyright © 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
@@ -125,6 +132,11 @@ def entity(match: re.Match) -> str:
     return '[' + value + ']'
 
 
+@deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's html.unescape() function",
+)
 def decode(text: str) -> str:
     """Decode HTML entities into Unicode text.
 
@@ -136,11 +148,20 @@ def decode(text: str) -> str:
         Renamed ``html`` parameter to ``text``. (Python gained a standard
         library module named :mod:`html` in version 3.4.)
 
+    .. deprecated:: 8.1
+
+        Will be removed in Sopel 9. Migrate to Python's standard-library
+        equivalent, :func:`html.unescape`.
+
     """
-    # TODO deprecated?
     return html.unescape(text)
 
 
+@deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's urllib.parse.quote() function",
+)
 def quote(string: str, safe: str = '/') -> str:
     """Safely encodes a string for use in a URL.
 
@@ -152,12 +173,21 @@ def quote(string: str, safe: str = '/') -> str:
     .. note::
         This is a shim to make writing cross-compatible plugins for both
         Python 2 and Python 3 easier.
+
+    .. deprecated:: 8.1
+
+        Will be removed in Sopel 9. Migrate to Python's standard-library
+        equivalent, :func:`urllib.parse.quote`.
     """
-    # TODO deprecated?
     return urllib.parse.quote(str(string), safe)
 
 
 # six-like shim for Unicode safety
+@deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's urllib.parse.unquote() function",
+)
 def unquote(string: str) -> str:
     """Decodes a URL-encoded string.
 
@@ -167,19 +197,33 @@ def unquote(string: str) -> str:
     .. note::
 
         This is a convenient shortcut for ``urllib.parse.unquote``.
+
+    .. deprecated:: 8.1
+
+        Will be removed in Sopel 9. Migrate to Python's standard-library
+        equivalent, :func:`urllib.parse.unquote`.
     """
-    # TODO deprecated?
     return urllib.parse.unquote(string)
 
 
 def quote_query(string: str) -> str:
     """Safely encodes a URL's query parameters.
 
-    :param str string: a URL containing query parameters
-    :return str: the input URL with query parameter values URL-encoded
+    :param string: a URL containing query parameters
+    :return: the input URL with query parameter values URL-encoded
+
+    .. note::
+
+        This is a convenient function using :func:`urllib.parse.urlparse` and
+        :func:`urllib.parse.quote`.
+
     """
     parsed = urlparse(string)
-    string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
+    string = string.replace(
+        parsed.query,
+        urllib.parse.quote(parsed.query, "/=&"),
+        1,
+    )
     return string
 
 
@@ -203,8 +247,12 @@ def iri_to_uri(iri: str) -> str:
 
 
 # direct shortcut kept for backward compatibility reasons
-# TODO consider removing this
-urlencode = urllib.parse.urlencode
+urlencode = deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's urllib.parse.urlencode() function",
+    func=urllib.parse.urlencode
+)
 
 
 # Functions for URL detection

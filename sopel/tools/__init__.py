@@ -13,13 +13,11 @@
 
 from __future__ import annotations
 
-import codecs
 import logging
 import re
-import sys
 
 # Don't delete `deprecated` import - maintains backward compatibility with pre-8.0 API
-from sopel.lifecycle import deprecated
+from sopel.lifecycle import deprecated  # NOQA
 
 from . import time, web  # NOQA
 from ._events import events  # NOQA
@@ -31,49 +29,6 @@ from .memories import (  # NOQA
     SopelMemory,
     SopelMemoryWithDefault,
 )
-
-
-# Long kept for Python compatibility, but it's time we let these go.
-raw_input = deprecated(  # pragma: no cover
-    'Use the `input` function directly.',
-    version='8.0',
-    removed_in='8.1',
-    func=input)
-iteritems = deprecated(  # pragma: no cover
-    "Use the dict object's `.items()` method directly.",
-    version='8.0',
-    removed_in='8.1',
-    func=dict.items)
-itervalues = deprecated(  # pragma: no cover
-    "Use the dict object's `.values()` method directly.",
-    version='8.0',
-    removed_in='8.1',
-    func=dict.values)
-iterkeys = deprecated(  # pragma: no cover
-    "Use the dict object's `.keys()` method directly.",
-    version='8.0',
-    removed_in='8.1',
-    func=dict.keys)
-
-
-@deprecated('Shim for Python 2 cross-compatibility, no longer needed. '
-            'Use built-in `input()` instead.',
-            version='7.1',
-            warning_in='8.0',
-            removed_in='8.1')
-def get_input(prompt):
-    """Get decoded input from the terminal (equivalent to Python 3's ``input``).
-
-    :param str prompt: what to display as a prompt on the terminal
-    :return: the user's input
-    :rtype: str
-
-    .. deprecated:: 7.1
-
-        This function will be removed in Sopel 8.1.
-
-    """
-    return input(prompt)
 
 
 def get_sendable_message(text, max_length=400):
@@ -122,93 +77,6 @@ def get_sendable_message(text, max_length=400):
             text = text[:last_space]
 
     return text, excess.lstrip()
-
-
-class OutputRedirect:
-    """Redirect the output to the terminal and a log file.
-
-    A simplified object used to write to both the terminal and a log file.
-
-    .. deprecated:: 8.0
-
-        Vestige of old logging system. Will be removed in Sopel 8.1.
-
-    """
-
-    @deprecated(
-        "Remnant of Sopel's pre-7.0 logging system. "
-        "You shouldn't have been using this anyway.",
-        version='8.0',
-        removed_in='8.1',
-    )
-    def __init__(self, logpath, stderr=False, quiet=False):
-        """Create an object which will log to both a file and the terminal.
-
-        :param str logpath: path to the log file
-        :param bool stderr: write output to stderr if ``True``, or to stdout
-                            otherwise
-        :param bool quiet: write to the log file only if ``True`` (and not to
-                           the terminal)
-
-        Create an object which will log to the file at ``logpath`` as well as
-        the terminal.
-        """
-        self.logpath = logpath
-        self.stderr = stderr
-        self.quiet = quiet
-
-    def write(self, string):
-        """Write the given ``string`` to the logfile and terminal.
-
-        :param str string: the string to write
-        """
-        if not self.quiet and sys.__stderr__ and sys.__stdout__:
-            try:
-                if self.stderr:
-                    sys.__stderr__.write(string)
-                else:
-                    sys.__stdout__.write(string)
-            except Exception:  # TODO: Be specific
-                pass
-
-        with codecs.open(self.logpath, 'ab', encoding="utf8",
-                         errors='xmlcharrefreplace') as logfile:
-            try:
-                logfile.write(string)
-            except UnicodeDecodeError:
-                # we got an invalid string, safely encode it to utf-8
-                logfile.write(str(string, 'utf8', errors="replace"))
-
-    def flush(self):
-        """Flush the file writing buffer."""
-        if self.stderr and sys.__stderr__:
-            sys.__stderr__.flush()
-        elif sys.__stdout__:
-            sys.__stdout__.flush()
-
-
-@deprecated(
-    "Plugins should use a logger object.",
-    version='8.0',
-    removed_in='8.1',
-)
-def stderr(string):
-    # don't like importing inside functions, but circular imports ensue otherwise
-    from sopel.cli.utils import stderr as _stderr
-
-    return _stderr(string)
-
-
-@deprecated(
-    "Function for internal use, moved to `sopel.cli.utils`.",
-    version='8.0',
-    removed_in='8.1',
-)
-def check_pid(pid):
-    # don't like importing inside functions, but circular imports ensue otherwise
-    from sopel.cli.utils import check_pid as _check_pid
-
-    return _check_pid(pid)
 
 
 def get_hostmask_regex(mask):
