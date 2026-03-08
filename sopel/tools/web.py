@@ -9,7 +9,6 @@ applications, APIs, or websites in your plugins.
     Several utility functions are now deprecated due to Python's builtin
     library containing the appropriate functions. These functions will be
     removed in Sopel 9.
-
 """
 # Copyright © 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
@@ -152,7 +151,6 @@ def decode(text: str) -> str:
 
         Will be removed in Sopel 9. Migrate to Python's standard-library
         equivalent, :func:`html.unescape`.
-
     """
     return html.unescape(text)
 
@@ -214,9 +212,8 @@ def quote_query(string: str) -> str:
 
     .. note::
 
-        This is a convenient function using :func:`urllib.parse.urlparse` and
+        This is a convenience function using :func:`urllib.parse.urlparse` and
         :func:`urllib.parse.quote`.
-
     """
     parsed = urlparse(string)
     string = string.replace(
