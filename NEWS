@@ -75,7 +75,6 @@ API changes
     owner and admins.
   * Available for `@plugin.rate`, `@plugin.rate_user`, `@plugin.rate_channel`,
     and `@plugin.rate_global`.
-* Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 * Standardized logging for external code in `sopel.thirdparty` [[#2720][]]
   * Fixed logging deprecation warnings (from `lifecycle.deprecated()` for
     plugins and other code outside the `sopel.*` namespace: `sopel.thirdparty`
@@ -86,6 +85,11 @@ API changes
   handlers [[#2669][]]
 * Updated deprecation warning when `sopel.module` is imported to include the
   import location [[#2720][]]
+* Deprecated several obsolete utility functions in `tools.web` [[#2729][]]
+  * Includes the functions `decode()`, `quote()`, `unquote()`, & `urlencode()`.
+  * All are covered by the modern Python standard library, and will be removed
+    in Sopel 9.0.
+* Deprecated `Sopel.add_plugin()` and `Sopel.remove_plugin()` methods [[#2636][]]
 * Changed `tools.web.search_urls()` to be stricter about ensuring there's a word
   boundary before what looks like a URL [[#2697][]]
 * Added `stack_output` optional parameter to `lifecycle.deprecated` [[#2712][]]
@@ -94,6 +98,9 @@ API changes
 * Updated test tools [[#2716][]]
   * Added `sopel.tests.on_message()` helper function
   * Added `message()` and `invite()` methods to the `MockIRCServer`
+* Removed previously deprecated features from `tools` [[#2729][]]
+  * Includes `raw_input()`, `iteritems()`, `iterkeys()`, `itervalues()`,
+    `get_input()`, `stderr()`, `check_pid()`, and the `OutputRedirect` class.
 
 Housekeeping changes
 --------------------
@@ -156,6 +163,7 @@ Housekeeping changes
 [#2723]: https://github.com/sopel-irc/sopel/pull/2723
 [#2726]: https://github.com/sopel-irc/sopel/pull/2726
 [#2727]: https://github.com/sopel-irc/sopel/pull/2727
+[#2729]: https://github.com/sopel-irc/sopel/pull/2729
 [#2730]: https://github.com/sopel-irc/sopel/pull/2730
 [#2731]: https://github.com/sopel-irc/sopel/pull/2731
 
