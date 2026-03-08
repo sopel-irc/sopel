@@ -12,6 +12,7 @@ https://sopel.chat
 from __future__ import annotations
 
 import logging
+import time
 
 from sopel import plugin
 from sopel.config import types
@@ -32,6 +33,12 @@ ERROR_NOTHING_TO_RAW = 'I need an IRC message to send.'
 class AdminSection(types.StaticSection):
     hold_ground = types.BooleanAttribute('hold_ground', default=False)
     """Auto re-join on kick"""
+    hold_ground_delay = types.ValidatedAttribute(
+        'hold_ground_delay',
+        default=5,
+        parse=int,
+    )
+    """Delay (in whole seconds) before the hold_ground feature activates"""
     auto_accept_invite = types.BooleanAttribute('auto_accept_invite', default=True)
     """Auto-join channels when invited"""
 
@@ -48,6 +55,11 @@ def configure(settings):
         'hold_ground',
         "Automatically re-join after being kicked?",
     )
+    if settings.admin.hold_ground:
+        settings.admin.configure_setting(
+            'hold_ground_delay',
+            "How many seconds should the bot wait before re-joining?",
+        )
     settings.admin.configure_setting(
         'auto_accept_invite',
         'Automatically join channels when invited?',
@@ -332,7 +344,17 @@ def hold_ground(bot, trigger):
 
     channel = trigger.sender
     if bot.settings.admin.hold_ground:
-        LOGGER.info('Got kicked from "%s"; admin.hold_ground is on.', channel)
+        delay = bot.settings.admin.hold_ground_delay
+        LOGGER.info(
+            'Got kicked from "%s"; admin.hold_ground is on. '
+            'Rejoining in %s seconds.',
+            channel,
+            delay,
+        )
+        if delay > 0:
+            # negative numbers are invalid here; consider them the same as zero
+            # i.e. no delay
+            time.sleep(delay)
         bot.join(channel)
     else:
         LOGGER.info('Got kicked from "%s"; admin.hold_ground is off.', channel)
