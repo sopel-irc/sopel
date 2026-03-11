@@ -298,7 +298,7 @@ def _execute_perform(bot):
 @plugin.event(events.ERR_NICKNAMEINUSE)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def on_nickname_in_use(bot, trigger):
     """Change the bot's nick when the current one is already in use.
 
@@ -334,7 +334,7 @@ def execute_perform(bot, trigger):
 @plugin.event(events.RPL_WELCOME, events.RPL_LUSERCLIENT)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def startup(bot, trigger):
     """Do tasks related to connecting to the network.
 
@@ -422,7 +422,7 @@ def startup(bot, trigger):
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.rule('are supported by this server')
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def handle_isupport(bot, trigger):
     """Handle ``RPL_ISUPPORT`` events."""
     # remember if certain actionable tokens are known to be supported,
@@ -492,7 +492,7 @@ def handle_isupport(bot, trigger):
 @plugin.event(events.RPL_ENDOFMOTD, events.ERR_NOMOTD)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def join_channels(bot, trigger):
     # join channels
     channels = bot.settings.core.channels
@@ -530,7 +530,7 @@ def join_channels(bot, trigger):
 @plugin.event(events.RPL_MYINFO)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def parse_reply_myinfo(bot, trigger):
     """Handle ``RPL_MYINFO`` events."""
     # keep <client> <servername> <version> only
@@ -579,7 +579,7 @@ def enable_service_auth(bot, trigger):
 
 
 @plugin.event(events.ERR_NOCHANMODES)
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def retry_join(bot, trigger):
     """Give NickServ enough time to identify on a +R channel.
 
@@ -610,7 +610,7 @@ def retry_join(bot, trigger):
 @plugin.event(events.RPL_NAMREPLY)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def handle_names(bot, trigger):
     """Handle NAMES responses.
 
@@ -681,13 +681,13 @@ def handle_names(bot, trigger):
 @plugin.event('MODE')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_modes(bot, trigger):
     """Track changes from received MODE commands."""
     _parse_modes(bot, trigger.args)
 
 
-@plugin.priority('high')
+@plugin.priority(plugin.Priority.HIGH)
 @plugin.event(events.RPL_CHANNELMODEIS)
 @plugin.thread(False)
 @plugin.unblockable
@@ -805,7 +805,7 @@ def _parse_modes(bot, args, clear=False):
 @plugin.event('NICK')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_nicks(bot, trigger):
     """Track nickname changes and maintain our chanops list accordingly."""
     old = trigger.nick
@@ -853,7 +853,7 @@ def track_nicks(bot, trigger):
 @plugin.event('SETNAME')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def handle_setname(bot, trigger):
     """Update a user's realname when notified by the IRC server."""
     user = bot.users.get(trigger.nick)
@@ -876,7 +876,7 @@ def handle_setname(bot, trigger):
 @plugin.event('PART')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_part(bot, trigger):
     """Track users leaving channels."""
     nick = trigger.nick
@@ -888,7 +888,7 @@ def track_part(bot, trigger):
 @plugin.event('KICK')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_kick(bot, trigger):
     """Track users kicked from channels."""
     nick = bot.make_identifier(trigger.args[1])
@@ -971,7 +971,7 @@ def _periodic_send_who(bot):
 @plugin.event('INVITE')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_invite(bot, trigger):
     """Track users being invited to channels."""
     LOGGER.info(
@@ -981,7 +981,7 @@ def track_invite(bot, trigger):
 @plugin.event('JOIN')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_join(bot, trigger):
     """Track users joining channels.
 
@@ -1038,7 +1038,7 @@ def track_join(bot, trigger):
 @plugin.event('QUIT')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_quit(bot, trigger):
     """Track when users quit channels."""
     for channel in bot.channels.values():
@@ -1183,7 +1183,7 @@ CAP_HANDLERS: dict[str, Callable[[SopelWrapper, Trigger], None]] = {
 @plugin.event('CAP')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def receive_cap_list(bot: SopelWrapper, trigger: Trigger) -> None:
     """Handle client capability negotiation."""
     subcommand = trigger.args[1]
@@ -1228,7 +1228,7 @@ def send_authenticate(bot, token):
 @plugin.event('AUTHENTICATE')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def auth_proceed(bot, trigger):
     """Handle client-initiated SASL auth.
 
@@ -1297,7 +1297,7 @@ def _make_sasl_plain_token(account, password):
 @plugin.event(events.RPL_SASLSUCCESS)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def sasl_success(bot: SopelWrapper, trigger: Trigger) -> None:
     """Resume capability negotiation on successful SASL auth."""
     LOGGER.info("Successful SASL Auth.")
@@ -1310,7 +1310,7 @@ def sasl_success(bot: SopelWrapper, trigger: Trigger) -> None:
 @plugin.event(events.ERR_NICKLOCKED)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def sasl_fail(bot, trigger):
     """SASL Auth Failed: log the error and quit."""
     LOGGER.error(
@@ -1325,7 +1325,7 @@ def sasl_fail(bot, trigger):
 @plugin.event(events.RPL_SASLMECHS)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def sasl_mechs(bot, trigger):
     # Presumably we're only here if we said we actually *want* sasl, but still
     # check anyway in case the server glitched.
@@ -1396,7 +1396,7 @@ def _get_sasl_pass_and_mech(bot):
 @plugin.example(r'.blocks add nick sp(a|4)mb(o|0)t\d*', user_help=True)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.require_admin
 def blocks(bot, trigger):
     """Manage Sopel's blocking features.
@@ -1501,7 +1501,7 @@ def blocks(bot, trigger):
 @plugin.event('CHGHOST')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def recv_chghost(bot, trigger):
     """Track user/host changes."""
     if trigger.nick not in bot.users:
@@ -1527,7 +1527,7 @@ def recv_chghost(bot, trigger):
 @plugin.event('ACCOUNT')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def account_notify(bot, trigger):
     """Track users' accounts."""
     if trigger.nick not in bot.users:
@@ -1543,7 +1543,7 @@ def account_notify(bot, trigger):
 @plugin.event(events.RPL_WHOSPCRPL)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def recv_whox(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is enabled."""
     if len(trigger.args) < 2 or trigger.args[1] != WHOX_QUERYTYPE:
@@ -1626,7 +1626,7 @@ def _record_who(
 @plugin.event(events.RPL_WHOREPLY)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def recv_who(bot, trigger):
     """Track ``WHO`` responses when ``WHOX`` is not enabled."""
     channel, user, host, _, nick, status = trigger.args[1:7]
@@ -1644,7 +1644,7 @@ def recv_who(bot, trigger):
 @plugin.event('AWAY')
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_notify(bot, trigger):
     """Track users going away or coming back."""
     if trigger.nick not in bot.users:
@@ -1660,7 +1660,7 @@ def track_notify(bot, trigger):
 @plugin.event(events.RPL_TOPIC)
 @plugin.thread(False)
 @plugin.unblockable
-@plugin.priority('medium')
+@plugin.priority(plugin.Priority.MEDIUM)
 def track_topic(bot, trigger):
     """Track channels' topics."""
     if trigger.event != 'TOPIC':

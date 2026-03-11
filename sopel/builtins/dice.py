@@ -215,7 +215,7 @@ def _roll_dice(dice_match: re.Match[str]) -> DicePouch:
 
 
 @plugin.command('roll', 'dice', 'd')
-@plugin.priority("medium")
+@plugin.priority(plugin.Priority.MEDIUM)
 @plugin.example(".roll", "No dice to roll.")
 @plugin.example(".roll 2d6+4^2&",
                 "I don't know how to process that. "

@@ -65,7 +65,7 @@ def seen(bot, trigger):
 
 @plugin.thread(False)
 @plugin.rule('(.*)')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.unblockable
 @plugin.require_chanmsg
 def note(bot, trigger):
