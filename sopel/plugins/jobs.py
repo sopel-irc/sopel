@@ -4,7 +4,7 @@
 
 .. versionchanged:: 8.1
 
-    This module used to depends on ``sopel.tools.job`` but this module and
+    This module used to depend on ``sopel.tools.job`` but this module and
     its content have been removed or moved. The class ``Job`` is now defined
     here as :class:`sopel.plugins.jobs.Job`.
 
@@ -97,8 +97,8 @@ class Scheduler(threading.Thread):
 
         This is an internal tool used by Sopel to manage its jobs and
         should not be used by plugin authors. Its usage and documentation is
-        for Sopel core development and advanced developers. It is subject to
-        rapid changes between versions without much (or any) warning.
+        to support Sopel core development. It is subject to rapid changes
+        between versions without much (or any) warning.
 
         To register a job, plugin authors should use
         :func:`sopel.plugin.interval` instead.
@@ -262,17 +262,15 @@ class Job:
 
     :param intervals: set of intervals; each is a number of seconds between
                       calls to ``handler``
-    :type intervals: :term:`iterable`
-    :param str plugin: optional plugin name to which the job belongs
-    :param str label: optional label (name) for the job
+    :param plugin: optional plugin name to which the job belongs
+    :param label: optional label (name) for the job
     :param handler: function to be called when the job is ready to execute
-    :type handler: :class:`sopel.plugins.callables.PluginJob`
-    :param bool threaded: run the job in a separate thread
-    :param str doc: optional documentation for the job
+    :param threaded: run the job in a separate thread
+    :param doc: optional documentation for the job
 
-    Job is a simple structure that holds information about when a function
-    should be called next. They are best used with a :class:`Scheduler`
-    that will manage job execution when they are ready.
+    A ``Job`` is a simple structure that holds information about when a
+    function should be called next. They are best used in conjunction with
+    a :class:`Scheduler` that will manage job execution when they are ready.
 
     The :term:`function` to execute is the ``handler``, which must be a
     callable with this signature::
@@ -293,7 +291,7 @@ class Job:
 
     In that case, ``execute`` takes care of the running state of the job.
 
-    Alternatively, you can use a ``with`` statement to perform action before
+    Alternatively, you can use a ``with`` statement to perform action(s) before
     and/or after executing the job; in that case, the ``with`` statement takes
     precedence, and the :meth:`execute` method won't interfere::
 
@@ -312,9 +310,7 @@ class Job:
         """Generate the keyword arguments to create a new instance.
 
         :param handler: callable used to generate keyword arguments
-        :type handler: :term:`function`
         :return: a map of keyword arguments
-        :rtype: dict
 
         This classmethod takes the ``handler``'s attributes to generate a map
         of keyword arguments for the class. This can be used by the
@@ -336,9 +332,7 @@ class Job:
         """Instantiate a Job from the bot's ``settings`` and a ``handler``.
 
         :param settings: bot's settings
-        :type settings: :class:`sopel.config.Config`
         :param handler: callable used to instantiate a new job
-        :type handler: :term:`function`
         """
         kwargs = cls.kwargs_from_callable(handler)
         return cls(
@@ -457,10 +451,9 @@ class Job:
     def is_ready_to_run(self, at_time: int | float) -> bool:
         """Check if this job is (or will be) ready to run at the given time.
 
-        :param int at_time: Timestamp to check, in seconds
+        :param at_time: timestamp to check, in seconds
         :return: ``True`` if the job is (or will be) ready to run, ``False``
                  otherwise
-        :rtype: bool
         """
         return not self.is_running.is_set() and any(
             (next_time - at_time) <= 0
@@ -470,7 +463,7 @@ class Job:
     def next(self: Self, current_time: int | float) -> Self:
         """Update :attr:`next_times`, assuming it executed at ``current_time``.
 
-        :param int current_time: timestamp of the current time
+        :param current_time: timestamp of the current time
         :return: a modified job object
         """
         for interval, last_time in list(self.next_times.items()):
@@ -487,7 +480,7 @@ class Job:
     def execute(self, manager: Sopel) -> Any:
         """Execute the job's handler and return its result.
 
-        :param object manager: used as argument to the job's handler
+        :param manager: used as argument to the job's handler
         :return: the return value from the handler's execution
 
         This method executes the job's handler. It doesn't change its running

@@ -67,13 +67,13 @@ def test_jobscheduler_unregister(mockbot: Sopel) -> None:
     scheduler = jobs.Scheduler(mockbot)
     assert len(scheduler.jobs) == 0, 'Sanity check failed'
     assert scheduler.unregister_plugin(plugin_name) == 0, (
-        'No job registered to unregister for that plugin'
+        'There should be no job to unregister for that plugin_name'
     )
 
     scheduler.register(job)
     assert len(scheduler.jobs) == 1, 'Sanity check failed'
     assert scheduler.unregister_plugin(plugin_name) == 1, (
-        'There was one registered job to unregister'
+        'There must be one job to unregister for that plugin_name'
     )
     assert len(scheduler.jobs) == 0, 'There should not be any jobs left.'
     assert plugin_name not in scheduler.jobs, (
