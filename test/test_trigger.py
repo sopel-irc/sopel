@@ -433,3 +433,27 @@ def test_statusmsg_trigger(nick, configfactory):
     assert trigger.sender == '#channel'
     assert trigger.sender == Identifier('#channel')
     assert trigger.status_prefix == '@'
+
+
+@pytest.mark.parametrize("senderhostmask,isadmin", [
+    ("Foo!bar@example.com", True),
+    ("Bar!bar@example.com", True),
+    ("Stranger!bar@example.com", False),
+    ("Bar!bar@stranger.domain", False)
+])
+def test_privmsg_admin(nick, senderhostmask, isadmin, configfactory):
+    line = f':{senderhostmask} PRIVMSG #Sopel :Hello world!'
+    pretrigger = PreTrigger(nick, line)
+
+    config = configfactory('default.cfg', """
+        [core]
+        owner = SomeoneElse
+        admins =
+            Foo@example.com
+            Bar@example.com
+    """)
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.sender == '#Sopel'
+    assert trigger.admin is isadmin, "Admin privilege does not match expectation"
