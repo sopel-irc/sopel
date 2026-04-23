@@ -178,11 +178,17 @@ def setup(bot: Sopel) -> None:
     if bot.settings.core.throttle_join:
         wait_interval = max(bot.settings.core.throttle_wait, 1)
 
-        handler = plugin.interval(wait_interval)(
-            plugin.label('throttle_join')(
+        # configure decorators
+        job_label_decorator = plugin.label('throttle_join')
+        job_interval_decorator = plugin.interval(wait_interval)
+
+        # apply decorators directly to an existing function to get a PluginJob
+        handler = job_interval_decorator(
+            job_label_decorator(
                 _join_event_processing
             )
         )
+        # register jobs as a regular coretasks' job
         handler.plugin_name = 'coretasks'
         bot.register_jobs([handler])
 
