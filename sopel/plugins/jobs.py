@@ -264,7 +264,7 @@ class Job:
                       calls to ``handler``
     :param plugin: optional plugin name to which the job belongs
     :param label: optional label (name) for the job
-    :param handler: function to be called when the job is ready to execute
+    :param handler: job callable to be called when the job is ready to execute
     :param threaded: run the job in a separate thread
     :param doc: optional documentation for the job
 
@@ -272,15 +272,15 @@ class Job:
     function should be called next. They are best used in conjunction with
     a :class:`Scheduler` that will manage job execution when they are ready.
 
-    The :term:`function` to execute is the ``handler``, which must be a
-    callable with this signature::
+    The ``handler`` must be a :class:`~sopel.plugins.callables.PluginJob` that
+    you can typically define with the :func:`sopel.plugin.interval`
+    decorator::
 
-        def handler(manager):
-            # perform action periodically
-            # return is optional
+        from sopel import plugin
 
-    The ``manager`` parameter can be any kind of object; usually it's an
-    instance of :class:`sopel.bot.Sopel`.
+        @plugin.interval(60)
+        def job_callable(bot: Sopel) -> None:
+            bot.say('#example', 'Ping channel every 60s')
 
     When a job is ready, you can execute it by calling its :meth:`execute`
     method (providing the appropriate ``manager`` argument)::
