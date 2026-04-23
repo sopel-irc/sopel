@@ -51,11 +51,11 @@ class Scheduler(threading.Thread):
     :param manager: bot instance passed to jobs as argument
     :type manager: :class:`sopel.bot.Sopel`
 
-    Scheduler is a :class:`thread <threading.Thread>` that keeps track of
-    plugin jobs and periodically checks which ones are ready to execute. When
-    ready, their :meth:`~Job.execute` method is called, either in a separate
-    thread or in the scheduler's thread (it depends on the job's
-    :meth:`~Job.is_threaded` method).
+    Scheduler is a :class:`~threading.Thread` that keeps track of plugin jobs
+    and periodically checks which ones are ready to execute. When ready, their
+    :meth:`~Job.execute` method is called, either in a separate thread or in
+    the scheduler's thread (it depends on the job's :meth:`~Job.is_threaded`
+    method).
 
     It can be started as any other thread::
 
@@ -91,7 +91,7 @@ class Scheduler(threading.Thread):
 
         This class is made to store jobs by their plugins and be used by the
         bot (its ``manager``). It follows a similar interface as the
-        :class:`plugin rules manager <sopel.plugins.rules.Manager>`.
+        :class:`~sopel.plugins.rules.Manager` for plugin rules.
 
     .. important::
 
@@ -195,7 +195,7 @@ class Scheduler(threading.Thread):
         .. note::
 
             This should not be called directly, as it will be done by the
-            :meth:`threading.Thread.start` method.
+            :meth:`~threading.Thread.start` method.
 
         """
         while not self.stopping.is_set():
@@ -264,7 +264,7 @@ class Job:
                       calls to ``handler``
     :param plugin: optional plugin name to which the job belongs
     :param label: optional label (name) for the job
-    :param handler: function to be called when the job is ready to execute
+    :param handler: job callable to be called when the job is ready to execute
     :param threaded: run the job in a separate thread
     :param doc: optional documentation for the job
 
@@ -272,36 +272,32 @@ class Job:
     function should be called next. They are best used in conjunction with
     a :class:`Scheduler` that will manage job execution when they are ready.
 
-    The :term:`function` to execute is the ``handler``, which must be a
-    callable with this signature::
+    The ``handler`` must be a :class:`~sopel.plugins.callables.PluginJob` that
+    you can typically define with the :func:`sopel.plugin.interval`
+    decorator::
 
-        def handler(manager):
-            # perform action periodically
-            # return is optional
+        from sopel import plugin
 
-    The ``manager`` parameter can be any kind of object; usually it's an
-    instance of :class:`sopel.bot.Sopel`.
+        @plugin.interval(60)
+        def job_callable(bot: Sopel) -> None:
+            bot.say('#example', 'Ping channel every 60s')
 
-    When a job is ready, you can execute it by calling its :meth:`execute`
-    method (providing the appropriate ``manager`` argument)::
-
-        if job.is_ready_to_run(time.time()):
-            job.execute(manager)  # marked as running
-            # "next times" have been updated; the job is not running
-
-    In that case, ``execute`` takes care of the running state of the job.
-
-    Alternatively, you can use a ``with`` statement to perform action(s) before
-    and/or after executing the job; in that case, the ``with`` statement takes
-    precedence, and the :meth:`execute` method won't interfere::
+    When a job is ready (see :meth:`is_ready_to_run`), use the ``with``
+    statement and the :meth:`execute` method to run the job::
 
         with job:
             # the job is now running, you can perform pre-execute action
-            job.execute()  # execute the job's action, no state modification
+            job.execute(manager)  # execute the job's action
             # the job is still marked as "running"
             # you can perform post-execute action
 
         # outside of the with statement, the job is not running anymore
+
+    The ``with`` statement is required to mark the job as running and
+    automatically set the :attr:`next_times` accordingly, which will prevent
+    the :class:`Scheduler` to run it more than once at a time or too early.
+
+    You can check if a job is running with its :attr:`is_running` attribute.
 
     .. versionadded:: 8.1
     """
@@ -319,7 +315,6 @@ class Job:
         The expected attributes are the ones set by decorators from the
         :mod:`sopel.plugin` module.
         """
-
         return {
             'plugin': handler.plugin_name,
             'label': handler.label,

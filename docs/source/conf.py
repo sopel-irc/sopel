@@ -54,8 +54,8 @@ nitpicky = True
 nitpick_ignore = [
     ('py:class', 'callable'),
     ('py:class', 'depends on subclass'),
-    ('py:class', 'mixed'),
     ('py:class', 'mappingproxy'),
+    ('py:class', 'mixed'),
     ('py:exc', 'plugins.exceptions.PluginNotRegistered'),
 ]
 
