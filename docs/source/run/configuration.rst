@@ -73,6 +73,8 @@ values defined as valid for this option, or Sopel will complain about it.
 .. __: https://docs.python.org/3/library/configparser.html#supported-ini-file-structure
 
 
+.. _config-identity-admins:
+
 Identity & Admins
 =================
 
@@ -95,6 +97,8 @@ value from :attr:`~CoreSection.user`::
     name = Sopel 7.0
 
 In that case, a ``WHOIS Sopel`` request will give ``Sopel 7.0`` for its name.
+
+.. _config-user-modes:
 
 User Modes
 ----------
@@ -134,6 +138,8 @@ server the bot connects to.
    that your Sopel instance is a bot.
 
    .. __: https://ircv3.net/specs/extensions/bot-mode#the-bot-isupport-token
+
+.. _config-owner-admins:
 
 Owner & Admins
 --------------
@@ -178,6 +184,7 @@ nick-based matching, but the IRC server must support accounts.
     Sopel and plugins may send important messages or notices to the owner
     using ``bot.settings.core.owner`` as the recipient.
 
+.. _config-irc-server:
 
 IRC Server
 ==========
@@ -199,6 +206,8 @@ To connect to a server, your bot needs these directives:
 You can also configure the host the bot will connect from with
 :attr:`~CoreSection.bind_host`.
 
+.. _config-ping-timeout:
+
 Ping Timeout
 ------------
 
@@ -212,6 +221,8 @@ Internally, Sopel will try to send a ``PING`` either:
 * or 50s after the last message was received by the bot
 
 This value can be modified with the :attr:`~CoreSection.timeout_ping_interval`.
+
+.. _config-ssl:
 
 SSL Connection
 --------------
@@ -254,6 +265,8 @@ In that case:
    useful if e.g. Sopel cannot find the CA certs file, or you need Sopel to
    trust a CA not trusted by the system.
 
+.. _config-channels:
+
 Channels
 --------
 
@@ -280,6 +293,8 @@ quickly::
     throttle_wait = 2
 
 In that example, Sopel will send ``JOIN`` and ``WHO`` commands 4 by 4 every 2s.
+
+.. _config-flood-prevention:
 
 Flood Prevention
 ----------------
@@ -361,6 +376,8 @@ policy.
 
         *"It's some arcane magic from AT LEAST a decade ago."*
 
+.. _config-loop-prevention:
+
 Loop prevention
 ---------------
 
@@ -434,6 +451,8 @@ You can **deactivate** the loop prevention by setting
     Since Sopel remembers only the last ten messages, it will use the minimum
     value between ``antiloop_threshold`` and ten.
 
+.. _config-on-connect-commands:
+
 Perform commands on connect
 ---------------------------
 
@@ -463,6 +482,8 @@ will, upon connection:
    This functionality is analogous to ZNC's ``perform`` module:
    https://wiki.znc.in/Perform
 
+
+.. _config-authentication:
 
 Authentication
 ==============
@@ -641,6 +662,8 @@ For example, this will use NickServ ``IDENTIFY`` command and SASL mechanism::
     :attr:`~CoreSection.nick_auth_method` (and its options) will be ignored.
 
 
+.. _config-database:
+
 Database
 ========
 
@@ -658,9 +681,9 @@ type of database, set :attr:`~CoreSection.db_type` to one of these values:
 .. note::
 
     In certain environments, specifying the :attr:`~CoreSection.db_url`
-    setting via :ref:`environment variable <Overriding individual settings>`
-    may be more convenient. Doing so will supersede all of the other options
-    described in this section.
+    setting via :ref:`environment variable <run-cli-config-override>` may be
+    more convenient. Doing so will supersede all of the other options described
+    in this section.
 
 SQLite
 ------
@@ -705,6 +728,8 @@ install them.
    not been updated, feel free to test it and tell its author(s) the results.
 
 
+.. _config-commands-plugins:
+
 Commands & Plugins
 ==================
 
@@ -727,6 +752,8 @@ Other directives include:
   used by nick-based commands
 * :attr:`~CoreSection.auto_url_schemes`: URL schemes (like ``http`` or ``ftp``)
   that should trigger the detection of URLs in messages
+
+.. _config-plugins:
 
 Plugins
 -------
@@ -757,6 +784,8 @@ example, only the ``bugzilla`` and ``remind`` plugins are enabled (because
 To detect plugins from extra directories, use the :attr:`~CoreSection.extra`
 option.
 
+.. _config-ignore-users:
+
 Ignoring Users
 --------------
 
@@ -776,7 +805,7 @@ You can add them directly to the configuration file like this::
         .*\.evilhost.name
         bitco\.in
 
-Any :ref:`bot admin <Owner & Admins>` can modify these from IRC with the
+Any :ref:`bot admin <config-owner-admins>` can modify these from IRC with the
 ``.blocks`` command. The full syntax is:
 
 .. code-block:: text
@@ -787,6 +816,8 @@ Any :ref:`bot admin <Owner & Admins>` can modify these from IRC with the
 Sopel automatically saves changes made using the ``.blocks`` command to its
 configuration file.
 
+
+.. _config-logging:
 
 Logging
 =======
@@ -799,7 +830,7 @@ there may be as many as four log files per config:
 * ``<configname>.error.log``: errors only
 * ``<configname>.exceptions.log``: exceptions and accompanying tracebacks
 * ``<configname>.raw.log``: raw traffic between Sopel and the IRC server, if
-  enabled (see :ref:`below <Raw Logs>`)
+  enabled (see :ref:`below <config-logging-raw>`)
 
 Sopel uses the built-in :func:`logging.basicConfig` function to configure its
 logs with the following arguments:
@@ -833,6 +864,8 @@ Example of configuration for logging::
    The log filename has been renamed from ``stdio.log`` to
    ``<configname>.sopel.log`` to disambiguate its purpose and prevent
    conflicts when running more than one instance of Sopel.
+
+.. _config-logging-channel:
 
 Log to a Channel
 ----------------
@@ -873,6 +906,8 @@ Example of configuration to log errors only in the ``##bot_logs`` channel::
 
    Channel logging no longer inherits the console ``logging_level`` setting.
 
+.. _config-logging-raw:
+
 Raw Logs
 --------
 
@@ -891,6 +926,8 @@ In that case, IRC messages received and sent are stored into a file named
    ``<configname>.raw.log`` to prevent conflicts when running more than one
    instance of Sopel.
 
+
+.. _config-other:
 
 Other
 =====

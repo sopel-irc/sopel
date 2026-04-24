@@ -17,9 +17,11 @@ Once this is done, the ``start`` subcommand runs the bot, using this
 configuration file unless one is provided using the ``-c``/``--config`` option.
 
 Certain command-line options can be passed via environment variables. Also see
-the :ref:`section on environment variables <Supported environment variables>`
-for more possibilities.
+the :ref:`section on environment variables <run-cli-env-vars>` for more
+possibilities.
 
+
+.. _run-cli-sopel:
 
 The ``sopel`` command
 =====================
@@ -51,6 +53,8 @@ The ``sopel`` command
     :start_command: configure
 
 
+.. _run-cli-sopel-config:
+
 The ``sopel-config`` command
 ============================
 
@@ -68,6 +72,8 @@ The ``sopel-config`` command
 .. autoprogram:: sopel.cli.config:build_parser()
     :prog: sopel-config
 
+
+.. _run-cli-sopel-plugins:
 
 The ``sopel-plugins`` command
 =============================
@@ -87,9 +93,12 @@ The ``sopel-plugins`` command
     :prog: sopel-plugins
 
 
+.. _run-cli-env-vars:
+
 Supported environment variables
 ===============================
 
+.. _run-cli-config:
 
 ``SOPEL_CONFIG``
 ----------------
@@ -100,6 +109,7 @@ confusingly, also "default") if set. It's interpreted in the same way as the
 
 .. versionadded:: 7.0
 
+.. _run-cli-config-dir:
 
 ``SOPEL_CONFIG_DIR``
 --------------------
@@ -110,6 +120,8 @@ searches for config files. It's interpreted in the same way as the
 
 .. versionadded:: 7.1
 
+
+.. _run-cli-config-override:
 
 Overriding individual settings
 ------------------------------

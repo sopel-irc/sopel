@@ -51,6 +51,8 @@ In that case, it will use a match-all regex (``r'.*'``)::
    def on_join(bot, trigger):
       pass
 
+.. _plugin-anatomy-mixing-definition:
+
 Mixing generic rules, commands, and URL callbacks
 -------------------------------------------------
 
@@ -101,6 +103,8 @@ The following decorators can be used without causing conflict:
    Before Sopel 8.1, rules (generic and named) were incompatible with URL
    callbacks.
 
+.. _plugin-anatomy-messages:
+
 Channel vs. private messages
 ----------------------------
 
@@ -109,6 +113,8 @@ message. It is possible to limit that to either one of these options:
 
 * channel only: :func:`sopel.plugin.require_chanmsg`
 * private message only: :func:`sopel.plugin.require_privmsg`
+
+.. _plugin-anatomy-acl:
 
 Access right requirements
 -------------------------
@@ -146,6 +152,8 @@ two options:
 
    Read the :doc:`privileges` chapter for more information on how to manage
    privileges and access management in a plugin.
+
+.. _plugin-anatomy-rate-limit:
 
 Rate limiting
 -------------
@@ -186,14 +194,16 @@ user try again after a failed command, e.g. if a required argument is missing.
    value set by ``rate()``. They also accept a dedicated message. See their
    respective documentation for more information.
 
+.. _plugin-anatomy-bypass:
+
 Bypassing restrictions
 ----------------------
 
 By default, a :term:`Rule` will not trigger on messages from Sopel itself,
 other users that are flagged as bots, or users who are
-:ref:`ignored <Ignoring Users>` or :ref:`rate-limited <Rate limiting>`. In
-certain cases, it might be desirable to bypass these defaults using one or
-more of these decorators:
+:ref:`ignored <config-ignore-users>` or
+:ref:`rate-limited <plugin-anatomy-rate-limit>`. In certain cases, it might be
+desirable to bypass these defaults using one or more of these decorators:
 
 * :func:`sopel.plugin.allow_bots`: the rule will accept events from other
   users who are flagged as bots (like Sopel itself)
@@ -211,6 +221,8 @@ data about any user in any channel.
    The :func:`sopel.plugin.echo` decorator will send *anything* Sopel says
    (that matches the rule) to the decorated callable, *including output from
    the decorated callable*. Be careful not to create a feedback loop.
+
+.. _plugin-anatomy-labels:
 
 Rule labels
 -----------
@@ -273,8 +285,8 @@ and this callable to be executed.
 
 The return value of a callable is ignored unless it is
 :const:`sopel.plugin.NOLIMIT`, in which case
-:term:`rate limiting <Rate limiting>` will not be applied for that call.
-(See :func:`sopel.plugin.rate`.)
+:ref:`rate limiting <plugin-anatomy-rate-limit>` will not be applied for that
+call. (See :func:`sopel.plugin.rate`.)
 
 .. note::
 
@@ -337,6 +349,8 @@ actions. For that purpose, a plugin can define optional functions named
 ``setup`` and ``shutdown``. There can be one and only one function with each
 name for a plugin.
 
+.. _plugin-anatomy-setup:
+
 Setup
 -----
 
@@ -367,6 +381,8 @@ requirements (dependencies, file/folder access rights, and so on).
 The bot will not continue loading plugins or connecting during the execution of
 this function. As such, an infinite loop (such as an unthreaded polling loop)
 will cause the bot to hang.
+
+.. _plugin-anatomy-shutdown:
 
 Shutdown
 --------
@@ -428,6 +444,8 @@ This will allow the bot to properly load this part of the configuration file:
 
    The :meth:`~sopel.config.Config.define_section` method to define a new
    section so the bot can parse it properly.
+
+.. _plugin-anatomy-config-wizard:
 
 Configuration wizard
 --------------------

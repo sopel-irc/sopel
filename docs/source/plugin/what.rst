@@ -9,12 +9,17 @@ cover what is a plugin, what you can do with them, and some vocabulary.
 You may want to skip ahead to :doc:`anatomy` if you already know what a plugin
 is and what types of plugin there are.
 
+
+.. _plugin-types:
+
 Plugin Types
 ============
 
 There are four types of plugins: :term:`Single file plugin`,
 :term:`Folder plugin`, :term:`Namespace package plugin`, and
 :term:`Entry point plugin`.
+
+.. _plugin-types-file:
 
 Single file
 -----------
@@ -40,12 +45,14 @@ and Sopel will load it on startup.
    and possibly list them in a ``requirements.txt`` file to be used with
    ``pip install -r`` if you want to simplify the installation process.
 
+.. _plugin-types-folder:
+
 Folder
 ------
 
 A **Folder** plugin is a folder that contains a ``__init__.py`` file. It is
-available to Sopel the same way a :ref:`Single file` plugin is, and shares the
-same warnings/advice:
+available to Sopel the same way a :ref:`plugin-types-file` plugin is, and
+shares the same warnings/advice:
 
 * everything that is not available in this ``__init__.py`` file won't be
   visible to Sopel
@@ -59,8 +66,8 @@ so it is not possible to do ``from my_plugin_dir import some_module`` without
 a specific configuration from the bot's owner.
 
 When a plugin author wants to split code into different files, and/or share it
-between multiple plugins, the best option is to use an :ref:`Entry point`
-plugin instead.
+between multiple plugins, the best option is to use an
+:ref:`plugin-types-entrypoint` plugin instead.
 
 .. note::
 
@@ -68,6 +75,7 @@ plugin instead.
    plugins; the same advice about ``requirements.txt`` and ``pip`` applies.
 
 .. _namespace-package:
+.. _plugin-types-namespace:
 
 Namespace package (deprecated)
 ------------------------------
@@ -76,8 +84,8 @@ Namespace package (deprecated)
 
    This type of package is deprecated in Sopel 8.1 and will be removed from
    Sopel 9. Plugin authors can migrate their plugins to Sopel's
-   :ref:`Entry point` type of plugins if they wish to maintain a Sopel 9
-   compatible plugin.
+   :ref:`plugin-types-entrypoint`  type of plugins if they wish to maintain a
+   Sopel 9 compatible plugin.
 
 .. deprecated:: 8.1
 
@@ -92,7 +100,9 @@ It is the initial version of Sopel's packaged plugins: it can be packaged and
 uploaded to `PyPI`_ then installed using ``pip install``.
 
 When a plugin author wants to distribute a Sopel plugin, the best option is to
-use an :ref:`Entry point` plugin instead.
+use an :ref:`plugin-types-entrypoint`  plugin instead.
+
+.. _plugin-types-entrypoint:
 
 Entry point
 -----------

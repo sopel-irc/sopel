@@ -799,7 +799,7 @@ class Sopel(irc.AbstractBot):
         .. deprecated:: 8.1
 
             This method is deprecated and will be removed in Sopel 9.0. The
-            new rules system uses :meth:`call_rule` instead.
+            new rules system uses an undocumented method instead.
 
         """
         nick = trigger.nick
@@ -913,7 +913,6 @@ class Sopel(irc.AbstractBot):
         """Dispatch a parsed message to any registered callables.
 
         :param pretrigger: a parsed message from the server
-        :type pretrigger: :class:`~sopel.trigger.PreTrigger`
 
         The ``pretrigger`` (a parsed message) is used to find matching rules;
         it will retrieve them by order of priority, and execute them. It runs

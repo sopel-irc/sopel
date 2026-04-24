@@ -55,8 +55,6 @@ nitpick_ignore = [
     ('py:class', 'callable'),
     ('py:class', 'depends on subclass'),
     ('py:class', 'mixed'),
-    ('py:class', 'sopel.tools.jobs.Job'),
-    ('py:class', 'sopel.tools.jobs.JobScheduler'),
     ('py:exc', 'plugins.exceptions.PluginNotRegistered'),
 ]
 
@@ -135,6 +133,11 @@ autodoc_type_aliases = {
     'PrivilegeDetails': 'sopel.irc.modes.PrivilegeDetails',
 }
 autodoc_preserve_defaults = True
+
+
+# -- Options for autosectionlabel ----------------------------------------------
+
+autosectionlabel_prefix_document = True
 
 
 # -- Options for HTML output ---------------------------------------------------

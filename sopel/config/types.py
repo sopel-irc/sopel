@@ -167,10 +167,10 @@ class BaseValidated(abc.ABC):
 
         Deviations from *snake_case* can break the following operations:
 
-        * :ref:`accessing the setting <sopel.config>` from Python code using
-          the :class:`~.Config` object's attributes
-        * :ref:`overriding the setting's value <Overriding individual
-          settings>` using environment variables
+        * :ref:`accessing the setting <package/config:sopel.config>` from
+          Python code using the :class:`~.Config` object's attributes
+        * :ref:`overriding the setting's value <run-cli-config-override>` using
+          environment variables
 
     """
     def __init__(self, name, default=None, is_secret=False):

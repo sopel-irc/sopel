@@ -49,4 +49,4 @@ the key elements that you'll need to understand to write your own plugins.
 .. seealso::
 
     To interact with the list of plugins installed, read the documentation
-    of :ref:`sopel-plugins`.
+    of :ref:`run-cli-sopel-plugins`.
