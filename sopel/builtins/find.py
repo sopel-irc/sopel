@@ -147,11 +147,8 @@ def kick_cleanup(bot, trigger):
              )?
             """)
 @plugin.priority('high')
+@plugin.require_chanmsg
 def findandreplace(bot, trigger):
-    # Don't bother in PM
-    if trigger.is_privmsg:
-        return
-
     # Correcting other person vs self.
     rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
 
