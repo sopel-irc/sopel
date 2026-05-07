@@ -182,9 +182,11 @@ def findandreplace(bot, trigger):
     # i flag turns off case sensitivity. re.U turns on unicode replacement.
     if 'i' in flags:
         regex = re.compile(re.escape(old), re.U | re.I)
+        # re.sub() uses count=0 to mean "replace all" and str.replace() uses -1, so we must translate here
+        re_count = int(count == 1)
 
         def repl(line, subst):
-            return re.sub(regex, subst, line, count == 1)
+            return re.sub(regex, subst, line, count=re_count)
     else:
         def repl(line, subst):
             return line.replace(old, subst, count)
