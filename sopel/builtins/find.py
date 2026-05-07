@@ -152,7 +152,7 @@ def findandreplace(bot, trigger):
     # Correcting other person vs self.
     rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
 
-    # only do something if there is conversation to work with
+    # only do something if there is conversation history to work with
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)
     if not history:
         return
@@ -170,23 +170,16 @@ def findandreplace(bot, trigger):
         new = escape_sequence_pattern.sub(decode_escape, new)
 
     # If g flag is given, replace all. Otherwise, replace once.
-    if 'g' in flags:
-        count = -1
-    else:
-        count = 1
+    count = 0 if 'g' in flags else 1
+    # If i flag is given, ignore case when replacing.
+    regex_flags = re.U | (re.I if 'i' in flags else 0)
 
-    # repl is a dynamically defined function which performs the substitution.
-    # i flag turns off case sensitivity. re.U turns on unicode replacement.
-    if 'i' in flags:
-        regex = re.compile(re.escape(old), re.U | re.I)
-        # re.sub() uses count=0 to mean "replace all" and str.replace() uses -1, so we must translate here
-        re_count = int(count == 1)
+    # Precompile the regex with its flags
+    regex = re.compile(re.escape(old), regex_flags)
 
-        def repl(line, subst):
-            return re.sub(regex, subst, line, count=re_count)
-    else:
-        def repl(line, subst):
-            return line.replace(old, subst, count)
+    # Dynamically defined replacement function makes later calls a bit clearer
+    def do_replacement(line, subst):
+        return re.sub(regex, subst, line, count=count)
 
     # Look back through the user's lines in the channel until you find a line
     # where the replacement works
@@ -197,14 +190,16 @@ def findandreplace(bot, trigger):
             line = line[8:]
         else:
             me = False
-        replaced = repl(line, new)
-        if replaced != line:  # we are done
+        replaced = do_replacement(line, new)
+        if replaced != line:
+            # we are done
             new_line = replaced
-            new_display = repl(line, bold(new))
+            new_display = do_replacement(line, bold(new))
             break
 
     if not new_line:
-        return  # Didn't find anything
+        # Didn't find anything
+        return
 
     # Save the new "edited" message.
     action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
