@@ -13,6 +13,8 @@ Plugin changes
 * admin:
   * Only auto-accept INVITE events directed at the bot [[#2637][]]
   * Add feedback to `require_privmsg` commands [[#2641][]]
+* find:
+  * Replace deprecated usage of `re.sub()` [[#2738][]]
 * safety:
   * Plugin removed in favor of separately-maintained external package; see
     [sopel-safety][] on PyPI [[#2678][]]
@@ -166,6 +168,7 @@ Housekeeping changes
 [#2729]: https://github.com/sopel-irc/sopel/pull/2729
 [#2730]: https://github.com/sopel-irc/sopel/pull/2730
 [#2731]: https://github.com/sopel-irc/sopel/pull/2731
+[#2738]: https://github.com/sopel-irc/sopel/pull/2738
 
 
 Changes between 8.0.3 and 8.0.4
