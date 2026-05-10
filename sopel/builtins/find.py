@@ -150,7 +150,11 @@ def kick_cleanup(bot, trigger):
 @plugin.require_chanmsg
 def findandreplace(bot, trigger):
     # Correcting other person vs self.
-    rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
+    correcting_self = True
+    rnick = trigger.nick
+    if trigger.group('nick'):
+        correcting_self = False
+        rnick = bot.make_identifier(trigger.group('nick'))
 
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)
     if not history:
@@ -162,7 +166,6 @@ def findandreplace(bot, trigger):
 
     old = escape_sequence_pattern.sub(decode_escape, trigger.group('old'))
     new = trigger.group('new')
-    me = False  # /me command
     flags = trigger.group('flags') or ''
 
     # only clean/format the new string if it's non-empty
@@ -182,39 +185,39 @@ def findandreplace(bot, trigger):
 
     # Dynamically defined replacement function makes later calls a bit clearer
     def do_replacement(line, subst):
-        return re.sub(regex, subst, line, count=count)
+        return regex.sub(subst, line, count=count)
 
-    # Look back through the user's lines in the channel until you find a line
-    # where the replacement works
+    is_action = False  # /me command
     new_line = new_display = None
     for line in history:
+        # Look back through the user's lines in the channel for one where the
+        # replacement works
         if line.startswith("\x01ACTION"):
-            me = True  # /me command
+            is_action = True
             line = line[8:]
         else:
-            me = False
+            is_action = False
         replaced = do_replacement(line, new)
         if replaced != line:
             # we are done
             new_line = replaced
             new_display = do_replacement(line, bold(new))
             break
-
-    if not new_line:
-        # Didn't find anything
+    else:
+        # No matching line; nothing to do
         return
 
     # Save the new "edited" message.
-    action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
+    action = '\x01ACTION ' if is_action else ''
     history.appendleft(action + new_line)  # history is in most-recent-first order
 
     # output
-    if not me:
+    if not is_action:
         new_display = 'meant to say: %s' % new_display
-    if trigger.group(1):
-        msg = '%s thinks %s %s' % (trigger.nick, rnick, new_display)
-    else:
+    if correcting_self:
         msg = '%s %s' % (trigger.nick, new_display)
+    else:
+        msg = '%s thinks %s %s' % (trigger.nick, rnick, new_display)
 
     bot.say(msg)
 
