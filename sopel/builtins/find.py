@@ -152,9 +152,9 @@ def findandreplace(bot, trigger):
     # Correcting other person vs self.
     rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
 
-    # only do something if there is conversation history to work with
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)
     if not history:
+        # No conversation history to potentially correct; bail out.
         return
 
     sep = trigger.group('sep')
@@ -171,8 +171,11 @@ def findandreplace(bot, trigger):
 
     # If g flag is given, replace all. Otherwise, replace once.
     count = 0 if 'g' in flags else 1
+
     # If i flag is given, ignore case when replacing.
-    regex_flags = re.U | (re.I if 'i' in flags else 0)
+    regex_flags = re.U
+    if 'i' in flags:
+        regex_flags |= re.I
 
     # Precompile the regex with its flags
     regex = re.compile(re.escape(old), regex_flags)
