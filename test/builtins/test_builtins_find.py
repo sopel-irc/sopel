@@ -52,6 +52,8 @@ REPLACES_THAT_WORK = (
     ("abABab", r"s/b/c/g", "abABab".replace('b', bold('c'))),  # g (global) flag
     ("ABabAB", r"s/b/c/i", f"A{bold('c')}abAB"),  # i (case-insensitive) flag
     ("ABabAB", r"s/b/c/ig", f"A{bold('c')}a{bold('c')}A{bold('c')}"),  # both flags
+    # /me (CTCP ACTION) lines
+    ("\x01ACTION does nothing.\x01", r"s/no/some/", f"does {bold('some')}thing."),
 )
 
 
