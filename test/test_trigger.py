@@ -441,7 +441,7 @@ def test_statusmsg_trigger(nick, configfactory):
     ("Stranger!bar@example.com", False),
     ("Bar!bar@stranger.domain", False)
 ])
-def test_privmsg_admin(nick, senderhostmask, isadmin, configfactory):
+def test_privmsg_admin_match_host(nick, senderhostmask, isadmin, configfactory):
     line = f':{senderhostmask} PRIVMSG #Sopel :Hello world!'
     pretrigger = PreTrigger(nick, line)
 
