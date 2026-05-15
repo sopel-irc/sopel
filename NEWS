@@ -66,6 +66,7 @@ Core changes
 * Deprecated internal submodule `sopel.loader` [[#2669][]]
 * Added unit testing of raw logs [[#2723][]]
 * Enforce `\r\n` message delimiter in `MockIRCServer` [[#2730][]]
+* Added unit testing of `Trigger.admin` hostname matching [[#2735][]]
 
 API changes
 -----------
@@ -168,6 +169,7 @@ Housekeeping changes
 [#2729]: https://github.com/sopel-irc/sopel/pull/2729
 [#2730]: https://github.com/sopel-irc/sopel/pull/2730
 [#2731]: https://github.com/sopel-irc/sopel/pull/2731
+[#2735]: https://github.com/sopel-irc/sopel/pull/2735
 [#2738]: https://github.com/sopel-irc/sopel/pull/2738
 
 
