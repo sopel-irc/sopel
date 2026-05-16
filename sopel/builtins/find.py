@@ -147,17 +147,18 @@ def kick_cleanup(bot, trigger):
              )?
             """)
 @plugin.priority('high')
+@plugin.require_chanmsg
 def findandreplace(bot, trigger):
-    # Don't bother in PM
-    if trigger.is_privmsg:
-        return
-
     # Correcting other person vs self.
-    rnick = bot.make_identifier(trigger.group('nick') or trigger.nick)
+    correcting_self = True
+    rnick = trigger.nick
+    if trigger.group('nick'):
+        correcting_self = False
+        rnick = bot.make_identifier(trigger.group('nick'))
 
-    # only do something if there is conversation to work with
     history = bot.memory['find_lines'].get(trigger.sender, {}).get(rnick, None)
     if not history:
+        # No conversation history to potentially correct; bail out.
         return
 
     sep = trigger.group('sep')
@@ -165,7 +166,6 @@ def findandreplace(bot, trigger):
 
     old = escape_sequence_pattern.sub(decode_escape, trigger.group('old'))
     new = trigger.group('new')
-    me = False  # /me command
     flags = trigger.group('flags') or ''
 
     # only clean/format the new string if it's non-empty
@@ -173,53 +173,51 @@ def findandreplace(bot, trigger):
         new = escape_sequence_pattern.sub(decode_escape, new)
 
     # If g flag is given, replace all. Otherwise, replace once.
-    if 'g' in flags:
-        count = -1
-    else:
-        count = 1
+    count = 0 if 'g' in flags else 1
 
-    # repl is a dynamically defined function which performs the substitution.
-    # i flag turns off case sensitivity. re.U turns on unicode replacement.
+    # If i flag is given, ignore case when replacing.
+    regex_flags = re.U
     if 'i' in flags:
-        regex = re.compile(re.escape(old), re.U | re.I)
-        # re.sub() uses count=0 to mean "replace all" and str.replace() uses -1, so we must translate here
-        re_count = int(count == 1)
+        regex_flags |= re.I
 
-        def repl(line, subst):
-            return re.sub(regex, subst, line, count=re_count)
-    else:
-        def repl(line, subst):
-            return line.replace(old, subst, count)
+    # Precompile the regex with its flags
+    regex = re.compile(re.escape(old), regex_flags)
 
-    # Look back through the user's lines in the channel until you find a line
-    # where the replacement works
+    # Dynamically defined replacement function makes later calls a bit clearer
+    def do_replacement(line, subst):
+        return regex.sub(subst, line, count=count)
+
+    is_action = False  # /me command
     new_line = new_display = None
     for line in history:
+        # Look back through the user's lines in the channel for one where the
+        # replacement works
         if line.startswith("\x01ACTION"):
-            me = True  # /me command
+            is_action = True
             line = line[8:]
         else:
-            me = False
-        replaced = repl(line, new)
-        if replaced != line:  # we are done
+            is_action = False
+        replaced = do_replacement(line, new)
+        if replaced != line:
+            # we are done
             new_line = replaced
-            new_display = repl(line, bold(new))
+            new_display = do_replacement(line, bold(new))
             break
-
-    if not new_line:
-        return  # Didn't find anything
+    else:
+        # No matching line; nothing to do
+        return
 
     # Save the new "edited" message.
-    action = (me and '\x01ACTION ') or ''  # If /me message, prepend \x01ACTION
+    action = '\x01ACTION ' if is_action else ''
     history.appendleft(action + new_line)  # history is in most-recent-first order
 
     # output
-    if not me:
+    if not is_action:
         new_display = 'meant to say: %s' % new_display
-    if trigger.group(1):
-        msg = '%s thinks %s %s' % (trigger.nick, rnick, new_display)
-    else:
+    if correcting_self:
         msg = '%s %s' % (trigger.nick, new_display)
+    else:
+        msg = '%s thinks %s %s' % (trigger.nick, rnick, new_display)
 
     bot.say(msg)
 
