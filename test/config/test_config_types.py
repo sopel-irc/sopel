@@ -358,6 +358,68 @@ def test_list_serialize_value_error():
         option.serialize(('1', '2', '3'))  # tuple is not allowed
 
 
+def test_set_attribute():
+    option = types.SetAttribute('foo', default={'a', 'b', 'c'})
+
+    with pytest.raises(ValueError):
+        option.serialize('string')  # string is not allowed
+
+    with pytest.raises(ValueError):
+        option.serialize(('a', 'b', 'c'))  # tuple is not allowed
+
+    serialized = option.serialize({'a', 'b', 'c'})
+    # set iteration order is non-deterministic, so the test will fail sometimes
+    # if we don't sort the serialized lines
+    serialized = '\n'.join(sorted(serialized.splitlines()))
+    assert serialized == (
+        '\n'
+        'a\n'
+        'b\n'
+        'c'
+    )
+
+    parsed = option.parse(
+        """
+        a
+        b
+        c
+        """)
+    assert isinstance(parsed, set)
+    assert parsed == {'a', 'b', 'c'}
+
+
+def test_set_attribute_parse_duplicate_values():
+    # technically this just tests Python's `set()` behavior (SetAttribute just
+    # returns `set(ListAttribute.parse())`), but it's good to verify that the
+    # correct subclass's handler is being used in case we accidentally mess up
+    # the class hierarchy in a future patch
+    option = types.SetAttribute('foo')
+    parsed = option.parse(
+        """
+        a
+        a
+        b
+        c
+        b
+        """)
+    assert parsed == {'a', 'b', 'c'}
+
+
+def test_set_attribute_serialize_duplicate_values():
+    # a set can't contain duplicate values, but we can serialize a list too
+    option = types.SetAttribute('foo')
+    serialized = option.serialize(['a', 'b', 'c', 'b', 'a'])
+    # set iteration order is non-deterministic, so the test will fail sometimes
+    # if we don't sort the serialized lines
+    serialized = '\n'.join(sorted(serialized.splitlines()))
+    assert serialized == (
+        '\n'
+        'a\n'
+        'b\n'
+        'c'
+    )
+
+
 def test_choice_attribute():
     option = types.ChoiceAttribute('foo', choices=['a', 'b', 'c'])
     assert option.name == 'foo'
