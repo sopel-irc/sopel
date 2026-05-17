@@ -70,7 +70,7 @@ def _format_safe(text):
 
 
 @plugin.command('choose', 'choice', 'ch')
-@plugin.priority("medium")
+@plugin.priority(plugin.Priority.MEDIUM)
 @plugin.example(".choose a, b, c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
 @plugin.example(".choose a | b | c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)
 @plugin.example(".choose a,b,c", r'Your options: a, b, c. My choice: (a|b|c)', re=True)

@@ -67,6 +67,42 @@ def test_manager_rule(mockbot):
     assert list(manager.get_all_url_callbacks()) == []
 
 
+def test_manager_rule_priority(mockbot):
+    regex = re.compile('.*')
+    rule_low = rules.Rule(
+        [regex],
+        plugin='testplugin',
+        label='testrule',
+        priority=callables.Priority.LOW,
+    )
+    rule_medium = rules.Rule(
+        [regex],
+        plugin='testplugin',
+        label='testrule',
+        priority=callables.Priority.MEDIUM,
+    )
+    rule_high = rules.Rule(
+        [regex],
+        plugin='testplugin',
+        label='testrule',
+        priority=callables.Priority.HIGH,
+    )
+
+    manager = rules.Manager()
+    manager.register(rule_low)
+    manager.register(rule_medium)
+    manager.register(rule_high)
+
+    line = ':Foo!foo@example.com PRIVMSG #sopel :Hello, world'
+    pretrigger = trigger.PreTrigger(mockbot.nick, line)
+
+    items = manager.get_triggered_rules(mockbot, pretrigger)
+    assert len(items) == 3, 'All rules must match'
+    assert items[0][0] == rule_high
+    assert items[1][0] == rule_medium
+    assert items[2][0] == rule_low
+
+
 def test_manager_find(mockbot):
     regex = re.compile(r'\w+')
     rule = rules.FindRule([regex], plugin='testplugin', label='testrule')
@@ -612,10 +648,10 @@ def test_rule_get_priority():
     regex = re.compile('.*')
 
     rule = rules.Rule([regex])
-    assert rule.get_priority() == rules.PRIORITY_MEDIUM
+    assert rule.get_priority() == callables.Priority.MEDIUM
 
-    rule = rules.Rule([regex], priority=rules.PRIORITY_LOW)
-    assert rule.get_priority() == rules.PRIORITY_LOW
+    rule = rules.Rule([regex], priority=callables.Priority.LOW)
+    assert rule.get_priority() == callables.Priority.LOW
 
 
 def test_rule_get_output_prefix():
@@ -1134,7 +1170,7 @@ def test_kwargs_from_callable(mockbot):
 
     assert kwargs['plugin'] == 'testplugin'
     assert kwargs['label'] == 'handler'
-    assert kwargs['priority'] == rules.PRIORITY_MEDIUM
+    assert kwargs['priority'] == callables.Priority.MEDIUM
     assert kwargs['events'] == ['PRIVMSG']
     assert kwargs['ctcp'] == []
     assert kwargs['allow_echo'] is False
@@ -1172,7 +1208,7 @@ def test_kwargs_from_callable_label(mockbot):
 def test_kwargs_from_callable_priority(mockbot):
     # prepare callable
     @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @plugin.priority(rules.PRIORITY_LOW)
+    @plugin.priority(callables.Priority.LOW)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
@@ -1181,7 +1217,7 @@ def test_kwargs_from_callable_priority(mockbot):
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
     assert 'priority' in kwargs
-    assert kwargs['priority'] == rules.PRIORITY_LOW
+    assert kwargs['priority'] == callables.Priority.LOW
 
 
 def test_kwargs_from_callable_event(mockbot):

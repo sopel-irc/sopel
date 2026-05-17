@@ -36,6 +36,7 @@ from sopel.config.core_section import (
     COMMAND_DEFAULT_PREFIX,
     URL_DEFAULT_SCHEMES,
 )
+from sopel.plugins.callables import Priority
 
 
 if TYPE_CHECKING:
@@ -77,18 +78,6 @@ LOGGER = logging.getLogger(__name__)
 
 IGNORE_RATE_LIMIT = 1
 """Return value used to indicate that rate-limiting should be ignored."""
-PRIORITY_HIGH = 'high'
-"""Highest rule priority."""
-PRIORITY_MEDIUM = 'medium'
-"""Medium rule priority."""
-PRIORITY_LOW = 'low'
-"""Lowest rule priority."""
-PRIORITY_SCALES = {
-    PRIORITY_HIGH: 0,
-    PRIORITY_MEDIUM: 100,
-    PRIORITY_LOW: 1000,
-}
-"""Mapping of priority label to priority scale."""
 
 
 def _clean_rules(
@@ -446,11 +435,9 @@ class Manager:
         """Get triggered rules with their match objects, sorted by priorities.
 
         :param bot: Sopel instance
-        :type bot: :class:`sopel.bot.Sopel`
         :param pretrigger: IRC line
-        :type pretrigger: :class:`sopel.trigger.PreTrigger`
         :return: a tuple of ``(rule, match)``, sorted by priorities
-        :rtype: tuple
+                 (highest first)
         """
         generic_rules = self._rules.values()
         command_rules = (
@@ -483,7 +470,12 @@ class Manager:
         # static list of (rule/match), otherwise Python will raise an error
         # if any rule execution tries to alter the list of registered rules.
         # Making it immutable is the cherry on top.
-        return tuple(sorted(matches, key=lambda x: x[0].priority_scale))
+        return tuple(
+            # sorting rules in reversed order by priority (highest first)
+            # "reverse" argument is used instead of reversed() to keep
+            # registration order of rules with the same priority
+            sorted(matches, key=lambda x: x[0].get_priority(), reverse=True)
+        )
 
     def check_url_callback(self, bot, url):
         """Tell if the ``url`` matches any of the registered URL callbacks.
@@ -576,7 +568,6 @@ class AbstractRule(abc.ABC):
     * rate limiting feature
     * text parsing
     * and finally, trigger execution (i.e. actually doing something)
-
     """
     @classmethod
     @abc.abstractmethod
@@ -598,21 +589,6 @@ class AbstractRule(abc.ABC):
             properties that are expected from a plugin callable.
 
         """
-
-    @property
-    def priority_scale(self):
-        """Rule's priority on a numeric scale.
-
-        This attribute can be used to sort rules between each other, the
-        highest priority rules coming first. The default priority for a rule
-        is "medium".
-        """
-        priority_key = self.get_priority()
-
-        return (
-            PRIORITY_SCALES.get(priority_key) or
-            PRIORITY_SCALES[PRIORITY_MEDIUM]
-        )
 
     @abc.abstractmethod
     def get_plugin_name(self) -> str:
@@ -669,19 +645,16 @@ class AbstractRule(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_priority(self) -> str:
+    def get_priority(self) -> Priority:
         """Get the rule's priority.
 
-        A rule can have a priority, based on the three pre-defined priorities
-        used by Sopel: ``PRIORITY_HIGH``, ``PRIORITY_MEDIUM``, and
-        ``PRIORITY_LOW``.
+        A rule can have a priority, based on enum
+        :class:`~sopel.plugins.callables.Priority`.
 
-        .. seealso::
+        .. versionchanged:: 8.1
 
-            The :attr:`AbstractRule.priority_scale` property uses this method
-            to look up the numeric priority value, which is used to sort rules
-            by priority.
-
+            This method returns a :class:`~sopel.plugins.callables.Priority`
+            instead of a string.
         """
 
     @abc.abstractmethod
@@ -1069,7 +1042,7 @@ class Rule(AbstractRule):
         regexes: Sequence[re.Pattern],
         plugin: str | None = None,
         label: str | None = None,
-        priority: str | None = PRIORITY_MEDIUM,
+        priority: Priority | None = Priority.MEDIUM,
         handler: PluginCallable | None = None,
         events: list[str] | None = None,
         ctcp: list[re.Pattern] | None = None,
@@ -1094,7 +1067,7 @@ class Rule(AbstractRule):
         self._regexes: Sequence[re.Pattern] = regexes
         self._plugin_name: str | None = plugin
         self._label: str | None = label
-        self._priority: str = priority or PRIORITY_MEDIUM
+        self._priority: Priority = priority or Priority.MEDIUM
         self._handler: PluginCallable | None = handler
 
         # filters
