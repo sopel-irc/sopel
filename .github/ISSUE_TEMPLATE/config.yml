@@ -1,5 +1,11 @@
 blank_issues_enabled: true
 contact_links:
+  - name: sopel-help issue tracker
+    url: https://github.com/sopel-irc/sopel-help/issues
+    about: "The 'help' feature shipped with Sopel has its own separate issue tracker here."
+  - name: Other repositories
+    url: https://github.com/orgs/sopel-irc/repositories?type=source
+    about: "This issue tracker is for Sopel itself. You might also be looking for one of our plugins."
   - name: Sopel's IRC channel
     url: https://kiwiirc.com/client/irc.libera.chat/#sopel
     about: "For more interactive help, ask in #sopel on Libera Chat. We're usually there daily."
