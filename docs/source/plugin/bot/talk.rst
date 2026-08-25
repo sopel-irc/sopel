@@ -93,3 +93,13 @@ Oh, and let's not forget about ``/me does something``, which can be done with
 the :meth:`~sopel.bot.SopelWrapper.action` method::
 
     bot.action('does something')
+
+Under the hood, ``action`` is just a CTCP ``ACTION`` message. If you need to
+send some other CTCP command, use the more general
+:meth:`~sopel.bot.SopelWrapper.ctcp` method::
+
+    bot.ctcp('VERSION')
+    bot.ctcp('PING', text='1234567890')
+
+As with ``action``, the ``destination`` defaults to where the trigger came
+from and can be overridden with a second argument.
