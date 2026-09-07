@@ -42,6 +42,8 @@ Plugin changes
     [sopel-wikimedia][] on PyPI [[#2705][]]
 * xkcd:
   * Removed `searchxkcd.com` fallback using `search` plugin [[#2613][]]
+  * Moved to a separately-maintained external package; see [sopel-xkcd][] on
+    PyPI [[#2742][]]
 
 Core changes
 ------------
@@ -171,6 +173,7 @@ Housekeeping changes
 [#2731]: https://github.com/sopel-irc/sopel/pull/2731
 [#2735]: https://github.com/sopel-irc/sopel/pull/2735
 [#2738]: https://github.com/sopel-irc/sopel/pull/2738
+[#2742]: https://github.com/sopel-irc/sopel/pull/2742
 
 
 Changes between 8.0.3 and 8.0.4
