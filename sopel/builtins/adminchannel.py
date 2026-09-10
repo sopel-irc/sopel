@@ -94,7 +94,7 @@ def devoice(bot, trigger):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
 @plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('kick')
-@plugin.priority('high')
+@plugin.priority(plugin.Priority.HIGH)
 def kick(bot, trigger):
     """Kick a user from the channel."""
     text = trigger.group().split()
@@ -158,7 +158,7 @@ def configureHostMask(mask):
 @plugin.require_privilege(plugin.OP, ERROR_MESSAGE_NO_PRIV, reply=True)
 @plugin.require_bot_privilege(plugin.HALFOP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('ban')
-@plugin.priority('high')
+@plugin.priority(plugin.Priority.HIGH)
 def ban(bot, trigger):
     """Ban a user from the channel
 
@@ -280,7 +280,7 @@ def unquiet(bot, trigger):
 @plugin.require_bot_privilege(plugin.OP, ERROR_MESSAGE_NOT_OP, reply=True)
 @plugin.command('kickban', 'kb')
 @plugin.example('.kickban [#chan] user1 user!*@* get out of here')
-@plugin.priority('high')
+@plugin.priority(plugin.Priority.HIGH)
 def kickban(bot, trigger):
     """Kick and ban a user from the channel
 

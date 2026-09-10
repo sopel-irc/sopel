@@ -282,7 +282,7 @@ def nick_match_tellee(nick, tellee):
 
 
 @plugin.rule('(.*)')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.unblockable
 @plugin.output_prefix('[tell] ')
 def message(bot, trigger):

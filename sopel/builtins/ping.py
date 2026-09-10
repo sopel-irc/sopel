@@ -24,7 +24,7 @@ def rude(bot, trigger):
 
 
 @plugin.rule('$nickname!')
-@plugin.priority('high')
+@plugin.priority(plugin.Priority.HIGH)
 @plugin.thread(False)
 def interjection(bot, trigger):
     bot.say(trigger.nick + '!')

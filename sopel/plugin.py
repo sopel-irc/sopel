@@ -30,6 +30,7 @@ from sopel.plugins.callables import (
     PluginCallable,
     PluginGeneric,
     PluginJob,
+    Priority,
     TypedPluginCallableHandler,
     TypedPluginJobHandler,
 )
@@ -44,6 +45,11 @@ OP = AccessLevel.OP
 ADMIN = AccessLevel.ADMIN
 OWNER = AccessLevel.OWNER
 OPER = AccessLevel.OPER
+
+# expose priorities as shortcut
+LOW = Priority.LOW
+MEDIUM = Priority.MEDIUM
+HIGH = Priority.HIGH
 
 
 if TYPE_CHECKING:
@@ -67,7 +73,11 @@ TypedJobDecorator = Callable[
 
 __all__ = [
     # constants
-    'NOLIMIT', 'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
+    'NOLIMIT',
+    # privilege constants
+    'VOICE', 'HALFOP', 'OP', 'ADMIN', 'OWNER', 'OPER',
+    # priority constants
+    'LOW', 'MEDIUM', 'HIGH',
     # decorators
     'action_command',
     'action_commands',
@@ -954,21 +964,77 @@ def label(
 
 
 def priority(
-    value: Literal['low', 'medium', 'high'],
+    value: Literal['low', 'medium', 'high'] | Priority,
 ) -> TypedCallableDecorator:
     """Decorate a function to be executed with higher or lower priority.
 
-    :param value: one of ``high``, ``medium``, or ``low``
+    :param value: one of ``LOW``, ``MEDIUM``, ``HIGH``
 
     The priority allows you some control over the order of callable execution,
     if your plugin needs it. If a callable does not specify its ``priority``,
-    Sopel assumes ``medium``.
+    Sopel assumes :attr:`~sopel.plugins.callables.Priority.MEDIUM`.
+
+    Shortcuts are defined for each priority:
+
+    * ``plugin.LOW`` for :attr:`sopel.plugins.callables.Priority.LOW`
+    * ``plugin.MEDIUM`` for :attr:`sopel.plugins.callables.Priority.MEDIUM`
+    * ``plugin.HIGH`` for :attr:`sopel.plugins.callables.Priority.HIGH`
+
+    For examples this::
+
+        from sopel import plugin
+
+        @plugin.priority(plugin.MEDIUM)
+        # ...
+
+    Is equivalent to this::
+
+        from sopel.plugins.callables import Priority
+
+        @plugin.priority(Priority.MEDIUM)
+        # ...
+
+    .. versionchanged:: 8.1
+
+        This decorator now uses :class:`~sopel.plugins.callables.Priority` to
+        represent plugin callable priority.
+
+    .. important::
+
+        Using a string literal is deprecated in Sopel 8.1 and it will be
+        removed in Sopel 9. This::
+
+            from sopel import plugin
+
+            @plugin.priority('medium')
+            # ...
+
+        Must be replaced with::
+
+            from sopel import plugin
+
+            @plugin.priority(plugin.MEDIUM)
+            # ...
     """
+    priority_value = Priority[value.upper()]
+
+    if not isinstance(value, Priority):
+        deprecated(
+            'literal string `%s` for priority is deprecated; '
+            'use plugin.Priority.%s instead' % (
+                value, value.upper()
+            ),
+            version='8.1',
+            removed_in='9.0',
+            stack_frame=-2,
+            func=lambda *args: ...,
+        )()
+
     def decorator(
         function: TypedPluginCallableHandler | AbstractPluginObject
     ) -> PluginCallable:
         handler = PluginCallable.ensure_callable(function)
-        handler.priority = value
+        handler.priority = priority_value
         return handler
 
     return decorator

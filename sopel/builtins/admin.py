@@ -120,7 +120,7 @@ def _part(bot, channel, msg=None, save=True):
 @plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('join')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.example('.join #example key', user_help=True)
 @plugin.example('.join #example', user_help=True)
 def join(bot, trigger):
@@ -136,7 +136,7 @@ def join(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('tmpjoin')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.example('.tmpjoin #example key', user_help=True)
 @plugin.example('.tmpjoin #example', user_help=True)
 def temporary_join(bot, trigger):
@@ -156,7 +156,7 @@ def temporary_join(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('part')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.example('.part #example')
 def part(bot, trigger):
     """Part the specified channel. This is an admin-only command."""
@@ -171,7 +171,7 @@ def part(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('tmppart')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.example('.tmppart #example')
 def temporary_part(bot, trigger):
     """Like ``part``, without saving. This is an admin-only command.
@@ -190,7 +190,7 @@ def temporary_part(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('chanlist', 'channels')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def channel_list(bot, trigger):
     """Show channels Sopel is in."""
     channels = ', '.join(sorted(bot.channels.keys()))
@@ -203,7 +203,7 @@ def channel_list(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_owner
 @plugin.command('restart')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def restart(bot, trigger):
     """Restart the bot. This is an owner-only command."""
     quit_message = trigger.group(2)
@@ -218,7 +218,7 @@ def restart(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_owner
 @plugin.command('quit')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def quit(bot, trigger):
     """Quit from the server. This is an owner-only command."""
     quit_message = trigger.group(2)
@@ -233,7 +233,7 @@ def quit(bot, trigger):
 @plugin.require_owner
 @plugin.require_privmsg('This command only works as a private message.')
 @plugin.command('raw')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.example('.raw PRIVMSG NickServ :CERT ADD')
 def raw(bot, trigger):
     """
@@ -250,7 +250,7 @@ def raw(bot, trigger):
 @plugin.require_admin
 @plugin.require_privmsg('This command only works as a private message.')
 @plugin.command('say', 'msg')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 @plugin.example('.say #YourPants Does anyone else smell neurotoxin?')
 def say(bot, trigger):
     """
@@ -273,7 +273,7 @@ def say(bot, trigger):
 @plugin.require_admin
 @plugin.require_privmsg('This command only works as a private message.')
 @plugin.command('me')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def me(bot, trigger):
     """
     Send an ACTION (/me) to a given channel or nick. Can only be done in
@@ -293,7 +293,7 @@ def me(bot, trigger):
 
 
 @plugin.event('INVITE')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def invite_join(bot, trigger):
     """Join a channel Sopel is invited to, if the inviter is an admin."""
     nick = trigger.args[0]
@@ -317,7 +317,7 @@ def invite_join(bot, trigger):
 
 
 @plugin.event('KICK')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def hold_ground(bot, trigger):
     """
     This function monitors all kicks across all channels Sopel is in. If it
@@ -341,7 +341,7 @@ def hold_ground(bot, trigger):
 @plugin.require_privmsg
 @plugin.require_admin
 @plugin.command('mode')
-@plugin.priority('low')
+@plugin.priority(plugin.Priority.LOW)
 def mode(bot, trigger):
     """Set a user mode on Sopel. Can only be done in privmsg by an admin."""
     mode = trigger.group(3)
