@@ -206,9 +206,15 @@ class SopelDB:
                 raise Exception('Please make sure the following core '
                                 'configuration values are defined: '
                                 'db_user, db_pass, db_host')
-            self.url = URL(drivername=drivername, username=db_user,
-                           password=db_pass, host=db_host, port=db_port,
-                           database=db_name, query=query)
+            self.url = URL.create(
+                drivername=drivername,
+                username=db_user,
+                password=db_pass,
+                host=db_host,
+                port=db_port,
+                database=db_name,
+                query=query,
+            )
 
         self.engine = create_engine(self.url, pool_recycle=3600)
         """SQLAlchemy Engine used to connect to Sopel's database.
@@ -299,45 +305,6 @@ class SopelDB:
 
         """
         return self.ssession()
-
-    @deprecated('Use SopelDB.engine directly', version='8.0', removed_in='9.0')
-    def execute(self, *args, **kwargs):
-        """Execute an arbitrary SQL query against the database.
-
-        :return: the query results
-        :rtype: :class:`sqlalchemy.engine.Result`
-
-        The ``Result`` object returned is a wrapper around a ``Cursor`` object
-        as specified by :pep:`249`.
-
-        .. deprecated:: 8.0
-
-            This method will be removed in Sopel 9, following the deprecation
-            of SQLAlchemy's :meth:`sqlalchemy.engine.Engine.execute`.
-
-            To perform a raw SQL query, use the :class:`~SopelDB.engine`
-            attribute as per the migration guide from SQLAlchemy::
-
-                from sqlalchemy.sql import text
-
-                def my_command(bot, trigger):
-                    raw_sql = ' ... '  # your raw SQL
-                    # get a connection as a context manager
-                    with bot.db.engine.connect() as conn:
-                        res = conn.execute(text(raw_sql))
-                        data = res.fetchall()
-
-                    # do something with your data here
-
-        .. seealso::
-
-            Read the `migration guide from 1.x style to 2.x style`__ by
-            SQLAlchemy to learn more about using SQLALchemy's engine and
-            connection.
-
-        .. __: https://docs.sqlalchemy.org/en/14/changelog/migration_20.html
-        """
-        return self.engine.execute(*args, **kwargs)
 
     def get_uri(self) -> URL:
         """Return a direct URL for the database.

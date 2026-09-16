@@ -44,7 +44,7 @@ requires-python = ">=3.12"
 dependencies = [
     "pytz",
     "requests>=2.34.2,<3.0.0",
-    "sqlalchemy>=1.4,<1.5",
+    "sqlalchemy>=2.0,<2.1",
     "importlib_metadata>=3.6",
     "packaging>=26.3",
     "sopel-help>=0.5.2",
@@ -80,7 +80,7 @@ lint = [
     # for `pkg_resources`; first version in which it's typed
     # we don't use `pkg_resources` directly, but mypy still cares
     "setuptools>=71.1",
-    "sqlalchemy[mypy]>=1.4,<1.5",
+    "sqlalchemy[mypy]>=2.0,<2.1",
     "types-pytz",
     "types-requests>=2,<3",
 ]
