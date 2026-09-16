@@ -35,16 +35,12 @@ classifiers = [
     "License :: Eiffel Forum License (EFL)",
     "License :: OSI Approved :: Eiffel Forum License",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Communications :: Chat :: Internet Relay Chat",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 dependencies = [
     "pytz",
     "requests>=2.24.0,<3.0.0",
@@ -52,7 +48,6 @@ dependencies = [
     "importlib_metadata>=3.6",
     "packaging>=23.2",
     "sopel-help>=0.4.0",
-    "typing_extensions>=4.4",  # for @typing.override, added in py3.12
 ]
 
 [dependency-groups]
@@ -64,8 +59,7 @@ dev = [ # These are requirements to develop Sopel itself.
 docs = [
     # Sphinx theme
     "furo==2023.9.10",
-    "sphinx>=7.1.0,<8; python_version <= '3.8'",
-    "sphinx>=7.2.0,<8; python_version > '3.8'",
+    "sphinx>=7.2.0,<8",
     # specify exact autoprogram version because the new (in 2021) maintainer
     # showed that they will indeed make major changes in patch versions
     "sphinxcontrib-autoprogram==0.1.8",
@@ -78,7 +72,7 @@ lint = [
     "flake8-future-annotations",
     "flake8-isort",
     "flake8-pyproject",
-    "flake8-type-checking; python_version >= '3.8'",
+    "flake8-type-checking",
     # type check
     # often breaks CI on master, so pin and update deliberately, on our own terms
     "mypy==1.11.2",

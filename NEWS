@@ -2,6 +2,20 @@ This file is used to auto-generate the "Changelog" section of Sopel's website.
 When adding new entries, follow the style guide in NEWS.spec.md to avoid
 causing problems with the site build.
 
+Changes between 8 and 9.0.0
+===============================
+
+Highlights
+----------
+
+Detailed coverage of the major changes can be found in the dedicated
+[Sopel 9 upgrade guide][sopel-9-migration].
+
+**For users:**
+
+* Python 3.12+ is now required
+
+
 Changes between 8.0.0 and 8.0.1
 ===============================
 
