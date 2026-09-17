@@ -1507,6 +1507,28 @@ class SopelWrapper:
 
         self._bot.action(message, destination)
 
+    def ctcp(self, command, destination=None, text=None):
+        """Override ``Sopel.ctcp`` to use trigger source by default.
+
+        :param str command: the CTCP command to send
+        :param str destination: channel or nickname; defaults to
+            :attr:`trigger.sender <sopel.trigger.Trigger.sender>`
+        :param str text: optional text argument for the ``command``
+
+        The ``destination`` will default to the channel in which the
+        trigger happened (or nickname, if received in a private message).
+
+        .. seealso::
+
+            :meth:`sopel.bot.Sopel.ctcp`
+
+        .. versionadded:: 8.1
+        """
+        if destination is None:
+            destination = self.default_destination
+
+        self._bot.ctcp(command, destination, text)
+
     def notice(self, message, destination=None):
         """Override ``Sopel.notice`` to use trigger source by default.
 
