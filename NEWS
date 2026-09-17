@@ -15,6 +15,7 @@ Plugin changes
   * Add feedback to `require_privmsg` commands [[#2641][]]
 * find:
   * Replace deprecated usage of `re.sub()` [[#2738][]]
+  * Streamline logic flow [[#2739][]]
 * safety:
   * Plugin removed in favor of separately-maintained external package; see
     [sopel-safety][] on PyPI [[#2678][]]
@@ -173,6 +174,7 @@ Housekeeping changes
 [#2731]: https://github.com/sopel-irc/sopel/pull/2731
 [#2735]: https://github.com/sopel-irc/sopel/pull/2735
 [#2738]: https://github.com/sopel-irc/sopel/pull/2738
+[#2739]: https://github.com/sopel-irc/sopel/pull/2739
 [#2742]: https://github.com/sopel-irc/sopel/pull/2742
 
 
