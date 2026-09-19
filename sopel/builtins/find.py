@@ -15,12 +15,226 @@ from __future__ import annotations
 
 from collections import deque
 import re
+from typing import TYPE_CHECKING
 
 from sopel import plugin
-from sopel.formatting import bold
+from sopel.config import types
+from sopel.formatting import bold, plain
+
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+
+ELLIPSIS = '…'
+"""Marker shown where a snippet had content trimmed off."""
+
+
+class FindSection(types.StaticSection):
+    context_words = types.ValidatedAttribute(
+        'context_words', parse=int, default=-1)
+    """How many words to keep on each side of a correction.
+
+    A negative value reposts the whole corrected line, which is what Sopel
+    did before this option existed. ``0`` shows only the corrected word.
+
+    If trimming would leave nothing a reader can see, the whole line is shown
+    instead.
+    """
+
+
+def configure(config):
+    """
+    | name | example | purpose |
+    | ---- | ------- | ------- |
+    | context_words | 2 | Words kept around a correction; negative reposts the line |
+    """
+    config.define_section('find', FindSection)
+    config.find.configure_setting(
+        'context_words',
+        'How many words should Sopel keep around a correction? '
+        '(any negative value reposts the whole corrected line)')
+
+
+def _word_window(
+    text: str,
+    start: int,
+    end: int,
+    context_words: int,
+) -> tuple[int, int]:
+    """Find the slice of ``text`` to show around the ``start:end`` replacement.
+
+    :param str text: the corrected line
+    :param int start: where the replacement starts in ``text``
+    :param int end: where the replacement ends in ``text``
+    :param int context_words: how many words to keep on each side
+    :return: a ``(left, right)`` pair of offsets into ``text``
+
+    The word the replacement landed in is kept whole, so a correction inside a
+    word does not come back as a fragment. Deleting text leaves nothing to keep
+    whole, so a deletion between two words takes ``context_words`` words on each
+    side, while one inside a word still shows the word it changed.
+    """
+    left = start
+    right = end
+
+    inside_word = (
+        0 < start and end < len(text)
+        and not text[start - 1].isspace()
+        and not text[end].isspace()
+    )
+
+    if end > start or inside_word:
+        # keep the rest of the word the replacement landed in
+        while left > 0 and not text[left - 1].isspace():
+            left -= 1
+        while right < len(text) and not text[right].isspace():
+            right += 1
+
+    for _ in range(context_words):
+        stop = left
+        while stop > 0 and text[stop - 1].isspace():
+            stop -= 1
+        while stop > 0 and not text[stop - 1].isspace():
+            stop -= 1
+        if stop == left:
+            break
+        left = stop
+
+    for _ in range(context_words):
+        stop = right
+        while stop < len(text) and text[stop].isspace():
+            stop += 1
+        while stop < len(text) and not text[stop].isspace():
+            stop += 1
+        if stop == right:
+            break
+        right = stop
+
+    # trim whitespace off the edges, but never into the replacement itself
+    while left < start and text[left].isspace():
+        left += 1
+    while right > end and text[right - 1].isspace():
+        right -= 1
+
+    return left, right
+
+
+def _build_snippet(
+    text: str,
+    spans: Iterable[tuple[int, int]],
+    context_words: int,
+) -> str:
+    """Bold the replacements in ``text``, trimming to the context around them.
+
+    :param str text: the corrected line
+    :param spans: ``(start, end)`` offsets of each replacement in ``text``
+    :param int context_words: words to keep on each side of a replacement
+    :rtype: str
+
+    Each replacement gets its own window. Windows with nothing but whitespace
+    between them are shown as one, and an :data:`ELLIPSIS` marks every place a
+    word was cut.
+    """
+    windows: list[list[int]] = []
+    for start, end in spans:
+        left, right = _word_window(text, start, end, context_words)
+        if windows and not text[windows[-1][1]:left].strip():
+            # nothing but whitespace was dropped, so keep it as one window
+            windows[-1][1] = max(windows[-1][1], right)
+        else:
+            windows.append([left, right])
+
+    parts = []
+    for index, (left, right) in enumerate(windows):
+        if index > 0 or text[:left].strip():
+            parts.append(ELLIPSIS)
+        cursor = left
+        for start, end in spans:
+            if start < left or end > right:
+                continue
+            parts.append(text[cursor:start])
+            if end > start:
+                parts.append(bold(text[start:end]))
+            cursor = end
+        parts.append(text[cursor:right])
+
+    if text[windows[-1][1]:].strip():
+        parts.append(ELLIPSIS)
+
+    return ''.join(parts)
+
+
+def _replacement_spans(
+    regex: re.Pattern,
+    line: str,
+    subst: str,
+    count: int,
+) -> list[tuple[int, int]]:
+    """Locate where each replacement lands in the corrected line.
+
+    :param regex: compiled pattern being replaced
+    :param str line: the line being corrected
+    :param str subst: the replacement text
+    :param int count: how many matches to replace; ``0`` replaces all of them
+    :return: a list of ``(start, end)`` offsets into the corrected line
+
+    :func:`re.sub` throws away the positions a snippet needs, so walk the
+    matches and track the offsets as the corrected line is assembled.
+    """
+    spans: list[tuple[int, int]] = []
+    length = 0
+    position = 0
+
+    for number, match in enumerate(regex.finditer(line), start=1):
+        length += match.start() - position
+        replacement = match.expand(subst)
+        spans.append((length, length + len(replacement)))
+        length += len(replacement)
+        position = match.end()
+        if count and number >= count:
+            break
+
+    return spans
+
+
+def replace_highlight(
+    regex: re.Pattern,
+    line: str,
+    subst: str,
+    count: int = 1,
+    context_words: int = -1,
+) -> tuple[str, str | None]:
+    """Apply a substitution to ``line`` and build the version to show.
+
+    :param regex: compiled pattern to replace
+    :param str line: the line being corrected
+    :param str subst: the replacement text
+    :param int count: how many matches to replace; ``0`` replaces all of them
+    :param int context_words: words to keep on each side of a replacement, or a
+                             negative value to repost the whole line
+    :return: a ``(new_line, new_display)`` pair, where ``new_display`` is
+             ``None`` if the substitution changed nothing
+    """
+    new_line = regex.sub(subst, line, count=count)
+    if new_line == line:
+        return new_line, None
+
+    if context_words < 0:
+        return new_line, regex.sub(bold(subst), line, count=count)
+
+    spans = _replacement_spans(regex, line, subst, count)
+    snippet = _build_snippet(new_line, spans, context_words)
+
+    if not plain(snippet).replace(ELLIPSIS, '').strip():
+        # the window has nothing a reader can see, so show the whole line
+        return new_line, regex.sub(bold(subst), line, count=count)
+
+    return new_line, snippet
 
 
 def setup(bot):
+    bot.settings.define_section('find', FindSection)
     if 'find_lines' not in bot.memory:
         bot.memory['find_lines'] = bot.make_identifier_memory()
 
@@ -183,12 +397,9 @@ def findandreplace(bot, trigger):
     # Precompile the regex with its flags
     regex = re.compile(re.escape(old), regex_flags)
 
-    # Dynamically defined replacement function makes later calls a bit clearer
-    def do_replacement(line, subst):
-        return regex.sub(subst, line, count=count)
+    context_words = bot.settings.find.context_words
 
     is_action = False  # /me command
-    new_line = new_display = None
     for line in history:
         # Look back through the user's lines in the channel for one where the
         # replacement works
@@ -197,11 +408,10 @@ def findandreplace(bot, trigger):
             line = line[8:]
         else:
             is_action = False
-        replaced = do_replacement(line, new)
-        if replaced != line:
+        new_line, new_display = replace_highlight(
+            regex, line, new, count, context_words)
+        if new_display is not None:
             # we are done
-            new_line = replaced
-            new_display = do_replacement(line, bold(new))
             break
     else:
         # No matching line; nothing to do
