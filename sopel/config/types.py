@@ -613,6 +613,7 @@ class ListAttribute(BaseValidated):
         If ``item`` starts with a ``#`` it will be quoted in order to prevent
         the config parser from thinking it's a comment.
         """
+        item = str(item)
         if item.startswith('#'):
             # we need to protect item that would otherwise appear as comment
             return '"%s"' % item
