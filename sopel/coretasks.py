@@ -34,6 +34,7 @@ from typing import Callable, TYPE_CHECKING
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
+from sopel.lifecycle import deprecated
 from sopel.plugins import callables
 from sopel.tools import events, jobs, SopelMemory, target
 
@@ -186,6 +187,18 @@ def setup(bot: Sopel) -> None:
             doc=None,
         )
         bot.scheduler.register(job)
+
+    # Alert on deprecated settings usage
+    if '@' in bot.settings.core.owner:
+        deprecated(
+            "Using a host in core.owner setting is deprecated. "
+            "Please move the host to core.owner_host and keep only "
+            "the nickname in core.owner.",
+            version="8.1",
+            removed_in="9.0",
+            stack_output=False,
+            func=lambda *args: ...,
+        )()
 
 
 def shutdown(bot):

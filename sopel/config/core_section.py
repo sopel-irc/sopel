@@ -1126,6 +1126,19 @@ class CoreSection(StaticSection):
     capabilities.
     """
 
+    owner_host = ValidatedAttribute('owner_host')
+    """The bot owner's hostname.
+
+    **Optional**, and has no effect if :attr:`owner_account` is set.
+
+    A step above just matching the nick with :attr:`owner`, this can be used to
+    more securely verify the owner's identity by matching their hostname as well
+    as nickname.
+
+    On networks that support IRCv3 account capabilities, it's recommended to use
+    :attr:`owner_account` instead, as that is the most secure option.
+    """
+
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
     """The directory in which to put the file Sopel uses to track its process ID.
 

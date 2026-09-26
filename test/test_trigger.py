@@ -435,6 +435,80 @@ def test_statusmsg_trigger(nick, configfactory):
     assert trigger.status_prefix == '@'
 
 
+@pytest.mark.parametrize("usernick,isowner", [
+    ("Foo", True),
+    ("Bar", False),
+])
+def test_privmsg_owner_nick_only(nick, usernick, isowner, configfactory):
+    line = f':{usernick}!bar@example.com PRIVMSG #Sopel :Hello world!'
+    pretrigger = PreTrigger(nick, line)
+
+    config = configfactory('default.cfg', """
+        [core]
+        nick = Sopel
+        owner = Foo
+        admins =
+            Bar
+    """)
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.owner is isowner, "Owner privilege does not match expectation"
+    assert trigger.admin is True
+
+
+@pytest.mark.parametrize("usernick,host,isowner,isadmin", [
+    ("Foo", "ip10-1-1-8.example.com", True, True),
+    ("Foo", "ip10-1-1-16.stranger.domain", False, False),
+    ("Bar", "ip10-1-1-8.example.com", False, True),
+    ("Bar", "ip10-1-1-16.stranger.domain", False, True),
+])
+def test_privmsg_owner_match_host(nick, usernick, host, isowner, isadmin, configfactory):
+    line = f':{usernick}!bar@{host} PRIVMSG #Sopel :Hello world!'
+    pretrigger = PreTrigger(nick, line)
+
+    config = configfactory('default.cfg', """
+        [core]
+        nick = Sopel
+        owner = Foo
+        owner_host = *.example.com
+        admins =
+            Bar
+    """)
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.owner is isowner, "Owner privilege does not match expectation"
+    assert trigger.admin is isadmin, "Admin privilege does not match expectation"
+
+
+@pytest.mark.parametrize("senderhostmask,account,isowner,isadmin", [
+    ("Foo!foo@example.net", "foo", True, True),
+    ("Bar!bar@example.net", "foo", True, True),
+    ("Bar!bar@example.net", "bar", False, True),
+    ("Stranger!stranger@example.com", "foo", True, True),
+    ("AnonymousUser!anon@example.com", None, False, False),
+])
+def test_privmsg_owner_match_account(nick, senderhostmask, account, isowner, isadmin, configfactory):
+    line = f'@account={account} :{senderhostmask} PRIVMSG #Sopel :Hello world!'
+    pretrigger = PreTrigger(nick, line)
+
+    config = configfactory('default.cfg', """
+        [core]
+        nick = Sopel
+        owner = Foo
+        owner_host = example.com  # host should be ignored if account is set
+        owner_account = foo
+        admins =
+            Bar
+    """)
+    fakematch = re.match('.*', line)
+
+    trigger = Trigger(config, pretrigger, fakematch)
+    assert trigger.owner is isowner, "Owner privilege does not match expectation"
+    assert trigger.admin is isadmin, "Admin privilege does not match expectation"
+
+
 @pytest.mark.parametrize("senderhostmask,isadmin", [
     ("Foo!bar@example.com", True),
     ("Bar!bar@example.com", True),

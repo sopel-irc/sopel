@@ -554,6 +554,11 @@ class Trigger(str):
 
         if settings.core.owner_account:
             self._owner = settings.core.owner_account == self.account
+        elif settings.core.owner_host:
+            self._owner = (
+                match_host_or_nick(settings.core.owner_host) and
+                match_host_or_nick(settings.core.owner)
+            )
         else:
             self._owner = match_host_or_nick(settings.core.owner)
         self._admin = (
