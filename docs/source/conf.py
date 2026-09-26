@@ -55,8 +55,7 @@ nitpick_ignore = [
     ('py:class', 'callable'),
     ('py:class', 'depends on subclass'),
     ('py:class', 'mixed'),
-    ('py:class', 'sopel.tools.jobs.Job'),
-    ('py:class', 'sopel.tools.jobs.JobScheduler'),
+    ('py:class', 'mappingproxy'),
     ('py:exc', 'plugins.exceptions.PluginNotRegistered'),
 ]
 
