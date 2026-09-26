@@ -646,6 +646,40 @@ class ListAttribute(BaseValidated):
         return self._parse(values, parent, section)
 
 
+class SetAttribute(ListAttribute):
+    """A config attribute containing a set of string values.
+
+    :type default: set
+
+    Constructor parameters are the same as for :class:`ListAttribute`, except
+    that ``default`` should be a ``set`` instead of a ``list``.
+
+    Configuration file semantics are also the same as :class:`ListAttribute`.
+    """
+    def parse(self, value):
+        """Parse ``value`` into a set.
+
+        :param str value: a multi-line string of values to parse into a set
+        :return: a set of items from ``value``
+        :rtype: set
+        """
+        items = super().parse(value)
+        return set(items)
+
+    def serialize(self, value):
+        """Serialize ``value`` into a multi-line string.
+
+        :param set value: the input set
+        :rtype: str
+        """
+        if not isinstance(value, (set, list)):
+            raise ValueError('SetAttribute value must be a set.')
+        if isinstance(value, list):
+            # convert to set to remove duplicates prior to serialization
+            value = set(value)
+        return super().serialize(value)
+
+
 class ChoiceAttribute(BaseValidated):
     """A config attribute which must be one of a set group of options.
 
