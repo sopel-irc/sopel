@@ -100,6 +100,81 @@ def _parse_prefix(value):
     return tuple(zip(modes, prefixes))
 
 
+class ClientTagDeny:
+    """Storage for CLIENTTAGDENY ISUPPORT parameter values.
+
+    This class behaves more or less like a set, but is case-insensitive when
+    checking membership and stores all elements in lowercase.
+
+    If the special wildcard ``*`` is present, the :meth:`is_denied` method will
+    return ``True`` for any tag name, except if the explicit negation of that
+    tag name (``-tagname``) is also present.
+    """
+    def __init__(self, iterable=None):
+        self._data = set(x.lower() for x in iterable) if iterable else set()
+
+    def __contains__(self, element: str) -> bool:
+        return element.lower() in self._data
+
+    def __eq__(self, other):
+        if not isinstance(other, ClientTagDeny):
+            return NotImplemented
+        return self._data == other._data
+
+    def __or__(self, other):
+        result = self.__class__(self)
+        result.update(other)
+        return result
+
+    def __ior__(self, other):
+        self.update(other)
+        return self
+
+    def add(self, element: str) -> None:
+        self._data.add(element.lower())
+
+    def remove(self, element: str) -> None:
+        self._data.remove(element.lower())
+
+    def discard(self, element: str) -> None:
+        self._data.discard(element.lower())
+
+    def clear(self):
+        self._data.clear()
+
+    def update(self, *others):
+        for other in others:
+            self._data.update(x.lower() for x in other)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({list(self._data)!r})"
+
+    def is_denied(self, tagname: str) -> bool:
+        """Check if the given ``tagname`` is denied.
+
+        :param tagname: the tag name to check
+        :return: ``True`` if the tag name is denied, ``False`` otherwise
+
+        Supports wildcard and explicit logic; checks are case-insensitive.
+        """
+        tagname = tagname.lower()
+        if "*" in self._data and f"-{tagname}" not in self._data:
+            return True
+        elif tagname in self._data:
+            return True
+        return False
+
+
+def _parse_clienttagdeny(value: str) -> ClientTagDeny:
+    return ClientTagDeny(value.split(','))
+
+
 ISUPPORT_PARSERS = {
     'AWAYLEN': int,
     'CASEMAPPING': str,
@@ -107,6 +182,7 @@ ISUPPORT_PARSERS = {
     'CHANMODES': _parse_chanmodes,
     'CHANNELLEN': int,
     'CHANTYPES': _optional(tuple),
+    'CLIENTTAGDENY': _optional(_parse_clienttagdeny, default=ClientTagDeny()),
     'ELIST': _parse_elist,
     'EXCEPTS': _optional(_single_character, default='e'),
     'EXTBAN': _parse_extban,
