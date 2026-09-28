@@ -1921,3 +1921,75 @@ def test_user_quit(
     )
 
     assert 'MrPraline' not in mockbot.channels['#test'].users
+
+
+def test_callable_unhandled_exception(
+    tmpconfig: Config,
+    botfactory: BotFactory,
+    ircfactory: IRCFactory,
+    userfactory: UserFactory,
+):
+    """Test the bot's behavior when a callable raises an unhandled exception."""
+    mockbot: bot.Sopel = botfactory.preloaded(tmpconfig)
+    server: MockIRCServer = ircfactory(mockbot, True)
+    server.channel_joined('#test', ['iAmError'])
+    mockbot.backend.clear_message_sent()
+
+    mockuser = userfactory('iAmError', 'error', 'example.com')
+
+    @plugin.rule(".*")
+    def fail(bot, trigger):
+        raise RuntimeError
+
+    fail.setup(mockbot.settings)
+    fail.plugin_name = "testplugin"
+    mockbot.register_callables([fail])
+
+    server.message(f":{mockuser.prefix} PRIVMSG #test :TestBot!")
+
+    assert mockbot.backend.message_sent == rawlist(
+        "PRIVMSG #test :Unexpected RuntimeError from iAmError. "
+        "Message was: TestBot!",
+    )
+
+
+@pytest.mark.parametrize(
+    "pfx, modechar",
+    [
+        ("", ""),
+        ("+", "v"),
+        ("@", "o"),
+    ],
+    ids=["normal", "voice", "op"])
+def test_callable_unhandled_exception_in_statusmsg_context(
+    tmpconfig: Config,
+    botfactory: BotFactory,
+    ircfactory: IRCFactory,
+    userfactory: UserFactory,
+    pfx: str,
+    modechar: str,
+):
+    """Test the bot's behavior when a callable raises an unhandled exception."""
+    mockbot: bot.Sopel = botfactory.preloaded(tmpconfig)
+    mockbot._isupport = mockbot.isupport.apply(STATUSMSG=('@', '+'))
+    server: MockIRCServer = ircfactory(mockbot, True)
+    server.channel_joined('#test', ['iAmError'])
+    server.mode_set('#test', modechar * 2, ('iAmError', 'TestBot'))
+    mockbot.backend.clear_message_sent()
+
+    mockuser = userfactory('iAmError', 'error', 'example.com')
+
+    @plugin.rule(".*")
+    def fail(bot, trigger):
+        raise RuntimeError
+
+    fail.setup(mockbot.settings)
+    fail.plugin_name = "testplugin"
+    mockbot.register_callables([fail])
+
+    server.message(f":{mockuser.prefix} PRIVMSG {pfx}#test :TestBot!")
+
+    assert mockbot.backend.message_sent == rawlist(
+        f"PRIVMSG {pfx}#test :Unexpected RuntimeError from iAmError. "
+        "Message was: TestBot!",
+    )
