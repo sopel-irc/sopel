@@ -61,6 +61,12 @@ class FakeConfigSection(types.StaticSection):
     rd_fileattr = types.FilenameAttribute('rd_fileattr', relative=True, directory=True)
 
 
+class SecretConfigSection(types.StaticSection):
+    secretattr = types.SecretAttribute('secretattr')
+    required_secretattr = types.SecretAttribute(
+        'required_secretattr', default=types.NO_DEFAULT)
+
+
 class SpamSection(types.StaticSection):
     eggs = types.ListAttribute('eggs')
     bacons = types.ListAttribute('bacons', strip=False)
@@ -286,6 +292,51 @@ def test_fileattribute_absolute_with_inside_quotes(fakeconfig):
     # single quotes
     fakeconfig.fake.af_fileattr = "'%s'" % testfile
     assert fakeconfig.fake.af_fileattr == testfile
+
+
+def test_configure_setting_secret_keeps_current_value(monkeypatch, fakeconfig):
+    prompts = []
+    answers = ['']
+
+    def fake_getpass(prompt):
+        prompts.append(prompt)
+        return answers.pop(0)
+
+    monkeypatch.setattr(types.getpass, 'getpass', fake_getpass)
+    fakeconfig.define_section('secret', SecretConfigSection, validate=False)
+    fakeconfig.secret.secretattr = 'hunter2'
+
+    fakeconfig.secret.configure_setting('secretattr', 'Password:')
+
+    assert fakeconfig.secret.secretattr == 'hunter2'
+    assert prompts == ['Password: [********] (hidden input) ']
+
+
+def test_configure_setting_secret_replaces_current_value(monkeypatch, fakeconfig):
+    monkeypatch.setattr(types.getpass, 'getpass', lambda prompt: 'correct horse')
+    fakeconfig.define_section('secret', SecretConfigSection, validate=False)
+    fakeconfig.secret.secretattr = 'hunter2'
+
+    fakeconfig.secret.configure_setting('secretattr', 'Password:')
+
+    assert fakeconfig.secret.secretattr == 'correct horse'
+
+
+def test_configure_setting_secret_without_current_value(monkeypatch, fakeconfig):
+    prompts = []
+    answers = ['', 'hunter2']
+
+    def fake_getpass(prompt):
+        prompts.append(prompt)
+        return answers.pop(0)
+
+    monkeypatch.setattr(types.getpass, 'getpass', fake_getpass)
+    fakeconfig.define_section('secret', SecretConfigSection, validate=False)
+
+    fakeconfig.secret.configure_setting('required_secretattr', 'Password:')
+
+    assert fakeconfig.secret.required_secretattr == 'hunter2'
+    assert prompts == ['Password: (hidden input) '] * 2
 
 
 def test_configparser_env_priority_over_file(monkeypatch, fakeconfig):
