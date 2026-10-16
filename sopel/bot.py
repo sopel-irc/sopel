@@ -1141,7 +1141,11 @@ class Sopel(irc.AbstractBot):
         LOGGER.exception(message)
 
         if trigger and self.settings.core.reply_errors and trigger.sender is not None:
-            self.say(message, trigger.sender)
+            # make sure to preserve the STATUSMSG context
+            destination = str(trigger.sender)
+            if trigger.status_prefix:
+                destination = trigger.status_prefix + destination
+            self.say(message, destination)
 
     def _host_blocked(self, host: str) -> bool:
         """Check if a hostname is blocked.
