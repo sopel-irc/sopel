@@ -63,6 +63,7 @@ Core changes
 * Correct handling of `*` channel placeholder in WHOX replies [[#2676][]]
 * Correct handling of empty CHANTYPES feature token [[#2701][]]
 * Correct default CHANTYPES when feature token is not advertised [[#2701][]]
+* Preserve STATUSMSG in "Unexpected error" handler [[#2753][]]
 * Restore debug logging of rate-limit checks and restrictions [[#2713][]]
 * Refactored plugin callables to a class-based system [[#2669][]]
 * Moved capability-handling types into `sopel.plugins.callables` [[#2669[]]]
@@ -176,6 +177,7 @@ Housekeeping changes
 [#2738]: https://github.com/sopel-irc/sopel/pull/2738
 [#2739]: https://github.com/sopel-irc/sopel/pull/2739
 [#2742]: https://github.com/sopel-irc/sopel/pull/2742
+[#2753]: https://github.com/sopel-irc/sopel/pull/2753
 [#2755]: https://github.com/sopel-irc/sopel/pull/2755
 
 
