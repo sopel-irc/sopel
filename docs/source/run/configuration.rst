@@ -139,9 +139,10 @@ Owner & Admins
 --------------
 
 A Sopel instance must have exactly one owner. This is configured by the
-:attr:`~CoreSection.owner` setting. If the IRC server supports IRCv3 accounts,
-Sopel can use :attr:`~CoreSection.owner_account` to increase the security of
-ownership verification.
+:attr:`~CoreSection.owner` setting. You can specify the owner's host using
+:attr:`~CoreSection.owner_host` for some extra security. If the IRC server
+supports IRCv3 accounts, Sopel can use :attr:`~CoreSection.owner_account` for
+the most secure ownership verification.
 
 The same instance can have multiple admins. Similarly, it can be configured
 by :attr:`~CoreSection.admin_accounts` or by :attr:`~CoreSection.admins`. If
@@ -157,6 +158,16 @@ Example owner & admin configurations::
             Exirel
             HumorBaby
 
+    # Using nickname + host matching
+    [core]
+    # Will be used for alerts and ownership verification
+    owner = dgw
+    # Will be used for ownership verification only
+    owner_host = *.example.com
+    admins =
+            Exirel
+            HumorBaby
+
     # Using account matching
     [core]
     # Will be used for alerts only
@@ -167,9 +178,9 @@ Example owner & admin configurations::
             Exirel
             HumorBaby
 
-Both ``owner_account`` and ``admin_accounts`` are safer to use than
-nick-based matching, but the IRC server must support accounts.
-(Most, sadly, do not as of late 2019.)
+Both ``owner_account`` and ``admin_accounts`` are safer to use than nick-based
+matching, but the IRC server must support accounts. (The situation has improved
+as of mid-2026, but account support is still not universal.)
 
 .. important::
 
