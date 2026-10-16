@@ -559,11 +559,9 @@ class SopelDB:
             ).scalar_one_or_none()
 
             if result is not None:
-                result = result.value
-            elif default is not None:
-                result = default
+                return _deserialize(result.value)
 
-            return _deserialize(result)
+            return default
 
     def unalias_nick(self, alias: str) -> None:
         """Remove an alias.
@@ -821,10 +819,8 @@ class SopelDB:
                 .where(ChannelValues.key == key)
             ).scalar_one_or_none()
             if result is not None:
-                result = result.value
-            elif default is not None:
-                result = default
-            return _deserialize(result)
+                return _deserialize(result.value)
+            return default
 
     def forget_channel(self, channel: str) -> None:
         """Remove all of a channel's stored values.
@@ -954,10 +950,8 @@ class SopelDB:
             ).scalar_one_or_none()
 
             if result is not None:
-                result = result.value
-            elif default is not None:
-                result = default
-            return _deserialize(result)
+                return _deserialize(result.value)
+            return default
 
     def forget_plugin(self, plugin: str) -> None:
         """Remove all of a plugin's stored values.
