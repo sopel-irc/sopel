@@ -87,13 +87,13 @@ def dump_reminders(filename, data):
 
 
 def setup(bot):
-    bot.config.define_section('tell', TellSection)
-    fn = bot.config.basename + '.tell.db'
-    bot.tell_filename = os.path.join(bot.config.core.homedir, fn)
+    bot.settings.define_section('tell', TellSection)
+    fn = bot.settings.basename + '.tell.db'
+    bot.tell_filename = os.path.join(bot.settings.core.homedir, fn)
 
     # Pre-7.0 migration logic. Remove in 8.0 or 9.0.
-    old = bot.nick + '-' + bot.config.core.host + '.tell.db'
-    old = os.path.join(bot.config.core.homedir, old)
+    old = bot.nick + '-' + bot.settings.core.host + '.tell.db'
+    old = os.path.join(bot.settings.core.homedir, old)
     if os.path.isfile(old):
         LOGGER.info("Attempting to migrate old 'tell' database {}..."
                     .format(old))
@@ -218,8 +218,8 @@ def f_remind(bot, trigger):
         return
 
     if tellee not in (bot.make_identifier(teller), bot.nick, 'me'):
-        tz = get_timezone(bot.db, bot.config, None, tellee)
-        timenow = format_time(bot.db, bot.config, tz, tellee)
+        tz = get_timezone(bot.db, bot.settings, None, tellee)
+        timenow = format_time(bot.db, bot.settings, tz, tellee)
         with bot.memory['tell_lock']:
             if tellee not in bot.memory['reminders']:
                 bot.memory['reminders'][tellee] = [(teller, verb, timenow, msg)]
@@ -314,13 +314,13 @@ def message(bot, trigger):
         return  # nothing to do
 
     # then send reminders (as public and/or private messages)
-    if bot.config.tell.use_private_reminder:
+    if bot.settings.tell.use_private_reminder:
         # send reminders with private messages
         for line in reminders:
             bot.say(line, nick)
     else:
         # send up to 'maximum_public' reminders to the channel
-        max_public = bot.config.tell.maximum_public
+        max_public = bot.settings.tell.maximum_public
         for line in reminders[:max_public]:
             bot.say(line)
 

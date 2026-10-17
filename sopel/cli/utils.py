@@ -7,6 +7,7 @@ import sys
 
 from sopel import config, plugins
 
+
 # Allow clean import *
 __all__ = [
     'enumerate_configs',

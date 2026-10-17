@@ -7,7 +7,7 @@ import typing
 
 import pytest
 
-from sopel import bot, loader, plugin, plugins, trigger
+from sopel import bot, plugin, plugins, trigger
 from sopel.plugins import rules
 from sopel.tests import rawlist
 from sopel.tools import Identifier, SopelMemory, target
@@ -15,7 +15,13 @@ from sopel.tools import Identifier, SopelMemory, target
 
 if typing.TYPE_CHECKING:
     from sopel.config import Config
-    from sopel.tests.factories import BotFactory, IRCFactory, UserFactory
+    from sopel.tests.factories import (
+        BotFactory,
+        ConfigFactory,
+        IRCFactory,
+        TriggerFactory,
+        UserFactory,
+    )
     from sopel.tests.mocks import MockIRCServer
 
 
@@ -42,6 +48,12 @@ def nick_command_info(bot, trigger):
 
 @plugin.action_commands("tell")
 def action_command_tell(bot, trigger):
+    pass
+
+
+@plugin.url('https://example.com/')
+@plugin.rule('example website')
+def mixed_rule_url(bot, trigger):
     pass
 
 
@@ -81,17 +93,17 @@ def ignored():
 
 
 @pytest.fixture
-def tmpconfig(configfactory):
+def tmpconfig(configfactory: ConfigFactory) -> Config:
     return configfactory('test.cfg', TMP_CONFIG)
 
 
 @pytest.fixture
-def mockbot(tmpconfig, botfactory):
+def mockbot(tmpconfig: Config, botfactory: BotFactory) -> bot.Sopel:
     return botfactory(tmpconfig)
 
 
 @pytest.fixture
-def mockplugin(tmpdir):
+def mockplugin(tmpdir) -> plugins.handlers.PyFilePlugin:
     root = tmpdir.mkdir('loader_mods')
     mod_file = root.join('mockplugin.py')
     mod_file.write(MOCK_MODULE_CONTENT)
@@ -363,6 +375,12 @@ def test_register_plugin(tmpconfig, mockplugin):
     assert sopel.rules.has_url_callback('example_url')
     assert sopel.rules.has_url_callback('example_url', plugin='mockplugin')
 
+    # check the mixed rule/url callable
+    assert sopel.rules.has_rule('mixed_rule_url')
+    assert sopel.rules.has_rule('mixed_rule_url', plugin='mockplugin')
+    assert sopel.rules.has_url_callback('mixed_rule_url')
+    assert sopel.rules.has_url_callback('mixed_rule_url', plugin='mockplugin')
+
 
 def test_register_unregister_plugin(tmpconfig, mockplugin):
     sopel = bot.Sopel(tmpconfig, daemon=False)
@@ -508,7 +526,7 @@ def test_register_callables(tmpconfig):
     # clean callables and set plugin name by hand
     # since the loader and plugin handlers are excluded here
     for handler in callables:
-        loader.clean_callable(handler, tmpconfig)
+        handler.setup(tmpconfig)
         handler.plugin_name = 'testplugin'
 
     # register callables
@@ -649,7 +667,7 @@ def test_register_urls(tmpconfig):
     # clean callables and set plugin name by hand
     # since the loader and plugin handlers are excluded here
     for handler in callables:
-        loader.clean_callable(handler, tmpconfig)
+        handler.setup(tmpconfig)
         handler.plugin_name = 'testplugin'
 
     # register callables
@@ -672,11 +690,76 @@ def test_register_urls(tmpconfig):
     assert matches[0][0].get_rule_label() == 'handle_urls_http'
 
 
+def test_register_mixed_callable_url(tmpconfig: Config):
+    sopel = bot.Sopel(tmpconfig)
+
+    @plugin.url(
+        r'https://reddit.com/(?P<prefix>r|u)/(?P<id>[a-zA-Z0-9-_]+)/?$'
+    )
+    @plugin.find(r'(?<!\S)/?(?P<prefix>r|u)/(?P<id>[a-zA-Z0-9-_]+)\b')
+    @plugin.label('reddit_board_url')
+    def handler(bot: bot.SopelWrapper, trigger: trigger.Trigger) -> None:
+        return {
+            'prefix': trigger.group('prefix'),
+            'id': trigger.group('id'),
+        }
+
+    # prepare callables to be registered
+    # clean callables and set plugin name by hand
+    # since the loader and plugin handlers are excluded here
+    handler.setup(tmpconfig)
+    handler.plugin_name = 'testplugin'
+
+    # register callables
+    sopel.register_callables([handler])
+    sopel.register_urls([handler])
+
+    # trigger URL callback version
+    line = ':Foo!foo@example.com PRIVMSG #sopel :https://reddit.com/r/python'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1, 'Only one of the callable must match'
+
+    callable, match = matches[0]
+    wrap_trigger = trigger.Trigger(tmpconfig, pretrigger, match)
+    wrapper = bot.SopelWrapper(sopel, wrap_trigger)
+
+    assert callable.get_rule_label() == 'reddit_board_url'
+    assert isinstance(matches[0][0], rules.URLCallback), (
+        'Only the URL callback should match when using the full URL'
+    )
+    assert callable.execute(wrapper, wrap_trigger) == {
+        'prefix': 'r',
+        'id': 'python',
+    }
+
+    # trigger rule version
+    line = ':Foo!foo@example.com PRIVMSG #sopel :r/python'
+    pretrigger = trigger.PreTrigger(sopel.nick, line)
+
+    matches = sopel.rules.get_triggered_rules(sopel, pretrigger)
+    assert len(matches) == 1, 'Only one of the callable must match'
+
+    callable, match = matches[0]
+    wrap_trigger = trigger.Trigger(tmpconfig, pretrigger, match)
+    wrapper = bot.SopelWrapper(sopel, wrap_trigger)
+
+    assert callable.get_rule_label() == 'reddit_board_url'
+    assert isinstance(callable, rules.FindRule), (
+        'Only the find rule should match when using the r/board pattern'
+    )
+    assert callable.execute(wrapper, wrap_trigger) == {
+        'prefix': 'r',
+        'id': 'python',
+    }
+
+
 # -----------------------------------------------------------------------------
 # call_rule
 
 @pytest.fixture
-def match_hello_rule(mockbot, triggerfactory):
+def match_hello_rule(mockbot: bot.Sopel, triggerfactory: TriggerFactory):
     """Helper for generating matches to each `Rule` in the following tests"""
     def _factory(rule_hello):
         # trigger
@@ -694,7 +777,45 @@ def match_hello_rule(mockbot, triggerfactory):
     return _factory
 
 
-def test_call_rule(mockbot, match_hello_rule):
+@pytest.fixture
+def match_hello_rule_admin(mockbot: bot.Sopel, triggerfactory: TriggerFactory):
+    """Helper for generating admin matches to each `Rule` in the following tests"""
+    def _factory(rule_hello):
+        # trigger
+        # 'testnick' is the bot's owner/admin in `mockbot`'s config above
+        line = ':testnick!test@example.com PRIVMSG #channel :hello'
+
+        trigger = triggerfactory(mockbot, line)
+        pretrigger = trigger._pretrigger
+
+        matches = list(rule_hello.match(mockbot, pretrigger))
+        match = matches[0]
+
+        wrapper = bot.SopelWrapper(mockbot, trigger)
+
+        return match, trigger, wrapper
+    return _factory
+
+
+@pytest.fixture
+def multimatch_hello_rule(mockbot: bot.Sopel, triggerfactory: TriggerFactory):
+    def _factory(rule_hello):
+        # trigger
+        line = ':Test!test@example.com PRIVMSG #channel :hello hello hello'
+
+        trigger = triggerfactory(mockbot, line)
+        pretrigger = trigger._pretrigger
+
+        for match in rule_hello.match(mockbot, pretrigger):
+            wrapper = bot.SopelWrapper(mockbot, trigger)
+            yield match, trigger, wrapper
+    return _factory
+
+
+def test_call_rule(
+    mockbot: bot.Sopel,
+    match_hello_rule: typing.Callable,
+) -> None:
     # setup
     items = []
 
@@ -721,9 +842,10 @@ def test_call_rule(mockbot, match_hello_rule):
     assert items == [1]
 
     # assert the rule is not rate limited
-    assert not rule_hello.is_user_rate_limited(Identifier('Test'))
-    assert not rule_hello.is_channel_rate_limited('#channel')
-    assert not rule_hello.is_global_rate_limited()
+    at_time = datetime.now(timezone.utc)
+    assert not rule_hello.is_user_rate_limited(Identifier('Test'), at_time)
+    assert not rule_hello.is_channel_rate_limited('#channel', at_time)
+    assert not rule_hello.is_global_rate_limited(at_time)
 
     match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
@@ -736,6 +858,36 @@ def test_call_rule(mockbot, match_hello_rule):
         'PRIVMSG #channel :hi',
     )
     assert items == [1, 1]
+
+
+def test_call_rule_multiple_matches(
+    mockbot: bot.Sopel,
+    multimatch_hello_rule: typing.Callable,
+) -> None:
+    # setup
+    items = []
+
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    find_hello = rules.FindRule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule)
+
+    for match, rule_trigger, wrapper in multimatch_hello_rule(find_hello):
+        mockbot.call_rule(find_hello, wrapper, rule_trigger)
+
+    # assert the rule has been executed three times now
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    )
+    assert items == [1, 1, 1]
 
 
 def test_call_rule_rate_limited_user(mockbot, match_hello_rule):
@@ -767,9 +919,10 @@ def test_call_rule_rate_limited_user(mockbot, match_hello_rule):
     assert items == [1]
 
     # assert the rule is now rate limited
-    assert rule_hello.is_user_rate_limited(Identifier('Test'))
-    assert not rule_hello.is_channel_rate_limited('#channel')
-    assert not rule_hello.is_global_rate_limited()
+    at_time = datetime.now(timezone.utc)
+    assert rule_hello.is_user_rate_limited(Identifier('Test'), at_time)
+    assert not rule_hello.is_channel_rate_limited('#channel', at_time)
+    assert not rule_hello.is_global_rate_limited(at_time)
 
     match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
@@ -781,6 +934,72 @@ def test_call_rule_rate_limited_user(mockbot, match_hello_rule):
         'PRIVMSG #channel :hi'
     ), 'There must not be any new message sent'
     assert items == [1], 'There must not be any new item'
+
+
+def test_call_rule_rate_limited_user_admin(mockbot, match_hello_rule_admin):
+    items = []
+
+    # setup
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    allowed = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit_admins=False,
+        user_rate_limit=100)
+    limited = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit_admins=True,
+        user_rate_limit=100)
+
+    _, trigger_allowed, wrapper_allowed = match_hello_rule_admin(allowed)
+    _, trigger_limited, wrapper_limited = match_hello_rule_admin(limited)
+
+    # call rules
+    mockbot.call_rule(allowed, wrapper_allowed, trigger_allowed)
+    mockbot.call_rule(limited, wrapper_limited, trigger_limited)
+
+    # assert the rules have been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    )
+    assert items == [1, 1]
+
+    # assert the rule with admins included is now rate limited,
+    # but not the one without admins included
+    at_time = datetime.now(timezone.utc)
+    assert not allowed.is_admin_rate_limited()
+    assert allowed.is_user_rate_limited(Identifier('testnick'), at_time)
+    assert not allowed.is_channel_rate_limited('#channel', at_time)
+    assert not allowed.is_global_rate_limited(at_time)
+    assert limited.is_admin_rate_limited()
+    assert limited.is_user_rate_limited(Identifier('testnick'), at_time)
+    assert not limited.is_channel_rate_limited('#channel', at_time)
+    assert not limited.is_global_rate_limited(at_time)
+
+    _, trigger_allowed, wrapper_allowed = match_hello_rule_admin(allowed)
+    _, trigger_limited, wrapper_limited = match_hello_rule_admin(limited)
+
+    # call rules again
+    mockbot.call_rule(allowed, wrapper_allowed, trigger_allowed)
+    mockbot.call_rule(limited, wrapper_limited, trigger_limited)
+
+    # assert only one new message
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    ), 'There must be only one new message sent'
+    assert items == [1, 1, 1], 'There must be only one new item'
 
 
 def test_call_rule_rate_limited_user_with_message(mockbot, match_hello_rule):
@@ -852,9 +1071,10 @@ def test_call_rule_rate_limited_channel(mockbot, match_hello_rule):
     assert items == [1]
 
     # assert the rule is now rate limited
-    assert not rule_hello.is_user_rate_limited(Identifier('Test'))
-    assert rule_hello.is_channel_rate_limited('#channel')
-    assert not rule_hello.is_global_rate_limited()
+    at_time = datetime.now(timezone.utc)
+    assert not rule_hello.is_user_rate_limited(Identifier('Test'), at_time)
+    assert rule_hello.is_channel_rate_limited('#channel', at_time)
+    assert not rule_hello.is_global_rate_limited(at_time)
 
     match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
@@ -866,6 +1086,72 @@ def test_call_rule_rate_limited_channel(mockbot, match_hello_rule):
         'PRIVMSG #channel :hi'
     ), 'There must not be any new message sent'
     assert items == [1], 'There must not be any new item'
+
+
+def test_call_rule_rate_limited_channel_admin(mockbot, match_hello_rule_admin):
+    items = []
+
+    # setup
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    allowed = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit_admins=False,
+        channel_rate_limit=100)
+    limited = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit_admins=True,
+        channel_rate_limit=100)
+
+    _, trigger_allowed, wrapper_allowed = match_hello_rule_admin(allowed)
+    _, trigger_limited, wrapper_limited = match_hello_rule_admin(limited)
+
+    # call rules
+    mockbot.call_rule(allowed, wrapper_allowed, trigger_allowed)
+    mockbot.call_rule(limited, wrapper_limited, trigger_limited)
+
+    # assert the rules have been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    )
+    assert items == [1, 1]
+
+    # assert the rule with admins included is now rate limited,
+    # but not the one without admins included
+    at_time = datetime.now(timezone.utc)
+    assert not allowed.is_admin_rate_limited()
+    assert not allowed.is_user_rate_limited(Identifier('testnick'), at_time)
+    assert allowed.is_channel_rate_limited('#channel', at_time)
+    assert not allowed.is_global_rate_limited(at_time)
+    assert limited.is_admin_rate_limited()
+    assert not limited.is_user_rate_limited(Identifier('testnick'), at_time)
+    assert limited.is_channel_rate_limited('#channel', at_time)
+    assert not limited.is_global_rate_limited(at_time)
+
+    _, trigger_allowed, wrapper_allowed = match_hello_rule_admin(allowed)
+    _, trigger_limited, wrapper_limited = match_hello_rule_admin(limited)
+
+    # call rules again
+    mockbot.call_rule(allowed, wrapper_allowed, trigger_allowed)
+    mockbot.call_rule(limited, wrapper_limited, trigger_limited)
+
+    # assert only one new message
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    ), 'There must be only one new message sent'
+    assert items == [1, 1, 1], 'There must be only one new item'
 
 
 def test_call_rule_rate_limited_channel_with_message(mockbot, match_hello_rule):
@@ -897,9 +1183,10 @@ def test_call_rule_rate_limited_channel_with_message(mockbot, match_hello_rule):
     assert items == [1]
 
     # assert the rule is now rate limited
-    assert not rule_hello.is_user_rate_limited(Identifier('Test'))
-    assert rule_hello.is_channel_rate_limited('#channel')
-    assert not rule_hello.is_global_rate_limited()
+    at_time = datetime.now(timezone.utc)
+    assert not rule_hello.is_user_rate_limited(Identifier('Test'), at_time)
+    assert rule_hello.is_channel_rate_limited('#channel', at_time)
+    assert not rule_hello.is_global_rate_limited(at_time)
 
     match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
@@ -942,9 +1229,10 @@ def test_call_rule_rate_limited_global(mockbot, match_hello_rule):
     assert items == [1]
 
     # assert the rule is now rate limited
-    assert not rule_hello.is_user_rate_limited(Identifier('Test'))
-    assert not rule_hello.is_channel_rate_limited('#channel')
-    assert rule_hello.is_global_rate_limited()
+    at_time = datetime.now(timezone.utc)
+    assert not rule_hello.is_user_rate_limited(Identifier('Test'), at_time)
+    assert not rule_hello.is_channel_rate_limited('#channel', at_time)
+    assert rule_hello.is_global_rate_limited(at_time)
 
     match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
@@ -956,6 +1244,72 @@ def test_call_rule_rate_limited_global(mockbot, match_hello_rule):
         'PRIVMSG #channel :hi'
     ), 'There must not be any new message sent'
     assert items == [1], 'There must not be any new item'
+
+
+def test_call_rule_rate_limited_global_admin(mockbot, match_hello_rule_admin):
+    items = []
+
+    # setup
+    def testrule(bot, trigger):
+        bot.say('hi')
+        items.append(1)
+        return "Return Value"
+
+    allowed = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit_admins=False,
+        global_rate_limit=100)
+    limited = rules.Rule(
+        [re.compile(r'(hi|hello|hey|sup)')],
+        plugin='testplugin',
+        label='testrule',
+        handler=testrule,
+        rate_limit_admins=True,
+        global_rate_limit=100)
+
+    _, trigger_allowed, wrapper_allowed = match_hello_rule_admin(allowed)
+    _, trigger_limited, wrapper_limited = match_hello_rule_admin(limited)
+
+    # call rules
+    mockbot.call_rule(allowed, wrapper_allowed, trigger_allowed)
+    mockbot.call_rule(limited, wrapper_limited, trigger_limited)
+
+    # assert the rules have been executed
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    )
+    assert items == [1, 1]
+
+    # assert the rule with admins included is now rate limited,
+    # but not the one without admins included
+    at_time = datetime.now(timezone.utc)
+    assert not allowed.is_admin_rate_limited()
+    assert not allowed.is_user_rate_limited(Identifier('testnick'), at_time)
+    assert not allowed.is_channel_rate_limited('#channel', at_time)
+    assert allowed.is_global_rate_limited(at_time)
+    assert limited.is_admin_rate_limited()
+    assert not limited.is_user_rate_limited(Identifier('testnick'), at_time)
+    assert not limited.is_channel_rate_limited('#channel', at_time)
+    assert limited.is_global_rate_limited(at_time)
+
+    _, trigger_allowed, wrapper_allowed = match_hello_rule_admin(allowed)
+    _, trigger_limited, wrapper_limited = match_hello_rule_admin(limited)
+
+    # call rules again
+    mockbot.call_rule(allowed, wrapper_allowed, trigger_allowed)
+    mockbot.call_rule(limited, wrapper_limited, trigger_limited)
+
+    # assert only one new message
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+        'PRIVMSG #channel :hi',
+    ), 'There must be only one new message sent'
+    assert items == [1, 1, 1], 'There must be only one new item'
 
 
 def test_call_rule_rate_limited_global_with_message(mockbot, match_hello_rule):
@@ -987,9 +1341,10 @@ def test_call_rule_rate_limited_global_with_message(mockbot, match_hello_rule):
     assert items == [1]
 
     # assert the rule is now rate limited
-    assert not rule_hello.is_user_rate_limited(Identifier('Test'))
-    assert not rule_hello.is_channel_rate_limited('#channel')
-    assert rule_hello.is_global_rate_limited()
+    at_time = datetime.now(timezone.utc)
+    assert not rule_hello.is_user_rate_limited(Identifier('Test'), at_time)
+    assert not rule_hello.is_channel_rate_limited('#channel', at_time)
+    assert rule_hello.is_global_rate_limited(at_time)
 
     match, rule_trigger, wrapper = match_hello_rule(rule_hello)
 
@@ -1118,8 +1473,8 @@ def test_rate_limit_time_left_field(mockbot, match_hello_rule, limit_type):
     # assert there is now a NOTICE which contains templated time left information
     assert mockbot.backend.message_sent
     patt = (br"NOTICE Test :"
-            br"time_left=\d+:\d+:\d+(\.\d+)? "
-            br"time_left_sec=\d+(\.\d+)?")
+            br"time_left=\d+:\d+:\d+ "
+            br"time_left_sec=\d+")
     assert re.match(patt, mockbot.backend.message_sent[0])
 
 
@@ -1518,6 +1873,7 @@ def test_ignore_replay_servertime(mockbot):
     def ping(bot, trigger):
         bot.say(trigger.nick + "!")
 
+    ping.setup(mockbot.settings)
     ping.plugin_name = "testplugin"
     mockbot.register_callables([ping])
 
@@ -1565,3 +1921,75 @@ def test_user_quit(
     )
 
     assert 'MrPraline' not in mockbot.channels['#test'].users
+
+
+def test_callable_unhandled_exception(
+    tmpconfig: Config,
+    botfactory: BotFactory,
+    ircfactory: IRCFactory,
+    userfactory: UserFactory,
+):
+    """Test the bot's behavior when a callable raises an unhandled exception."""
+    mockbot: bot.Sopel = botfactory.preloaded(tmpconfig)
+    server: MockIRCServer = ircfactory(mockbot, True)
+    server.channel_joined('#test', ['iAmError'])
+    mockbot.backend.clear_message_sent()
+
+    mockuser = userfactory('iAmError', 'error', 'example.com')
+
+    @plugin.rule(".*")
+    def fail(bot, trigger):
+        raise RuntimeError
+
+    fail.setup(mockbot.settings)
+    fail.plugin_name = "testplugin"
+    mockbot.register_callables([fail])
+
+    server.message(f":{mockuser.prefix} PRIVMSG #test :TestBot!")
+
+    assert mockbot.backend.message_sent == rawlist(
+        "PRIVMSG #test :Unexpected RuntimeError from iAmError. "
+        "Message was: TestBot!",
+    )
+
+
+@pytest.mark.parametrize(
+    "pfx, modechar",
+    [
+        ("", ""),
+        ("+", "v"),
+        ("@", "o"),
+    ],
+    ids=["normal", "voice", "op"])
+def test_callable_unhandled_exception_in_statusmsg_context(
+    tmpconfig: Config,
+    botfactory: BotFactory,
+    ircfactory: IRCFactory,
+    userfactory: UserFactory,
+    pfx: str,
+    modechar: str,
+):
+    """Test the bot's behavior when a callable raises an unhandled exception."""
+    mockbot: bot.Sopel = botfactory.preloaded(tmpconfig)
+    mockbot._isupport = mockbot.isupport.apply(STATUSMSG=('@', '+'))
+    server: MockIRCServer = ircfactory(mockbot, True)
+    server.channel_joined('#test', ['iAmError'])
+    server.mode_set('#test', modechar * 2, ('iAmError', 'TestBot'))
+    mockbot.backend.clear_message_sent()
+
+    mockuser = userfactory('iAmError', 'error', 'example.com')
+
+    @plugin.rule(".*")
+    def fail(bot, trigger):
+        raise RuntimeError
+
+    fail.setup(mockbot.settings)
+    fail.plugin_name = "testplugin"
+    mockbot.register_callables([fail])
+
+    server.message(f":{mockuser.prefix} PRIVMSG {pfx}#test :TestBot!")
+
+    assert mockbot.backend.message_sent == rawlist(
+        f"PRIVMSG {pfx}#test :Unexpected RuntimeError from iAmError. "
+        "Message was: TestBot!",
+    )

@@ -28,8 +28,7 @@ Assuming your test files are in the ``test`` folder in your project directory::
             test_command.py
             test_config.py
         README.md
-        setup.py
-        setup.cfg
+        pyproject.toml
 
 You can run your test suite with::
 

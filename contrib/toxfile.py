@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from tox.execute.request import StdinSource
@@ -36,7 +38,7 @@ MIT License
 Copyright (c) 2023 Masen Furer
 """
 from contextlib import contextmanager
-from typing import Any, Iterator, Optional, Sequence, Tuple
+from typing import Any, Iterator, Sequence, Tuple
 
 from tox.plugin import impl
 from tox.tox_env.api import ToxEnv
@@ -51,8 +53,8 @@ class FilteredInfo(Info):
     def __init__(
         self,
         *args: Any,
-        filter_keys: Optional[Sequence[str]] = None,
-        filter_section: Optional[str] = None,
+        filter_keys: Sequence[str] | None = None,
+        filter_section: str | None = None,
         **kwargs: Any,
     ):
         """
@@ -70,8 +72,8 @@ class FilteredInfo(Info):
         self,
         value: Any,
         section: str,
-        sub_section: Optional[str] = None,
-    ) -> Iterator[Tuple[bool, Optional[Any]]]:
+        sub_section: str | None = None,
+    ) -> Iterator[Tuple[bool, Any]]:
         """Perform comparison and update cached info after filtering `value`."""
         if self.filter_section is None or section == self.filter_section:
             try:

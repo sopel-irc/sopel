@@ -1,4 +1,10 @@
 from __future__ import generator_stop
+
+from datetime import date
+
+from sopel import __version__
+
+
 # Sopel IRC Bot documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul 16 23:45:29 2012.
 #
@@ -10,9 +16,7 @@ from __future__ import generator_stop
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from datetime import date
 
-from sopel import __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

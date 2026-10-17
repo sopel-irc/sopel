@@ -6,11 +6,23 @@ from __future__ import annotations
 
 import re
 import sys
+from typing import TYPE_CHECKING
 
 import pytest
 
-from sopel import bot, loader, plugins, trigger
-from .factories import BotFactory, ConfigFactory, IRCFactory, TriggerFactory, UserFactory
+from sopel import bot, plugins, trigger
+
+from .factories import (
+    BotFactory,
+    ConfigFactory,
+    IRCFactory,
+    TriggerFactory,
+    UserFactory,
+)
+
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 TEMPLATE_TEST_CONFIG = """
@@ -18,6 +30,8 @@ TEMPLATE_TEST_CONFIG = """
 nick = {name}
 owner = {owner}
 admin = {admin}
+# avoid wasting cycles in time.sleep() during `repeat`ed tests
+flood_max_wait = 0
 """
 
 
@@ -42,13 +56,12 @@ def get_disable_setup():
     return disable_setup
 
 
-def get_example_test(tested_func, msg, results, privmsg, admin,
+def get_example_test(handler, msg, results, privmsg, admin,
                      owner, repeat, use_regexp, ignore=[]):
-    """Get a function that calls ``tested_func`` with fake wrapper and trigger.
+    """Get a function that calls ``handler`` with fake wrapper and trigger.
 
-    :param callable tested_func: a Sopel callable that accepts a
-                                 :class:`~.bot.SopelWrapper` and a
-                                 :class:`~.trigger.Trigger`
+    :param handler: a plugin command to test
+    :type handler: :class:`sopel.plugins.callables.PluginCallable`
     :param str msg: message that is supposed to trigger the command
     :param list results: expected output from the callable
     :param bool privmsg: if ``True``, make the message appear to have arrived
@@ -75,11 +88,12 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         server = ircfactory(mockbot)
         server.channel_joined('#Sopel')
 
-        if not hasattr(tested_func, 'commands'):
-            raise AssertionError('Function is not a command.')
+        if not handler.commands:
+            raise AssertionError('Plugin callable is not a command.')
 
-        loader.clean_callable(tested_func, settings)
-        test_rule = plugins.rules.Command.from_callable(settings, tested_func)
+        handler.setup(settings)
+        tested_func = handler._handler
+        test_rule = plugins.rules.Command.from_callable(settings, handler)
         parse_results = list(test_rule.parse(msg))
         assert parse_results, "Example did not match any command."
 
@@ -114,7 +128,7 @@ def get_example_test(tested_func, msg, results, privmsg, admin,
         for _i in range(repeat):
             expected_output_count += len(results)
             wrapper = bot.SopelWrapper(mockbot, test_trigger)
-            tested_func(wrapper, test_trigger)
+            handler(wrapper, test_trigger)
 
             output_triggers = (
                 trigger.PreTrigger(
@@ -174,7 +188,7 @@ def insert_into_module(func, module_name, base_name, prefix):
 
 
 @pytest.fixture
-def botfactory():
+def botfactory() -> BotFactory:
     """Fixture to get a Bot factory.
 
     :return: a factory to create a mocked bot instance
@@ -196,19 +210,21 @@ def botfactory():
 
 
 @pytest.fixture
-def configfactory(tmpdir):
+def configfactory(tmp_path: pathlib.Path) -> ConfigFactory:
     """Fixture to get a config factory.
 
+    :param tmp_path: a temporary path directory
     :return: a factory to create test settings
-    :rtype: :class:`sopel.tests.factories.ConfigFactory`
 
     The factory will be automatically configured with a ``tmpdir`` object.
     """
+    tmpdir = tmp_path / 'sopel'
+    tmpdir.mkdir()
     return ConfigFactory(tmpdir)
 
 
 @pytest.fixture
-def triggerfactory():
+def triggerfactory() -> TriggerFactory:
     """Fixture to get a trigger factory.
 
     :return: a factory to create triggers
@@ -218,7 +234,7 @@ def triggerfactory():
 
 
 @pytest.fixture
-def ircfactory():
+def ircfactory() -> IRCFactory:
     """Fixture to get an IRC factory.
 
     :return: a factory to create mock IRC servers
@@ -244,7 +260,7 @@ def ircfactory():
 
 
 @pytest.fixture
-def userfactory():
+def userfactory() -> UserFactory:
     """Fixture to get a user factory.
 
     :return: a factory to create mock users

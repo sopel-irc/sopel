@@ -8,6 +8,7 @@ import pytest
 from sopel import coretasks
 from sopel.tests import rawlist
 
+
 if TYPE_CHECKING:
     from sopel.config import Config
     from sopel.tests.factories import BotFactory, ConfigFactory

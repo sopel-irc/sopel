@@ -3,6 +3,12 @@ The ``tools.web`` package contains utility functions for interaction with web
 applications, APIs, or websites in your plugins.
 
 .. versionadded:: 7.0
+
+.. versionchanged:: 8.1
+
+    Several utility functions are now deprecated due to Python's builtin
+    library containing the appropriate functions. These functions will be
+    removed in Sopel 9.
 """
 # Copyright © 2008, Sean B. Palmer, inamidst.com
 # Copyright © 2009, Michael Yanovich <yanovich.1@osu.edu>
@@ -16,11 +22,16 @@ from __future__ import annotations
 import html
 from html.entities import name2codepoint
 import re
+from typing import TYPE_CHECKING
 import urllib
 from urllib.parse import urlparse, urlunparse
 
 from sopel import __version__
 from sopel.lifecycle import deprecated
+
+
+if TYPE_CHECKING:
+    from typing import Iterable
 
 
 __all__ = [
@@ -95,7 +106,7 @@ r_entity = re.compile(r'&([^;\s]+);')
     removed_in='9.0',
     reason="No longer needed now that Python 3.4+ has `html.unescape()`",
 )
-def entity(match):
+def entity(match: re.Match) -> str:
     """Convert an entity reference to the appropriate character.
 
     :param str match: the entity name or code, as matched by
@@ -120,7 +131,12 @@ def entity(match):
     return '[' + value + ']'
 
 
-def decode(text):
+@deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's html.unescape() function",
+)
+def decode(text: str) -> str:
     """Decode HTML entities into Unicode text.
 
     :param str text: the HTML page or snippet to process
@@ -131,12 +147,20 @@ def decode(text):
         Renamed ``html`` parameter to ``text``. (Python gained a standard
         library module named :mod:`html` in version 3.4.)
 
+    .. deprecated:: 8.1
+
+        Will be removed in Sopel 9. Migrate to Python's standard-library
+        equivalent, :func:`html.unescape`.
     """
-    # TODO deprecated?
     return html.unescape(text)
 
 
-def quote(string, safe='/'):
+@deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's urllib.parse.quote() function",
+)
+def quote(string: str, safe: str = '/') -> str:
     """Safely encodes a string for use in a URL.
 
     :param str string: the string to encode
@@ -147,13 +171,22 @@ def quote(string, safe='/'):
     .. note::
         This is a shim to make writing cross-compatible plugins for both
         Python 2 and Python 3 easier.
+
+    .. deprecated:: 8.1
+
+        Will be removed in Sopel 9. Migrate to Python's standard-library
+        equivalent, :func:`urllib.parse.quote`.
     """
-    # TODO deprecated?
     return urllib.parse.quote(str(string), safe)
 
 
 # six-like shim for Unicode safety
-def unquote(string):
+@deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's urllib.parse.unquote() function",
+)
+def unquote(string: str) -> str:
     """Decodes a URL-encoded string.
 
     :param str string: the string to decode
@@ -162,30 +195,43 @@ def unquote(string):
     .. note::
 
         This is a convenient shortcut for ``urllib.parse.unquote``.
+
+    .. deprecated:: 8.1
+
+        Will be removed in Sopel 9. Migrate to Python's standard-library
+        equivalent, :func:`urllib.parse.unquote`.
     """
-    # TODO deprecated?
     return urllib.parse.unquote(string)
 
 
-def quote_query(string):
+def quote_query(string: str) -> str:
     """Safely encodes a URL's query parameters.
 
-    :param str string: a URL containing query parameters
-    :return str: the input URL with query parameter values URL-encoded
+    :param string: a URL containing query parameters
+    :return: the input URL with query parameter values URL-encoded
+
+    .. note::
+
+        This is a convenience function using :func:`urllib.parse.urlparse` and
+        :func:`urllib.parse.quote`.
     """
     parsed = urlparse(string)
-    string = string.replace(parsed.query, quote(parsed.query, "/=&"), 1)
+    string = string.replace(
+        parsed.query,
+        urllib.parse.quote(parsed.query, "/=&"),
+        1,
+    )
     return string
 
 
 # Functions for international domain name magic
 
-def urlencode_non_ascii(b):
+def urlencode_non_ascii(b: bytes) -> bytes:
     """Safely encodes non-ASCII characters in a URL."""
     return re.sub(b'[\x80-\xFF]', lambda c: b'%%%02x' % ord(c.group(0)), b)
 
 
-def iri_to_uri(iri):
+def iri_to_uri(iri: str) -> str:
     """Decodes an internationalized domain name (IDN)."""
     parts = urlparse(iri)
     parts_seq = list(
@@ -198,13 +244,17 @@ def iri_to_uri(iri):
 
 
 # direct shortcut kept for backward compatibility reasons
-# TODO consider removing this
-urlencode = urllib.parse.urlencode
+urlencode = deprecated(
+    version='8.1',
+    removed_in='9.0',
+    reason="Obsolete, use Python's urllib.parse.urlencode() function",
+    func=urllib.parse.urlencode
+)
 
 
 # Functions for URL detection
 
-def trim_url(url):
+def trim_url(url: str) -> str:
     """Removes extra punctuation from URLs found in text.
 
     :param str url: the raw URL match
@@ -231,7 +281,12 @@ def trim_url(url):
     return url
 
 
-def search_urls(text, exclusion_char=None, clean=False, schemes=None):
+def search_urls(
+    text: str,
+    exclusion_char: str | None = None,
+    clean: bool = False,
+    schemes: Iterable[str] | None = None,
+) -> Iterable[str]:
     """Extracts all URLs in ``text``.
 
     :param str text: the text to search for URLs
@@ -248,11 +303,11 @@ def search_urls(text, exclusion_char=None, clean=False, schemes=None):
         list(search_urls(text))
 
     """
-    schemes = schemes or ['http', 'https', 'ftp']
-    schemes_patterns = '|'.join(re.escape(scheme) for scheme in schemes)
-    re_url = r'((?:%s)(?::\/\/\S+))' % schemes_patterns
+    allowed: Iterable[str] = schemes or ['http', 'https', 'ftp']
+    schemes_patterns = '|'.join(re.escape(scheme) for scheme in allowed)
+    re_url = r'((?<!\S)(?:%s)(?::\/\/\S+))' % schemes_patterns
     if exclusion_char is not None:
-        re_url = r'((?<!%s)(?:%s)(?::\/\/\S+))' % (
+        re_url = r'((?<!\S)(?<!%s)(?:%s)(?::\/\/\S+))' % (
             exclusion_char, schemes_patterns)
 
     r = re.compile(re_url, re.IGNORECASE | re.UNICODE)

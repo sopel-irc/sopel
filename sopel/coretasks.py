@@ -30,11 +30,13 @@ import functools
 import logging
 import re
 import time
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 from sopel import config, plugin
 from sopel.irc import isupport, utils
+from sopel.plugins import callables
 from sopel.tools import events, jobs, SopelMemory, target
+
 
 if TYPE_CHECKING:
     from sopel.bot import Sopel, SopelWrapper
@@ -65,9 +67,9 @@ MODE_PREFIX_PRIVILEGES = {
 
 def _handle_account_and_extjoin_capabilities(
     cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
-) -> plugin.CapabilityNegotiation:
+) -> callables.CapabilityNegotiation:
     if acknowledged:
-        return plugin.CapabilityNegotiation.DONE
+        return callables.CapabilityNegotiation.DONE
 
     name = ', '.join(cap_req)
     owner_account = bot.settings.core.owner_account
@@ -85,12 +87,12 @@ def _handle_account_and_extjoin_capabilities(
             name,
         )
 
-    return plugin.CapabilityNegotiation.DONE
+    return callables.CapabilityNegotiation.DONE
 
 
 def _handle_sasl_capability(
     cap_req: tuple[str, ...], bot: SopelWrapper, acknowledged: bool,
-) -> plugin.CapabilityNegotiation:
+) -> callables.CapabilityNegotiation:
     # Manage CAP REQ :sasl
     auth_method = bot.settings.core.auth_method
     server_auth_method = bot.settings.core.server_auth_method
@@ -98,14 +100,14 @@ def _handle_sasl_capability(
 
     if not is_required:
         # not required: we are fine, available or not
-        return plugin.CapabilityNegotiation.DONE
+        return callables.CapabilityNegotiation.DONE
     elif not acknowledged:
         # required but not available: error, we must stop here
         LOGGER.error(
             'SASL capability is not enabled; '
             'cannot authenticate with SASL.',
         )
-        return plugin.CapabilityNegotiation.ERROR
+        return callables.CapabilityNegotiation.ERROR
 
     # Check SASL configuration (password is required for PLAIN/SCRAM)
     password, mech = _get_sasl_pass_and_mech(bot)
@@ -141,12 +143,13 @@ def _handle_sasl_capability(
 
     # If we want to do SASL, we have to wait before we can send CAP END. So if
     # we are, wait on 903 (SASL successful) to send it.
-    return plugin.CapabilityNegotiation.CONTINUE
+    return callables.CapabilityNegotiation.CONTINUE
 
 
 CAP_ECHO_MESSAGE = plugin.capability('echo-message')
 CAP_MULTI_PREFIX = plugin.capability('multi-prefix')
 CAP_AWAY_NOTIFY = plugin.capability('away-notify')
+CAP_INVITE_NOTIFY = plugin.capability('invite-notify')
 CAP_CHGHOST = plugin.capability('chghost')
 CAP_CAP_NOTIFY = plugin.capability('cap-notify')
 CAP_SERVER_TIME = plugin.capability('server-time')
@@ -159,9 +162,10 @@ CAP_EXTENDED_JOIN = plugin.capability(
 CAP_ACCOUNT_TAG = plugin.capability(
     'account-tag', handler=_handle_account_and_extjoin_capabilities)
 CAP_SASL = plugin.capability('sasl', handler=_handle_sasl_capability)
+CAP_SETNAME = plugin.capability('setname')
 
 
-def setup(bot: Sopel):
+def setup(bot: Sopel) -> None:
     """Set up the coretasks plugin.
 
     The setup phase is used to activate the throttle feature to prevent a flood
@@ -212,7 +216,7 @@ def _join_event_processing(bot):
         _send_who(bot, channel)
 
 
-def auth_after_register(bot):
+def auth_after_register(bot: Sopel) -> None:
     """Do NickServ/AuthServ auth.
 
     :param bot: a connected Sopel instance
@@ -232,17 +236,17 @@ def auth_after_register(bot):
         ignored. If none is set, then this function does nothing.
 
     """
-    if bot.config.core.auth_method:
-        auth_method = bot.config.core.auth_method
-        auth_username = bot.config.core.auth_username
-        auth_password = bot.config.core.auth_password
-        auth_target = bot.config.core.auth_target
-    elif bot.config.core.nick_auth_method:
-        auth_method = bot.config.core.nick_auth_method
-        auth_username = (bot.config.core.nick_auth_username or
-                         bot.config.core.nick)
-        auth_password = bot.config.core.nick_auth_password
-        auth_target = bot.config.core.nick_auth_target
+    if bot.settings.core.auth_method:
+        auth_method = bot.settings.core.auth_method
+        auth_username = bot.settings.core.auth_username
+        auth_password = bot.settings.core.auth_password
+        auth_target = bot.settings.core.auth_target
+    elif bot.settings.core.nick_auth_method:
+        auth_method = bot.settings.core.nick_auth_method
+        auth_username = (bot.settings.core.nick_auth_username or
+                         bot.settings.core.nick)
+        auth_password = bot.settings.core.nick_auth_password
+        auth_target = bot.settings.core.nick_auth_target
     else:
         return
 
@@ -277,7 +281,7 @@ def _execute_perform(bot):
         # How did you even get this command, bot?
         raise Exception('Bot must be connected to server to perform commands.')
 
-    commands = bot.config.core.commands_on_connect
+    commands = bot.settings.core.commands_on_connect
     count = len(commands)
 
     if not count:
@@ -286,7 +290,7 @@ def _execute_perform(bot):
 
     LOGGER.info("Executing %d custom commands.", count)
     for i, command in enumerate(commands, 1):
-        command = command.replace('$nickname', bot.config.core.nick)
+        command = command.replace('$nickname', bot.settings.core.nick)
         LOGGER.debug("Executing custom command [%d/%d]: %s", i, count, command)
         bot.write((command,))
 
@@ -380,7 +384,7 @@ def startup(bot, trigger):
                 "and restart the bot." % (bot.nick, trigger.args[0])
             )
             LOGGER.critical(debug_msg)
-            bot.say(privmsg, bot.config.core.owner)
+            bot.say(privmsg, bot.settings.core.owner)
 
     # set flag
     bot._connection_registered.set()
@@ -389,7 +393,7 @@ def startup(bot, trigger):
     auth_after_register(bot)
 
     # set bot's MODE
-    modes = bot.config.core.modes
+    modes = bot.settings.core.modes
     if modes:
         if not modes.startswith(('+', '-')):
             # Assume "+" by default.
@@ -398,17 +402,17 @@ def startup(bot, trigger):
 
     # warn for insecure auth method if necessary
     if (
-        not bot.config.core.owner_account and
+        not bot.settings.core.owner_account and
         bot.capabilities.is_enabled('account-tag') and
-        '@' not in bot.config.core.owner
+        '@' not in bot.settings.core.owner
     ):
         msg = (
             "This network supports using network services to identify you as "
             "my owner, rather than just matching your nickname. This is much "
             "more secure. If you'd like to do this, make sure you're logged in "
             "and reply with \"{}useserviceauth\""
-        ).format(bot.config.core.help_prefix)
-        bot.say(msg, bot.config.core.owner)
+        ).format(bot.settings.core.help_prefix)
+        bot.say(msg, bot.settings.core.owner)
 
     # execute custom commands
     _execute_perform(bot)
@@ -463,9 +467,9 @@ def handle_isupport(bot, trigger):
     if not botmode_support and 'BOT' in bot.isupport:
         # yes it was! set our mode unless the config overrides it
         botmode = bot.isupport['BOT']
-        modes_setting = bot.config.core.modes
+        modes_setting = bot.settings.core.modes
 
-        if not modes_setting or botmode not in bot.config.core.modes:
+        if not modes_setting or botmode not in bot.settings.core.modes:
             bot.write(('MODE', bot.nick, '+' + botmode))
 
     # was NAMESX support status updated?
@@ -491,13 +495,13 @@ def handle_isupport(bot, trigger):
 @plugin.priority('medium')
 def join_channels(bot, trigger):
     # join channels
-    channels = bot.config.core.channels
+    channels = bot.settings.core.channels
     if not channels:
         LOGGER.info("No initial channels to JOIN.")
 
-    elif bot.config.core.throttle_join:
-        throttle_rate = int(bot.config.core.throttle_join)
-        throttle_wait = max(bot.config.core.throttle_wait, 1)
+    elif bot.settings.core.throttle_join:
+        throttle_rate = int(bot.settings.core.throttle_join)
+        throttle_wait = max(bot.settings.core.throttle_wait, 1)
         channels_joined = 0
 
         LOGGER.info(
@@ -519,7 +523,7 @@ def join_channels(bot, trigger):
             "this may take a moment.",
             len(channels))
 
-        for channel in bot.config.core.channels:
+        for channel in bot.settings.core.channels:
             bot.join(channel)
 
 
@@ -553,7 +557,7 @@ def enable_service_auth(bot, trigger):
 
     This doesn't work if the ``account-tag`` capability is not available.
     """
-    if bot.config.core.owner_account:
+    if bot.settings.core.owner_account:
         return
     if not bot.capabilities.is_enabled('account-tag'):
         bot.say('This server does not fully support services auth, so this '
@@ -563,8 +567,8 @@ def enable_service_auth(bot, trigger):
         bot.say('You must be logged in to network services before using this '
                 'command.')
         return
-    bot.config.core.owner_account = trigger.account
-    bot.config.save()
+    bot.settings.core.owner_account = trigger.account
+    bot.settings.save()
     bot.say('Success! I will now use network services to identify you as my '
             'owner.')
     LOGGER.info(
@@ -811,7 +815,7 @@ def track_nicks(bot, trigger):
     if old == bot.nick and new != bot.nick:
         # Is this the original nick being regained?
         # e.g. by ZNC's keepnick module running in front of Sopel
-        if old != bot.config.core.nick and new == bot.config.core.nick:
+        if old != bot.settings.core.nick and new == bot.settings.core.nick:
             LOGGER.info(
                 "Regained configured nick. Restarting is still recommended.")
         else:
@@ -821,13 +825,13 @@ def track_nicks(bot, trigger):
                 "You'll probably want to restart me, and figure out what made "
                 "that happen so you can stop it happening again. (Usually, it "
                 "means you tried to give me a nick that's protected by NickServ.)"
-            ) % bot.config.core.nick
+            ) % bot.settings.core.nick
             debug_msg = (
                 "Nick changed by server. This can cause unexpected behavior. "
                 "Please restart the bot."
             )
             LOGGER.critical(debug_msg)
-            bot.say(privmsg, bot.config.core.owner)
+            bot.say(privmsg, bot.settings.core.owner)
 
         # Always update bot.nick anyway so Sopel doesn't lose its self-identity.
         # This should cut down the number of "weird things" that happen while
@@ -843,6 +847,29 @@ def track_nicks(bot, trigger):
         bot.users[new] = bot.users.pop(old)
 
     LOGGER.info("User named %r is now known as %r.", str(old), str(new))
+
+
+@plugin.rule('(.*)')
+@plugin.event('SETNAME')
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
+def handle_setname(bot, trigger):
+    """Update a user's realname when notified by the IRC server."""
+    user = bot.users.get(trigger.nick)
+    if not user:
+        LOGGER.debug(
+            "Discarding SETNAME (%r) received for unknown user %s.",
+            trigger, trigger.nick,
+        )
+        return
+
+    new_realname = str(trigger)
+    LOGGER.info(
+        "User named %r changed realname to %r.",
+        str(user.realname), new_realname,
+    )
+    user.realname = new_realname
 
 
 @plugin.rule('(.*)')
@@ -941,6 +968,16 @@ def _periodic_send_who(bot):
         _send_who(bot, selected_channel)
 
 
+@plugin.event('INVITE')
+@plugin.thread(False)
+@plugin.unblockable
+@plugin.priority('medium')
+def track_invite(bot, trigger):
+    """Track users being invited to channels."""
+    LOGGER.info(
+        '%s invited %s to %s', trigger.nick, trigger.args[0], trigger.args[1])
+
+
 @plugin.event('JOIN')
 @plugin.thread(False)
 @plugin.unblockable
@@ -1031,11 +1068,11 @@ def _receive_cap_ls_reply(bot: SopelWrapper, trigger: Trigger) -> None:
 def _handle_cap_acknowledgement(
     bot: SopelWrapper,
     cap_req: tuple[str, ...],
-    results: list[tuple[bool, Optional[plugin.CapabilityNegotiation]]],
+    results: list[tuple[bool, callables.CapabilityNegotiation | None]],
     was_completed: bool,
 ) -> None:
     if any(
-        callback_result[1] == plugin.CapabilityNegotiation.ERROR
+        callback_result[1] == callables.CapabilityNegotiation.ERROR
         for callback_result in results
     ):
         # error: a plugin needs something and the bot cannot function properly
@@ -1057,9 +1094,9 @@ def _receive_cap_ack(bot: SopelWrapper, trigger: Trigger) -> None:
     cap_ack: tuple[str, ...] = bot.capabilities.handle_ack(bot, trigger)
 
     try:
-        result: Optional[
-            list[tuple[bool, Optional[plugin.CapabilityNegotiation]]]
-        ] = bot.cap_requests.acknowledge(bot, cap_ack)
+        result: list[
+            tuple[bool, callables.CapabilityNegotiation | None]
+        ] | None = bot.cap_requests.acknowledge(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
             'Configuration error on ACK capability "%s": %s',
@@ -1092,9 +1129,9 @@ def _receive_cap_nak(bot: SopelWrapper, trigger: Trigger) -> None:
     cap_ack = bot.capabilities.handle_nak(bot, trigger)
 
     try:
-        result: Optional[
-            list[tuple[bool, Optional[plugin.CapabilityNegotiation]]]
-        ] = bot.cap_requests.deny(bot, cap_ack)
+        result: list[
+            tuple[bool, callables.CapabilityNegotiation | None]
+        ] | None = bot.cap_requests.deny(bot, cap_ack)
     except config.ConfigurationError as error:
         LOGGER.error(
             'Configuration error on NAK capability "%s": %s',
@@ -1205,10 +1242,10 @@ def auth_proceed(bot, trigger):
         be ignored. If none is set, then this function does nothing.
 
     """
-    if bot.config.core.auth_method == 'sasl':
-        mech = bot.config.core.auth_target or 'PLAIN'
-    elif bot.config.core.server_auth_method == 'sasl':
-        mech = bot.config.core.server_auth_sasl_mech or 'PLAIN'
+    if bot.settings.core.auth_method == 'sasl':
+        mech = bot.settings.core.auth_target or 'PLAIN'
+    elif bot.settings.core.server_auth_method == 'sasl':
+        mech = bot.settings.core.server_auth_sasl_mech or 'PLAIN'
     else:
         return
 
@@ -1222,12 +1259,12 @@ def auth_proceed(bot, trigger):
         bot.write(('AUTHENTICATE', token))
         return
 
-    if bot.config.core.auth_method == 'sasl':
-        sasl_username = bot.config.core.auth_username
-        sasl_password = bot.config.core.auth_password
-    elif bot.config.core.server_auth_method == 'sasl':
-        sasl_username = bot.config.core.server_auth_username
-        sasl_password = bot.config.core.server_auth_password
+    if bot.settings.core.auth_method == 'sasl':
+        sasl_username = bot.settings.core.auth_username
+        sasl_password = bot.settings.core.auth_password
+    elif bot.settings.core.server_auth_method == 'sasl':
+        sasl_username = bot.settings.core.server_auth_username
+        sasl_password = bot.settings.core.server_auth_password
     else:
         # How did we get here? I am not good with computer
         return
@@ -1261,7 +1298,7 @@ def _make_sasl_plain_token(account, password):
 @plugin.thread(False)
 @plugin.unblockable
 @plugin.priority('medium')
-def sasl_success(bot: SopelWrapper, trigger: Trigger):
+def sasl_success(bot: SopelWrapper, trigger: Trigger) -> None:
     """Resume capability negotiation on successful SASL auth."""
     LOGGER.info("Successful SASL Auth.")
     bot.resume_capability_negotiation(CAP_SASL.cap_req, 'coretasks')
@@ -1337,12 +1374,12 @@ def _get_sasl_pass_and_mech(bot):
     password = None
     mech = None
 
-    if bot.config.core.auth_method == 'sasl':
-        password = bot.config.core.auth_password
-        mech = bot.config.core.auth_target
-    elif bot.config.core.server_auth_method == 'sasl':
-        password = bot.config.core.server_auth_password
-        mech = bot.config.core.server_auth_sasl_mech
+    if bot.settings.core.auth_method == 'sasl':
+        password = bot.settings.core.auth_password
+        mech = bot.settings.core.auth_target
+    elif bot.settings.core.server_auth_method == 'sasl':
+        password = bot.settings.core.server_auth_password
+        mech = bot.settings.core.server_auth_sasl_mech
 
     mech = 'PLAIN' if mech is None else mech.upper()
 
@@ -1354,6 +1391,7 @@ def _get_sasl_pass_and_mech(bot):
 
 @plugin.commands('blocks')
 @plugin.example(r'.blocks del nick falsep0sitive', user_help=True)
+@plugin.example(r'.blocks add hostmask Guest.*!.*@public\.test\.client', user_help=True)
 @plugin.example(r'.blocks add host some\.malicious\.network', user_help=True)
 @plugin.example(r'.blocks add nick sp(a|4)mb(o|0)t\d*', user_help=True)
 @plugin.thread(False)
@@ -1363,22 +1401,24 @@ def _get_sasl_pass_and_mech(bot):
 def blocks(bot, trigger):
     """Manage Sopel's blocking features.
 
-    Full argspec: `list [nick|host]` or `[add|del] [nick|host] pattern`
+    Full argspec: `list [nick|host|hostmask]` or `[add|del] [nick|host|hostmask] pattern`
     """
     STRINGS = {
         "success_del": "Successfully deleted block: %s",
         "success_add": "Successfully added block: %s",
         "no_nick": "No matching nick block found for: %s",
         "no_host": "No matching host block found for: %s",
-        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host) sopel",
+        "no_hostmask": "No matching hostmask block found for: %s",
+        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host|hostmask) pattern",
         "invalid_display": "Invalid input for displaying blocks.",
         "nonelisted": "No %s listed in the blocklist.",
         'huh': "I could not figure out what you wanted to do.",
     }
 
-    hosts = set(s for s in bot.config.core.host_blocks if s != '')
+    hostmasks = set(s for s in bot.settings.core.hostmask_blocks if s != '')
+    hosts = set(s for s in bot.settings.core.host_blocks if s != '')
     nicks = set(bot.make_identifier(nick)
-                for nick in bot.config.core.nick_blocks
+                for nick in bot.settings.core.nick_blocks
                 if nick != '')
     text = trigger.group().split()
 
@@ -1395,18 +1435,28 @@ def blocks(bot, trigger):
                 bot.say("Blocked nicks: {}".format(blocked))
             else:
                 bot.reply(STRINGS['nonelisted'] % ('nicks'))
+        elif text[2] == "hostmask":
+            if len(hostmasks) > 0:
+                blocked = ', '.join(str(hostmask) for hostmask in hostmasks)
+                bot.say("Blocked hostmasks: {}".format(blocked))
+            else:
+                bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
         else:
             bot.reply(STRINGS['invalid_display'])
 
     elif len(text) == 4 and text[1] == "add":
         if text[2] == "nick":
             nicks.add(text[3])
-            bot.config.core.nick_blocks = nicks
-            bot.config.save()
+            bot.settings.core.nick_blocks = nicks
+            bot.settings.save()
         elif text[2] == "host":
             hosts.add(text[3].lower())
-            bot.config.core.host_blocks = list(hosts)
-            bot.config.save()
+            bot.settings.core.host_blocks = list(hosts)
+            bot.settings.save()
+        elif text[2] == "hostmask":
+            hostmasks.add(text[3])
+            bot.settings.core.hostmask_blocks = list(hostmasks)
+            bot.settings.save()
         else:
             bot.reply(STRINGS['invalid'] % ("adding"))
             return
@@ -1420,8 +1470,8 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_nick'] % (text[3]))
                 return
             nicks.remove(nick)
-            bot.config.core.nick_blocks = [str(n) for n in nicks]
-            bot.config.save()
+            bot.settings.core.nick_blocks = [str(n) for n in nicks]
+            bot.settings.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         elif text[2] == "host":
             host = text[3].lower()
@@ -1429,8 +1479,17 @@ def blocks(bot, trigger):
                 bot.reply(STRINGS['no_host'] % (text[3]))
                 return
             hosts.remove(host)
-            bot.config.core.host_blocks = [str(m) for m in hosts]
-            bot.config.save()
+            bot.settings.core.host_blocks = [str(m) for m in hosts]
+            bot.settings.save()
+            bot.reply(STRINGS['success_del'] % (text[3]))
+        elif text[2] == "hostmask":
+            hostmask = text[3]
+            if hostmask not in hostmasks:
+                bot.reply(STRINGS['no_hostmask'] % (text[3]))
+                return
+            hostmasks.remove(hostmask)
+            bot.settings.core.hostmask_blocks = [str(m) for m in hostmasks]
+            bot.settings.save()
             bot.reply(STRINGS['success_del'] % (text[3]))
         else:
             bot.reply(STRINGS['invalid'] % ("deleting"))
@@ -1509,12 +1568,12 @@ def _record_who(
     user: str,
     host: str,
     nick: str,
-    realname: Optional[str] = None,
-    account: Optional[str] = None,
-    away: Optional[bool] = None,
-    is_bot: Optional[bool] = None,
-    modes: Optional[str] = None,
-):
+    realname: str | None = None,
+    account: str | None = None,
+    away: bool | None = None,
+    is_bot: bool | None = None,
+    modes: str | None = None,
+) -> None:
     nick = bot.make_identifier(nick)
     channel = bot.make_identifier(channel)
     if nick not in bot.users:
@@ -1537,6 +1596,11 @@ def _record_who(
         usr.away = away
     if is_bot is not None:
         usr.is_bot = is_bot
+
+    # `*` placeholder is returned for users with no visible channels; see #2675
+    if channel == '*':
+        return
+
     priv = 0
     if modes:
         mapping = {
@@ -1549,6 +1613,7 @@ def _record_who(
         }
         for c in modes:
             priv = priv | mapping[c]
+
     if channel not in bot.channels:
         bot.channels[channel] = target.Channel(
             channel,
@@ -1612,15 +1677,21 @@ def track_topic(bot, trigger):
 def handle_url_callbacks(bot, trigger):
     """Dispatch callbacks on URLs
 
-    For each URL found in the trigger, trigger the URL callback registered by
-    the ``@url`` decorator.
+    For each URL found in the trigger, trigger the URL callback registered
+    through the now deprecated :meth:`sopel.bot.Sopel.register_url_callback`.
+
+    .. deprecated:: 8.1
+
+        This is deprecated and will be removed in Sopel 9.0.
+
     """
     # find URLs in the trigger
     for url in trigger.urls:
         # find callbacks for said URL
-        for function, match in bot.search_url_callbacks(url):
+        for pattern, function in bot._url_callbacks.items():
+            match = pattern.search(url)
             # trigger callback defined by the `@url` decorator
-            if hasattr(function, 'url_regex'):
+            if match and hasattr(function, 'url_regex'):
                 # bake the `match` argument in before passing the callback on
                 @functools.wraps(function)
                 def decorated(bot, trigger):

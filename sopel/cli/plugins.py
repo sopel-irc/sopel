@@ -6,6 +6,7 @@ import inspect
 import operator
 
 from sopel import config, plugins
+
 from . import utils
 
 
@@ -13,14 +14,16 @@ ERR_CODE = 1
 """Error code: program exited with an error"""
 
 
-def build_parser():
+def build_parser(prog: str = 'sopel-plugins') -> argparse.ArgumentParser:
     """Configure an argument parser for ``sopel-plugins``.
 
     :return: the argument parser
     :rtype: :class:`argparse.ArgumentParser`
     """
     parser = argparse.ArgumentParser(
-        description='Sopel plugins tool')
+        prog=prog,
+        description='Sopel plugins tool',
+    )
 
     # Subparser: sopel-plugins <sub-parser> <sub-options>
     subparsers = parser.add_subparsers(
@@ -283,6 +286,7 @@ def handle_show(options):
         })
 
     print('Plugin:', description['name'])
+    print('Version:', description['version'] or 'unknown')
     print('Status:', description['status'])
     print('Type:', description['type'])
     print('Source:', description['source'])

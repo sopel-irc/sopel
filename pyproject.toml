@@ -11,7 +11,7 @@ namespaces = false
 
 [project]
 name = "sopel"
-version = "8.0.0"
+version = "8.1.0.dev0"
 description = "Simple and extensible IRC bot"
 maintainers = [
   { name="dgw" },
@@ -40,19 +40,72 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Communications :: Chat :: Internet Relay Chat",
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "xmltodict>=0.12,<0.14",
     "pytz",
     "requests>=2.24.0,<3.0.0",
-    "dnspython<3.0",
     "sqlalchemy>=1.4,<1.5",
     "importlib_metadata>=3.6",
     "packaging>=23.2",
     "sopel-help>=0.4.0",
     "typing_extensions>=4.4",  # for @typing.override, added in py3.12
+]
+
+[dependency-groups]
+dev = [ # These are requirements to develop Sopel itself.
+    {include-group = "docs"},
+    {include-group = "lint"},
+    {include-group = "test"},
+]
+docs = [
+    # Sphinx theme
+    "furo==2023.9.10",
+    "sphinx>=7.1.0,<8; python_version <= '3.8'",
+    "sphinx>=7.2.0,<8; python_version > '3.8'",
+    # specify exact autoprogram version because the new (in 2021) maintainer
+    # showed that they will indeed make major changes in patch versions
+    "sphinxcontrib-autoprogram==0.1.8",
+    # custom plugin to help with RFC links
+    "sphinx-rfcsection~=0.1.1",
+]
+lint = [
+    "flake8>=5",
+    "flake8-coding",
+    "flake8-future-annotations",
+    "flake8-isort",
+    "flake8-pyproject",
+    "flake8-type-checking; python_version >= '3.8'",
+    # type check
+    # often breaks CI on master, so pin and update deliberately, on our own terms
+    "mypy==1.11.2",
+    {include-group = "pytest"},  # for types
+    # for `pkg_resources`; first version in which it's typed
+    # we don't use `pkg_resources` directly, but mypy still cares
+    "setuptools>=71.1",
+    "sqlalchemy[mypy]>=1.4,<1.5",
+    "types-pytz",
+    "types-requests>=2,<3",
+]
+test = [
+    "coveralls>=2.0",
+    {include-group = "pytest"},
+    "pytest-vcr~=1.0.2",
+    "requests-mock~=1.9.3",
+    # use fork of vcrpy 5.x until kevin1024/vcrpy#777 is (hopefully) accepted
+    # (or until py3.9 EOL... in 10/2025, I HOPE NOT)
+    "vcrpy @ git+https://github.com/sopel-irc/vcrpy@uncap-urllib3",
+    # also have to use a version of urllib3 that doesn't use the `version_string`
+    # attr of the response object, because vcrpy won't support it until 7.x
+    # reverting to mainline vcrpy is tracked in #2456
+    "urllib3<2.3",
+]
+pytest = [
+    "pytest~=7.4",
 ]
 
 [project.urls]
@@ -72,6 +125,45 @@ sopel-plugins = "sopel.cli.plugins:main"
 
 [project.entry-points.pytest11]
 pytest-sopel = "sopel.tests.pytest_plugin"
+
+[tool.flake8]
+force-future-annotations = true
+max-line-length = 79
+no-accept-encodings = true
+type-checking-exempt-modules = "typing"
+filename = [
+    "./sopel/*.py",
+    "./test/*.py",
+]
+ignore = [
+    # Line length limit. Acceptable (for now).
+    "E501",
+    # Newline before binary operator. Sometimes this is more readable, e.g. in
+    # long arithmetic expressions.
+    "W503",
+    # Newline after binary operator. Ignored by default (which we want to keep)
+    "W504",
+    # We use postponed annotation evaluation
+    "TC2",
+]
+
+[tool.isort]
+combine_as_imports = true
+ensure_newline_before_comments = true
+force_sort_within_sections = true
+include_trailing_comma = true
+line_length = 79
+lines_after_imports = 2
+multi_line_output = 3
+order_by_type = false
+split_on_trailing_comma = true
+use_parentheses = true
+
+[tool.mypy]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+show_error_codes = true
 
 [tool.pytest.ini_options]
 # NOTE: sopel/ is included here to include dynamically-generated tests

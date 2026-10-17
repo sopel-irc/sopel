@@ -22,6 +22,7 @@ import logging
 from sopel import tools
 from sopel.tools import jobs
 
+
 LOGGER = logging.getLogger(__name__)
 
 

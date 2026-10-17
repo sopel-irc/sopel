@@ -221,7 +221,7 @@ def test_execute_perform_send_commands(mockbot):
         'OPER oper_username oper_password',
     ]
 
-    mockbot.config.core.commands_on_connect = commands
+    mockbot.settings.core.commands_on_connect = commands
     # For testing, pretend connection already happened
     mockbot.backend.connected = True
     mockbot._connection_registered.set()
@@ -233,9 +233,9 @@ def test_execute_perform_send_commands(mockbot):
 def test_execute_perform_replaces_nickname(mockbot):
     """Confirm that bot replaces ``$nickname`` placeholder in commands."""
     command = 'MODE $nickname +Xxw'
-    sent_command = 'MODE {} +Xxw'.format(mockbot.config.core.nick)
+    sent_command = 'MODE {} +Xxw'.format(mockbot.settings.core.nick)
 
-    mockbot.config.core.commands_on_connect = [command, ]
+    mockbot.settings.core.commands_on_connect = [command, ]
     # For testing, pretend connection already happened
     mockbot.backend.connected = True
     mockbot._connection_registered.set()
@@ -371,11 +371,11 @@ def test_handle_isupport_casemapping_identifiermemory(mockbot):
 
 
 def test_handle_isupport_chantypes(mockbot):
-    # check default behavior (chantypes allows #, &, +, and !)
+    # check default behavior (unadvertised CHANTYPES token assumes # and &)
     assert not mockbot.make_identifier('#channel').is_nick()
     assert not mockbot.make_identifier('&channel').is_nick()
-    assert not mockbot.make_identifier('+channel').is_nick()
-    assert not mockbot.make_identifier('!channel').is_nick()
+    assert mockbot.make_identifier('+channel').is_nick()
+    assert mockbot.make_identifier('!channel').is_nick()
 
     # now the bot "connects" to a server using `CHANTYPES=#`
     mockbot.on_message(
@@ -391,9 +391,24 @@ def test_handle_isupport_chantypes(mockbot):
     assert mockbot.make_identifier('!channel').is_nick()
 
 
+def test_handle_isupport_chantypes_empty(mockbot):
+    # "connect" to a server that advertises empty CHANTYPES token
+    mockbot.on_message(
+        ':irc.example.com 005 Sopel '
+        'CHANTYPES EXCEPTS INVEX CHANMODES=eIbq,k,flj,CFLMPQScgimnprstz '
+        'CHANLIMIT=#:120 PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 '
+        'NETWORK=example STATUSMSG=@+ CALLERID=g CASEMAPPING=ascii '
+        ':are supported by this server')
+
+    assert mockbot.make_identifier('#channel').is_nick()
+    assert mockbot.make_identifier('&channel').is_nick()
+    assert mockbot.make_identifier('+channel').is_nick()
+    assert mockbot.make_identifier('!channel').is_nick()
+
+
 @pytest.mark.parametrize('modes', [None, '', 'Rw'])
 def test_handle_isupport_bot_mode(mockbot, modes):
-    mockbot.config.core.modes = modes
+    mockbot.settings.core.modes = modes
 
     mockbot.on_message(
         ':irc.example.com 005 Sopel '
@@ -422,7 +437,7 @@ def test_handle_isupport_bot_mode(mockbot, modes):
 
 @pytest.mark.parametrize('modes', ['B', 'RBw'])
 def test_handle_isupport_bot_mode_override(mockbot, modes):
-    mockbot.config.core.modes = modes
+    mockbot.settings.core.modes = modes
 
     mockbot.on_message(
         ':irc.example.com 005 Sopel '
@@ -578,6 +593,15 @@ def test_recv_chghost_invalid(mockbot, ircfactory, caplog):
     assert 'insufficient arguments' in caplog.messages[2]
 
 
+def test_track_invite(mockbot, caplog):
+    """Verify handling of INVITE event (when invite-notify CAP is available)"""
+    caplog.set_level(logging.INFO)
+    mockbot.on_message(":Henry!king@monar.ch INVITE Anne #boudoir")
+
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == 'Henry invited Anne to #boudoir'
+
+
 def test_join_time(mockbot):
     """Make sure channel.join_time is set from JOIN echo time tag"""
     mockbot.on_message(
@@ -590,7 +614,7 @@ def test_join_time(mockbot):
 
 def test_handle_rpl_namreply_with_malformed_uhnames(mockbot, caplog):
     """Make sure Sopel can cope with expected but missing hostmask in 353"""
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.DEBUG, logger='sopel.coretasks')
     mockbot.on_message(
         ':somenet.behind.znc 005 Sopel '
         'UHNAMES '
@@ -675,3 +699,92 @@ def test_handle_who_reply_botmode(mockbot):
         ':End of /WHO list.')
 
     assert mockbot.users['Internets'].is_bot is True
+
+
+def test_handle_who_reply_placeholder(mockbot):
+    """Ensure account & channel placeholders in WHO/WHOX reply are ignored."""
+    # no channel (WHO and WHOX both use `*` placeholder if channel is omitted)
+    # no account (regular WHO doesn't provide account name)
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel * '
+        'nesbitt harlow.new.town * Mr_Nesbitt H '
+        ':0 Mr. Nesbitt of Harlow New Town')
+    # yes channel
+    # no account (WHOX uses `0` placeholder if account not logged in)
+    mockbot.on_message(
+        ':some.irc.network 354 Sopel 999 #channel '
+        'kandrews leighton.road.slough Ken_Andrews G '
+        '0 :Ken Andrews')
+
+    assert len(mockbot.users) == 2
+
+    assert 'Mr_Nesbitt' in mockbot.users
+    assert mockbot.users['Mr_Nesbitt'].nick == 'Mr_Nesbitt'
+    assert mockbot.users['Mr_Nesbitt'].user == 'nesbitt'
+    assert mockbot.users['Mr_Nesbitt'].host == 'harlow.new.town'
+    assert mockbot.users['Mr_Nesbitt'].realname == 'Mr. Nesbitt of Harlow New Town'
+    assert mockbot.users['Mr_Nesbitt'].account is None
+    assert mockbot.users['Mr_Nesbitt'].away is False
+    assert mockbot.users['Mr_Nesbitt'].is_bot is None
+
+    assert 'Ken_Andrews' in mockbot.users
+    assert mockbot.users['Ken_Andrews'].nick == 'Ken_Andrews'
+    assert mockbot.users['Ken_Andrews'].user == 'kandrews'
+    assert mockbot.users['Ken_Andrews'].host == 'leighton.road.slough'
+    assert mockbot.users['Ken_Andrews'].realname == 'Ken Andrews'
+    assert mockbot.users['Ken_Andrews'].account is None
+    assert mockbot.users['Ken_Andrews'].away is True
+    assert mockbot.users['Ken_Andrews'].is_bot is None
+
+    assert len(mockbot.channels) == 1
+    assert '*' not in mockbot.channels
+    assert '#channel' in mockbot.channels
+    assert mockbot.channels['#channel']
+    assert len(mockbot.channels['#channel'].users) == 1
+    assert 'Ken_Andrews' in mockbot.channels['#channel'].users
+    assert (
+        mockbot.users['Ken_Andrews'] is mockbot.channels['#channel'].users['Ken_Andrews']
+    )
+
+
+def test_handle_setname(mockbot):
+    """Make sure Sopel updates user's realname from SETNAME message"""
+    # add one user
+    mockbot.on_message(
+        ':some.irc.network 352 Sopel #channel '
+        'internets services.irc.network * Internets Hr* '
+        ':0 Network Services Bot')
+    mockbot.on_message(
+        ':some.irc.network 315 Sopel #channel '
+        ':End of /WHO list.')
+
+    assert 'Internets' in mockbot.users
+    assert mockbot.users['Internets'].realname == 'Network Services Bot'
+
+    # have the user change their realname
+    mockbot.on_message(
+        ':Internets!internets@services.irc.network '
+        'SETNAME :Bot du service réseau'
+    )
+
+    assert mockbot.users['Internets'].realname == 'Bot du service réseau'
+
+    # change user's realname again to something not requiring a colon
+    # (this corresponds to an example specifically shown in the `setname` spec)
+    mockbot.on_message(
+        ':Internets!internets@services.irc.network '
+        'SETNAME ServiceBot'
+    )
+
+    assert mockbot.users['Internets'].realname == 'ServiceBot'
+
+
+def test_handle_setname_no_user(mockbot, caplog):
+    """Make sure Sopel ignores SETNAME message for unknown user"""
+    caplog.set_level(logging.DEBUG, logger='sopel.coretasks')
+    mockbot.on_message(':Akarin!yuruyuri@hajimaru.yo SETNAME :Bun Bazooka')
+
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == (
+        "Discarding SETNAME ('Bun Bazooka') received for unknown user Akarin.")
+    assert caplog.record_tuples[0][1] == logging.DEBUG

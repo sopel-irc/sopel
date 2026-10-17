@@ -9,8 +9,14 @@ https://sopel.chat
 from __future__ import annotations
 
 import re
+from typing import Pattern, TYPE_CHECKING
 
 from sopel import plugin
+
+
+if TYPE_CHECKING:
+    from sopel.bot import SopelWrapper
+    from sopel.trigger import Trigger
 
 
 PLUGIN_OUTPUT_PREFIX = '[units] '
@@ -20,23 +26,23 @@ find_length = re.compile(r'([0-9]*\.?[0-9]*)[ ]*(mile[s]?|mi|inch|in|foot|feet|f
 find_mass = re.compile(r'([0-9]*\.?[0-9]*)[ ]*(lb|lbm|pound[s]?|ounce|oz|(?:kilo|)gram(?:me|)[s]?|[k]?g)', re.IGNORECASE)
 
 
-def f_to_c(temp):
+def f_to_c(temp: float) -> float:
     return (float(temp) - 32) * 5 / 9
 
 
-def c_to_k(temp):
+def c_to_k(temp: float) -> float:
     return temp + 273.15
 
 
-def c_to_f(temp):
+def c_to_f(temp: float) -> float:
     return (9.0 / 5.0 * temp + 32)
 
 
-def k_to_c(temp):
+def k_to_c(temp: float) -> float:
     return temp - 273.15
 
 
-def _extract_source(pattern, trigger) -> tuple[str, ...]:
+def _extract_source(pattern: Pattern, trigger: Trigger) -> tuple[str, ...]:
     match = pattern.match(trigger.group(2))
     if match:
         return match.groups()
@@ -49,7 +55,7 @@ def _extract_source(pattern, trigger) -> tuple[str, ...]:
 @plugin.example('.temp 100C', '100.00°C = 212.00°F = 373.15K')
 @plugin.example('.temp 100K', '-173.15°C = -279.67°F = 100.00K')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def temperature(bot, trigger):
+def temperature(bot: SopelWrapper, trigger: Trigger) -> int | None:
     """Convert temperatures"""
     try:
         source = _extract_source(find_temp, trigger)
@@ -71,13 +77,15 @@ def temperature(bot, trigger):
 
     if kelvin <= 0:
         bot.reply("Physically impossible temperature.")
-        return
+        return None
 
     bot.say("{:.2f}°C = {:.2f}°F = {:.2f}K".format(
         celsius,
         fahrenheit,
         kelvin,
     ))
+
+    return None
 
 
 @plugin.command('length', 'distance')
@@ -92,7 +100,7 @@ def temperature(bot, trigger):
 @plugin.example('.length 3 au', '448793612.10km = 278867421.71 miles')
 @plugin.example('.length 3 parsec', '92570329129020.20km = 57520535754731.61 miles')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def distance(bot, trigger):
+def distance(bot: SopelWrapper, trigger: Trigger) -> int | None:
     """Convert distances"""
     try:
         source = _extract_source(find_length, trigger)
@@ -160,10 +168,12 @@ def distance(bot, trigger):
 
     bot.say('{} = {}'.format(metric_part, stupid_part))
 
+    return None
+
 
 @plugin.command('weight', 'mass')
 @plugin.output_prefix(PLUGIN_OUTPUT_PREFIX)
-def mass(bot, trigger):
+def mass(bot: SopelWrapper, trigger: Trigger) -> int | None:
     """Convert mass"""
     try:
         source = _extract_source(find_mass, trigger)
@@ -199,3 +209,5 @@ def mass(bot, trigger):
         stupid_part = '{:.2f} oz'.format(ounce)
 
     bot.say('{} = {}'.format(metric_part, stupid_part))
+
+    return None

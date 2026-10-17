@@ -5,10 +5,10 @@ qa: lint test coverages
 lint: lint-style lint-type
 
 lint-style:
-	flake8 sopel/ test/
+	flake8
 
 lint-type:
-	mypy --check-untyped-defs sopel
+	mypy sopel
 
 .PHONY: test test_norecord test_novcr vcr_rerecord
 test:
@@ -35,6 +35,20 @@ coverage_html:
 	coverage html
 
 coverages: coverage_report coverage_html
+
+.PHONY: allclean clean cleanbuild cleancache cleancov
+allclean: clean cleancache clean_docs
+
+clean: cleanbuild cleancov
+
+cleanbuild:
+	rm -rf build/*
+
+cleancache:
+	rm -rf **/__pycache__
+
+cleancov:
+	rm -rf .coverage coverage_html_report
 
 .PHONY: clean_docs build_docs docs cleandoc
 clean_docs:

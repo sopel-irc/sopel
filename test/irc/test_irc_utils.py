@@ -1,22 +1,28 @@
 """Tests for core ``sopel.irc.utils``"""
 from __future__ import annotations
 
+from itertools import permutations
+
 import pytest
 
 from sopel.irc import utils
 
 
-def test_safe():
+@pytest.mark.parametrize('s1, s2, s3', permutations(('\n', '\r', '\x00')))
+def test_safe(s1, s2, s3):
     text = 'some text'
-    assert utils.safe(text + '\r\n') == text
-    assert utils.safe(text + '\n') == text
-    assert utils.safe(text + '\r') == text
-    assert utils.safe('\r\n' + text) == text
-    assert utils.safe('\n' + text) == text
-    assert utils.safe('\r' + text) == text
-    assert utils.safe('some \r\ntext') == text
-    assert utils.safe('some \ntext') == text
-    assert utils.safe('some \rtext') == text
+    seq = ''.join((s1, s2, s3))
+
+    assert utils.safe(text + seq) == text
+    assert utils.safe(seq + text) == text
+    assert utils.safe('some ' + seq + 'text') == text
+    assert utils.safe(
+        s1
+        + 'some '
+        + s2
+        + 'text'
+        + s3
+    ) == text
 
 
 def test_safe_empty():
@@ -24,20 +30,23 @@ def test_safe_empty():
     assert utils.safe(text) == text
 
 
-def test_safe_null():
+def test_safe_none():
     with pytest.raises(TypeError):
         utils.safe(None)
 
 
-def test_safe_bytes():
+@pytest.mark.parametrize('b1, b2, b3', permutations((b'\n', b'\r', b'\x00')))
+def test_safe_bytes(b1, b2, b3):
     text = b'some text'
-    assert utils.safe(text) == text.decode('utf-8')
-    assert utils.safe(text + b'\r\n') == text.decode('utf-8')
-    assert utils.safe(text + b'\n') == text.decode('utf-8')
-    assert utils.safe(text + b'\r') == text.decode('utf-8')
-    assert utils.safe(b'\r\n' + text) == text.decode('utf-8')
-    assert utils.safe(b'\n' + text) == text.decode('utf-8')
-    assert utils.safe(b'\r' + text) == text.decode('utf-8')
-    assert utils.safe(b'some \r\ntext') == text.decode('utf-8')
-    assert utils.safe(b'some \ntext') == text.decode('utf-8')
-    assert utils.safe(b'some \rtext') == text.decode('utf-8')
+    seq = b''.join((b1, b2, b3))
+
+    assert utils.safe(text + seq) == text.decode('utf-8')
+    assert utils.safe(seq + text) == text.decode('utf-8')
+    assert utils.safe(b'some ' + seq + b'text') == text.decode('utf-8')
+    assert utils.safe(
+        b1
+        + b'some '
+        + b2
+        + b'text'
+        + b3
+    ) == text.decode('utf-8')

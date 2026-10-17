@@ -15,6 +15,45 @@ If something is not in here, feel free to ask about it on our IRC channel, or
 maybe open an issue with the solution if you devise one yourself.
 
 
+Running a function on a schedule
+================================
+
+Sopel provides the :func:`@plugin.interval <sopel.plugin.interval>` decorator
+to run plugin callables periodically, but plugin developers semi-frequently ask
+how to run a function at the same time every day/week.
+
+Integrating this kind of feature into Sopel's plugin API is trickier than one
+might think, and it's actually simpler to have plugins just use a library like
+`schedule`__ directly::
+
+    import schedule
+
+    from sopel import plugin
+
+
+    def scheduled_message(bot):
+        bot.say("This is the scheduled message.", "#channelname")
+
+
+    def setup(bot):
+        # schedule the message at midnight every day
+        schedule.every().day.at('00:00').do(scheduled_message, bot=bot)
+
+
+    @plugin.interval(60)
+    def run_schedule(bot):
+        schedule.run_pending()
+
+As long as the ``bot`` is passed as an argument, the scheduled function can
+access config settings or any other attributes/properties it needs.
+
+Multiple plugins all setting up their own checks with ``interval`` naturally
+creates *some* overhead, but it shouldn't be significant compared to all the
+other things happening inside a Sopel bot with numerous plugins.
+
+.. __: https://pypi.org/project/schedule/
+
+
 Restricting commands to certain channels
 ========================================
 
@@ -124,20 +163,18 @@ it is still recommended to prevent any race condition.
 Re-using commands from other plugins
 ====================================
 
-.. TODO: this example should be updated when the Wikipedia plugin is removed
-.. as part of https://github.com/sopel-irc/sopel/issues/1291
-
 Because plugins are just Python modules it is possible to import functionality
 from other plugins, including commands. For example, this can be used to add
 an alias for an existing command::
 
     from sopel import plugin
-    from sopel.builtins import wikipedia as wp
 
-    @plugin.command("wiki")
-    @plugin.output_prefix(wp.wikipedia.output_prefix)
-    def wiki_alias(bot, trigger):
-        wp.wikipedia(bot, trigger)
+    import sopel_someplugin as sp
+
+    @plugin.command("new_command")
+    @plugin.output_prefix(sp.PLUGIN_OUTPUT_PREFIX)
+    def someplugin_alias(bot, trigger):
+        sp.plugin_command(bot, trigger)
 
 .. warning::
 
@@ -148,9 +185,10 @@ an alias for an existing command::
 
 .. warning::
 
-    While this example shows off loading a built-in plugin, some plugins may
-    not be as easy to import. For example, a :term:`Single file plugin` may
-    not be available on ``sys.path`` without extra handling not shown here.
+    Some plugins may not be as easy to import as the example shown here.
+    For example, a :term:`Single file plugin` may not be available on
+    ``sys.path`` without extra handling not shown here.
+
 
 Managing Capability negotiation
 ===============================
@@ -183,9 +221,11 @@ And before:
 Declaring requests: the ``capability`` decorator
 ------------------------------------------------
 
-In :mod:`sopel.plugin` there is an advanced :class:`~sopel.plugin.capability`
-decorator: it is a class that declares a capability request and an optional
-handler to run after the capability is acknowledged or denied by the server::
+In :mod:`sopel.plugin` there is an advanced :func:`~sopel.plugin.capability`
+decorator. This decorator returns an instance of
+:class:`~sopel.plugins.callables.Capability` that declares a capability request
+and an optional handler to run after the capability is acknowledged or denied
+by the server::
 
     """Sample plugin file"""
 
@@ -200,16 +240,7 @@ handler to run after the capability is acknowledged or denied by the server::
         # do something if message-prefix is ACK or NAK
         ...
 
-.. autoclass:: sopel.plugin.capability
-   :members:
-
-.. autoclass:: sopel.plugin.CapabilityNegotiation
-   :members:
-
-.. autoclass:: sopel.plugin.CapabilityHandler
-   :members:
-   :special-members: __call__
-
+.. autofunction:: sopel.plugin.capability
 
 Working with capabilities
 -------------------------
@@ -242,8 +273,8 @@ Ending negotiations
 Sopel automatically sends a ``CAP END`` message when all requests are handled.
 However in some cases, a plugin author may need to delay the end of CAP
 negotiation to perform an action that must be done first. In that case, a
-plugin must return :attr:`~sopel.plugin.CapabilityNegotiation.CONTINUE` in its
-callback.
+plugin must return
+:attr:`~sopel.plugins.callables.CapabilityNegotiation.CONTINUE` in its callback.
 
 This is the case for SASL authentication, as seen in the ``coretasks``
 internal plugin that manages that:

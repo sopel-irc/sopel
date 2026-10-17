@@ -14,8 +14,9 @@ from sopel.tools.time import (
     get_channel_timezone,
     get_nick_timezone,
     get_timezone,
-    validate_timezone
+    validate_timezone,
 )
+
 
 PLUGIN_OUTPUT_PREFIX = '[clock] '
 ERROR_NO_TIMEZONE = (
@@ -55,7 +56,7 @@ def f_time(bot, trigger):
     if not argument:
         # get default timezone from nick, or sender, or bot, or UTC
         zone = get_timezone(
-            bot.db, bot.config, None, trigger.nick, trigger.sender)
+            bot.db, bot.settings, None, trigger.nick, trigger.sender)
     else:
         # guess if the argument is a nick, a channel, or a timezone
         zone = None
@@ -63,7 +64,7 @@ def f_time(bot, trigger):
         channel_or_nick = bot.make_identifier(argument)
 
         # first, try to get nick or channel's timezone
-        help_prefix = bot.config.core.help_prefix
+        help_prefix = bot.settings.core.help_prefix
         if channel_or_nick.is_nick():
             zone = get_nick_timezone(bot.db, channel_or_nick)
             if zone is None and channel_or_nick in bot.users:
@@ -100,7 +101,13 @@ def f_time(bot, trigger):
                 bot.reply(ERROR_INVALID_TIMEZONE % argument)
                 return
 
-    time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
+    time = format_time(
+        bot.db,
+        bot.settings,
+        zone,
+        trigger.nick,
+        trigger.sender,
+    )
     bot.say(time)
 
 
@@ -126,7 +133,13 @@ def f_time_zone(bot, trigger):
         bot.reply(ERROR_INVALID_TIMEZONE % argument)
         return
 
-    time = format_time(bot.db, bot.config, zone, trigger.nick, trigger.sender)
+    time = format_time(
+        bot.db,
+        bot.settings,
+        zone,
+        trigger.nick,
+        trigger.sender,
+    )
     bot.say(time)
 
 
@@ -202,7 +215,7 @@ def update_user_format(bot, trigger):
         bot.reply(ERROR_NO_FORMAT)
         return
 
-    tz = get_timezone(bot.db, bot.config, None, trigger.nick, trigger.sender)
+    tz = get_timezone(bot.db, bot.settings, None, trigger.nick, trigger.sender)
 
     # Get old format as back-up
     old_format = bot.db.get_nick_value(trigger.nick, 'time_format')
@@ -333,7 +346,7 @@ def update_channel_format(bot, trigger):
         bot.reply(ERROR_NO_FORMAT)
         return
 
-    tz = get_timezone(bot.db, bot.config, None, None, trigger.sender)
+    tz = get_timezone(bot.db, bot.settings, None, None, trigger.sender)
 
     # Get old format as back-up
     old_format = bot.db.get_channel_value(trigger.sender, 'time_format')

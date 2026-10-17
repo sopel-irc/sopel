@@ -20,7 +20,7 @@ import signal
 import socket
 import ssl
 import threading
-from typing import Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from .abstract_backends import AbstractIRCBackend
 
@@ -148,28 +148,28 @@ class AsyncioBackend(AbstractIRCBackend):
         bot: AbstractBot,
         host: str,
         port: int,
-        source_address: Optional[tuple[str, int]],
-        server_timeout: Optional[int] = None,
-        ping_interval: Optional[int] = None,
+        source_address: tuple[str, int] | None,
+        server_timeout: int | None = None,
+        ping_interval: int | None = None,
         use_ssl: bool = False,
-        certfile: Optional[str] = None,
-        keyfile: Optional[str] = None,
+        certfile: str | None = None,
+        keyfile: str | None = None,
         verify_ssl: bool = True,
-        ca_certs: Optional[str] = None,
-        ssl_ciphers: Optional[list[str]] = None,
+        ca_certs: str | None = None,
+        ssl_ciphers: list[str] | None = None,
         ssl_minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_2,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(bot)
         # connection parameters
         self._host: str = host
         self._port: int = port
-        self._source_address: Optional[tuple[str, int]] = source_address
+        self._source_address: tuple[str, int] | None = source_address
         self._use_ssl: bool = use_ssl
-        self._certfile: Optional[str] = certfile
-        self._keyfile: Optional[str] = keyfile
+        self._certfile: str | None = certfile
+        self._keyfile: str | None = keyfile
         self._verify_ssl: bool = verify_ssl
-        self._ca_certs: Optional[str] = ca_certs
+        self._ca_certs: str | None = ca_certs
         self._ssl_ciphers: str = ":".join(ssl_ciphers or [])
         self._ssl_minimum_version: ssl.TLSVersion = ssl_minimum_version
 
@@ -181,16 +181,16 @@ class AsyncioBackend(AbstractIRCBackend):
 
         # connection flags
         self._connected: bool = False
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
         # connection writer & reader
-        self._writer: Optional[asyncio.StreamWriter] = None
-        self._reader: Optional[asyncio.StreamReader] = None
+        self._writer: asyncio.StreamWriter | None = None
+        self._reader: asyncio.StreamReader | None = None
 
         # connection tasks
-        self._read_task: Optional[asyncio.Task] = None
-        self._ping_task: Optional[asyncio.TimerHandle] = None
-        self._timeout_task: Optional[asyncio.TimerHandle] = None
+        self._read_task: asyncio.Task | None = None
+        self._ping_task: asyncio.TimerHandle | None = None
+        self._timeout_task: asyncio.TimerHandle | None = None
 
     # signal handlers
 
@@ -337,7 +337,6 @@ class AsyncioBackend(AbstractIRCBackend):
 
             # use bot's callbacks
             try:
-                self.bot.log_raw(data, '<<')
                 self.bot.on_message(data)
             except Exception:
                 LOGGER.exception('Unexpected exception on message handling.')
@@ -351,7 +350,7 @@ class AsyncioBackend(AbstractIRCBackend):
 
     def get_connection_kwargs(self) -> dict:
         """Return the keyword arguments required to initiate connection."""
-        ssl_context: Optional[ssl.SSLContext] = None
+        ssl_context: ssl.SSLContext | None = None
 
         if self._use_ssl:
             ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
@@ -379,13 +378,13 @@ class AsyncioBackend(AbstractIRCBackend):
         }
 
     async def _connect_to_server(
-        self, **connection_kwargs
+        self, **connection_kwargs: Any,
     ) -> tuple[
-        Optional[asyncio.StreamReader],
-        Optional[asyncio.StreamWriter],
+        asyncio.StreamReader | None,
+        asyncio.StreamWriter | None,
     ]:
-        reader: Optional[asyncio.StreamReader] = None
-        writer: Optional[asyncio.StreamWriter] = None
+        reader: asyncio.StreamReader | None = None
+        writer: asyncio.StreamWriter | None = None
 
         # open connection
         try:

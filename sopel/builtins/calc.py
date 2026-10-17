@@ -42,8 +42,7 @@ def c(bot, trigger):
     # Account for the silly non-Anglophones and their silly radix point.
     eqn = trigger.group(2).replace(',', '.')
     try:
-        result = eval_equation(eqn)
-        result = "{:.10g}".format(result)
+        result = "{:.10g}".format(eval_equation(eqn))
     except eval_equation.Error as err:
         bot.reply("Can't process expression: {}".format(str(err)))
         return

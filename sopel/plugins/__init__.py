@@ -33,7 +33,7 @@ import importlib
 import itertools
 import logging
 import os
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 # TODO: use stdlib importlib.metadata when possible, after dropping py3.9.
 # Stdlib does not support `entry_points(group='filter')` until py3.10, but
@@ -41,7 +41,10 @@ from typing import TYPE_CHECKING, Union
 # py3.10 envs include old versions of this backport.
 import importlib_metadata
 
-from . import exceptions, handlers, rules  # noqa
+from sopel.lifecycle import deprecated
+
+from . import callables, exceptions, handlers, rules  # noqa
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -50,7 +53,9 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-def _list_plugin_filenames(directory: Union[str, os.PathLike]) -> Iterable[tuple[str, str]]:
+def _list_plugin_filenames(
+    directory: str | os.PathLike,
+) -> Iterable[tuple[str, str]]:
     # list plugin filenames from a directory
     # yield 2-value tuples: (name, absolute path)
     base = os.path.abspath(directory)
@@ -99,6 +104,12 @@ def find_sopel_modules_plugins():
     Before entry point plugins, the only way to package a plugin was to follow
     :pep:`382` by using the ``sopel_modules`` namespace. This function is
     responsible to load such plugins.
+
+    .. deprecated:: 8.1
+
+        This method is deprecated as ``sopel_modules.*`` style of plugins is
+        deprecated. It will be removed in Sopel 9.0.
+
     """
     try:
         import sopel_modules  # type: ignore[import]
@@ -106,8 +117,21 @@ def find_sopel_modules_plugins():
         return
 
     for plugin_dir in set(sopel_modules.__path__):
-        for name, _ in _list_plugin_filenames(plugin_dir):
-            yield handlers.PyModulePlugin(name, 'sopel_modules')
+        for name, abspath in _list_plugin_filenames(plugin_dir):
+            handler = handlers.PyModulePlugin(name, 'sopel_modules')
+
+            deprecated(
+                'sopel_modules namespace is deprecated; '
+                'Sopel 9 won\'t be able to load plugin "%s" (%s)' % (
+                    name, abspath
+                ),
+                version='8.1',
+                removed_in='9.0',
+                stack_output=False,
+                func=lambda *args: ...,
+            )()
+
+            yield handler
 
 
 def find_entry_point_plugins(group='sopel.plugins'):
@@ -175,8 +199,13 @@ def enumerate_plugins(settings):
     source_dirs = [
         os.path.join(settings.homedir, 'plugins'),
     ]
-    if settings.core.extra:
-        source_dirs = source_dirs + settings.core.extra
+    for extra_dir in (settings.core.extra or []):
+        if not os.path.isdir(extra_dir):
+            LOGGER.warning(
+                'Extra plugin directory "%s" does not exist',
+                extra_dir,
+            )
+        source_dirs += extra_dir
 
     from_directories = [
         find_directory_plugins(source_dir)

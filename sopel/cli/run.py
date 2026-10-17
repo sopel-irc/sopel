@@ -17,7 +17,9 @@ import sys
 import time
 
 from sopel import __version__, bot, config, logger
+
 from . import utils
+
 
 # This is in case someone somehow manages to install Sopel on an old version
 # of pip (<9.0.0), which doesn't know about `python_requires`, or tries to run
@@ -93,13 +95,16 @@ def run(settings, pid_file, daemon=False):
         time.sleep(delay)
 
 
-def build_parser():
+def build_parser(prog: str = 'sopel') -> argparse.ArgumentParser:
     """Build an argument parser for the bot.
 
     :return: the argument parser
     :rtype: :class:`argparse.ArgumentParser`
     """
-    parser = argparse.ArgumentParser(description='Sopel IRC Bot')
+    parser = argparse.ArgumentParser(
+        prog=prog,
+        description='Sopel IRC Bot',
+    )
 
     parser.add_argument('-V', '--version', action='store_true',
                         dest='version',

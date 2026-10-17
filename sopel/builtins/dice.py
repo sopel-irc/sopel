@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING
 from sopel import plugin
 from sopel.tools.calculation import eval_equation
 
+
 if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
@@ -244,7 +245,7 @@ def _roll_dice(dice_match: re.Match[str]) -> DicePouch:
 @plugin.example(".roll 2d10+3", user_help=True)
 @plugin.example(".roll 1d6", user_help=True)
 @plugin.output_prefix('[dice] ')
-def roll(bot: SopelWrapper, trigger: Trigger):
+def roll(bot: SopelWrapper, trigger: Trigger) -> None:
     """Rolls dice and reports the result.
 
     The dice roll follows this format: XdY[vZ][+N][#COMMENT]
@@ -269,7 +270,9 @@ def roll(bot: SopelWrapper, trigger: Trigger):
 
     arg_str_raw = trigger.group(2).split("#", 1)[0].strip()
     arg_str = arg_str_raw.replace("%", "%%")
-    arg_str = re.sub(dice_regexp, "%s", arg_str, 0, re.IGNORECASE | re.VERBOSE)
+    arg_str = re.sub(
+        dice_regexp, "%s", arg_str,
+        flags=re.IGNORECASE | re.VERBOSE)
 
     dice_expressions = [
         match for match in

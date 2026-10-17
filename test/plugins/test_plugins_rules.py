@@ -6,8 +6,8 @@ import re
 
 import pytest
 
-from sopel import bot, loader, plugin, trigger
-from sopel.plugins import rules
+from sopel import bot, plugin, trigger
+from sopel.plugins import callables, rules
 from sopel.tests import rawlist
 
 
@@ -542,7 +542,8 @@ def test_rule_get_rule_label_handler(mockbot):
     def the_handler_rule(wrapped, trigger):
         pass
 
-    rule = rules.Rule([regex], handler=the_handler_rule)
+    handler = callables.PluginCallable.ensure_callable(the_handler_rule)
+    rule = rules.Rule([regex], handler=handler)
     assert rule.get_rule_label() == 'the_handler_rule'
 
 
@@ -819,6 +820,16 @@ def test_rule_unblockable():
     assert rule.is_unblockable()
 
 
+def test_rule_rate_limit_admins():
+    regex = re.compile('.*')
+
+    rule = rules.Rule([regex])
+    assert not rule.is_admin_rate_limited()
+
+    rule = rules.Rule([regex], rate_limit_admins=True)
+    assert rule.is_admin_rate_limited()
+
+
 def test_rule_parse_wildcard():
     # match everything
     regex = re.compile(r'.*')
@@ -894,7 +905,7 @@ def test_rule_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -935,7 +946,7 @@ def test_rule_from_callable_nick_placeholder(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -972,7 +983,7 @@ def test_rule_from_callable_nickname_placeholder(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1006,7 +1017,7 @@ def test_rule_from_callable_lazy(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1049,7 +1060,7 @@ def test_rule_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1063,7 +1074,7 @@ def test_rule_from_callable_lazy_invalid(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1077,7 +1088,7 @@ def test_rule_from_callable_lazy_invalid_no_regex(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -1094,7 +1105,7 @@ def test_kwargs_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'  # normally added by the Plugin handler
 
     # get kwargs
@@ -1109,6 +1120,7 @@ def test_kwargs_from_callable(mockbot):
     assert 'threaded' in kwargs
     assert 'output_prefix' in kwargs
     assert 'unblockable' in kwargs
+    assert 'rate_limit_admins' in kwargs
     assert 'user_rate_limit' in kwargs
     assert 'channel_rate_limit' in kwargs
     assert 'global_rate_limit' in kwargs
@@ -1121,7 +1133,7 @@ def test_kwargs_from_callable(mockbot):
     assert 'doc' in kwargs
 
     assert kwargs['plugin'] == 'testplugin'
-    assert kwargs['label'] is None
+    assert kwargs['label'] == 'handler'
     assert kwargs['priority'] == rules.PRIORITY_MEDIUM
     assert kwargs['events'] == ['PRIVMSG']
     assert kwargs['ctcp'] == []
@@ -1129,6 +1141,7 @@ def test_kwargs_from_callable(mockbot):
     assert kwargs['threaded'] is True
     assert kwargs['output_prefix'] == ''
     assert kwargs['unblockable'] is False
+    assert kwargs['rate_limit_admins'] is False
     assert kwargs['user_rate_limit'] == 0
     assert kwargs['channel_rate_limit'] == 0
     assert kwargs['global_rate_limit'] == 0
@@ -1148,7 +1161,7 @@ def test_kwargs_from_callable_label(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1163,7 +1176,7 @@ def test_kwargs_from_callable_priority(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1178,7 +1191,7 @@ def test_kwargs_from_callable_event(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1193,7 +1206,7 @@ def test_kwargs_from_callable_ctcp_intent(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1208,7 +1221,7 @@ def test_kwargs_from_callable_allow_echo(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1223,7 +1236,7 @@ def test_kwargs_from_callable_threaded(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1238,7 +1251,7 @@ def test_kwargs_from_callable_unblockable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1249,14 +1262,17 @@ def test_kwargs_from_callable_unblockable(mockbot):
 def test_kwargs_from_callable_rate_limit(mockbot):
     # prepare callable
     @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @plugin.rate(user=20, channel=30, server=40, message='Default message.')
+    @plugin.rate(
+        user=20, channel=30, server=40, message='Default message.',
+        include_admins=True)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'rate_limit_admins' in kwargs
     assert 'user_rate_limit' in kwargs
     assert 'channel_rate_limit' in kwargs
     assert 'global_rate_limit' in kwargs
@@ -1264,6 +1280,7 @@ def test_kwargs_from_callable_rate_limit(mockbot):
     assert 'channel_rate_message' in kwargs
     assert 'global_rate_message' in kwargs
     assert 'default_rate_message' in kwargs
+    assert kwargs['rate_limit_admins'] is True
     assert kwargs['user_rate_limit'] == 20
     assert kwargs['channel_rate_limit'] == 30
     assert kwargs['global_rate_limit'] == 40
@@ -1276,14 +1293,15 @@ def test_kwargs_from_callable_rate_limit(mockbot):
 def test_kwargs_from_callable_rate_limit_user(mockbot):
     # prepare callable
     @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @plugin.rate_user(20, 'User message.')
+    @plugin.rate_user(20, 'User message.', True)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'rate_limit_admins' in kwargs
     assert 'user_rate_limit' in kwargs
     assert 'channel_rate_limit' in kwargs
     assert 'global_rate_limit' in kwargs
@@ -1291,6 +1309,7 @@ def test_kwargs_from_callable_rate_limit_user(mockbot):
     assert 'channel_rate_message' in kwargs
     assert 'global_rate_message' in kwargs
     assert 'default_rate_message' in kwargs
+    assert kwargs['rate_limit_admins'] is True
     assert kwargs['user_rate_limit'] == 20
     assert kwargs['channel_rate_limit'] == 0
     assert kwargs['global_rate_limit'] == 0
@@ -1303,14 +1322,15 @@ def test_kwargs_from_callable_rate_limit_user(mockbot):
 def test_kwargs_from_callable_rate_limit_channel(mockbot):
     # prepare callable
     @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @plugin.rate_channel(20, 'Channel message.')
+    @plugin.rate_channel(20, 'Channel message.', True)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'rate_limit_admins' in kwargs
     assert 'user_rate_limit' in kwargs
     assert 'channel_rate_limit' in kwargs
     assert 'global_rate_limit' in kwargs
@@ -1318,6 +1338,7 @@ def test_kwargs_from_callable_rate_limit_channel(mockbot):
     assert 'channel_rate_message' in kwargs
     assert 'global_rate_message' in kwargs
     assert 'default_rate_message' in kwargs
+    assert kwargs['rate_limit_admins'] is True
     assert kwargs['user_rate_limit'] == 0
     assert kwargs['channel_rate_limit'] == 20
     assert kwargs['global_rate_limit'] == 0
@@ -1330,14 +1351,15 @@ def test_kwargs_from_callable_rate_limit_channel(mockbot):
 def test_kwargs_from_callable_rate_limit_server(mockbot):
     # prepare callable
     @plugin.rule(r'hello', r'hi', r'hey', r'hello|hi')
-    @plugin.rate_global(20, 'Server message.')
+    @plugin.rate_global(20, 'Server message.', True)
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
+    assert 'rate_limit_admins' in kwargs
     assert 'user_rate_limit' in kwargs
     assert 'channel_rate_limit' in kwargs
     assert 'global_rate_limit' in kwargs
@@ -1345,6 +1367,7 @@ def test_kwargs_from_callable_rate_limit_server(mockbot):
     assert 'channel_rate_message' in kwargs
     assert 'global_rate_message' in kwargs
     assert 'default_rate_message' in kwargs
+    assert kwargs['rate_limit_admins'] is True
     assert kwargs['user_rate_limit'] == 0
     assert kwargs['channel_rate_limit'] == 0
     assert kwargs['global_rate_limit'] == 20
@@ -1362,7 +1385,7 @@ def test_kwargs_from_callable_examples(mockbot):
         """This is the doc you are looking for."""
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1395,7 +1418,7 @@ def test_kwargs_from_callable_examples_test(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1449,7 +1472,7 @@ def test_kwargs_from_callable_examples_help(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1516,7 +1539,7 @@ def test_kwargs_from_callable_examples_doc(mockbot):
         """
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # get kwargs
     kwargs = rules.Rule.kwargs_from_callable(handler)
@@ -1566,14 +1589,16 @@ def test_rule_rate_limit(mockbot, triggerfactory):
         global_rate_limit=20,
         channel_rate_limit=20,
     )
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_user_rate_limited(mocktrigger.nick) is True
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is True
-    assert rule.is_global_rate_limited() is True
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is True
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is True
+    assert rule.is_global_rate_limited(at_time) is True
 
 
 def test_rule_rate_limit_no_limit(mockbot, triggerfactory):
@@ -1592,14 +1617,16 @@ def test_rule_rate_limit_no_limit(mockbot, triggerfactory):
         global_rate_limit=0,
         channel_rate_limit=0,
     )
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
 
 def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
@@ -1619,14 +1646,16 @@ def test_rule_rate_limit_ignore_rate_limit(mockbot, triggerfactory):
         channel_rate_limit=20,
         threaded=False,  # make sure there is no race-condition here
     )
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
     rule.execute(mockbot, mocktrigger)
-    assert rule.is_user_rate_limited(mocktrigger.nick) is False
-    assert rule.is_channel_rate_limited(mocktrigger.sender) is False
-    assert rule.is_global_rate_limited() is False
+    at_time = datetime.datetime.now(datetime.timezone.utc)
+    assert rule.is_user_rate_limited(mocktrigger.nick, at_time) is False
+    assert rule.is_channel_rate_limited(mocktrigger.sender, at_time) is False
+    assert rule.is_global_rate_limited(at_time) is False
 
 
 def test_rule_rate_limit_messages(mockbot, triggerfactory):
@@ -1974,7 +2003,7 @@ def test_command_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2028,7 +2057,7 @@ def test_command_from_callable_subcommand(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2057,7 +2086,7 @@ def test_command_from_callable_subcommand_aliases(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2111,7 +2140,7 @@ def test_command_from_callable_escaped_regex_pattern(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.Command.from_callable(mockbot.settings, handler)
@@ -2141,7 +2170,7 @@ def test_command_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -2310,7 +2339,7 @@ def test_nick_command_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -2323,7 +2352,7 @@ def test_nick_command_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
@@ -2412,7 +2441,7 @@ def test_nick_command_from_callable_regex_pattern(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.NickCommand.from_callable(mockbot.settings, handler)
@@ -2540,7 +2569,7 @@ def test_action_command_from_callable_invalid(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -2553,7 +2582,7 @@ def test_action_command_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
@@ -2619,7 +2648,7 @@ def test_action_command_from_callable_regex_pattern(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     rule = rules.ActionCommand.from_callable(mockbot.settings, handler)
@@ -2695,7 +2724,7 @@ def test_find_rule_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -2782,7 +2811,7 @@ def test_search_rule_from_callable(mockbot):
     def handler(wrapped, trigger):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -2955,7 +2984,7 @@ def test_url_callback_from_callable(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % match.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -3036,7 +3065,7 @@ def test_url_callback_from_callable_no_match_parameter(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -3075,7 +3104,7 @@ def test_url_callback_from_callable_lazy(mockbot):
         wrapped.say('Hi!')
         return 'The return value: %s' % trigger.group(0)
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
     handler.plugin_name = 'testplugin'
 
     # create rule from a cleaned callable
@@ -3116,7 +3145,7 @@ def test_url_callback_from_callable_invalid(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):
@@ -3129,7 +3158,7 @@ def test_url_callback_from_callable_lazy_invalid(mockbot):
     def handler(wrapped, trigger, match=None):
         wrapped.reply('Hi!')
 
-    loader.clean_callable(handler, mockbot.settings)
+    handler.setup(mockbot.settings)
 
     # create rule from a cleaned callable
     with pytest.raises(RuntimeError):

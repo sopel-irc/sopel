@@ -31,8 +31,11 @@ from sqlalchemy.sql import delete, func, select, update
 from sopel.lifecycle import deprecated
 from sopel.tools.identifiers import Identifier, IdentifierFactory
 
+
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from sopel.config import Config
 
 
 LOGGER = logging.getLogger(__name__)
@@ -142,7 +145,7 @@ class SopelDB:
 
     def __init__(
         self,
-        config,
+        config: Config,
         identifier_factory: IdentifierFactory = Identifier,
     ) -> None:
         self.make_identifier: IdentifierFactory = identifier_factory
@@ -523,8 +526,8 @@ class SopelDB:
         self,
         nick: str,
         key: str,
-        default: typing.Optional[typing.Any] = None
-    ) -> typing.Optional[typing.Any]:
+        default: typing.Any = None
+    ) -> typing.Any:
         """Get a value from the key-value store for ``nick``.
 
         :param nick: the nickname whose values to access
@@ -628,7 +631,7 @@ class SopelDB:
     def delete_nick_group(self, nick: str) -> None:  # pragma: nocover
         self.forget_nick_group(nick)
 
-    def merge_nick_groups(self, first_nick: str, second_nick: str):
+    def merge_nick_groups(self, first_nick: str, second_nick: str) -> None:
         """Merge two nick groups.
 
         :param first_nick: one nick in the first group to merge
@@ -787,8 +790,8 @@ class SopelDB:
         self,
         channel: str,
         key: str,
-        default: typing.Optional[typing.Any] = None,
-    ):
+        default: typing.Any = None,
+    ) -> typing.Any:
         """Get a value from the key-value store for ``channel``.
 
         :param channel: the channel whose values to access
@@ -919,8 +922,8 @@ class SopelDB:
         self,
         plugin: str,
         key: str,
-        default: typing.Optional[typing.Any] = None,
-    ) -> typing.Optional[typing.Any]:
+        default: typing.Any = None,
+    ) -> typing.Any:
         """Get a value from the key-value store for ``plugin``.
 
         :param plugin: the plugin name whose values to access
@@ -980,8 +983,8 @@ class SopelDB:
         self,
         name: str,
         key: str,
-        default=None
-    ) -> typing.Optional[typing.Any]:
+        default: typing.Any = None
+    ) -> typing.Any:
         """Get a value from the key-value store for ``name``.
 
         :param name: nick or channel whose values to access
@@ -1006,10 +1009,10 @@ class SopelDB:
             :meth:`get_channel_value`.
 
         """
-        if not isinstance(name, Identifier):
-            identifier = self.make_identifier(name)
+        if isinstance(name, Identifier):
+            identifier = name
         else:
-            identifier = typing.cast('Identifier', name)
+            identifier = self.make_identifier(name)
 
         if identifier.is_nick():
             return self.get_nick_value(identifier, key, default)
@@ -1020,7 +1023,7 @@ class SopelDB:
         self,
         names: Iterable[str],
         key: str,
-    ) -> typing.Optional[typing.Any]:
+    ) -> typing.Any:
         """Get a value for the first name which has it set.
 
         :param names: a list of channel names and/or nicknames

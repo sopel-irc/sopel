@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from typing import (
     NamedTuple,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -48,7 +47,7 @@ class CapabilityInfo(NamedTuple):
     The name of a capability is the name as it appears in the ``CAP LS``
     subcommand, such as ``multi-prefix`` or ``sasl``.
     """
-    params: Optional[str]
+    params: str | None
     """Advertised parameters for this capability.
 
     When a server supports ``CAP`` version 302, capabilities can have
@@ -82,7 +81,7 @@ class Capabilities:
     * :meth:`handle_del` for ``CAP ADD``
     """
     def __init__(self) -> None:
-        self._available: dict[str, Optional[str]] = {}
+        self._available: dict[str, str | None] = {}
         self._enabled: set[str] = set()
 
     def get_capability_info(self, name: str) -> CapabilityInfo:
@@ -104,7 +103,7 @@ class Capabilities:
         )
 
     @property
-    def available(self) -> dict[str, Optional[str]]:
+    def available(self) -> dict[str, str | None]:
         """Dict of available server capabilities.
 
         Each key is the name of a capability advertised by the server, and each

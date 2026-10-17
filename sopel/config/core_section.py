@@ -794,6 +794,38 @@ class CoreSection(StaticSection):
 
         The :attr:`nick_blocks` list can be used to block users by their nick.
 
+        The :attr:`hostmask_blocks` list can be used to block users by matching
+        their full hostmask.
+
+    .. note::
+
+        :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
+        run regardless of matching ``*_blocks`` entries.
+
+        We are working toward a better block system; see :issue:`1355` for more
+        information and updates.
+
+    """
+
+    hostmask_blocks = ListAttribute('hostmask_blocks')
+    """A list of hostmasks which Sopel should ignore.
+
+    Sopel will :ref:`ignore <Ignoring Users>` messages from any user whose
+    full hostmask (``nick!username@host``) matches one of these values.
+    :ref:`Regular expression syntax <re-syntax>` is supported, so remember to
+    escape special characters:
+
+    .. code-block:: ini
+
+        hostmask_blocks =
+            Guest.*!.*@spammydomain\\.com
+
+    .. seealso::
+
+        The :attr:`nick_blocks` list can be used to block users by nick only.
+
+        The :attr:`host_blocks` list can be used to block users by hostname only.
+
     .. note::
 
         :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
@@ -1057,6 +1089,9 @@ class CoreSection(StaticSection):
     .. seealso::
 
         The :attr:`host_blocks` list can be used to block users by their host.
+
+        The :attr:`hostmask_blocks` list can be used to block users by matching
+        their full hostmask.
 
     .. note::
 

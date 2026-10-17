@@ -26,7 +26,7 @@ def cap_ack_wrapped(configfactory, botfactory, triggerfactory):
 
 def test_capability(cap_ack_wrapped):
     handler = plugin.capability('away-notify')
-    assert isinstance(handler, plugin.capability)
+    assert isinstance(handler, plugin.Capability)
     assert handler.cap_req == ('away-notify',)
 
     result = handler.callback(cap_ack_wrapped, True)
@@ -51,7 +51,7 @@ def test_capability_handler_define_once():
     def handler(name, bot, acknowledged):
         ...
 
-    assert isinstance(handler, plugin.capability)
+    assert isinstance(handler, plugin.Capability)
 
     # cannot redefine a handler
     with pytest.raises(RuntimeError):
@@ -63,7 +63,7 @@ def test_capability_handler_continue(cap_ack_wrapped):
     def handler(name, bot, acknowledged):
         return plugin.CapabilityNegotiation.CONTINUE
 
-    assert isinstance(handler, plugin.capability)
+    assert isinstance(handler, plugin.Capability)
     assert handler.cap_req == ('away-notify',)
     result = handler.callback(cap_ack_wrapped, True)
     assert result == (False, plugin.CapabilityNegotiation.CONTINUE)
@@ -173,6 +173,40 @@ def test_search_multiple():
     assert mock.search_rules == [r'\w+', '.*', r'\d+']
 
 
+def test_url():
+    @plugin.url('pattern')
+    def mock(bot, trigger):
+        return True
+    patterns = [regex.pattern for regex in mock.url_regex]
+    assert len(patterns) == 1
+    assert 'pattern' in patterns
+
+
+def test_url_args():
+    @plugin.url('first', 'second')
+    def mock(bot, trigger):
+        return True
+
+    patterns = [regex.pattern for regex in mock.url_regex]
+    assert len(patterns) == 2
+    assert 'first' in patterns
+    assert 'second' in patterns
+
+
+def test_url_multiple():
+    @plugin.url('first', 'second')
+    @plugin.url('second')
+    @plugin.url('third')
+    def mock(bot, trigger):
+        return True
+
+    patterns = [regex.pattern for regex in mock.url_regex]
+    assert len(patterns) == 3
+    assert 'first' in patterns
+    assert 'second' in patterns
+    assert 'third' in patterns
+
+
 def test_url_lazy():
     def loader(settings):
         return [r'\w+', '.*', r'\d+']
@@ -182,7 +216,7 @@ def test_url_lazy():
         return True
 
     assert mock.url_lazy_loaders == [loader]
-    assert not hasattr(mock, 'url_regex')
+    assert mock.url_regex == []
 
 
 def test_url_lazy_args():
@@ -197,7 +231,7 @@ def test_url_lazy_args():
         return True
 
     assert mock.url_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'url_regex')
+    assert mock.url_regex == []
 
 
 def test_url_lazy_multiple():
@@ -213,7 +247,7 @@ def test_url_lazy_multiple():
         return True
 
     assert mock.url_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'url_regex')
+    assert mock.url_regex == []
 
 
 def test_rule_lazy():
@@ -224,8 +258,8 @@ def test_rule_lazy():
     def mock(bot, trigger):
         return True
 
-    assert mock.rule_lazy_loaders == [loader]
-    assert not hasattr(mock, 'rule')
+    assert mock.rules_lazy_loaders == [loader]
+    assert mock.rules == []
 
 
 def test_rule_lazy_args():
@@ -239,8 +273,8 @@ def test_rule_lazy_args():
     def mock(bot, trigger):
         return True
 
-    assert mock.rule_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'rule')
+    assert mock.rules_lazy_loaders == [loader_1, loader_2]
+    assert mock.rules == []
 
 
 def test_rule_lazy_multiple():
@@ -255,8 +289,8 @@ def test_rule_lazy_multiple():
     def mock(bot, trigger):
         return True
 
-    assert mock.rule_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'rule')
+    assert mock.rules_lazy_loaders == [loader_1, loader_2]
+    assert mock.rules == []
 
 
 def test_find_lazy():
@@ -268,8 +302,8 @@ def test_find_lazy():
         return True
 
     assert mock.find_rules_lazy_loaders == [loader]
-    assert not hasattr(mock, 'rule')
-    assert not hasattr(mock, 'find_rules')
+    assert mock.rules == []
+    assert mock.find_rules == []
 
 
 def test_find_lazy_args():
@@ -284,8 +318,8 @@ def test_find_lazy_args():
         return True
 
     assert mock.find_rules_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'rule')
-    assert not hasattr(mock, 'find_rules')
+    assert mock.rules == []
+    assert mock.find_rules == []
 
 
 def test_find_lazy_multiple():
@@ -301,8 +335,8 @@ def test_find_lazy_multiple():
         return True
 
     assert mock.find_rules_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'rule')
-    assert not hasattr(mock, 'find_rules')
+    assert mock.rules == []
+    assert mock.find_rules == []
 
 
 def test_search_lazy():
@@ -314,8 +348,8 @@ def test_search_lazy():
         return True
 
     assert mock.search_rules_lazy_loaders == [loader]
-    assert not hasattr(mock, 'rule')
-    assert not hasattr(mock, 'search_rules')
+    assert mock.rules == []
+    assert mock.search_rules == []
 
 
 def test_search_lazy_args():
@@ -330,8 +364,8 @@ def test_search_lazy_args():
         return True
 
     assert mock.search_rules_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'rule')
-    assert not hasattr(mock, 'search_rules')
+    assert mock.rules == []
+    assert mock.search_rules == []
 
 
 def test_search_lazy_multiple():
@@ -347,8 +381,8 @@ def test_search_lazy_multiple():
         return True
 
     assert mock.search_rules_lazy_loaders == [loader_1, loader_2]
-    assert not hasattr(mock, 'rule')
-    assert not hasattr(mock, 'search_rules')
+    assert mock.rules == []
+    assert mock.search_rules == []
 
 
 def test_ctcp():
@@ -378,58 +412,62 @@ def test_rate_user():
         return True
     assert mock.user_rate == 10
     assert mock.user_rate_message is None
-    assert not hasattr(mock, 'channel_rate')
-    assert not hasattr(mock, 'global_rate')
-    assert not hasattr(mock, 'default_rate_message')
+    assert mock.channel_rate is None
+    assert mock.global_rate is None
+    assert mock.default_rate_message is None
 
     @plugin.rate_user(20, 'User rate message.')
     def mock(bot, trigger):
         return True
     assert mock.user_rate == 20
     assert mock.user_rate_message == 'User rate message.'
-    assert not hasattr(mock, 'channel_rate')
-    assert not hasattr(mock, 'global_rate')
-    assert not hasattr(mock, 'default_rate_message')
+    assert mock.channel_rate is None
+    assert mock.global_rate is None
+    assert mock.default_rate_message is None
 
 
 def test_rate_channel():
     @plugin.rate_channel(10)
     def mock(bot, trigger):
         return True
+    assert mock.user_rate is None
+    assert mock.user_rate_message is None
     assert mock.channel_rate == 10
     assert mock.channel_rate_message is None
-    assert not hasattr(mock, 'user_rate')
-    assert not hasattr(mock, 'global_rate')
-    assert not hasattr(mock, 'default_rate_message')
+    assert mock.default_rate_message is None
 
     @plugin.rate_channel(20, 'Channel rate message.')
     def mock(bot, trigger):
         return True
+    assert mock.user_rate is None
+    assert mock.user_rate_message is None
     assert mock.channel_rate == 20
     assert mock.channel_rate_message == 'Channel rate message.'
-    assert not hasattr(mock, 'user_rate')
-    assert not hasattr(mock, 'global_rate')
-    assert not hasattr(mock, 'default_rate_message')
+    assert mock.default_rate_message is None
 
 
 def test_rate_global():
     @plugin.rate_global(10)
     def mock(bot, trigger):
         return True
+
+    assert mock.user_rate is None
+    assert mock.user_rate_message is None
+    assert mock.channel_rate is None
+    assert mock.channel_rate_message is None
     assert mock.global_rate == 10
     assert mock.global_rate_message is None
-    assert not hasattr(mock, 'user_rate')
-    assert not hasattr(mock, 'channel_rate')
-    assert not hasattr(mock, 'default_rate_message')
 
     @plugin.rate_global(20, 'Server rate message.')
     def mock(bot, trigger):
         return True
+
+    assert mock.user_rate is None
+    assert mock.user_rate_message is None
+    assert mock.channel_rate is None
+    assert mock.channel_rate_message is None
     assert mock.global_rate == 20
     assert mock.global_rate_message == 'Server rate message.'
-    assert not hasattr(mock, 'user_rate')
-    assert not hasattr(mock, 'channel_rate')
-    assert not hasattr(mock, 'default_rate_message')
 
 
 def test_rate_combine_rate_decorators():
