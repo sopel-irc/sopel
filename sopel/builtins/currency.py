@@ -23,6 +23,7 @@ PLUGIN_OUTPUT_PREFIX = '[currency] '
 FIAT_PROVIDERS = {
     'open.er-api.com': 'https://open.er-api.com/v6/latest/EUR',
     'fixer.io': '//data.fixer.io/api/latest?base=EUR&access_key={}',
+    'allratestoday.com': 'https://allratestoday.com/api/v1/rates?source=EUR',
 }
 CRYPTO_URL = 'https://api.coingecko.com/api/v3/exchange_rates'
 EXCHANGE_REGEX = re.compile(r'''
@@ -50,6 +51,8 @@ class CurrencySection(types.StaticSection):
     """API key for Fixer.io (widest currency support)"""
     fixer_use_ssl = types.BooleanAttribute('fixer_use_ssl', default=False)
     """Whether to use SSL (HTTPS) for Fixer API"""
+    allratestoday_key = types.ValidatedAttribute('allratestoday_key', default=None)
+    """API key for AllRatesToday"""
     auto_convert = types.BooleanAttribute('auto_convert', default=False)
     """Whether to convert currencies without an explicit command"""
 
@@ -62,6 +65,7 @@ def configure(config):
     | fiat\\_provider | ratesapi.io | Which data provider to use (some of which require no API key) |
     | fixer\\_io\\_key | 0123456789abcdef0123456789abcdef | API key for Fixer.io (widest currency support) |
     | fixer\\_use\\_ssl | False | Whether to use SSL (HTTPS) for Fixer API (requires paid API access) |
+    | allratestoday\\_key | 0123456789abcdef | API key for AllRatesToday |
     """
     config.define_section('currency', CurrencySection, validate=False)
     config.currency.configure_setting(
@@ -75,6 +79,9 @@ def configure(config):
             'fixer_io_key', 'API key for Fixer.io:')
         config.currency.configure_setting(
             'fixer_use_ssl', 'Use SSL (paid plans only) for Fixer.io?')
+    if config.currency.fiat_provider == 'allratestoday.com':
+        config.currency.configure_setting(
+            'allratestoday_key', 'API key for AllRatesToday:')
 
     config.currency.configure_setting(
         'auto_convert', 'Convert currencies without an explicit command?')
@@ -88,6 +95,12 @@ class FixerError(Exception):
     """A Fixer.io API Error Exception"""
     def __init__(self, status):
         super().__init__("FixerError: {}".format(status))
+
+
+class AllRatesTodayError(Exception):
+    """An AllRatesToday API Error Exception"""
+    def __init__(self, status):
+        super().__init__("AllRatesTodayError: {}".format(status))
 
 
 class UnsupportedCurrencyError(Exception):
@@ -134,6 +147,10 @@ def exchange(bot, match):
         return
     except FixerError as err:
         bot.reply('Sorry, something went wrong with Fixer')
+        LOGGER.error(err)
+        return
+    except AllRatesTodayError as err:
+        bot.reply('Sorry, something went wrong with AllRatesToday')
         LOGGER.error(err)
         return
 
@@ -227,6 +244,16 @@ def update_rates(bot):
             raise FixerError(
                 'Fixer.io request failed with error: {}'.format(error_message),
             )
+    elif fiat_provider == 'allratestoday.com':
+        LOGGER.debug('Updating fiat rates from AllRatesToday')
+        allratestoday_key = bot.settings.currency.allratestoday_key
+        if not allratestoday_key:
+            raise AllRatesTodayError('AllRatesToday requires an API key.')
+
+        response = requests.get(
+            FIAT_PROVIDERS['allratestoday.com'],
+            headers={'Authorization': 'Bearer ' + allratestoday_key},
+        )
     else:
         LOGGER.debug('Updating fiat rates from %s', fiat_provider)
         response = requests.get(FIAT_PROVIDERS[fiat_provider])
@@ -234,7 +261,11 @@ def update_rates(bot):
     response.raise_for_status()
     rates_fiat = response.json()
 
-    rates = rates_fiat['rates']
+    if fiat_provider == 'allratestoday.com':
+        # AllRatesToday returns a list of {"source", "target", "rate", "time"}
+        rates = {item['target']: item['rate'] for item in rates_fiat}
+    else:
+        rates = rates_fiat['rates']
     rates['EUR'] = 1.0  # Put this here to make logic easier
 
     eur_btc_rate = 1 / rates_crypto['rates']['eur']['value']
