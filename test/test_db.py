@@ -298,6 +298,14 @@ def test_get_nick_value_default(db: SopelDB):
     assert db.get_nick_value("TerryGilliam", "nokey", "default") == "default"
 
 
+def test_get_nick_value_default_type_preserved(db: SopelDB):
+    """Non-string defaults must be returned as-is, not deserialized."""
+    result = db.get_nick_value("TerryGilliam", "nokey", False)
+    assert result is False
+    assert db.get_nick_value("TerryGilliam", "nokey", True) is True
+    assert db.get_nick_value("TerryGilliam", "nokey", 42) == 42
+
+
 def test_unalias_nick(db: SopelDB):
     nick = 'Embolalia'
     nick_id = 42
@@ -489,6 +497,14 @@ def test_get_channel_value_default(db: SopelDB):
     assert db.get_channel_value("#channel", "nokey", "value") == "value"
 
 
+def test_get_channel_value_default_type_preserved(db: SopelDB):
+    """Non-string defaults must be returned as-is, not deserialized."""
+    result = db.get_channel_value("#channel", "nokey", False)
+    assert result is False
+    assert db.get_channel_value("#channel", "nokey", True) is True
+    assert db.get_channel_value("#channel", "nokey", 42) == 42
+
+
 def test_forget_channel(db: SopelDB):
     db.set_channel_value('#channel', 'testkey1', 'value1')
     db.set_channel_value('#channel', 'testkey2', 'value2')
@@ -554,6 +570,14 @@ def test_get_plugin_value(db: SopelDB):
 def test_get_plugin_value_default(db: SopelDB):
     assert db.get_plugin_value("TestPlugin", "DoesntExist") is None
     assert db.get_plugin_value("TestPlugin", "DoesntExist", "MyDefault") == "MyDefault"
+
+
+def test_get_plugin_value_default_type_preserved(db: SopelDB):
+    """Non-string defaults must be returned as-is, not deserialized."""
+    result = db.get_plugin_value("TestPlugin", "DoesntExist", False)
+    assert result is False
+    assert db.get_plugin_value("TestPlugin", "DoesntExist", True) is True
+    assert db.get_plugin_value("TestPlugin", "DoesntExist", 42) == 42
 
 
 def test_forget_plugin(db: SopelDB):
