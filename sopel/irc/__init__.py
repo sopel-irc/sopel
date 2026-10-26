@@ -627,8 +627,36 @@ class AbstractBot(abc.ABC):
 
         The same loop detection and length restrictions apply as with
         :func:`say`, though automatic message splitting is not available.
+
+        ``ACTION`` is by far the most common CTCP command, so it gets this
+        shortcut; use :meth:`ctcp` for anything else.
         """
-        self.say('\001ACTION {}\001'.format(text), dest)
+        self.ctcp('ACTION', dest, text)
+
+    def ctcp(self, command: str, dest: str, text: str | None = None) -> None:
+        """Send a CTCP request or reply to a user or channel.
+
+        :param command: the CTCP command to send, e.g. ``'VERSION'``
+        :param dest: the destination of the CTCP message
+        :param text: optional text argument for the ``command``
+
+        This wraps ``command`` (and the optional ``text``) in the CTCP
+        delimiter bytes and sends the result as a ``PRIVMSG``. For example
+        ``ctcp('VERSION', dest)`` asks ``dest`` for its client version, and
+        ``ctcp('PING', dest, '1234567890')`` sends a CTCP PING with a payload.
+
+        The ``ACTION`` command has its own :meth:`action` shortcut.
+
+        The same loop detection and length restrictions apply as with
+        :func:`say`, though automatic message splitting is not available.
+
+        .. versionadded:: 8.1
+        """
+        if text is None:
+            payload = '\001{}\001'.format(command)
+        else:
+            payload = '\001{} {}\001'.format(command, text)
+        self.say(payload, dest)
 
     def join(self, channel: str, password: str | None = None) -> None:
         """Join a ``channel``.
