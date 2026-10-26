@@ -1,7 +1,8 @@
 ### Checklist
 
 - [ ] I have read [CONTRIBUTING.md](https://github.com/sopel-irc/sopel/blob/master/CONTRIBUTING.md)
-- [ ] I am the human author of this contribution, and I agree to license it under the EFLv2
+- [ ] I, the human author of this contribution, can and do license it under the EFLv2
+- [ ] I affirm that large language models (LLMs) have not written any portion of this contribution
 - [ ] No issues are reported by `make qa` (runs `make lint` and `make test`)
 - [ ] I have tested the functionality of the things this change touches
 
