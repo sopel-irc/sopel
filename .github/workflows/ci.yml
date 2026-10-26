@@ -16,7 +16,8 @@ jobs:
   tests:
     if: ${{ github.repository_owner == 'sopel-irc' }}
     name: Test suite
-    runs-on: ubuntu-latest
+    # Ubuntu 26.04 doesn't have builds for the older Python versions any more
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version:
