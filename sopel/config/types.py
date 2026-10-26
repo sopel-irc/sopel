@@ -121,7 +121,7 @@ class StaticSection:
         not the attribute's default.
         """
         attribute = getattr(self.__class__, name)
-        if default is NO_DEFAULT and not attribute.is_secret:
+        if default is NO_DEFAULT:
             try:
                 # get current value of this setting to use as prompt default
                 default = getattr(self, name)
@@ -205,10 +205,12 @@ class BaseValidated(abc.ABC):
         the ``default`` value is returned instead.
 
         If :attr:`.is_secret` is ``True``, the input will be hidden, using the
-        built-in :func:`~getpass.getpass` function.
+        built-in :func:`~getpass.getpass` function, and the ``default`` value
+        will be masked in the prompt.
         """
         if default is not NO_DEFAULT and default is not None:
-            prompt = '{} [{}]'.format(prompt, default)
+            prompt = '{} [{}]'.format(
+                prompt, '********' if self.is_secret else default)
 
         if self.is_secret:
             value = getpass.getpass(prompt + ' (hidden input) ')
