@@ -79,7 +79,7 @@ class CoreSection(StaticSection):
     """
 
     admins = ListAttribute('admins')
-    """The list of people (other than the owner) who can administer the bot.
+    """List of nicks or ``nick@host`` who can administer the bot (other than the owner).
 
     Example:
 
@@ -1114,7 +1114,7 @@ class CoreSection(StaticSection):
     """
 
     owner = ValidatedAttribute('owner', default=NO_DEFAULT)
-    """The IRC name of the owner of the bot.
+    """The IRC nick or ``nick@host`` of the owner of the bot.
 
     **Required** even if :attr:`owner_account` is set.
     """
