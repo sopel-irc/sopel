@@ -183,6 +183,44 @@ def test_isupport_chanmodes_undefined():
     assert set(instance.CHANMODES.values()) == {""}
 
 
+def test_isupport_clienttagdeny():
+    # `assert`s MUST contain various mixed-case values to ensure expected
+    # case-insensitivity of checks
+    instance = isupport.ISupport(
+        clienttagdeny=isupport.ClientTagDeny(('*', '-react')),
+    )
+
+    assert 'ReacT' not in instance.CLIENTTAGDENY
+    assert '-rEAct' in instance.CLIENTTAGDENY
+    assert not instance.CLIENTTAGDENY.is_denied('ReAct')
+    assert 'fOObAr' not in instance.CLIENTTAGDENY
+    assert instance.CLIENTTAGDENY.is_denied('Foobar')
+
+    instance = isupport.ISupport(
+        clienttagdeny=isupport.ClientTagDeny(('react', 'foobar')),
+    )
+
+    assert 'rEaCt' in instance.CLIENTTAGDENY
+    assert instance.CLIENTTAGDENY.is_denied('ReAct')
+    assert 'fooBar' in instance.CLIENTTAGDENY
+    assert instance.CLIENTTAGDENY.is_denied('Foobar')
+    assert 'bAz' not in instance.CLIENTTAGDENY
+    assert not instance.CLIENTTAGDENY.is_denied('BaZ')
+
+
+def test_isupport_clienttagdeny_empty():
+    instance = isupport.ISupport(clienttagdeny=isupport.ClientTagDeny())
+
+    assert 'react' not in instance.CLIENTTAGDENY
+    assert 'foobar' not in instance.CLIENTTAGDENY
+
+
+def test_isupport_clienttagdeny_undefined():
+    instance = isupport.ISupport()
+
+    assert not hasattr(instance, 'CLIENTTAGDENY')
+
+
 def test_isupport_maxlist():
     instance = isupport.ISupport(maxlist=(('Z', 10), ('beI', 25)))
     assert 'Z' in instance.MAXLIST
@@ -339,6 +377,7 @@ VALID_PARSE_REMOVED = (
     '-CHANMODES',
     '-CHANNELLEN',
     '-CHANTYPES',
+    '-CLIENTTAGDENY',
     '-ELIST',
     '-EXCEPTS',
     '-EXTBAN',
@@ -413,6 +452,27 @@ def test_parse_parameter_chanmode_extra_many():
 def test_parse_parameter_chanmode_raise():
     with pytest.raises(ValueError):
         isupport.parse_parameter('CHANMODES=b,k,l')
+
+
+def test_parse_parameter_clienttagdeny():
+    key, value = isupport.parse_parameter('CLIENTTAGDENY=react,foo,bar')
+
+    assert key == 'CLIENTTAGDENY'
+    assert value == isupport.ClientTagDeny(('react', 'foo', 'bar'))
+
+
+def test_parse_parameter_clienttagdeny_empty():
+    key, value = isupport.parse_parameter('CLIENTTAGDENY=')
+
+    assert key == 'CLIENTTAGDENY'
+    assert value == isupport.ClientTagDeny(())
+
+
+def test_parse_parameter_clienttagdeny_no_value():
+    key, value = isupport.parse_parameter('CLIENTTAGDENY')
+
+    assert key == 'CLIENTTAGDENY'
+    assert value == isupport.ClientTagDeny(())
 
 
 def test_parse_parameter_elist():
