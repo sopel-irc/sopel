@@ -271,7 +271,7 @@ class Manager:
             self._nick_commands[plugin][command.name] = command
         LOGGER.debug('Nick Command registered: %s', str(command))
 
-    def register_action_command(self, command: NickCommand) -> None:
+    def register_action_command(self, command: ActionCommand) -> None:
         """Register a plugin action command.
 
         :param command: the action command to register

@@ -36,7 +36,6 @@ from typing import (
     NamedTuple,
     Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 
@@ -56,10 +55,7 @@ parsing a modestring like ``+abc-efg``. In that example mode ``a`` and mode
 ``('f', False)``.
 """
 
-# TODO: replace Union by | when dropping support for Python 3.9
-# Type aliases are evaluated at import time unlike type annotation
-# Python 3.8 and 3.9 don't support the | operator.
-ModeDetails = Tuple[str, str, bool, Union[str, None]]
+ModeDetails = Tuple[str, str, bool, str | None]
 """Tuple of mode details as ``(letter, mode, is_added, param)``.
 
 Where ``type`` is the mode type (such as A, B, C, D); ``mode`` is the mode

@@ -9,7 +9,7 @@ import json
 
 import pytest
 from sqlalchemy.engine import make_url
-from sqlalchemy.sql import func, select, text
+from sqlalchemy.sql import func, select
 
 from sopel.db import (
     ChannelValues,
@@ -40,17 +40,6 @@ def db(tmpconfig):
     db = SopelDB(tmpconfig)
     # TODO add tests to ensure db creation works properly, too.
     return db
-
-
-# Test execute
-
-def test_execute(db: SopelDB):
-    # todo: remove in Sopel 8.1
-    results = db.execute('SELECT * FROM nicknames')
-    assert results.fetchall() == []
-
-    results = db.execute(text('SELECT * FROM nicknames'))
-    assert results.fetchall() == []
 
 
 # Test connect

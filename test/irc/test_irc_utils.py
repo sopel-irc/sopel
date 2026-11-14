@@ -8,7 +8,7 @@ import pytest
 from sopel.irc import utils
 
 
-@pytest.mark.parametrize('s1, s2, s3', permutations(('\n', '\r', '\x00')))
+@pytest.mark.parametrize('s1, s2, s3', list(permutations(('\n', '\r', '\x00'))))
 def test_safe(s1, s2, s3):
     text = 'some text'
     seq = ''.join((s1, s2, s3))
@@ -35,7 +35,7 @@ def test_safe_none():
         utils.safe(None)
 
 
-@pytest.mark.parametrize('b1, b2, b3', permutations((b'\n', b'\r', b'\x00')))
+@pytest.mark.parametrize('b1, b2, b3', list(permutations((b'\n', b'\r', b'\x00'))))
 def test_safe_bytes(b1, b2, b3):
     text = b'some text'
     seq = b''.join((b1, b2, b3))

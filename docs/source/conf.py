@@ -26,7 +26,7 @@ from sopel import __version__
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '7.1'  # todo: upgrade when Py3.8 reaches EOL
+needs_sphinx = '9.1'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.

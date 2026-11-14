@@ -9,7 +9,7 @@ Installation Requirements
 
 To install Sopel, you will need:
 
-* Python 3.8 or above
+* Python 3.12 or above
 * Pip, the official Python package installer
 
 .. important::
