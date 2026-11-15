@@ -103,3 +103,40 @@ setting in your config file.
 
     More information about configuring Sopel's logging is available in the
     :ref:`Logging` section.
+
+
+.. _faq-stability:
+
+Stability Policy
+================
+
+We endeavor to provide a deprecation warning in a published version for at
+least one year before breaking compatibility with plugins or configuration,
+and to only release breaking changes in major versions.
+
+
+.. _faq-lifecycle:
+
+Release Lifecycle
+=================
+
+We actively support each major.minor release branch for at least one year, or
+as long as it is the latest. Whenever practical, we will backport security
+fixes and select bugfixes to the previous major.minor branch for 3 months after
+it is superseded by a new minor release, or one year after a major release.
+
+
+.. _faq-python-support:
+
+Python Version Support
+----------------------
+
+Python versions which have an end-of-life date at least 18 months in the future
+at the time of a Sopel major release will be supported for the lifetime of the
+major release branch. When practical, we will avoid breaking support for other
+Python versions that were not end-of-life at that time.
+
+For example, Sopel 8.0.0 was released on 2024-06-02. At that time Python 3.8
+and 3.9 were supported but had end-of-life dates within 18 months. Therefore
+all 8.x.x releases support Python 3.10 and newer, and are likely to work on 3.8
+and 3.9.
