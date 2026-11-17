@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import inspect
 import operator
+import subprocess
 
 from sopel import config, plugins
 
@@ -154,6 +155,36 @@ def build_parser(prog: str = 'sopel-plugins') -> argparse.ArgumentParser:
             Enforce allow-only policy.
             It makes sure the plugin is added to the ``core.enable`` list.
         """))
+
+    # sopel-plugins new
+    new_parser = subparsers.add_parser(
+        'new',
+        formatter_class=argparse.RawTextHelpFormatter,
+        help="Create a new plugin",
+        description=inspect.cleandoc("""
+            Create a new plugin using the ``cookiecutter`` template.
+
+            The ``cookiecutter`` package must be installed to use this command.
+        """))
+    # don't add the common arguments; they're meaningless for this command
+    new_parser.add_argument(
+        'name',
+        nargs='?',
+        default='beawesome',
+        help='Name of the new plugin',
+    )
+    new_parser.add_argument(
+        '-d', '--directory',
+        nargs='?',
+        default='.',
+        help='Directory in which to create the new plugin',
+    )
+    new_parser.add_argument(
+        '-t', '--template',
+        nargs='?',
+        default='gh:sopel-irc/plugin',
+        help='URL or filesystem path to a custom plugin template',
+    )
 
     return parser
 
@@ -544,6 +575,49 @@ def handle_enable(options):
     return 0
 
 
+def handle_new(options):
+    """Create a new plugin from Sopel's current template.
+
+    :param options: parsed arguments
+    :type options: :class:`argparse.Namespace`
+    :return: 0 if everything went fine;
+             1 if the process was aborted;
+             2 if ``cookiecutter`` isn't available
+
+    .. seealso::
+
+        `The template repo`_ on GitHub.
+
+        .. _The template repo: https://github.com/sopel-irc/plugin
+
+    """
+    template = options.template
+    plugin_name = options.name
+    output_dir = options.directory
+
+    args = (
+        'cookiecutter',
+        '--output-dir', output_dir,
+        template,
+        f'plugin_name={plugin_name}',
+    )
+
+    try:
+        result = subprocess.run(args)
+    except FileNotFoundError:
+        utils.stderr(
+            'The `cookiecutter` command is required to create a new plugin.')
+        utils.stderr(
+            'Use your favorite Python package tool to install it.')
+        return 2
+    except KeyboardInterrupt:
+        # override the base handler, as we don't need the "Bye!" message
+        # cookiecutter prints "Aborted!" by itself if interrupted
+        return 1
+
+    return result.returncode
+
+
 def main():
     """Console entry point for ``sopel-plugins``."""
     parser = build_parser()
@@ -565,6 +639,8 @@ def main():
             return handle_disable(options)
         elif action == 'enable':
             return handle_enable(options)
+        elif action == 'new':
+            return handle_new(options)
     except KeyboardInterrupt:
         utils.stderr('Bye!')
         return ERR_CODE
