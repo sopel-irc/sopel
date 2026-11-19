@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from unittest import mock
 
 import pytest
 
@@ -59,6 +60,12 @@ class FakeConfigSection(types.StaticSection):
     ad_fileattr = types.FilenameAttribute('ad_fileattr', relative=False, directory=True)
     rf_fileattr = types.FilenameAttribute('rf_fileattr', relative=True, directory=False)
     rd_fileattr = types.FilenameAttribute('rd_fileattr', relative=True, directory=True)
+
+
+class SecretConfigSection(types.StaticSection):
+    secretattr = types.SecretAttribute('secretattr')
+    required_secretattr = types.SecretAttribute(
+        'required_secretattr', default=types.NO_DEFAULT)
 
 
 class SpamSection(types.StaticSection):
@@ -286,6 +293,45 @@ def test_fileattribute_absolute_with_inside_quotes(fakeconfig):
     # single quotes
     fakeconfig.fake.af_fileattr = "'%s'" % testfile
     assert fakeconfig.fake.af_fileattr == testfile
+
+
+def test_configure_setting_secret_keeps_current_value(fakeconfig):
+    fakeconfig.define_section('secret', SecretConfigSection, validate=False)
+    fakeconfig.secret.secretattr = 'hunter2'
+
+    with mock.patch('getpass.getpass') as mock_input:
+        mock_input.side_effect = ['']
+        fakeconfig.secret.configure_setting('secretattr', 'Password:')
+        # making sure the prompt was modified properly
+        mock_input.assert_called_with('Password: [********] (hidden input) ')
+
+    assert fakeconfig.secret.secretattr == 'hunter2'
+
+
+def test_configure_setting_secret_replaces_current_value(fakeconfig):
+    fakeconfig.define_section('secret', SecretConfigSection, validate=False)
+    fakeconfig.secret.secretattr = 'hunter2'
+
+    with mock.patch('getpass.getpass') as mock_input:
+        mock_input.side_effect = ['correct horse']
+        fakeconfig.secret.configure_setting('secretattr', 'Password:')
+
+    assert fakeconfig.secret.secretattr == 'correct horse'
+
+
+def test_configure_setting_secret_without_current_value(fakeconfig):
+    fakeconfig.define_section('secret', SecretConfigSection, validate=False)
+
+    with mock.patch('getpass.getpass') as mock_input:
+        mock_input.side_effect = ['', 'hunter2']
+        fakeconfig.secret.configure_setting('required_secretattr', 'Password:')
+        # making sure the prompt was modified properly
+        assert mock_input.mock_calls == [
+            mock.call('Password: (hidden input) '),
+            mock.call('Password: (hidden input) '),
+        ]
+
+    assert fakeconfig.secret.required_secretattr == 'hunter2'
 
 
 def test_configparser_env_priority_over_file(monkeypatch, fakeconfig):
