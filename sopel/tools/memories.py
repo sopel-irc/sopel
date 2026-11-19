@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import threading
-from typing import Any, TYPE_CHECKING, Union
+from typing import Any, TYPE_CHECKING
 
 from typing_extensions import override
 
@@ -19,13 +19,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
     from typing import Tuple
 
-    # TODO: replace Union by | when dropping support for Python 3.9
-    # Type aliases are evaluated at import time so unlike type annotation
-    # Python 3.8 and 3.9 don't support the | operator.
-    MemoryConstructorInput = Union[
-        Mapping[str, Any],
-        Iterable[Tuple[str, Any]],
-    ]
+    MemoryConstructorInput = Mapping[str, Any] | Iterable[Tuple[str, Any]]
 
 
 class _NO_DEFAULT:

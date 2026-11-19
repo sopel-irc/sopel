@@ -18,7 +18,6 @@ from typing import (
     overload,
     Pattern,
     TYPE_CHECKING,
-    Union,
 )
 
 from sopel.lifecycle import deprecated
@@ -52,15 +51,12 @@ if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
     from sopel.trigger import Trigger
 
-# TODO: replace Union by | when dropping support for Python 3.9
-# Type aliases are evaluated at import time so unlike type annotation
-# Python 3.8 and 3.9 don't support the | operator.
 TypedCallableDecorator = Callable[
-    [Union[TypedPluginCallableHandler, AbstractPluginObject]],
+    [TypedPluginCallableHandler | AbstractPluginObject],
     PluginCallable,
 ]
 TypedJobDecorator = Callable[
-    [Union[TypedPluginJobHandler, AbstractPluginObject]],
+    [TypedPluginJobHandler | AbstractPluginObject],
     PluginJob,
 ]
 

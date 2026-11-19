@@ -26,6 +26,7 @@ sopel.egg-info/*
 
 # Test/Coverage
 .cache
+.mypy_cache
 .pytest_cache
 .coverage
 coverage_html_report/
