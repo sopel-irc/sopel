@@ -242,6 +242,36 @@ def test_wrapper_action_override_destination(mockbot, triggerfactory):
     )
 
 
+def test_wrapper_ctcp(mockbot, triggerfactory):
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
+    wrapper.ctcp('VERSION')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :\x01VERSION\x01'
+    )
+
+
+def test_wrapper_ctcp_with_text(mockbot, triggerfactory):
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
+    wrapper.ctcp('PING', text='1234567890')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #channel :\x01PING 1234567890\x01'
+    )
+
+
+def test_wrapper_ctcp_override_destination(mockbot, triggerfactory):
+    wrapper = triggerfactory.wrapper(
+        mockbot, ':Test!test@example.com PRIVMSG #channel :test message')
+    wrapper.ctcp('VERSION', destination='#different')
+
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #different :\x01VERSION\x01'
+    )
+
+
 def test_wrapper_reply(mockbot, triggerfactory):
     wrapper = triggerfactory.wrapper(
         mockbot, ':Test!test@example.com PRIVMSG #channel :test message')

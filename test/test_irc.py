@@ -178,6 +178,22 @@ def test_action(bot):
     )
 
 
+def test_ctcp(bot):
+    bot.ctcp('VERSION', '#sopel')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG #sopel :\001VERSION\001',
+    )
+
+
+def test_ctcp_with_text(bot):
+    bot.ctcp('PING', 'Nickname', '1234567890')
+
+    assert bot.backend.message_sent == rawlist(
+        'PRIVMSG Nickname :\001PING 1234567890\001',
+    )
+
+
 def test_join(bot):
     bot.join('#sopel')
 
