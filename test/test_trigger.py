@@ -18,6 +18,14 @@ admins =
 """
 
 
+TMP_CONFIG_HOSTMASK = """
+[core]
+owner = Foo@example.com
+admins =
+    Bar
+"""
+
+
 TMP_CONFIG_ACCOUNT = """
 [core]
 owner = Foo
@@ -289,11 +297,12 @@ def test_ctcp_action_pretrigger(nick):
     assert pretrigger.status_prefix is None
 
 
-def test_ctcp_action_trigger(nick, configfactory):
+@pytest.mark.parametrize("configsrc", [TMP_CONFIG, TMP_CONFIG_HOSTMASK])
+def test_ctcp_action_trigger(nick, configsrc, configfactory):
     line = ':Foo!bar@example.com PRIVMSG #Sopel :\x01ACTION Hello, world\x01'
     pretrigger = PreTrigger(nick, line)
 
-    config = configfactory('default.cfg', TMP_CONFIG)
+    config = configfactory('default.cfg', configsrc)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
@@ -335,11 +344,12 @@ def test_ircv3_extended_join_pretrigger(nick):
     assert pretrigger.status_prefix is None
 
 
-def test_ircv3_extended_join_trigger(nick, configfactory):
+@pytest.mark.parametrize("configsrc", [TMP_CONFIG, TMP_CONFIG_HOSTMASK])
+def test_ircv3_extended_join_trigger(nick, configsrc, configfactory):
     line = ':Foo!foo@example.com JOIN #Sopel bar :Real Name'
     pretrigger = PreTrigger(nick, line)
 
-    config = configfactory('default.cfg', TMP_CONFIG)
+    config = configfactory('default.cfg', configsrc)
 
     fakematch = re.match('.*', line)
 
@@ -364,11 +374,12 @@ def test_ircv3_extended_join_trigger(nick, configfactory):
     assert trigger.admin is True
 
 
-def test_ircv3_intents_trigger(nick, configfactory):
+@pytest.mark.parametrize("configsrc", [TMP_CONFIG, TMP_CONFIG_HOSTMASK])
+def test_ircv3_intents_trigger(nick, configsrc, configfactory):
     line = '@intent=ACTION :Foo!bar@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
 
-    config = configfactory('default.cfg', TMP_CONFIG)
+    config = configfactory('default.cfg', configsrc)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
@@ -405,10 +416,11 @@ def test_ircv3_account_tag_trigger(nick, configfactory):
     assert trigger.owner is True
 
 
-def test_ircv3_server_time_trigger(nick, configfactory):
+@pytest.mark.parametrize("configsrc", [TMP_CONFIG, TMP_CONFIG_HOSTMASK])
+def test_ircv3_server_time_trigger(nick, configsrc, configfactory):
     line = '@time=2016-01-09T03:15:42.000Z :Foo!foo@example.com PRIVMSG #Sopel :Hello, world'
     pretrigger = PreTrigger(nick, line)
-    config = configfactory('default.cfg', TMP_CONFIG)
+    config = configfactory('default.cfg', configsrc)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
@@ -422,10 +434,11 @@ def test_ircv3_server_time_trigger(nick, configfactory):
     assert pretrigger.time is not None
 
 
-def test_statusmsg_trigger(nick, configfactory):
+@pytest.mark.parametrize("configsrc", [TMP_CONFIG, TMP_CONFIG_HOSTMASK])
+def test_statusmsg_trigger(nick, configsrc, configfactory):
     line = ':Foo!foo@example.com PRIVMSG @#channel :text message'
     pretrigger = PreTrigger(nick, line, statusmsg_prefixes=tuple('@'))
-    config = configfactory('default.cfg', TMP_CONFIG)
+    config = configfactory('default.cfg', configsrc)
     fakematch = re.match('.*', line)
 
     trigger = Trigger(config, pretrigger, fakematch)
