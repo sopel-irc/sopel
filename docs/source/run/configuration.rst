@@ -33,6 +33,8 @@ This file can be generated with ``sopel configure``.
     The :doc:`cli` chapter for ``sopel configure`` subcommand.
 
 
+.. _config-ini:
+
 INI file structure
 ==================
 

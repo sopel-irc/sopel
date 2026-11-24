@@ -24,6 +24,7 @@ Documentation
     :titlesonly:
 
     run
+    features
     faq
     plugin
     package
