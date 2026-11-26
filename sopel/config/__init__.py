@@ -221,10 +221,10 @@ class Config:
 
             Deviations from *snake_case* can break the following operations:
 
-            * :ref:`accessing the section <sopel.config>` from Python code
-              using the :class:`~.Config` object's attributes
-            * :ref:`overriding the section's values <Overriding individual
-              settings>` using environment variables
+            * :ref:`accessing the section <package/config:sopel.config>` from
+              Python code using the :class:`~.Config` object's attributes
+            * :ref:`overriding the section's values <run-cli-config-override>`
+              using environment variables
 
         """
         try:
@@ -265,10 +265,10 @@ class Config:
 
             Deviations from *snake_case* can break the following operations:
 
-            * :ref:`accessing the section <sopel.config>` from Python code
-              using the :class:`~.Config` object's attributes
-            * :ref:`overriding the section's values <Overriding individual
-              settings>` using environment variables
+            * :ref:`accessing the section <package/config:sopel.config>` from
+              Python code using the :class:`~.Config` object's attributes
+            * :ref:`overriding the section's values <run-cli-config-override>`
+              using environment variables
 
         .. seealso::
 

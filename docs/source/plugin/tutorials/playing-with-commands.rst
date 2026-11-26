@@ -19,9 +19,9 @@ if we can do something a bit more *complex* than that.
 Greeting a user by their name
 =============================
 
-Have you noticed that a :ref:`plugin callable <Plugin callables>` takes **two
-arguments?** The first one is the ``bot``, an instance of Sopel that you can
-use to :doc:`interact with the bot </plugin/bot>`.
+Have you noticed that a :ref:`plugin callable <plugin-anatomy-callables>` takes
+**two arguments?** The first one is the ``bot``, an instance of Sopel that you
+can use to :doc:`interact with the bot </plugin/bot>`.
 
 In the previous tutorial, we used ``bot.reply``, which is convenient when
 responding directly to a user, but not always what you want. Maybe you want the

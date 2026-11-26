@@ -102,4 +102,4 @@ setting in your config file.
 .. seealso::
 
     More information about configuring Sopel's logging is available in the
-    :ref:`Logging` section.
+    :ref:`run/configuration:Logging` section.

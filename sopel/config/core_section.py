@@ -147,8 +147,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
-        setting does.
+        The :ref:`config-loop-prevention` chapter to learn what each
+        antiloop-related setting does.
 
     .. versionadded:: 8.0
     """
@@ -167,8 +167,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
-        setting does.
+        The :ref:`config-loop-prevention` chapter to learn what each
+        antiloop-related setting does.
 
     .. versionadded:: 8.0
     """
@@ -194,8 +194,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
-        setting does.
+        The :ref:`config-loop-prevention` chapter to learn what each
+        antiloop-related setting does.
 
     .. versionadded:: 8.0
     """
@@ -213,8 +213,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Loop Prevention` chapter to learn what each antiloop-related
-        setting does.
+        The :ref:`config-loop-prevention` chapter to learn what each
+        antiloop-related setting does.
 
     .. versionadded:: 8.0
     """
@@ -230,7 +230,7 @@ class CoreSection(StaticSection):
     authentication method *and* a nick-based authentication method, see
     :attr:`server_auth_method` and :attr:`nick_auth_method`.
 
-    For more information about these methods, see :ref:`Authentication`.
+    For more information about these methods, see :ref:`config-authentication`.
 
     .. note::
         If this is specified, :attr:`nick_auth_method` will be ignored, and this
@@ -240,7 +240,7 @@ class CoreSection(StaticSection):
     auth_password = SecretAttribute('auth_password')
     """The password to use to authenticate with the :attr:`auth_method`.
 
-    See :ref:`Authentication`.
+    See :ref:`config-authentication`.
     """
 
     auth_target = ValidatedAttribute('auth_target')
@@ -257,7 +257,7 @@ class CoreSection(StaticSection):
     network requires it (e.g. for CertFP using :attr:`client_cert_file`). This
     value is otherwise ignored.
 
-    See :ref:`Authentication`.
+    See :ref:`config-authentication`.
     """
 
     auth_username = ValidatedAttribute('auth_username')
@@ -266,7 +266,7 @@ class CoreSection(StaticSection):
     Required for an :attr:`auth_method` of ``authserv``, ``Q``, or
     ``userserv`` — otherwise ignored.
 
-    See :ref:`Authentication`.
+    See :ref:`config-authentication`.
     """
 
     auto_url_schemes = ListAttribute(
@@ -474,10 +474,10 @@ class CoreSection(StaticSection):
     .. note::
 
         Specifying this option via the ``SOPEL_CORE_DB_URL`` :ref:`environment
-        variable <Overriding individual settings>` may prove especially useful
-        in certain cloud environments, avoiding the need to split a database
-        URI provided by the platform at runtime into its components with a
-        startup script.
+        variable <run-cli-config-override>` may prove especially useful in
+        certain cloud environments, avoiding the need to split a database URI
+        provided by the platform at runtime into its components with a startup
+        script.
 
     .. versionadded:: 8.0
     """
@@ -553,7 +553,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Plugins` chapter for an overview of all plugin-related
+        The :ref:`config-plugins` chapter for an overview of all plugin-related
         settings.
 
     """
@@ -578,7 +578,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Plugins` chapter for an overview of all plugin-related
+        The :ref:`config-plugins` chapter for an overview of all plugin-related
         settings.
 
     """
@@ -596,7 +596,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Plugins` chapter for an overview of all plugin-related
+        The :ref:`config-plugins` chapter for an overview of all plugin-related
         settings.
 
     """
@@ -614,8 +614,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Flood Prevention` chapter to learn what each flood-related
-        setting does.
+        The :ref:`config-flood-prevention` chapter to learn what each
+        flood-related setting does.
 
     .. versionadded:: 7.0
     """
@@ -633,8 +633,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Flood Prevention` chapter to learn what each flood-related
-        setting does.
+        The :ref:`config-flood-prevention` chapter to learn what each
+        flood-related setting does.
 
     .. versionadded:: 7.0
     """
@@ -656,8 +656,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Flood Prevention` chapter to learn what each flood-related
-        setting does.
+        The :ref:`config-flood-prevention` chapter to learn what each
+        flood-related setting does.
 
     .. versionadded:: 7.1
     """
@@ -688,8 +688,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Flood Prevention` chapter to learn what each flood-related
-        setting does.
+        The :ref:`config-flood-prevention` chapter to learn what each
+        flood-related setting does.
 
     .. versionadded:: 7.1
     """
@@ -707,8 +707,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Flood Prevention` chapter to learn what each flood-related
-        setting does.
+        The :ref:`config-flood-prevention` chapter to learn what each
+        flood-related setting does.
 
     .. versionadded:: 7.0
     """
@@ -729,8 +729,8 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Flood Prevention` chapter to learn what each flood-related
-        setting does.
+        The :ref:`config-flood-prevention` chapter to learn what each
+        flood-related setting does.
 
     .. versionadded:: 7.1
     """
@@ -780,7 +780,7 @@ class CoreSection(StaticSection):
     host_blocks = ListAttribute('host_blocks')
     """A list of hostnames which Sopel should ignore.
 
-    Sopel will :ref:`ignore <Ignoring Users>` messages from any user whose
+    Sopel will :ref:`ignore <config-ignore-users>` messages from any user whose
     connection hostname matches one of these values.
     :ref:`Regular expression syntax <re-syntax>` is supported, so remember to
     escape special characters:
@@ -799,8 +799,9 @@ class CoreSection(StaticSection):
 
     .. note::
 
-        :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
-        run regardless of matching ``*_blocks`` entries.
+        :ref:`plugin-anatomy-callables` with the
+        :func:`~sopel.plugin.unblockable` decorator run regardless of matching
+        ``*_blocks`` entries.
 
         We are working toward a better block system; see :issue:`1355` for more
         information and updates.
@@ -810,7 +811,7 @@ class CoreSection(StaticSection):
     hostmask_blocks = ListAttribute('hostmask_blocks')
     """A list of hostmasks which Sopel should ignore.
 
-    Sopel will :ref:`ignore <Ignoring Users>` messages from any user whose
+    Sopel will :ref:`ignore <config-ignore-users>` messages from any user whose
     full hostmask (``nick!username@host``) matches one of these values.
     :ref:`Regular expression syntax <re-syntax>` is supported, so remember to
     escape special characters:
@@ -828,8 +829,9 @@ class CoreSection(StaticSection):
 
     .. note::
 
-        :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
-        run regardless of matching ``*_blocks`` entries.
+        :ref:`plugin-anatomy-callables` with the
+        :func:`~sopel.plugin.unblockable` decorator run regardless of matching
+        ``*_blocks`` entries.
 
         We are working toward a better block system; see :issue:`1355` for more
         information and updates.
@@ -849,7 +851,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Raw Logs` chapter.
+        The :ref:`config-logging-raw` chapter.
 
     """
 
@@ -863,7 +865,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Logging` chapter.
+        The :ref:`config-logging` chapter.
 
     """
 
@@ -872,7 +874,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Log to a Channel` chapter.
+        The :ref:`config-logging-channel` chapter.
 
     """
 
@@ -886,7 +888,7 @@ class CoreSection(StaticSection):
         Time format reference is available in the documentation for Python's
         :func:`time.strftime` function.
 
-        For more information about logging, see :ref:`Log to a Channel`.
+        For more information about logging, see :ref:`config-logging-channel`.
 
     .. versionadded:: 7.0
     """
@@ -898,7 +900,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Log to a Channel` chapter.
+        The :ref:`config-logging-channel` chapter.
 
     .. versionadded:: 7.0
     """
@@ -911,7 +913,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Log to a Channel` chapter.
+        The :ref:`config-logging-channel` chapter.
 
     .. versionadded:: 7.0
     .. versionchanged:: 8.0
@@ -1028,7 +1030,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Authentication` chapter for more details.
+        The :ref:`config-authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -1038,7 +1040,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Authentication` chapter for more details.
+        The :ref:`config-authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -1053,7 +1055,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Authentication` chapter for more details.
+        The :ref:`config-authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -1067,7 +1069,7 @@ class CoreSection(StaticSection):
 
     .. seealso::
 
-        The :ref:`Authentication` chapter for more details.
+        The :ref:`config-authentication` chapter for more details.
 
     .. versionadded:: 7.0
     """
@@ -1075,7 +1077,7 @@ class CoreSection(StaticSection):
     nick_blocks = ListAttribute('nick_blocks')
     """A list of nicks which Sopel should ignore.
 
-    Sopel will :ref:`ignore <Ignoring Users>` messages from any user whose
+    Sopel will :ref:`ignore <config-ignore-users>` messages from any user whose
     nickname matches one of these values.
     :ref:`Regular expression syntax <re-syntax>` is supported, so remember to
     escape special characters:
@@ -1095,7 +1097,7 @@ class CoreSection(StaticSection):
 
     .. note::
 
-        :ref:`Plugin callables` with the :func:`.plugin.unblockable` decorator
+        :ref:`plugin-anatomy-callables` with the :func:`.plugin.unblockable` decorator
         run regardless of matching ``*_blocks`` entries.
 
         We are working toward a better block system; see :issue:`1355` for more

@@ -90,6 +90,7 @@ lint = [
     "sqlalchemy[mypy]>=1.4,<1.5",
     "types-pytz",
     "types-requests>=2,<3",
+    "types-docutils",
 ]
 test = [
     "coveralls>=2.0",

@@ -219,7 +219,7 @@ def unblockable(function=None):
 
     For example, this can be used to ensure that important events such as
     ``JOIN`` are always recorded even if the user's nickname or hostname is
-    :ref:`ignored <Ignoring Users>`::
+    :ref:`ignored <config-ignore-users>`::
 
         from sopel import plugin
 
