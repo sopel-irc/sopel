@@ -30,6 +30,20 @@ ERROR_NOTHING_TO_RAW = 'I need an IRC message to send.'
 
 
 class AdminSection(types.StaticSection):
+    """The ``[admin]`` section configuration.
+
+    This allows bot owner to configure if the bot will:
+
+    * hold its ground when kicked from a channel
+    * automatically accept or not an invite
+
+    Example::
+
+        [admin]
+        hold_ground = yes
+        auto_accept_invite = no
+
+    """
     hold_ground = types.BooleanAttribute('hold_ground', default=False)
     """Auto re-join on kick"""
     auto_accept_invite = types.BooleanAttribute('auto_accept_invite', default=True)

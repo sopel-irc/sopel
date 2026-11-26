@@ -37,6 +37,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinxcontrib.autoprogram',
     'sphinx_rfcsection',
+    'sopel.sphinx',
 ]
 extlinks = {
     'issue': ('https://github.com/sopel-irc/sopel/issues/%s', '#%s'),
