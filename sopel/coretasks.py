@@ -1388,6 +1388,19 @@ def _get_sasl_pass_and_mech(bot):
 
 # Live blocklist editing
 
+BLOCKS_STRINGS = {
+    "success_del": "Successfully deleted block: %s",
+    "success_add": "Successfully added block: %s",
+    "no_nick": "No matching nick block found for: %s",
+    "no_host": "No matching host block found for: %s",
+    "no_hostmask": "No matching hostmask block found for: %s",
+    "invalid": "Invalid format for %s a block. Try: .blocks %s (nick|host|hostmask) pattern",
+    "invalid_display": "Invalid input for displaying blocks.",
+    "invalid_pattern": "Invalid block pattern: %s",
+    "nonelisted": "No %s listed in the blocklist.",
+    'huh': "I could not figure out what you wanted to do.",
+}
+
 
 @plugin.commands('blocks')
 @plugin.example(r'.blocks del nick falsep0sitive', user_help=True)
@@ -1403,99 +1416,106 @@ def blocks(bot, trigger):
 
     Full argspec: `list [nick|host|hostmask]` or `[add|del] [nick|host|hostmask] pattern`
     """
-    STRINGS = {
-        "success_del": "Successfully deleted block: %s",
-        "success_add": "Successfully added block: %s",
-        "no_nick": "No matching nick block found for: %s",
-        "no_host": "No matching host block found for: %s",
-        "no_hostmask": "No matching hostmask block found for: %s",
-        "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host|hostmask) pattern",
-        "invalid_display": "Invalid input for displaying blocks.",
-        "nonelisted": "No %s listed in the blocklist.",
-        'huh': "I could not figure out what you wanted to do.",
-    }
-
     hostmasks = set(s for s in bot.settings.core.hostmask_blocks if s != '')
     hosts = set(s for s in bot.settings.core.host_blocks if s != '')
     nicks = set(bot.make_identifier(nick)
                 for nick in bot.settings.core.nick_blocks
                 if nick != '')
-    text = trigger.group().split()
+    text: list[str] = trigger.group().split()
 
-    if len(text) == 3 and text[1] == "list":
-        if text[2] == "host":
+    subcommand: str | None = None
+    block_type: str | None = None
+    arg: str | None = None
+
+    if len(text) == 3:
+        subcommand, block_type = text[1:]
+        if subcommand != 'list':
+            subcommand = None
+    elif len(text) == 4:
+        subcommand, block_type, arg = text[1:]
+        if subcommand not in ('add', 'del'):
+            subcommand = None
+
+    if subcommand == "list":
+        if block_type == "host":
             if len(hosts) > 0:
                 blocked = ', '.join(str(host) for host in hosts)
                 bot.say("Blocked hosts: {}".format(blocked))
             else:
-                bot.reply(STRINGS['nonelisted'] % ('hosts'))
-        elif text[2] == "nick":
+                bot.reply(BLOCKS_STRINGS['nonelisted'] % ('hosts'))
+        elif block_type == "nick":
             if len(nicks) > 0:
                 blocked = ', '.join(str(nick) for nick in nicks)
                 bot.say("Blocked nicks: {}".format(blocked))
             else:
-                bot.reply(STRINGS['nonelisted'] % ('nicks'))
-        elif text[2] == "hostmask":
+                bot.reply(BLOCKS_STRINGS['nonelisted'] % ('nicks'))
+        elif block_type == "hostmask":
             if len(hostmasks) > 0:
                 blocked = ', '.join(str(hostmask) for hostmask in hostmasks)
                 bot.say("Blocked hostmasks: {}".format(blocked))
             else:
-                bot.reply(STRINGS['nonelisted'] % ('hostmasks'))
+                bot.reply(BLOCKS_STRINGS['nonelisted'] % ('hostmasks'))
         else:
-            bot.reply(STRINGS['invalid_display'])
+            bot.reply(BLOCKS_STRINGS['invalid_display'])
 
-    elif len(text) == 4 and text[1] == "add":
-        if text[2] == "nick":
-            nicks.add(text[3])
+    elif subcommand == "add" and arg is not None:
+        try:
+            re.compile(arg, re.IGNORECASE)
+        except re.error:
+            bot.reply(BLOCKS_STRINGS['invalid_pattern'] % arg)
+            return
+
+        if block_type == "nick":
+            nicks.add(arg)
             bot.settings.core.nick_blocks = nicks
             bot.settings.save()
-        elif text[2] == "host":
-            hosts.add(text[3].lower())
+        elif block_type == "host":
+            hosts.add(arg.lower())
             bot.settings.core.host_blocks = list(hosts)
             bot.settings.save()
-        elif text[2] == "hostmask":
-            hostmasks.add(text[3])
+        elif block_type == "hostmask":
+            hostmasks.add(arg)
             bot.settings.core.hostmask_blocks = list(hostmasks)
             bot.settings.save()
         else:
-            bot.reply(STRINGS['invalid'] % ("adding"))
+            bot.reply(BLOCKS_STRINGS['invalid'] % ('adding', 'add'))
             return
 
-        bot.reply(STRINGS['success_add'] % (text[3]))
+        bot.reply(BLOCKS_STRINGS['success_add'] % (arg))
 
-    elif len(text) == 4 and text[1] == "del":
-        if text[2] == "nick":
-            nick = bot.make_identifier(text[3])
+    elif subcommand == "del" and arg is not None:
+        if block_type == "nick":
+            nick = bot.make_identifier(arg)
             if nick not in nicks:
-                bot.reply(STRINGS['no_nick'] % (text[3]))
+                bot.reply(BLOCKS_STRINGS['no_nick'] % (arg))
                 return
             nicks.remove(nick)
             bot.settings.core.nick_blocks = [str(n) for n in nicks]
             bot.settings.save()
-            bot.reply(STRINGS['success_del'] % (text[3]))
-        elif text[2] == "host":
-            host = text[3].lower()
+            bot.reply(BLOCKS_STRINGS['success_del'] % (arg))
+        elif block_type == "host":
+            host = arg.lower()
             if host not in hosts:
-                bot.reply(STRINGS['no_host'] % (text[3]))
+                bot.reply(BLOCKS_STRINGS['no_host'] % (arg))
                 return
             hosts.remove(host)
             bot.settings.core.host_blocks = [str(m) for m in hosts]
             bot.settings.save()
-            bot.reply(STRINGS['success_del'] % (text[3]))
-        elif text[2] == "hostmask":
-            hostmask = text[3]
+            bot.reply(BLOCKS_STRINGS['success_del'] % (arg))
+        elif block_type == "hostmask":
+            hostmask = arg
             if hostmask not in hostmasks:
-                bot.reply(STRINGS['no_hostmask'] % (text[3]))
+                bot.reply(BLOCKS_STRINGS['no_hostmask'] % (arg))
                 return
             hostmasks.remove(hostmask)
             bot.settings.core.hostmask_blocks = [str(m) for m in hostmasks]
             bot.settings.save()
-            bot.reply(STRINGS['success_del'] % (text[3]))
+            bot.reply(BLOCKS_STRINGS['success_del'] % (arg))
         else:
-            bot.reply(STRINGS['invalid'] % ("deleting"))
+            bot.reply(BLOCKS_STRINGS['invalid'] % ('deleting', 'del'))
             return
     else:
-        bot.reply(STRINGS['huh'])
+        bot.reply(BLOCKS_STRINGS['huh'])
 
 
 @plugin.event('CHGHOST')
