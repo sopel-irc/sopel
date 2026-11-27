@@ -327,7 +327,7 @@ def test_blocks_del_wrong_arg(mockbot: Sopel):
     mockbot.on_message(
         ":owner!owner@user PRIVMSG #test :.blocks del how come")
     assert mockbot.backend.message_sent[1:] == rawlist(
-        'PRIVMSG #test :owner: Invalid format for deleting a block. Try: .blocks add (nick|host|hostmask) pattern',
+        'PRIVMSG #test :owner: Invalid format for deleting a block. Try: .blocks del (nick|host|hostmask) pattern',
     )
 
 

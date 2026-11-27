@@ -1394,7 +1394,7 @@ BLOCKS_STRINGS = {
     "no_nick": "No matching nick block found for: %s",
     "no_host": "No matching host block found for: %s",
     "no_hostmask": "No matching hostmask block found for: %s",
-    "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host|hostmask) pattern",
+    "invalid": "Invalid format for %s a block. Try: .blocks %s (nick|host|hostmask) pattern",
     "invalid_display": "Invalid input for displaying blocks.",
     "invalid_pattern": "Invalid block pattern: %s",
     "nonelisted": "No %s listed in the blocklist.",
@@ -1478,7 +1478,7 @@ def blocks(bot, trigger):
             bot.settings.core.hostmask_blocks = list(hostmasks)
             bot.settings.save()
         else:
-            bot.reply(BLOCKS_STRINGS['invalid'] % ("adding"))
+            bot.reply(BLOCKS_STRINGS['invalid'] % ('adding', 'add'))
             return
 
         bot.reply(BLOCKS_STRINGS['success_add'] % (arg))
@@ -1512,7 +1512,7 @@ def blocks(bot, trigger):
             bot.settings.save()
             bot.reply(BLOCKS_STRINGS['success_del'] % (arg))
         else:
-            bot.reply(BLOCKS_STRINGS['invalid'] % ("deleting"))
+            bot.reply(BLOCKS_STRINGS['invalid'] % ('deleting', 'del'))
             return
     else:
         bot.reply(BLOCKS_STRINGS['huh'])
