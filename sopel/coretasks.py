@@ -1396,6 +1396,7 @@ BLOCKS_STRINGS = {
     "no_hostmask": "No matching hostmask block found for: %s",
     "invalid": "Invalid format for %s a block. Try: .blocks add (nick|host|hostmask) pattern",
     "invalid_display": "Invalid input for displaying blocks.",
+    "invalid_pattern": "Invalid block pattern: %s",
     "nonelisted": "No %s listed in the blocklist.",
     'huh': "I could not figure out what you wanted to do.",
 }
@@ -1420,7 +1421,7 @@ def blocks(bot, trigger):
     nicks = set(bot.make_identifier(nick)
                 for nick in bot.settings.core.nick_blocks
                 if nick != '')
-    text = trigger.group().split()
+    text: list[str] = trigger.group().split()
 
     subcommand: str | None = None
     block_type: str | None = None
@@ -1457,7 +1458,13 @@ def blocks(bot, trigger):
         else:
             bot.reply(BLOCKS_STRINGS['invalid_display'])
 
-    elif subcommand == "add":
+    elif subcommand == "add" and arg is not None:
+        try:
+            re.compile(arg, re.IGNORECASE)
+        except re.error:
+            bot.reply(BLOCKS_STRINGS['invalid_pattern'] % arg)
+            return
+
         if block_type == "nick":
             nicks.add(arg)
             bot.settings.core.nick_blocks = nicks
@@ -1476,7 +1483,7 @@ def blocks(bot, trigger):
 
         bot.reply(BLOCKS_STRINGS['success_add'] % (arg))
 
-    elif subcommand == "del":
+    elif subcommand == "del" and arg is not None:
         if block_type == "nick":
             nick = bot.make_identifier(arg)
             if nick not in nicks:

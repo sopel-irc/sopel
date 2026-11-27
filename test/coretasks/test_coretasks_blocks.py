@@ -42,6 +42,20 @@ def test_blocks_no_arg(mockbot: Sopel):
     )
 
 
+def test_blocks_too_many_args(mockbot: Sopel):
+    mockbot.on_message(
+        ":owner!owner@user PRIVMSG #test :.blocks list nick Python")
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #test :owner: I could not figure out what you wanted to do.',
+    )
+
+    mockbot.on_message(
+        ":owner!owner@user PRIVMSG #test :.blocks add nick Flying Circus")
+    assert mockbot.backend.message_sent[1:] == rawlist(
+        'PRIVMSG #test :owner: I could not figure out what you wanted to do.',
+    )
+
+
 # .blocks list
 
 def test_blocks_list_no_arg(mockbot: Sopel):
@@ -223,6 +237,16 @@ def test_blocks_add_nick(mockbot: Sopel):
     ]
 
 
+def test_blocks_add_nick_invalid(mockbot: Sopel):
+    mockbot.on_message(
+        ":owner!owner@user PRIVMSG #test :.blocks add nick Ali+[ce")
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #test :owner: Invalid block pattern: Ali+[ce',
+    )
+
+    assert mockbot.settings.core.nick_blocks == []
+
+
 def test_blocks_add_host(mockbot: Sopel):
     mockbot.on_message(
         ":owner!owner@user PRIVMSG #test :.blocks add host a\\.example\\.com")
@@ -243,6 +267,16 @@ def test_blocks_add_host(mockbot: Sopel):
     ]
 
 
+def test_blocks_add_host_invalid(mockbot: Sopel):
+    mockbot.on_message(
+        ":owner!owner@user PRIVMSG #test :.blocks add host a\\.)example\\.com")
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #test :owner: Invalid block pattern: a\\.)example\\.com',
+    )
+
+    assert mockbot.settings.core.host_blocks == []
+
+
 def test_blocks_add_hostmask(mockbot: Sopel):
     mockbot.on_message(
         ":owner!owner@user PRIVMSG #test :.blocks add hostmask Alice.*!.*@a\\.example\\.com")
@@ -261,6 +295,16 @@ def test_blocks_add_hostmask(mockbot: Sopel):
     assert sorted(mockbot.settings.core.hostmask_blocks) == [
         'Alice.*!.*@a\\.example\\.com', 'Bob.*!.*@b\\.example\\.com',
     ]
+
+
+def test_blocks_add_hostmask_invalid(mockbot: Sopel):
+    mockbot.on_message(
+        ":owner!owner@user PRIVMSG #test :.blocks add hostmask Alic][e.*!.*@a\\.example\\.com")
+    assert mockbot.backend.message_sent == rawlist(
+        'PRIVMSG #test :owner: Invalid block pattern: Alic][e.*!.*@a\\.example\\.com',
+    )
+
+    assert mockbot.settings.core.hostmask_blocks == []
 
 
 # .blocks del
